@@ -50,81 +50,88 @@ class _TextInputRendererState extends State<TextInputRenderer> {
   }
 
   Widget _buildTextField(TextInputModel component) {
-    // Style base
     final style = Map<String, dynamic>.from(component.style);
 
     // Apply variant styles
     if (component.variants != null) {
-      // Apply withLabel variant if label exists
       if (component.config['label'] != null &&
           component.variants!.containsKey('withLabel')) {
         final variantStyle =
             component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) {
-          style.addAll(variantStyle);
-        }
+        if (variantStyle != null) style.addAll(variantStyle);
       }
-
-      // Apply withIcon variant if icon exists
       if (component.config['icon'] != null &&
           component.variants!.containsKey('withIcon')) {
         final variantStyle =
             component.variants!['withIcon']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) {
-          style.addAll(variantStyle);
-        }
+        if (variantStyle != null) style.addAll(variantStyle);
       }
     }
 
-    // Apply state styles
-    if (component.states != null) {
-      // Apply focus state
-      if (_isFocused && component.states!.containsKey('focus')) {
-        final focusStyle =
-            component.states!['focus']['style'] as Map<String, dynamic>?;
-        if (focusStyle != null) {
-          style.addAll(focusStyle);
-        }
-      }
-
-      // Apply error state
-      if (_errorText != null && component.states!.containsKey('error')) {
-        final errorStyle =
-            component.states!['error']['style'] as Map<String, dynamic>?;
-        if (errorStyle != null) {
-          style.addAll(errorStyle);
-        }
-      }
-
-      // Apply disabled state
-      if (component.config['editable'] == false &&
-          component.states!.containsKey('disabled')) {
-        final disabledStyle =
-            component.states!['disabled']['style'] as Map<String, dynamic>?;
-        if (disabledStyle != null) {
-          style.addAll(disabledStyle);
-        }
+    // Determine current state
+    String currentState = 'base';
+    final value = _controller.text;
+    if (value.isEmpty) {
+      currentState = 'base';
+    } else {
+      final validationError = _validate(component, value);
+      if (validationError != null) {
+        currentState = 'error';
+      } else {
+        currentState = 'success';
       }
     }
+
+    // Apply state styles (base, error, success, ...)
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
+
+    // Icon rendering (dynamic)
+    Widget? prefixIcon;
+    if (component.config['icon'] != null || style['icon'] != null) {
+      final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+          .toString();
+      final iconColor =
+          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      final iconSize = (style['iconSize'] is num)
+          ? (style['iconSize'] as num).toDouble()
+          : 20.0;
+      final iconData = _mapIconNameToIconData(iconName);
+      if (iconData != null) {
+        prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
+      }
+    }
+
+    // Helper text
+    final helperText = style['helperText']?.toString();
+    final helperTextColor =
+        StyleUtils.parseColor(style['helperTextColor']) ?? Colors.transparent;
 
     return Container(
       key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       margin: StyleUtils.parsePadding(style['margin']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (component.config['label'] != null)
-            Text(
-              component.config['label'],
-              style: TextStyle(
-                fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                color:
-                    StyleUtils.parseColor(style['labelColor']),
-                fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 7),
+              child: Text(
+                component.config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color:
+                      StyleUtils.parseColor(style['labelColor']) ??
+                      const Color(0xFF3b82f6),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          const SizedBox(height: 4),
           TextField(
             controller: _controller,
             focusNode: _focusNode,
@@ -132,6 +139,14 @@ class _TextInputRendererState extends State<TextInputRenderer> {
             obscureText: component.inputTypes?.containsKey('password') ?? false,
             keyboardType: _getKeyboardType(component),
             decoration: InputDecoration(
+              isDense: true,
+              prefixIcon: prefixIcon,
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+                maxWidth: 36,
+                maxHeight: 36,
+              ),
               hintText: component.config['placeholder'] ?? '',
               border: OutlineInputBorder(
                 borderRadius: StyleUtils.parseBorderRadius(
@@ -139,7 +154,8 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                 ),
                 borderSide: BorderSide(
                   color:
-                      StyleUtils.parseColor(style['borderColor']),
+                      StyleUtils.parseColor(style['borderColor']) ??
+                      Colors.grey,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
@@ -148,7 +164,8 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                 ),
                 borderSide: BorderSide(
                   color:
-                      StyleUtils.parseColor(style['borderColor']),
+                      StyleUtils.parseColor(style['borderColor']) ??
+                      Colors.grey,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -157,7 +174,8 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                 ),
                 borderSide: BorderSide(
                   color:
-                      StyleUtils.parseColor(style['borderColor']),
+                      StyleUtils.parseColor(style['borderColor']) ??
+                      Colors.blue,
                   width: 2,
                 ),
               ),
@@ -168,13 +186,26 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
               errorText: _errorText,
-              contentPadding: StyleUtils.parsePadding(style['padding']),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
+              ),
               filled: style['backgroundColor'] != null,
               fillColor: StyleUtils.parseColor(style['backgroundColor']),
+              helperText: helperText,
+              helperStyle: TextStyle(
+                color: helperTextColor,
+                fontStyle: style['fontStyle'] == 'italic'
+                    ? FontStyle.italic
+                    : FontStyle.normal,
+              ),
             ),
             style: TextStyle(
               fontSize: style['fontSize']?.toDouble() ?? 16,
-              color: StyleUtils.parseColor(style['color']),
+              color: StyleUtils.parseColor(style['color']) ?? Colors.white,
+              fontStyle: style['fontStyle'] == 'italic'
+                  ? FontStyle.italic
+                  : FontStyle.normal,
             ),
             onChanged: (value) {
               setState(() {
@@ -272,6 +303,25 @@ class _TextInputRendererState extends State<TextInputRenderer> {
     }
 
     return null;
+  }
+
+  IconData? _mapIconNameToIconData(String name) {
+    switch (name) {
+      case 'mail':
+        return Icons.mail;
+      case 'check':
+        return Icons.check;
+      case 'close':
+        return Icons.close;
+      case 'error':
+        return Icons.error;
+      case 'user':
+        return Icons.person;
+      case 'lock':
+        return Icons.lock;
+      default:
+        return null;
+    }
   }
 
   Widget _buildContainer() {

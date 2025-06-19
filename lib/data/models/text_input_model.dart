@@ -53,16 +53,33 @@ class TextInputModel extends Equatable {
     states,
     children,
   ];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'order': order,
+      'config': config,
+      'style': style,
+      if (inputTypes != null) 'inputTypes': inputTypes,
+      if (variants != null) 'variants': variants,
+      if (states != null) 'states': states,
+      if (children != null)
+        'children': children!.map((c) => c.toJson()).toList(),
+    };
+  }
 }
 
 class TextInputScreenModel extends Equatable {
   final String pageId;
   final String title;
+  final int order;
   final List<TextInputModel> components;
 
   const TextInputScreenModel({
     required this.pageId,
     required this.title,
+    required this.order,
     required this.components,
   });
 
@@ -76,12 +93,22 @@ class TextInputScreenModel extends Equatable {
     }
 
     return TextInputScreenModel(
-      pageId: json['pageId'] ?? '',
+      pageId: json['id_form'] ?? json['pageId'] ?? '',
       title: json['title'] ?? '',
+      order: json['order'] ?? 1,
       components: components,
     );
   }
 
   @override
-  List<Object?> get props => [pageId, title, components];
+  List<Object?> get props => [pageId, title, order, components];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_form': pageId,
+      'order': order,
+      'title': title,
+      'components': components.map((c) => c.toJson()).toList(),
+    };
+  }
 }

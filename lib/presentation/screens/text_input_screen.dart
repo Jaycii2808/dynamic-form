@@ -7,6 +7,13 @@ import 'package:dynamic_form_bi/presentation/bloc/text_input/text_input_state.da
 import 'package:dynamic_form_bi/presentation/widgets/text_input_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../data/repositories/form_repositories.dart';
+import 'saved_forms_screen.dart';
+import 'dart:math';
 
 class TextInputScreen extends StatelessWidget {
   static const String routeName = '/text-input-screen';
@@ -18,8 +25,9 @@ class TextInputScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => TextInputBloc(remoteConfigService: RemoteConfigService())
-        ..add(LoadTextInputPageEvent()),
+      create: (context) =>
+          TextInputBloc(remoteConfigService: RemoteConfigService())
+            ..add(LoadTextInputPageEvent()),
       child: _TextInputContent(title: title, onAction: onAction),
     );
   }
@@ -43,7 +51,10 @@ class _TextInputContentState extends State<_TextInputContent> {
         if (state is TextInputError) {
           debugPrint('Error occurred: ${state.errorMessage}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       },
@@ -80,6 +91,15 @@ class _TextInputContentState extends State<_TextInputContent> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.list),
+            tooltip: 'Xem các form đã lưu',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SavedFormsScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<TextInputBloc>().add(RefreshTextInputPageEvent());
@@ -89,7 +109,33 @@ class _TextInputContentState extends State<_TextInputContent> {
       ),
       body: ListView(
         children: [
-          for (var component in page.components) TextInputRenderer(textInputComponent: component),
+          for (var component in page.components)
+            TextInputRenderer(textInputComponent: component),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.save),
+              label: const Text('Lưu form'),
+              onPressed: () {
+                // Nếu page chưa có id_form hoặc order, tự động sinh
+                String idForm = page.pageId.isNotEmpty
+                    ? page.pageId
+                    : 'form_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
+                int order = page.order != 1
+                    ? page.order
+                    : DateTime.now().millisecondsSinceEpoch;
+                final json = {
+                  'id_form': idForm,
+                  'order': order,
+                  'title': page.title,
+                  'components': page.components.map((c) => c.toJson()).toList(),
+                };
+                FormMemoryRepository.saveForm(idForm, json);
+                _showFormJsonDialog(context, jsonEncode(json));
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -124,7 +170,10 @@ class _TextInputContentState extends State<_TextInputContent> {
                 context.read<TextInputBloc>().add(LoadTextInputPageEvent());
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(8),
@@ -167,7 +216,10 @@ class _TextInputContentState extends State<_TextInputContent> {
                 context.read<TextInputBloc>().add(LoadTextInputPageEvent());
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(8),
@@ -181,6 +233,24 @@ class _TextInputContentState extends State<_TextInputContent> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showFormJsonDialog(BuildContext context, String json) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('JSON Form'),
+          content: Text(json),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
