@@ -7,12 +7,9 @@ import 'package:dynamic_form_bi/presentation/bloc/text_input/text_input_state.da
 import 'package:dynamic_form_bi/presentation/widgets/text_input_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import '../../data/repositories/form_repositories.dart';
-import 'saved_forms_screen.dart';
+import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
+import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'dart:math';
 
 class TextInputScreen extends StatelessWidget {
@@ -241,12 +238,12 @@ class _TextInputContentState extends State<_TextInputContent> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('JSON Form'),
+          title: const Text('JSON Form'),
           content: Text(json),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
           ],
         );

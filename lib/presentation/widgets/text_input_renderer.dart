@@ -14,7 +14,6 @@ class TextInputRenderer extends StatefulWidget {
 class _TextInputRendererState extends State<TextInputRenderer> {
   final TextEditingController _controller = TextEditingController();
   String? _errorText;
-  bool _isFocused = false;
   late FocusNode _focusNode;
 
   @override
@@ -33,9 +32,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
   }
 
   void _handleFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
+    setState(() {});
   }
 
   @override
@@ -95,8 +92,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
     if (component.config['icon'] != null || style['icon'] != null) {
       final iconName = (style['icon'] ?? component.config['icon'] ?? '')
           .toString();
-      final iconColor =
-          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      final iconColor = StyleUtils.parseColor(style['iconColor']);
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
@@ -108,8 +104,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
 
     // Helper text
     final helperText = style['helperText']?.toString();
-    final helperTextColor =
-        StyleUtils.parseColor(style['helperTextColor']) ?? Colors.transparent;
+    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
     return Container(
       key: Key(component.id),
@@ -125,9 +120,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                 component.config['label'],
                 style: TextStyle(
                   fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color:
-                      StyleUtils.parseColor(style['labelColor']) ??
-                      const Color(0xFF3b82f6),
+                  color: StyleUtils.parseColor(style['labelColor']),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -153,9 +146,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                   style['borderRadius'],
                 ),
                 borderSide: BorderSide(
-                  color:
-                      StyleUtils.parseColor(style['borderColor']) ??
-                      Colors.grey,
+                  color: StyleUtils.parseColor(style['borderColor']),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
@@ -163,9 +154,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                   style['borderRadius'],
                 ),
                 borderSide: BorderSide(
-                  color:
-                      StyleUtils.parseColor(style['borderColor']) ??
-                      Colors.grey,
+                  color: StyleUtils.parseColor(style['borderColor']),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -173,9 +162,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
                   style['borderRadius'],
                 ),
                 borderSide: BorderSide(
-                  color:
-                      StyleUtils.parseColor(style['borderColor']) ??
-                      Colors.blue,
+                  color: StyleUtils.parseColor(style['borderColor']),
                   width: 2,
                 ),
               ),
@@ -202,7 +189,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
             ),
             style: TextStyle(
               fontSize: style['fontSize']?.toDouble() ?? 16,
-              color: StyleUtils.parseColor(style['color']) ?? Colors.white,
+              color: StyleUtils.parseColor(style['color']),
               fontStyle: style['fontStyle'] == 'italic'
                   ? FontStyle.italic
                   : FontStyle.normal,

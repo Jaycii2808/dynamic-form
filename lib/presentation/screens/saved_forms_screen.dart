@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../data/repositories/form_repositories.dart';
-import '../../data/models/text_input_model.dart';
-import 'text_input_screen.dart';
+import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
+import 'package:dynamic_form_bi/data/models/text_input_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/text_input_screen.dart';
 
 class SavedFormsScreen extends StatelessWidget {
   const SavedFormsScreen({super.key});
