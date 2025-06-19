@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "654642144013",
+    "project_id": "dynamicform-ae960",
+    "storage_bucket": "dynamicform-ae960.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654642144013:android:3e8214b4beb5e0d4a94644",
+        "android_client_info": {
+          "package_name": "com.example.dynamic_form_bi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeNIzPe_ULZCe87AS28nAY3nOrEGhMDro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
