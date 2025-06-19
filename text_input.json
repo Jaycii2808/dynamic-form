@@ -1,0 +1,238 @@
+{
+   "title": "Text Input Variants & States Demo",
+   "components": [
+      {
+         "id": "input_normal",
+         "type": "textfield",
+         "config": {
+            "placeholder": "Placeholders",
+            "isRequired": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "normal": { "style": {} }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Errors",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Placeholders",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "inputTypes": {
+            "text": {
+               "validation": {
+                  "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+                  "error_message": "Chỉ được nhập chữ cái",
+                  "min_length": 1,
+                  "max_length": 100
+               }
+            }
+         }
+      },
+      {
+         "id": "input_with_icon",
+         "type": "textfield",
+         "config": {
+            "placeholder": "Placeholders",
+            "icon": "mail",
+            "isRequired": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Errors",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Success",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "inputTypes": {
+            "text": {
+               "validation": {
+                  "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+                  "error_message": "Chỉ được nhập chữ cái",
+                  "min_length": 1,
+                  "max_length": 100
+               }
+            }
+         }
+      },
+      {
+         "id": "input_with_label",
+         "type": "textfield",
+         "config": {
+            "label": "Label",
+            "placeholder": "Placeholders",
+            "isRequired": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Error Notification",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Positive Message",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "inputTypes": {
+            "text": {
+               "validation": {
+                  "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+                  "error_message": "Chỉ được nhập chữ cái",
+                  "min_length": 1,
+                  "max_length": 100
+               }
+            }
+         }
+      },
+      {
+         "id": "input_with_icon_label",
+         "type": "textfield",
+         "config": {
+            "label": "Label",
+            "placeholder": "Placeholders",
+            "icon": "mail",
+            "isRequired": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Wrong Value",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Correct Value",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "inputTypes": {
+            "text": {
+               "validation": {
+                  "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+                  "error_message": "Chỉ được nhập chữ cái",
+                  "min_length": 1,
+                  "max_length": 100
+               }
+            }
+         }
+      }
+   ]
+}
