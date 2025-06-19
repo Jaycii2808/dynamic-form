@@ -69,63 +69,75 @@ class _DynamicUIRendererState extends State<DynamicUIRenderer> {
   Widget _buildTextField(UIComponentModel component) {
     // Style base
     final style = Map<String, dynamic>.from(component.style);
+    String currentState = 'base';
+
+    // Validation logic
+    final value = _controller.text;
+    if (value.isEmpty) {
+      currentState = 'base';
+    } else {
+      final validationError = _validate(component, value);
+      if (validationError != null) {
+        currentState = 'error';
+      } else {
+        currentState = 'success';
+      }
+    }
 
     // Apply variant styles
     if (component.variants != null) {
-      // Apply withLabel variant if label exists
       if (component.config['label'] != null &&
           component.variants!.containsKey('withLabel')) {
         final variantStyle =
             component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) {
-          style.addAll(variantStyle);
-        }
+        if (variantStyle != null) style.addAll(variantStyle);
       }
-
-      // Apply withIcon variant if icon exists
       if (component.config['icon'] != null &&
           component.variants!.containsKey('withIcon')) {
         final variantStyle =
             component.variants!['withIcon']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) {
-          style.addAll(variantStyle);
-        }
+        if (variantStyle != null) style.addAll(variantStyle);
       }
     }
 
     // Apply state styles
-    if (component.states != null) {
-      // Apply focus state
-      if (_isFocused && component.states!.containsKey('focus')) {
-        final focusStyle =
-            component.states!['focus']['style'] as Map<String, dynamic>?;
-        if (focusStyle != null) {
-          style.addAll(focusStyle);
-        }
-      }
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
 
-      // Apply error state
-      if (_errorText != null && component.states!.containsKey('error')) {
-        final errorStyle =
-            component.states!['error']['style'] as Map<String, dynamic>?;
-        if (errorStyle != null) {
-          style.addAll(errorStyle);
-        }
-      }
-
-      // Apply disabled state
-      if (component.config['editable'] == false &&
-          component.states!.containsKey('disabled')) {
-        final disabledStyle =
-            component.states!['disabled']['style'] as Map<String, dynamic>?;
-        if (disabledStyle != null) {
-          style.addAll(disabledStyle);
-        }
+    // Icon rendering (dynamic)
+    Widget? prefixIcon;
+    if (component.config['icon'] != null || style['icon'] != null) {
+      final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+          .toString();
+      final iconColor =
+          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      final iconSize = (style['iconSize'] is num)
+          ? (style['iconSize'] as num).toDouble()
+          : 20.0;
+      final iconData = _mapIconNameToIconData(iconName);
+      if (iconData != null) {
+        prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
     }
 
+    // Helper text
+    final helperText = style['helperText']?.toString();
+    final helperTextColor =
+        StyleUtils.parseColor(style['helperTextColor']) ?? Colors.transparent;
+
+    // Unified content padding
+    final contentPadding = const EdgeInsets.symmetric(
+      vertical: 10,
+      horizontal: 12,
+    );
+
     return Container(
       key: Key(component.id),
+      width: double.infinity,
       padding: StyleUtils.parsePadding(style['padding']),
       margin: StyleUtils.parsePadding(style['margin']),
       child: Column(
@@ -137,7 +149,8 @@ class _DynamicUIRendererState extends State<DynamicUIRenderer> {
               style: TextStyle(
                 fontSize: style['labelTextSize']?.toDouble() ?? 16,
                 color:
-                    StyleUtils.parseColor(style['labelColor']) ?? Colors.black,
+                    StyleUtils.parseColor(style['labelColor']) ??
+                    Color(0xFF3b82f6),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -149,6 +162,14 @@ class _DynamicUIRendererState extends State<DynamicUIRenderer> {
             obscureText: component.inputTypes?.containsKey('password') ?? false,
             keyboardType: _getKeyboardType(component),
             decoration: InputDecoration(
+              isDense: true,
+              prefixIcon: prefixIcon,
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+                maxWidth: 36,
+                maxHeight: 36,
+              ),
               hintText: component.config['placeholder'] ?? '',
               border: OutlineInputBorder(
                 borderRadius: StyleUtils.parseBorderRadius(
@@ -187,24 +208,51 @@ class _DynamicUIRendererState extends State<DynamicUIRenderer> {
                 ),
                 borderSide: BorderSide(color: Colors.red, width: 2),
               ),
-              errorText: _errorText,
-              contentPadding: StyleUtils.parsePadding(style['padding']),
+              errorText: null,
+              contentPadding: contentPadding,
               filled: style['backgroundColor'] != null,
               fillColor: StyleUtils.parseColor(style['backgroundColor']),
+              helperText: helperText,
+              helperStyle: TextStyle(
+                color: helperTextColor,
+                fontStyle: style['fontStyle'] == 'italic'
+                    ? FontStyle.italic
+                    : FontStyle.normal,
+              ),
             ),
             style: TextStyle(
               fontSize: style['fontSize']?.toDouble() ?? 16,
-              color: StyleUtils.parseColor(style['color']) ?? Colors.black,
+              color: StyleUtils.parseColor(style['color']) ?? Colors.white,
+              fontStyle: style['fontStyle'] == 'italic'
+                  ? FontStyle.italic
+                  : FontStyle.normal,
             ),
             onChanged: (value) {
-              setState(() {
-                _errorText = _validate(component, value);
-              });
+              setState(() {});
             },
           ),
         ],
       ),
     );
+  }
+
+  IconData? _mapIconNameToIconData(String name) {
+    switch (name) {
+      case 'mail':
+        return Icons.mail;
+      case 'check':
+        return Icons.check;
+      case 'close':
+        return Icons.close;
+      case 'error':
+        return Icons.error;
+      case 'user':
+        return Icons.person;
+      case 'lock':
+        return Icons.lock;
+      default:
+        return null;
+    }
   }
 
   TextInputType _getKeyboardType(UIComponentModel component) {

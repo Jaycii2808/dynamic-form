@@ -25,10 +25,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Dynamic UI BI',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
       ),
-      home: const DynamicPage(title: 'Dynamic UI from Firebase'),
+      home: const DynamicPage(title: 'Text Input Variants & States Demo'),
     );
   }
 }

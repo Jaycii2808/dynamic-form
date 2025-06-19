@@ -1,0 +1,341 @@
+{
+   "title": "Complete UI Test Page",
+   "components": [
+      {
+         "id": "text_input_template",
+         "type": "textfield",
+         "title": "Input Template",
+         "order": 0,
+         "config": {
+            "label": "Working remotely",
+            "placeholder": "Enter your text here",
+            "editable": true,
+            "isRequired": false,
+            "value": null,
+            "metaData": null,
+            "numberOfMedia": null,
+            "url": null
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#dddddd",
+            "borderRadius": 4,
+            "fontSize": 14,
+            "color": "#333333",
+            "backgroundColor": "#ffffff"
+         },
+         "inputTypes": {
+            "text": {
+               "validation": {
+                  "regex": "^[a-zA-ZÀ-ỹ\\s]{2,50}$",
+                  "error_message": "Tên không hợp lệ (2-50 ký tự, chỉ chữ cái)",
+                  "max_length": 50,
+                  "min_length": 2
+               }
+            },
+            "email": {
+               "validation": {
+                  "regex": "^[^@]+@[^@]+\\.[^@]+$",
+                  "error_message": "Email không đúng định dạng",
+                  "max_length": 50,
+                  "min_length": 5
+               }
+            },
+            "password": {
+               "validation": {
+                  "regex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$",
+                  "error_message": "Mật khẩu phải từ 6 ký tự, gồm chữ và số",
+                  "max_length": 32,
+                  "min_length": 6
+               }
+            },
+            "tel": {
+               "validation": {
+                  "regex": "^(0|\\+84)(3[2-9]|5[2689]|7[06-9]|8[1-689]|9[0-9])([0-9]{7})$",
+                  "error_message": "Số điện thoại không hợp lệ",
+                  "max_length": 12,
+                  "min_length": 10
+               }
+            }
+         },
+         "variants": {
+            "normal": {
+               "style": {}
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 12
+               }
+            },
+            "withLabel": {
+               "style": {
+                  "labelTextSize": 12,
+                  "labelColor": "#dddddd"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "borderColor": "#dddddd"
+               }
+            },
+            "focus": {
+               "style": {
+                  "borderColor": "#007bff",
+                  "shadow": ""
+               }
+            },
+            "disabled": {
+               "style": {
+                  "borderColor": "#cccccc",
+                  "backgroundColor": "#f5f5f5"
+               }
+            }
+         }
+      },
+      {
+         "id": "email_input",
+         "type": "textfield",
+         "title": "Email Input",
+         "order": 1,
+         "config": {
+            "label": "Email Address",
+            "placeholder": "Enter your email",
+            "isRequired": true,
+            "value": null
+         },
+         "style": {
+            "padding": "12px 16px",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "color": "#333333",
+            "backgroundColor": "#ffffff"
+         },
+         "inputTypes": {
+            "email": {
+               "validation": {
+                  "regex": "^[^@]+@[^@]+\\.[^@]+$",
+                  "error_message": "Email không đúng định dạng",
+                  "max_length": 50,
+                  "min_length": 5
+               }
+            }
+         },
+         "variants": {
+            "withLabel": {
+               "style": {
+                  "labelTextSize": 14,
+                  "labelColor": "#666666"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "borderColor": "#e0e0e0"
+               }
+            },
+            "focus": {
+               "style": {
+                  "borderColor": "#2196f3",
+                  "shadow": "0 0 0 2px rgba(33, 150, 243, 0.2)"
+               }
+            },
+            "error": {
+               "style": {
+                  "borderColor": "#f44336"
+               }
+            }
+         }
+      },
+      {
+         "id": "password_input",
+         "type": "textfield",
+         "title": "Password Input",
+         "order": 2,
+         "config": {
+            "label": "Password",
+            "placeholder": "Enter your password",
+            "isRequired": true,
+            "value": null
+         },
+         "style": {
+            "padding": "12px 16px",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "color": "#333333",
+            "backgroundColor": "#ffffff"
+         },
+         "inputTypes": {
+            "password": {
+               "validation": {
+                  "regex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$",
+                  "error_message": "Mật khẩu phải từ 6 ký tự, gồm chữ và số",
+                  "max_length": 32,
+                  "min_length": 6
+               }
+            }
+         },
+         "variants": {
+            "withLabel": {
+               "style": {
+                  "labelTextSize": 14,
+                  "labelColor": "#666666"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "borderColor": "#e0e0e0"
+               }
+            },
+            "focus": {
+               "style": {
+                  "borderColor": "#2196f3",
+                  "shadow": "0 0 0 2px rgba(33, 150, 243, 0.2)"
+               }
+            },
+            "error": {
+               "style": {
+                  "borderColor": "#f44336"
+               }
+            }
+         }
+      },
+      {
+         "id": "phone_input",
+         "type": "textfield",
+         "title": "Phone Input",
+         "order": 3,
+         "config": {
+            "label": "Phone Number",
+            "placeholder": "Enter your phone number",
+            "isRequired": false,
+            "value": null
+         },
+         "style": {
+            "padding": "12px 16px",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "color": "#333333",
+            "backgroundColor": "#ffffff"
+         },
+         "inputTypes": {
+            "tel": {
+               "validation": {
+                  "regex": "^(0|\\+84)(3[2-9]|5[2689]|7[06-9]|8[1-689]|9[0-9])([0-9]{7})$",
+                  "error_message": "Số điện thoại không hợp lệ",
+                  "max_length": 12,
+                  "min_length": 10
+               }
+            }
+         },
+         "variants": {
+            "withLabel": {
+               "style": {
+                  "labelTextSize": 14,
+                  "labelColor": "#666666"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "borderColor": "#e0e0e0"
+               }
+            },
+            "focus": {
+               "style": {
+                  "borderColor": "#2196f3",
+                  "shadow": "0 0 0 2px rgba(33, 150, 243, 0.2)"
+               }
+            },
+            "error": {
+               "style": {
+                  "borderColor": "#f44336"
+               }
+            }
+         }
+      },
+      {
+         "id": "submit_button",
+         "type": "button",
+         "title": "Submit Button",
+         "order": 4,
+         "config": {
+            "text": "Submit Form",
+            "action": "submit"
+         },
+         "style": {
+            "padding": "12px 24px",
+            "backgroundColor": "#2196f3",
+            "color": "#ffffff",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "fontWeight": "bold"
+         },
+         "variants": {
+            "primary": {
+               "style": {
+                  "backgroundColor": "#2196f3",
+                  "color": "#ffffff"
+               }
+            },
+            "secondary": {
+               "style": {
+                  "backgroundColor": "#6c757d",
+                  "color": "#ffffff"
+               }
+            },
+            "success": {
+               "style": {
+                  "backgroundColor": "#28a745",
+                  "color": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "backgroundColor": "#2196f3"
+               }
+            },
+            "hover": {
+               "style": {
+                  "backgroundColor": "#1976d2"
+               }
+            },
+            "disabled": {
+               "style": {
+                  "backgroundColor": "#cccccc",
+                  "color": "#666666"
+               }
+            }
+         }
+      },
+      {
+         "id": "info_text",
+         "type": "text",
+         "title": "Info Text",
+         "order": 5,
+         "config": {
+            "text": "This is a complete test page with all variants and states. Try interacting with the form fields to see different states in action."
+         },
+         "style": {
+            "padding": "16px",
+            "color": "#666666",
+            "fontSize": 14,
+            "textAlign": "center",
+            "backgroundColor": "#f8f9fa",
+            "borderRadius": 8,
+            "margin": "16px 0"
+         }
+      }
+   ]
+}
