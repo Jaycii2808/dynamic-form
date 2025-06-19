@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class TextInputModel extends Equatable {
+class DynamicFormModel extends Equatable {
   final String id;
   final String type;
   final int order;
@@ -9,9 +9,9 @@ class TextInputModel extends Equatable {
   final Map<String, dynamic>? inputTypes;
   final Map<String, dynamic>? variants;
   final Map<String, dynamic>? states;
-  final List<TextInputModel>? children;
+  final List<DynamicFormModel>? children;
 
-  const TextInputModel({
+  const DynamicFormModel({
     required this.id,
     required this.type,
     required this.order,
@@ -23,8 +23,8 @@ class TextInputModel extends Equatable {
     this.children,
   });
 
-  factory TextInputModel.fromJson(Map<String, dynamic> json) {
-    return TextInputModel(
+  factory DynamicFormModel.fromJson(Map<String, dynamic> json) {
+    return DynamicFormModel(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
       order: json['order'] ?? 0,
@@ -34,8 +34,8 @@ class TextInputModel extends Equatable {
       variants: json['variants'],
       states: json['states'],
       children: json['children'] != null
-          ? List<TextInputModel>.from(
-              json['children'].map((x) => TextInputModel.fromJson(x)),
+          ? List<DynamicFormModel>.from(
+              json['children'].map((x) => DynamicFormModel.fromJson(x)),
             )
           : null,
     );
@@ -70,29 +70,29 @@ class TextInputModel extends Equatable {
   }
 }
 
-class TextInputScreenModel extends Equatable {
+class DynamicFormPageModel extends Equatable {
   final String pageId;
   final String title;
   final int order;
-  final List<TextInputModel> components;
+  final List<DynamicFormModel> components;
 
-  const TextInputScreenModel({
+  const DynamicFormPageModel({
     required this.pageId,
     required this.title,
     required this.order,
     required this.components,
   });
 
-  factory TextInputScreenModel.fromJson(Map<String, dynamic> json) {
-    List<TextInputModel> components = [];
+  factory DynamicFormPageModel.fromJson(Map<String, dynamic> json) {
+    List<DynamicFormModel> components = [];
     if (json['components'] != null) {
-      components = List<TextInputModel>.from(
-        json['components'].map((x) => TextInputModel.fromJson(x)),
+      components = List<DynamicFormModel>.from(
+        json['components'].map((x) => DynamicFormModel.fromJson(x)),
       );
       components.sort((a, b) => a.order.compareTo(b.order));
     }
 
-    return TextInputScreenModel(
+    return DynamicFormPageModel(
       pageId: json['id_form'] ?? json['pageId'] ?? '',
       title: json['title'] ?? '',
       order: json['order'] ?? 1,

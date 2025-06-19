@@ -1,17 +1,17 @@
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/text_input_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:flutter/material.dart';
 
-class TextInputRenderer extends StatefulWidget {
-  final TextInputModel textInputComponent;
+class DynamicFormRenderer extends StatefulWidget {
+  final DynamicFormModel component;
 
-  const TextInputRenderer({super.key, required this.textInputComponent});
+  const DynamicFormRenderer({super.key, required this.component});
 
   @override
-  State<TextInputRenderer> createState() => _TextInputRendererState();
+  State<DynamicFormRenderer> createState() => _DynamicFormRendererState();
 }
 
-class _TextInputRendererState extends State<TextInputRenderer> {
+class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   final TextEditingController _controller = TextEditingController();
   String? _errorText;
   late FocusNode _focusNode;
@@ -37,7 +37,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
 
   @override
   Widget build(BuildContext context) {
-    final component = widget.textInputComponent;
+    final component = widget.component;
     switch (component.type.toLowerCase()) {
       case 'textfield':
         return _buildTextField(component);
@@ -46,7 +46,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
     }
   }
 
-  Widget _buildTextField(TextInputModel component) {
+  Widget _buildTextField(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
 
     // Apply variant styles
@@ -205,7 +205,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
     );
   }
 
-  TextInputType _getKeyboardType(TextInputModel component) {
+  TextInputType _getKeyboardType(DynamicFormModel component) {
     if (component.inputTypes != null) {
       if (component.inputTypes!.containsKey('email')) {
         return TextInputType.emailAddress;
@@ -218,7 +218,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
     return TextInputType.text;
   }
 
-  String? _validate(TextInputModel component, String value) {
+  String? _validate(DynamicFormModel component, String value) {
     // Check required field first
     if ((component.config['isRequired'] ?? false) && value.trim().isEmpty) {
       return 'Trường này là bắt buộc';
@@ -312,7 +312,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
   }
 
   Widget _buildContainer() {
-    final component = widget.textInputComponent;
+    final component = widget.component;
     return Container(
       key: Key(component.id),
       padding: StyleUtils.parsePadding(component.style['padding']),
@@ -321,7 +321,7 @@ class _TextInputRendererState extends State<TextInputRenderer> {
       child: component.children != null
           ? Column(
               children: component.children!
-                  .map((child) => TextInputRenderer(textInputComponent: child))
+                  .map((child) => DynamicFormRenderer(component: child))
                   .toList(),
             )
           : null,

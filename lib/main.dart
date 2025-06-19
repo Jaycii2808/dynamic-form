@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
-import 'package:dynamic_form_bi/presentation/screens/text_input_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +31,48 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const TextInputScreen(title: 'Text Input Variants & States Demo'),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Predefined remote config keys (extendable in future)
+    final configKeys = ['text_input_screen','text_input_screen'];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dynamic Forms'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: ListView.builder(
+        itemCount: configKeys.length,
+        itemBuilder: (context, index) {
+          final configKey = configKeys[index];
+          return ListTile(
+            title: Text(
+              configKey.replaceAll('_', ' ').toUpperCase(),
+              style: const TextStyle(color: Colors.white),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DynamicFormScreen(
+                    configKey: configKey,
+                    title: configKey.replaceAll('_', ' ').toUpperCase(),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

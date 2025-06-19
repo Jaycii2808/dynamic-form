@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'package:dynamic_form_bi/data/models/text_input_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
-
 
 class RemoteConfigService {
   static final RemoteConfigService _instance = RemoteConfigService._internal();
@@ -29,28 +28,31 @@ class RemoteConfigService {
     }
   }
 
-  TextInputScreenModel? getTextInputScreen() {
+  DynamicFormPageModel? getTextInputScreen(String configKey) {
     try {
-      final String jsonString = _remoteConfig.getString('text_input_screen');
-      debugPrint('RemoteConfig text_input_screen: $jsonString');
+      final String jsonString = _remoteConfig.getString(configKey);
+      debugPrint('RemoteConfig $configKey: $jsonString');
       if (jsonString.isEmpty || jsonString == '{}') {
-        debugPrint('RemoteConfig: text_input_screen is empty or {}');
+        debugPrint('RemoteConfig: $configKey is empty or {}');
         return null;
       }
       final Map<String, dynamic> json = jsonDecode(jsonString);
-      return TextInputScreenModel.fromJson(json);
+      return DynamicFormPageModel.fromJson(json);
     } catch (e) {
-      debugPrint('Error parsing UI page: $e');
+      debugPrint('Error parsing form $configKey: $e');
       return null;
     }
   }
 
-  Future<void> updateTextInputScreen(String jsonString) async {
+  Future<void> updateTextInputScreen(
+    String configKey,
+    String jsonString,
+  ) async {
     try {
-      await _remoteConfig.setDefaults({'text_input_screen': jsonString});
+      await _remoteConfig.setDefaults({configKey: jsonString});
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
-      debugPrint('Error updating UI page: $e');
+      debugPrint('Error updating form $configKey: $e');
     }
   }
 
