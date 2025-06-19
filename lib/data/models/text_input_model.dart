@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class UIComponentModel extends Equatable {
+class TextInputModel extends Equatable {
   final String id;
   final String type;
   final int order;
@@ -9,9 +9,9 @@ class UIComponentModel extends Equatable {
   final Map<String, dynamic>? inputTypes;
   final Map<String, dynamic>? variants;
   final Map<String, dynamic>? states;
-  final List<UIComponentModel>? children;
+  final List<TextInputModel>? children;
 
-  const UIComponentModel({
+  const TextInputModel({
     required this.id,
     required this.type,
     required this.order,
@@ -23,8 +23,8 @@ class UIComponentModel extends Equatable {
     this.children,
   });
 
-  factory UIComponentModel.fromJson(Map<String, dynamic> json) {
-    return UIComponentModel(
+  factory TextInputModel.fromJson(Map<String, dynamic> json) {
+    return TextInputModel(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
       order: json['order'] ?? 0,
@@ -34,8 +34,8 @@ class UIComponentModel extends Equatable {
       variants: json['variants'],
       states: json['states'],
       children: json['children'] != null
-          ? List<UIComponentModel>.from(
-              json['children'].map((x) => UIComponentModel.fromJson(x)),
+          ? List<TextInputModel>.from(
+              json['children'].map((x) => TextInputModel.fromJson(x)),
             )
           : null,
     );
@@ -55,27 +55,27 @@ class UIComponentModel extends Equatable {
   ];
 }
 
-class UIPageModel extends Equatable {
+class TextInputScreenModel extends Equatable {
   final String pageId;
   final String title;
-  final List<UIComponentModel> components;
+  final List<TextInputModel> components;
 
-  const UIPageModel({
+  const TextInputScreenModel({
     required this.pageId,
     required this.title,
     required this.components,
   });
 
-  factory UIPageModel.fromJson(Map<String, dynamic> json) {
-    List<UIComponentModel> components = [];
+  factory TextInputScreenModel.fromJson(Map<String, dynamic> json) {
+    List<TextInputModel> components = [];
     if (json['components'] != null) {
-      components = List<UIComponentModel>.from(
-        json['components'].map((x) => UIComponentModel.fromJson(x)),
+      components = List<TextInputModel>.from(
+        json['components'].map((x) => TextInputModel.fromJson(x)),
       );
       components.sort((a, b) => a.order.compareTo(b.order));
     }
 
-    return UIPageModel(
+    return TextInputScreenModel(
       pageId: json['pageId'] ?? '',
       title: json['title'] ?? '',
       components: components,

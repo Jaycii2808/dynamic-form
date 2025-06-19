@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/presentation/screens/text_input_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'firebase_options.dart';
-import 'core/services/remote_config_service.dart';
-import 'presentation/page/dynamic_page.dart';
+import 'package:flutter/material.dart';
+
+import 'package:dynamic_form_bi/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,12 +23,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dynamic UI BI',
+      title: 'Dynamic UI',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
       ),
-      home: const DynamicPage(title: 'Dynamic UI from Firebase'),
+      home: const TextInputScreen(title: 'Text Input UI from Firebase'),
     );
   }
 }

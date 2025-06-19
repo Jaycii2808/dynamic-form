@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:dynamic_form_bi/data/models/text_input_model.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import '../models/ui_component_model.dart';
+import 'package:flutter/foundation.dart';
+
 
 class RemoteConfigService {
   static final RemoteConfigService _instance = RemoteConfigService._internal();
@@ -19,36 +21,36 @@ class RemoteConfigService {
       );
 
       // Set default empty JSON
-      await _remoteConfig.setDefaults({'ui_page': '{}'});
+      await _remoteConfig.setDefaults({'text_input_screen': '{}'});
 
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
-      print('Error initializing Remote Config: $e');
+      debugPrint('Error initializing Remote Config: $e');
     }
   }
 
-  UIPageModel? getUIPage() {
+  TextInputScreenModel? getTextInputScreen() {
     try {
-      final String jsonString = _remoteConfig.getString('ui_page');
-      print('RemoteConfig ui_page: $jsonString');
+      final String jsonString = _remoteConfig.getString('text_input_screen');
+      debugPrint('RemoteConfig text_input_screen: $jsonString');
       if (jsonString.isEmpty || jsonString == '{}') {
-        print('RemoteConfig: ui_page is empty or {}');
+        debugPrint('RemoteConfig: text_input_screen is empty or {}');
         return null;
       }
       final Map<String, dynamic> json = jsonDecode(jsonString);
-      return UIPageModel.fromJson(json);
+      return TextInputScreenModel.fromJson(json);
     } catch (e) {
-      print('Error parsing UI page: $e');
+      debugPrint('Error parsing UI page: $e');
       return null;
     }
   }
 
-  Future<void> updateUIPage(String jsonString) async {
+  Future<void> updateTextInputScreen(String jsonString) async {
     try {
-      await _remoteConfig.setDefaults({'ui_page': jsonString});
+      await _remoteConfig.setDefaults({'text_input_screen': jsonString});
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
-      print('Error updating UI page: $e');
+      debugPrint('Error updating UI page: $e');
     }
   }
 

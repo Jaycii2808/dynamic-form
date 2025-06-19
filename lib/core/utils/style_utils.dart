@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/ui_component_model.dart';
 
 class StyleUtils {
   static EdgeInsetsGeometry parsePadding(String? padding) {
