@@ -39,6 +39,18 @@ class MyApp extends StatelessWidget {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  void _navigateToForm(BuildContext context, String configKey) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DynamicFormScreen(
+          configKey: configKey,
+          title: configKey.replaceAll('_', ' ').toUpperCase(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)
@@ -47,6 +59,7 @@ class HomeScreen extends StatelessWidget {
       'select_input',
       'text_area_form',
       'datetime_picker_form',
+      'dropdown_input',
     ];
 
     return Scaffold(
@@ -55,28 +68,34 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: ListView.builder(
-        itemCount: configKeys.length,
-        itemBuilder: (context, index) {
-          final configKey = configKeys[index];
-          return ListTile(
-            title: Text(
-              configKey.replaceAll('_', ' ').toUpperCase(),
-              style: const TextStyle(color: Colors.white),
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DynamicFormScreen(
-                    configKey: configKey,
-                    title: configKey.replaceAll('_', ' ').toUpperCase(),
-                  ),
+      body: ListView(
+        children: [
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: configKeys.length,
+            itemBuilder: (context, index) {
+              final configKey = configKeys[index];
+              return ListTile(
+                title: Text(
+                  configKey.replaceAll('_', ' ').toUpperCase(),
+                  style: const TextStyle(color: Colors.white),
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DynamicFormScreen(
+                        configKey: configKey,
+                        title: configKey.replaceAll('_', ' ').toUpperCase(),
+                      ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ],
       ),
     );
   }

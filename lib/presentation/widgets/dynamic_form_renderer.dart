@@ -23,6 +23,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   bool _isDropdownOpen = false;
   bool _isTouched = false; // To track if the field has been interacted with
 
+  // Dropdown-specific states
+  bool _isHovering = false;
+  String? _selectedActionId;
+  String? _dropdownErrorText;
+  String? _currentDropdownLabel; // To hold the dynamic label of the trigger
+
   final GlobalKey _selectKey = GlobalKey();
   OverlayEntry? _overlayEntry;
 
@@ -32,6 +38,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
     _controller.text = widget.component.config['value'] ?? '';
+    _currentDropdownLabel = widget.component.config['label'];
   }
 
   @override
@@ -61,14 +68,22 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextArea(component);
       case 'datetime_picker':
         return _buildDateTimePickerForm(component);
+      case 'dropdown':
+        return _buildDropdown(component);
       default:
         return _buildContainer();
     }
   }
+
   Widget _buildDateTimePickerForm(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
-    final value = component.config['value'] ?? DateTime.now().toString(); // Lấy giá trị mặc định từ config hoặc ngày hiện tại
-    String dateDisplay = value.contains('dd/mm/yyyy') ? 'dd/mm/yyyy' : value.split(' ')[0]; // Hiển thị định dạng hoặc giá trị hiện tại
+    final value =
+        component.config['value'] ??
+        DateTime.now()
+            .toString(); // Lấy giá trị mặc định từ config hoặc ngày hiện tại
+    String dateDisplay = value.contains('dd/mm/yyyy')
+        ? 'dd/mm/yyyy'
+        : value.split(' ')[0]; // Hiển thị định dạng hoặc giá trị hiện tại
 
     Future<void> selectDate(BuildContext context) async {
       final DateTime? picked = await showDatePicker(
@@ -79,9 +94,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         builder: (context, child) {
           return Theme(
             data: ThemeData.dark().copyWith(
-              colorScheme: const ColorScheme.dark(
-                primary: Color(0xFF6979F8),
-              ),
+              colorScheme: const ColorScheme.dark(primary: Color(0xFF6979F8)),
             ),
             child: child!,
           );
@@ -120,8 +133,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               width: MediaQuery.of(context).size.width * 0.9,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                border: Border.all(color: StyleUtils.parseColor(style['borderColor'])),
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                border: Border.all(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                ),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -131,10 +148,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                     dateDisplay,
                     style: TextStyle(
                       color: StyleUtils.parseColor(style['color']),
-                      fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                      fontStyle: style['fontStyle'] == 'italic'
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
-                  const Icon(Icons.calendar_today, color: Color(0xFF6979F8)), // Sử dụng màu theo giao diện mẫu
+                  const Icon(
+                    Icons.calendar_today,
+                    color: Color(0xFF6979F8),
+                  ), // Sử dụng màu theo giao diện mẫu
                 ],
               ),
             ),
@@ -145,20 +167,26 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   Widget _buildTextArea(DynamicFormModel component) {
-
     final style = Map<String, dynamic>.from(component.style);
 
     if (component.variants != null) {
-      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+      if (component.config['label'] != null &&
+          component.variants!.containsKey('withLabel')) {
+        final variantStyle =
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
-        final variantStyle = component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+      if (component.config['value'] != null &&
+          component.variants!.containsKey('withLabelValue')) {
+        final variantStyle =
+            component.variants!['withLabelValue']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['value'] != null && component.variants!.containsKey('withValue')) {
-        final variantStyle = component.variants!['withValue']['style'] as Map<String, dynamic>?;
+      if (component.config['value'] != null &&
+          component.variants!.containsKey('withValue')) {
+        final variantStyle =
+            component.variants!['withValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -176,11 +204,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       }
     }
 
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
-
 
     //final helperText = style['helperText']?.toString();
     final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
@@ -210,52 +239,73 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 controller: _controller,
                 focusNode: _focusNode,
                 enabled: component.config['editable'] ?? true,
-                obscureText: component.inputTypes?.containsKey('password') ?? false,
+                obscureText:
+                    component.inputTypes?.containsKey('password') ?? false,
                 keyboardType: _getKeyboardType(component),
-                maxLines: (style['maxLines'] is num) ? (style['maxLines'] as num).toInt() : 10,
-                minLines: (style['minLines'] is num) ? (style['minLines'] as num).toInt() : 6,
+                maxLines: (style['maxLines'] is num)
+                    ? (style['maxLines'] as num).toInt()
+                    : 10,
+                minLines: (style['minLines'] is num)
+                    ? (style['minLines'] as num).toInt()
+                    : 6,
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: component.config['placeholder'] ?? '',
                   border: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 1,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 2,
                     ),
                   ),
                   errorBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: const BorderSide(color: Colors.red, width: 2),
                   ),
                   errorText: null,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 12,
+                  ),
                   filled: style['backgroundColor'] != null,
                   fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                  helperText: _errorText, // Đảm bảo helperText hiển thị _errorText
+                  helperText:
+                      _errorText, // Đảm bảo helperText hiển thị _errorText
                   helperStyle: TextStyle(
                     color: helperTextColor,
-                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                    fontStyle: style['fontStyle'] == 'italic'
+                        ? FontStyle.italic
+                        : FontStyle.normal,
                   ),
                 ),
                 style: TextStyle(
                   fontSize: style['fontSize']?.toDouble() ?? 16,
                   color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                  fontStyle: style['fontStyle'] == 'italic'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -264,15 +314,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 },
               ),
               if (_errorText != null)
-                Positioned( //
+                Positioned(
+                  //
                   right: 10,
                   bottom: 0,
                   child: Text(
                     '$_errorText (Now ${value.length - 100})',
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
             ],
@@ -573,8 +621,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return Icons.restaurant;
       case 'sports':
         return Icons.sports_soccer;
-      case 'music':
-        return Icons.music_note;
       case 'movie':
         return Icons.movie;
       case 'book':
@@ -591,6 +637,20 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return Icons.directions_bike;
       case 'walk':
         return Icons.directions_walk;
+      case 'settings':
+        return Icons.settings;
+      case 'logout':
+        return Icons.logout;
+      case 'bell':
+        return Icons.notifications;
+      case 'more_horiz':
+        return Icons.more_horiz;
+      case 'edit':
+        return Icons.edit;
+      case 'delete':
+        return Icons.delete;
+      case 'share':
+        return Icons.share;
       default:
         return null;
     }
@@ -1281,5 +1341,379 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         ],
       ),
     );
+  }
+
+  Widget _buildDropdown(DynamicFormModel component) {
+    final style = Map<String, dynamic>.from(component.style);
+    final config = component.config;
+    final triggerAvatar = config['avatar'] as String?;
+    final triggerIcon = config['icon'] as String?;
+    final isSearchable = config['searchable'] as bool? ?? false;
+    final placeholder = config['placeholder'] as String? ?? 'Search';
+
+    // Apply variant styles
+    if (component.variants != null) {
+      if (triggerAvatar != null &&
+          component.variants!.containsKey('withAvatar')) {
+        final variantStyle =
+            component.variants!['withAvatar']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (triggerIcon != null &&
+          _currentDropdownLabel == null &&
+          component.variants!.containsKey('iconOnly')) {
+        final variantStyle =
+            component.variants!['iconOnly']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (triggerIcon != null &&
+          _currentDropdownLabel != null &&
+          component.variants!.containsKey('withIcon')) {
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
+
+    // Determine current state
+    final validationError = _validateDropdown(component, _selectedActionId);
+    if (_isTouched) {
+      _dropdownErrorText = validationError;
+    }
+
+    String currentState = 'base';
+    if (_isTouched && _dropdownErrorText != null) {
+      currentState = 'error';
+    } else if (_selectedActionId != null &&
+        component.states!.containsKey('success')) {
+      currentState = 'success';
+    } else if (_isHovering) {
+      currentState = 'hover';
+    }
+
+    // Apply state styles
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
+
+    final String? helperText =
+        _dropdownErrorText ?? style['helperText'] as String?;
+    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+
+    // This key will be used to position the dropdown overlay.
+    final GlobalKey dropdownKey = GlobalKey();
+
+    Widget triggerContent;
+    if (isSearchable) {
+      triggerContent = Row(
+        children: [
+          Expanded(
+            child: Text(
+              placeholder,
+              style: TextStyle(color: StyleUtils.parseColor(style['color'])),
+            ),
+          ),
+          Icon(Icons.search, color: StyleUtils.parseColor(style['iconColor'])),
+        ],
+      );
+    } else if (triggerIcon != null && _currentDropdownLabel == null) {
+      // Icon-only trigger
+      triggerContent = Icon(
+        _mapIconNameToIconData(triggerIcon),
+        color: StyleUtils.parseColor(style['iconColor']),
+        size: (style['iconSize'] as num?)?.toDouble() ?? 24.0,
+      );
+    } else {
+      triggerContent = Row(
+        children: [
+          if (triggerIcon != null) ...[
+            Icon(
+              _mapIconNameToIconData(triggerIcon),
+              color: StyleUtils.parseColor(style['iconColor']),
+              size: (style['iconSize'] as num?)?.toDouble() ?? 18.0,
+            ),
+            const SizedBox(width: 8),
+          ],
+          if (triggerAvatar != null) ...[
+            CircleAvatar(
+              backgroundImage: NetworkImage(triggerAvatar),
+              radius: 16,
+            ),
+            const SizedBox(width: 8),
+          ],
+          if (_currentDropdownLabel != null)
+            Expanded(
+              child: Text(
+                _currentDropdownLabel!,
+                style: TextStyle(color: StyleUtils.parseColor(style['color'])),
+              ),
+            ),
+          const Icon(Icons.keyboard_arrow_down),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovering = true),
+          onExit: (_) => setState(() => _isHovering = false),
+          child: InkWell(
+            key: dropdownKey,
+            onTap: () {
+              // Find the render box and position of the trigger widget.
+              final renderBox =
+                  dropdownKey.currentContext!.findRenderObject() as RenderBox;
+              final size = renderBox.size;
+              final offset = renderBox.localToGlobal(Offset.zero);
+
+              // Show the dropdown panel as an overlay.
+              showDropdownPanel(
+                context,
+                component,
+                Rect.fromLTWH(
+                  offset.dx,
+                  offset.dy + size.height,
+                  size.width,
+                  0,
+                ),
+              );
+            },
+            child: Container(
+              padding:
+                  StyleUtils.parsePadding(style['padding']) ??
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              margin: StyleUtils.parsePadding(style['margin']),
+              decoration: BoxDecoration(
+                color: StyleUtils.parseColor(style['backgroundColor']),
+                border: Border.all(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                  width: (style['borderWidth'] as num? ?? 1.0).toDouble(),
+                ),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
+              ),
+              child: triggerContent,
+            ),
+          ),
+        ),
+        if (helperText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 16),
+            child: Text(
+              helperText,
+              style: TextStyle(color: helperTextColor, fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void showDropdownPanel(
+    BuildContext context,
+    DynamicFormModel component,
+    Rect rect,
+  ) {
+    final items = component.config['items'] as List<dynamic>? ?? [];
+    final style = component.style;
+    final isSearchable = component.config['searchable'] as bool? ?? false;
+    final dropdownWidth =
+        (style['dropdownWidth'] as num?)?.toDouble() ?? rect.width;
+
+    OverlayEntry? overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) {
+        List<dynamic> filteredItems = List.from(items);
+        String searchQuery = '';
+        final searchController = TextEditingController();
+
+        return StatefulBuilder(
+          builder: (context, setPanelState) {
+            return Stack(
+              children: [
+                // Full screen GestureDetector to dismiss the dropdown.
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => overlayEntry?.remove(),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+                // The dropdown panel itself.
+                Positioned(
+                  top: rect.top,
+                  left: rect.left,
+                  width: dropdownWidth,
+                  child: Material(
+                    elevation: 4.0,
+                    color: StyleUtils.parseColor(
+                      style['dropdownBackgroundColor'],
+                    ),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shrinkWrap: true,
+                      itemCount: filteredItems.length + (isSearchable ? 1 : 0),
+                      separatorBuilder: (context, index) {
+                        // This logic handles separators for both searchable and non-searchable lists.
+                        final itemIndex = isSearchable ? index - 1 : index;
+                        if (itemIndex < 0 ||
+                            itemIndex >= filteredItems.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final item = filteredItems[itemIndex];
+                        final nextItem = (itemIndex + 1 < filteredItems.length)
+                            ? filteredItems[itemIndex + 1]
+                            : null;
+                        if (item['type'] == 'divider' ||
+                            nextItem?['type'] == 'divider') {
+                          return const SizedBox.shrink();
+                        }
+                        return const Divider(
+                          color: Colors.transparent,
+                          height: 1,
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        if (isSearchable && index == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: TextField(
+                              controller: searchController,
+                              decoration: InputDecoration(
+                                hintText: component.config['placeholder'],
+                                isDense: true,
+                                suffixIcon: const Icon(Icons.search),
+                              ),
+                              onChanged: (value) {
+                                setPanelState(() {
+                                  searchQuery = value.toLowerCase();
+                                  filteredItems = items.where((item) {
+                                    final label =
+                                        item['label']
+                                            ?.toString()
+                                            .toLowerCase() ??
+                                        '';
+                                    if (item['type'] == 'divider') return true;
+                                    return label.contains(searchQuery);
+                                  }).toList();
+                                });
+                              },
+                            ),
+                          );
+                        }
+
+                        final item =
+                            filteredItems[isSearchable ? index - 1 : index];
+                        final itemType = item['type'] as String? ?? 'item';
+
+                        if (itemType == 'divider') {
+                          return Divider(
+                            color: StyleUtils.parseColor(style['dividerColor']),
+                            height: 1,
+                          );
+                        }
+
+                        final label = item['label'] as String? ?? '';
+                        final iconName = item['icon'] as String?;
+                        final avatarUrl = item['avatar'] as String?;
+                        final itemStyle =
+                            item['style'] as Map<String, dynamic>? ?? {};
+
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isTouched = true;
+                              _selectedActionId = item['id'];
+                              _dropdownErrorText = _validateDropdown(
+                                component,
+                                _selectedActionId,
+                              );
+
+                              // Update trigger label unless it's a special display type
+                              final bool isIconOnly =
+                                  component.config['icon'] != null &&
+                                  component.config['label'] == null;
+                              final bool hasAvatar =
+                                  component.config['avatar'] != null;
+
+                              if (!isIconOnly && !hasAvatar) {
+                                _currentDropdownLabel = item['label'];
+                              }
+                            });
+                            overlayEntry?.remove();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
+                            child: Row(
+                              children: [
+                                if (avatarUrl != null) ...[
+                                  CircleAvatar(
+                                    backgroundImage: NetworkImage(avatarUrl),
+                                    radius: 16,
+                                  ),
+                                  const SizedBox(width: 12),
+                                ] else if (iconName != null) ...[
+                                  Icon(
+                                    _mapIconNameToIconData(iconName),
+                                    color: StyleUtils.parseColor(
+                                      itemStyle['color'] ?? style['color'],
+                                    ),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 12),
+                                ],
+                                Expanded(
+                                  child: Text(
+                                    label,
+                                    style: TextStyle(
+                                      color: StyleUtils.parseColor(
+                                        itemStyle['color'] ?? style['color'],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  String? _validateDropdown(DynamicFormModel component, String? selectedId) {
+    final validationConfig = component.validation;
+    if (validationConfig == null) return null;
+
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
+    if (requiredValidation?['isRequired'] == true &&
+        (selectedId == null || selectedId.isEmpty)) {
+      return requiredValidation?['error_message'] as String? ??
+          'This field is required.';
+    }
+
+    return null;
   }
 }
