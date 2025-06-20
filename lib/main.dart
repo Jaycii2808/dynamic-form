@@ -61,7 +61,8 @@ class HomeScreen extends StatelessWidget {
       'datetime_picker_form',
       'dropdown_input',
       'selector_component',
-      'switch_component'
+      'switch_component',
+      'textfield_tags_component'
     ];
 
     return Scaffold(
