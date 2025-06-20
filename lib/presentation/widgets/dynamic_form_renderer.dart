@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
 
@@ -70,9 +70,72 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildDateTimePickerForm(component);
       case 'dropdown':
         return _buildDropdown(component);
+      case 'selector':
+        return _buildSelector(component);
       default:
         return _buildContainer();
     }
+  }
+  Widget _buildSelector(DynamicFormModel component) {
+    final style = Map<String, dynamic>.from(component.style);
+    final config = component.config;
+    final hasLabel = config['label'] != null && config['label'].isNotEmpty;
+    final selected = config['selected'] ?? false;
+
+    // Apply variant styles
+    if (component.variants != null) {
+      if (hasLabel && component.variants!.containsKey('withLabel')) {
+        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (!hasLabel && component.variants!.containsKey('withoutLabel')) {
+        final variantStyle = component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
+
+    // Determine current state
+    String currentState = 'base';
+    if (selected) currentState = 'success';
+
+    if (component.states != null && component.states!.containsKey(currentState)) {
+      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
+
+    return Container(
+      key: Key(component.id),
+      padding: StyleUtils.parsePadding(style['padding']),
+      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            component.config['selected'] = !selected;
+          });
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              selected ? 'assets/svg/Active.svg' : 'assets/svg/Inactive.svg',
+              width: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
+              height: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
+            ),
+            if (hasLabel)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  config['label'],
+                  style: TextStyle(
+                    fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                    color: StyleUtils.parseColor(style['labelColor'] ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
   Widget _buildDateTimePickerForm(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
