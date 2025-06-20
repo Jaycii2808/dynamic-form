@@ -9,6 +9,7 @@ class DynamicFormModel extends Equatable {
   final Map<String, dynamic>? inputTypes;
   final Map<String, dynamic>? variants;
   final Map<String, dynamic>? states;
+  final Map<String, dynamic>? validation;
   final List<DynamicFormModel>? children;
 
   const DynamicFormModel({
@@ -20,6 +21,7 @@ class DynamicFormModel extends Equatable {
     this.inputTypes,
     this.variants,
     this.states,
+    this.validation,
     this.children,
   });
 
@@ -33,6 +35,7 @@ class DynamicFormModel extends Equatable {
       inputTypes: json['inputTypes'],
       variants: json['variants'],
       states: json['states'],
+      validation: json['validation'],
       children: json['children'] != null
           ? List<DynamicFormModel>.from(
               json['children'].map((x) => DynamicFormModel.fromJson(x)),
@@ -51,6 +54,7 @@ class DynamicFormModel extends Equatable {
     inputTypes,
     variants,
     states,
+    validation,
     children,
   ];
 
@@ -64,6 +68,7 @@ class DynamicFormModel extends Equatable {
       if (inputTypes != null) 'inputTypes': inputTypes,
       if (variants != null) 'variants': variants,
       if (states != null) 'states': states,
+      if (validation != null) 'validation': validation,
       if (children != null)
         'children': children!.map((c) => c.toJson()).toList(),
     };

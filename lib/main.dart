@@ -42,7 +42,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)
-    final configKeys = ['text_input_screen','text_input_screen'];
+    final configKeys = ['text_input_screen', 'select_input'];
 
     return Scaffold(
       appBar: AppBar(

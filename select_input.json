@@ -1,0 +1,537 @@
+{
+   "title": "Select Input Variants & States Demo",
+   "components": [
+      {
+         "id": "select_normal",
+         "type": "select",
+         "config": {
+            "label": "Normal Select",
+            "placeholder": "Chọn một tùy chọn",
+            "isRequired": false,
+            "height": 150,
+            "options": [
+               { "value": "option1", "label": "Tùy chọn 1" },
+               { "value": "option2", "label": "Tùy chọn 2" },
+               { "value": "option3", "label": "Tùy chọn 3" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "normal": { "style": {} }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn một tùy chọn",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Đã chọn thành công",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Trường này là bắt buộc"
+            }
+         }
+      },
+      {
+         "id": "select_with_icon",
+         "type": "select",
+         "config": {
+            "label": "Select with Icon",
+            "placeholder": "Chọn một tùy chọn",
+            "icon": "chevron-down",
+            "height": 150,
+            "isRequired": false,
+            "options": [
+               { "value": "option1", "label": "Tùy chọn 1" },
+               { "value": "option2", "label": "Tùy chọn 2" },
+               { "value": "option3", "label": "Tùy chọn 3" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withIcon": {
+               "style": {
+                  "iconPosition": "right",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn một tùy chọn",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Đã chọn thành công",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Trường này là bắt buộc"
+            }
+         }
+      },
+      {
+         "id": "select_with_label",
+         "type": "select",
+         "config": {
+            "label": "Chọn loại tài khoản",
+            "placeholder": "Chọn một tùy chọn",
+            "isRequired": false,
+            "height": "auto",
+            "options": [
+               { "value": "personal", "label": "Tài khoản cá nhân" },
+               { "value": "business", "label": "Tài khoản doanh nghiệp" },
+               { "value": "premium", "label": "Tài khoản cao cấp" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000",
+            "labelColor": "#3b82f6",
+            "labelTextSize": 14
+         },
+         "variants": {},
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn loại tài khoản",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Loại tài khoản đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn loại tài khoản"
+            }
+         }
+      },
+      {
+         "id": "select_with_icon_label",
+         "type": "select",
+         "config": {
+            "label": "Chọn quốc gia",
+            "placeholder": "Chọn quốc gia của bạn",
+            "icon": "globe",
+            "isRequired": false,
+            "height": "auto",
+            "options": [
+               { "value": "vn", "label": "Việt Nam" },
+               { "value": "us", "label": "Hoa Kỳ" },
+               { "value": "jp", "label": "Nhật Bản" },
+               { "value": "kr", "label": "Hàn Quốc" },
+               { "value": "cn", "label": "Trung Quốc" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000",
+            "labelColor": "#3b82f6",
+            "labelTextSize": 14,
+            "iconPosition": "left",
+            "iconSize": 18,
+            "iconColor": "#ffffff"
+         },
+         "variants": {},
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn quốc gia",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Quốc gia đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn quốc gia"
+            }
+         }
+      },
+      {
+         "id": "select_multiple",
+         "type": "select",
+         "config": {
+            "label": "Chọn nhiều sở thích",
+            "placeholder": "Chọn các sở thích của bạn",
+            "icon": "heart",
+            "isRequired": false,
+            "multiple": true,
+            "options": [
+               { "value": "reading", "label": "Đọc sách" },
+               { "value": "music", "label": "Âm nhạc" },
+               { "value": "sports", "label": "Thể thao" },
+               { "value": "travel", "label": "Du lịch" },
+               { "value": "cooking", "label": "Nấu ăn" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            },
+            "multiple": {
+               "style": {
+                  "maxSelections": 3,
+                  "selectionDisplay": "chips"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn ít nhất một sở thích",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Sở thích đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn ít nhất một sở thích"
+            },
+            "maxSelections": {
+               "max": 3,
+               "error_message": "Chỉ được chọn tối đa 3 sở thích"
+            }
+         }
+      },
+      {
+         "id": "select_searchable",
+         "type": "select",
+         "config": {
+            "label": "Tìm kiếm thành phố",
+            "placeholder": "Nhập để tìm kiếm thành phố",
+            "icon": "search",
+            "isRequired": false,
+            "searchable": true,
+            "options": [
+               { "value": "hanoi", "label": "Hà Nội" },
+               { "value": "hcm", "label": "TP. Hồ Chí Minh" },
+               { "value": "danang", "label": "Đà Nẵng" },
+               { "value": "haiphong", "label": "Hải Phòng" },
+               { "value": "cantho", "label": "Cần Thơ" },
+               { "value": "nhatrang", "label": "Nha Trang" },
+               { "value": "dalat", "label": "Đà Lạt" },
+               { "value": "vungtau", "label": "Vũng Tàu" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            },
+            "searchable": {
+               "style": {
+                  "searchPlaceholder": "Tìm kiếm...",
+                  "noResultsText": "Không tìm thấy kết quả"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn một thành phố",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Thành phố đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn một thành phố"
+            }
+         }
+      },
+      {
+         "id": "select_user",
+         "type": "select",
+         "order": 1,
+         "config": {
+            "label": "Select User",
+            "height": "auto",
+            "options": [
+               {
+                  "value": "user1",
+                  "label": "Jocelyn Botos",
+                  "avatar": "https://randomuser.me/api/portraits/women/68.jpg"
+               },
+               {
+                  "value": "user2",
+                  "label": "John Doe",
+                  "avatar": "https://randomuser.me/api/portraits/men/1.jpg"
+               },
+               {
+                  "value": "user3",
+                  "label": "Jane Smith",
+                  "avatar": "https://randomuser.me/api/portraits/women/2.jpg"
+               }
+            ]
+         },
+         "style": {
+            "margin": "0 16px 16px 16px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "labelColor": "#e0e0e0",
+            "labelTextSize": 16
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "helperText": "Please select a user.",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": { "style": { "borderColor": "#00b96b" } }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "User selection is required."
+            }
+         }
+      },
+      {
+         "id": "select_date",
+         "type": "datepicker",
+         "order": 2,
+         "config": {
+            "label": "Select Date",
+            "placeholder": "Select a date range"
+         },
+         "style": {
+            "margin": "0 16px 16px 16px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "labelColor": "#e0e0e0",
+            "labelTextSize": 16,
+            "iconColor": "#e0e0e0"
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "helperText": "Please select a date range.",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": { "style": { "borderColor": "#00b96b" } }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Date range is required."
+            }
+         }
+      },
+      {
+         "id": "select_role",
+         "type": "select",
+         "order": 3,
+         "config": {
+            "label": "Select Role",
+            "height": "auto",
+            "icon": "user",
+            "options": [
+               { "value": "admin", "label": "Administrator" },
+               { "value": "editor", "label": "Editor" },
+               { "value": "viewer", "label": "Viewer" }
+            ]
+         },
+         "style": {
+            "margin": "0 16px 16px 16px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "labelColor": "#e0e0e0",
+            "labelTextSize": 16,
+            "iconColor": "#e0e0e0",
+            "iconPosition": "left"
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "helperText": "Please select a role.",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": { "style": { "borderColor": "#00b96b" } }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Role selection is required."
+            }
+         }
+      }
+   ]
+}
