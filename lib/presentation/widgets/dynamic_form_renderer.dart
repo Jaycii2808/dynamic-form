@@ -44,9 +44,89 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextField(component);
       case 'textarea':
         return _buildTextArea(component);
+      case 'datetime_picker':
+        return _buildDateTimePickerForm(component);
       default:
         return _buildContainer();
     }
+  }
+  Widget _buildDateTimePickerForm(DynamicFormModel component) {
+    final style = Map<String, dynamic>.from(component.style);
+    final value = component.config['value'] ?? DateTime.now().toString(); // Lấy giá trị mặc định từ config hoặc ngày hiện tại
+    String dateDisplay = value.contains('dd/mm/yyyy') ? 'dd/mm/yyyy' : value.split(' ')[0]; // Hiển thị định dạng hoặc giá trị hiện tại
+
+    Future<void> selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2016),
+        lastDate: DateTime(2030),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFF6979F8),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (picked != null) {
+        setState(() {
+          dateDisplay = "${picked.day}/${picked.month}/${picked.year}";
+          component.config['value'] = dateDisplay;
+        });
+      }
+    }
+
+    return Container(
+      key: Key(component.id),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      margin: StyleUtils.parsePadding(style['margin']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 7),
+              child: Text(
+                component.config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor']),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          GestureDetector(
+            onTap: () => selectDate(context),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border.all(color: StyleUtils.parseColor(style['borderColor'])),
+                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    dateDisplay,
+                    style: TextStyle(
+                      color: StyleUtils.parseColor(style['color']),
+                      fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                    ),
+                  ),
+                  const Icon(Icons.calendar_today, color: Color(0xFF6979F8)), // Sử dụng màu theo giao diện mẫu
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTextArea(DynamicFormModel component) {
@@ -87,7 +167,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
 
 
-    final helperText = style['helperText']?.toString();
+    //final helperText = style['helperText']?.toString();
     final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
     return Container(
