@@ -31,6 +31,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
+    _controller.text = widget.component.config['value'] ?? '';
   }
 
   @override
@@ -56,9 +57,229 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildSelect(component);
       case 'datepicker':
         return _buildDatePicker(component);
+      case 'textarea':
+        return _buildTextArea(component);
+      case 'datetime_picker':
+        return _buildDateTimePickerForm(component);
       default:
         return _buildContainer();
     }
+  }
+  Widget _buildDateTimePickerForm(DynamicFormModel component) {
+    final style = Map<String, dynamic>.from(component.style);
+    final value = component.config['value'] ?? DateTime.now().toString(); // Lấy giá trị mặc định từ config hoặc ngày hiện tại
+    String dateDisplay = value.contains('dd/mm/yyyy') ? 'dd/mm/yyyy' : value.split(' ')[0]; // Hiển thị định dạng hoặc giá trị hiện tại
+
+    Future<void> selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2016),
+        lastDate: DateTime(2030),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFF6979F8),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (picked != null) {
+        setState(() {
+          dateDisplay = "${picked.day}/${picked.month}/${picked.year}";
+          component.config['value'] = dateDisplay;
+        });
+      }
+    }
+
+    return Container(
+      key: Key(component.id),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      margin: StyleUtils.parsePadding(style['margin']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 7),
+              child: Text(
+                component.config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor']),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          GestureDetector(
+            onTap: () => selectDate(context),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border.all(color: StyleUtils.parseColor(style['borderColor'])),
+                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    dateDisplay,
+                    style: TextStyle(
+                      color: StyleUtils.parseColor(style['color']),
+                      fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                    ),
+                  ),
+                  const Icon(Icons.calendar_today, color: Color(0xFF6979F8)), // Sử dụng màu theo giao diện mẫu
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextArea(DynamicFormModel component) {
+
+    final style = Map<String, dynamic>.from(component.style);
+
+    if (component.variants != null) {
+      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
+        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
+        final variantStyle = component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (component.config['value'] != null && component.variants!.containsKey('withValue')) {
+        final variantStyle = component.variants!['withValue']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
+
+    String currentState = 'base';
+    final value = _controller.text;
+    if (value.isEmpty) {
+      currentState = 'base';
+    } else {
+      final validationError = _validate(component, value);
+      if (validationError != null) {
+        currentState = 'error';
+      } else {
+        currentState = 'success';
+      }
+    }
+
+    if (component.states != null && component.states!.containsKey(currentState)) {
+      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
+
+
+    //final helperText = style['helperText']?.toString();
+    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+
+    return Container(
+      key: Key(component.id),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      margin: StyleUtils.parsePadding(style['margin']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 7),
+              child: Text(
+                component.config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor']),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          Stack(
+            children: [
+              TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                enabled: component.config['editable'] ?? true,
+                obscureText: component.inputTypes?.containsKey('password') ?? false,
+                keyboardType: _getKeyboardType(component),
+                maxLines: (style['maxLines'] is num) ? (style['maxLines'] as num).toInt() : 10,
+                minLines: (style['minLines'] is num) ? (style['minLines'] as num).toInt() : 6,
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: component.config['placeholder'] ?? '',
+                  border: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                      width: style['borderWidth']?.toDouble() ?? 1,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                      width: style['borderWidth']?.toDouble() ?? 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                      width: style['borderWidth']?.toDouble() ?? 2,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
+                  ),
+                  errorText: null,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  filled: style['backgroundColor'] != null,
+                  fillColor: StyleUtils.parseColor(style['backgroundColor']),
+                  helperText: _errorText, // Đảm bảo helperText hiển thị _errorText
+                  helperStyle: TextStyle(
+                    color: helperTextColor,
+                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                  ),
+                ),
+                style: TextStyle(
+                  fontSize: style['fontSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['color']),
+                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _errorText = _validate(component, value);
+                  });
+                },
+              ),
+              if (_errorText != null)
+                Positioned( //
+                  right: 10,
+                  bottom: 0,
+                  child: Text(
+                    '$_errorText (Now ${value.length - 100})',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTextField(DynamicFormModel component) {
