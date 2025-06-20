@@ -60,7 +60,8 @@ class HomeScreen extends StatelessWidget {
       'text_area_form',
       'datetime_picker_form',
       'dropdown_input',
-      'selector_component'
+      'selector_component',
+      'switch_component'
     ];
 
     return Scaffold(
