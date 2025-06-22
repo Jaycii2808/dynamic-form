@@ -3,7 +3,6 @@ import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,24 +51,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _loadInitialConfig() async {
-    // To test a specific config, set its name here.
-    // Otherwise, it will load the one with order = 1.
-    // String initialConfigName = 'select_input.json';
-    // String initialConfigName = 'text_input.json';
-    // String initialConfigName = 'test_complete_ui.json';
-    String initialConfigName = 'filter_price.json';
-
-    try {
-      final String content = await rootBundle.loadString(
-        'assets/json_forms/$initialConfigName',
-      );
-      // ... existing code ...
-    } catch (e) {
-      // ... existing code ...
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)
@@ -82,6 +63,9 @@ class HomeScreen extends StatelessWidget {
       'checkbox_input',
       'radio_button',
       'filter_price',
+      'selector_component',
+      'switch_component',
+      'textfield_tags_component'
     ];
 
     return Scaffold(
