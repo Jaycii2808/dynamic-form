@@ -16,6 +16,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   String? _errorText;
   late FocusNode _focusNode;
   DateTimeRange? _selectedDateRange;
+  RangeValues? _sliderRangeValues;
+  double? _sliderValue;
 
   // Select input variables
   String? _selectedValue;
@@ -37,7 +39,24 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    _controller.text = widget.component.config['value'] ?? '';
+    final value = widget.component.config['value'];
+    final values = widget.component.config['values'];
+
+    if (value is String) {
+      _controller.text = value;
+    } else if (value is num) {
+      _sliderValue = value.toDouble();
+    } else {
+      _controller.text = '';
+    }
+
+    if (values is List) {
+      _sliderRangeValues = RangeValues(
+        values[0].toDouble(),
+        values[1].toDouble(),
+      );
+    }
+
     _currentDropdownLabel = widget.component.config['label'];
   }
 
@@ -70,6 +89,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildDateTimePickerForm(component);
       case 'dropdown':
         return _buildDropdown(component);
+      case 'checkbox_group':
+        return _buildCheckboxGroup(component);
+      case 'checkbox':
+        return _buildToggleableRow(component, isRadio: false);
+      case 'radio':
+        return _buildToggleableRow(component, isRadio: true);
+      case 'radio_group':
+        return _buildRadioGroup(component);
+      case 'slider':
+        return _buildSlider(component);
       default:
         return _buildContainer();
     }
@@ -658,18 +687,71 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildContainer() {
     final component = widget.component;
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'column';
+    final childrenWidgets =
+        component.children
+            ?.map(
+              (child) => Padding(
+                padding:
+                    StyleUtils.parsePadding(child.style['margin']) ??
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                child: DynamicFormRenderer(component: child),
+              ),
+            )
+            .toList() ??
+        [];
+
     return Container(
       key: Key(component.id),
       padding: StyleUtils.parsePadding(component.style['padding']),
       margin: StyleUtils.parsePadding(component.style['margin']),
       decoration: StyleUtils.buildBoxDecoration(component.style),
-      child: component.children != null
-          ? Column(
-              children: component.children!
-                  .map((child) => DynamicFormRenderer(component: child))
-                  .toList(),
-            )
-          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 4,
+                    height: 28,
+                    color: Color(0xFF6979F8),
+                    margin: const EdgeInsets.only(right: 8),
+                  ),
+                  Text(
+                    component.config['label'],
+                    style: const TextStyle(
+                      color: Color(0xFF6979F8),
+                      fontSize: 24,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (component.children != null && childrenWidgets.isNotEmpty)
+            layout == 'row'
+                ? SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: childrenWidgets,
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: childrenWidgets,
+                  ),
+        ],
+      ),
     );
   }
 
@@ -1296,7 +1378,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   Icon(
                     Icons.calendar_today,
                     color: StyleUtils.parseColor(style['iconColor']),
-                    size: (style['iconSize'] as num? ?? 20.0).toDouble(),
+                    size: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -1492,7 +1574,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 color: StyleUtils.parseColor(style['backgroundColor']),
                 border: Border.all(
                   color: StyleUtils.parseColor(style['borderColor']),
-                  width: (style['borderWidth'] as num? ?? 1.0).toDouble(),
+                  width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
                 ),
                 borderRadius: StyleUtils.parseBorderRadius(
                   style['borderRadius'],
@@ -1631,6 +1713,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
                         return InkWell(
                           onTap: () {
+                            // Log the tapped action
+                            debugPrint(
+                              "Dropdown Action Tapped: ID='${item['id']}', Label='${item['label']}'",
+                            );
+
                             setState(() {
                               _isTouched = true;
                               _selectedActionId = item['id'];
@@ -1645,9 +1732,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                                   component.config['label'] == null;
                               final bool hasAvatar =
                                   component.config['avatar'] != null;
+                              final items =
+                                  component.config['items'] as List<dynamic>? ??
+                                  [];
+                              final selectedItem = items.firstWhere(
+                                (i) => i['id'] == _selectedActionId,
+                                orElse: () => null,
+                              );
 
-                              if (!isIconOnly && !hasAvatar) {
-                                _currentDropdownLabel = item['label'];
+                              if (!isIconOnly &&
+                                  !hasAvatar &&
+                                  selectedItem != null) {
+                                _currentDropdownLabel = selectedItem['label'];
                               }
                             });
                             overlayEntry?.remove();
@@ -1715,5 +1811,777 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
 
     return null;
+  }
+
+  Widget _buildCheckboxGroup(DynamicFormModel component) {
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'row';
+    final groupStyle = Map<String, dynamic>.from(component.style);
+    final children = component.children ?? [];
+
+    final widgets = children.map((item) {
+      final style = {...groupStyle, ...item.style};
+      final isSelected = item.config['value'] == true;
+      final isEditable = item.config['editable'] != false;
+      final label = item.config['label'] as String?;
+      final hint = item.config['hint'] as String?;
+      final iconName = item.config['icon'] as String?;
+
+      Color bgColor =
+          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
+      Color borderColor =
+          StyleUtils.parseColor(style['borderColor']) ??
+          const Color(0xFF6979F8);
+      double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
+      Color iconColor =
+          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      double width = (style['width'] as num?)?.toDouble() ?? 40;
+      double height = (style['height'] as num?)?.toDouble() ?? 40;
+      EdgeInsetsGeometry margin =
+          StyleUtils.parsePadding(style['margin']) ??
+          const EdgeInsets.only(right: 16);
+
+      // Increase border width if selected to give visual feedback
+      if (isSelected) {
+        borderColor =
+            StyleUtils.parseColor(style['selectedBorderColor']) ??
+            const Color(0xFF6979F8);
+      }
+
+      // Disabled style
+      if (!isEditable) {
+        bgColor = StyleUtils.parseColor('#e0e0e0');
+        borderColor = StyleUtils.parseColor('#e0e0e0');
+        iconColor = StyleUtils.parseColor('#bdbdbd');
+      }
+
+      Widget? iconWidget;
+      if (iconName != null) {
+        final iconData = _mapIconNameToIconData(iconName);
+        if (iconData != null) {
+          iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
+        }
+      }
+
+      return InkWell(
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: isEditable
+            ? () {
+                setState(() {
+                  item.config['value'] = !isSelected;
+                });
+              }
+            : null,
+        child: Container(
+          margin: margin,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  border: isSelected || !isEditable
+                      ? null
+                      : Border.all(color: borderColor, width: 2),
+                  borderRadius: BorderRadius.circular(borderRadius),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (iconWidget != null)
+                      iconWidget, // Custom icon always visible
+                    if (isSelected)
+                      Icon(
+                        // Overlay checkmark
+                        Icons.check,
+                        color: iconColor,
+                        size: width * 0.6,
+                      ),
+                  ],
+                ),
+              ),
+              if (label != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isEditable ? Colors.white : Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              if (hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    hint,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+
+    return Container(
+      margin: StyleUtils.parsePadding(groupStyle['margin']),
+      padding: StyleUtils.parsePadding(groupStyle['padding']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 28,
+                    color: const Color(0xFF6979F8),
+                    margin: const EdgeInsets.only(right: 8),
+                  ),
+                  Text(
+                    component.config['label'],
+                    style: const TextStyle(
+                      color: Color(0xFF6979F8),
+                      fontSize: 24,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (component.config['hint'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 8),
+              child: Text(
+                component.config['hint'],
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          layout == 'row'
+              ? SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: widgets),
+                )
+              : Column(children: widgets),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(DynamicFormModel component) {
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'row';
+    final groupStyle = Map<String, dynamic>.from(component.style);
+    final children = component.children ?? [];
+    // Tìm group name
+    final groupName = component.config['group'] as String? ?? component.id;
+
+    final widgets = children.map((item) {
+      final style = {...groupStyle, ...item.style};
+      final isSelected = item.config['value'] == true;
+      final isEditable = item.config['editable'] != false;
+      final label = item.config['label'] as String?;
+      final hint = item.config['hint'] as String?;
+      final iconName = item.config['icon'] as String?;
+      final itemGroup = item.config['group'] as String? ?? groupName;
+
+      Color bgColor =
+          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
+      Color borderColor =
+          StyleUtils.parseColor(style['borderColor']) ??
+          const Color(0xFF6979F8);
+      double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 20;
+      double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 2;
+      Color iconColor =
+          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      double width = (style['width'] as num?)?.toDouble() ?? 40;
+      double height = (style['height'] as num?)?.toDouble() ?? 40;
+      EdgeInsetsGeometry margin =
+          StyleUtils.parsePadding(style['margin']) ??
+          const EdgeInsets.only(right: 16);
+
+      // Increase border width if selected to give visual feedback
+      if (isSelected) {
+        borderWidth += 2;
+      }
+
+      // Disabled style
+      if (!isEditable) {
+        bgColor = StyleUtils.parseColor('#e0e0e0');
+        borderColor = StyleUtils.parseColor('#e0e0e0');
+        iconColor = StyleUtils.parseColor('#bdbdbd');
+      }
+
+      Widget? iconWidget;
+      if (iconName != null) {
+        final iconData = _mapIconNameToIconData(iconName);
+        if (iconData != null) {
+          iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
+        }
+      }
+
+      return InkWell(
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: isEditable
+            ? () {
+                setState(() {
+                  // Unselect all in group
+                  for (final other in children) {
+                    final otherGroup =
+                        other.config['group'] as String? ?? groupName;
+                    if (otherGroup == itemGroup) {
+                      other.config['value'] = other.id == item.id;
+                    }
+                  }
+                });
+              }
+            : null,
+        child: Container(
+          margin: margin,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  border: Border.all(color: borderColor, width: borderWidth),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child:
+                      iconWidget ??
+                      (isSelected
+                          ? Container(
+                              width: width * 0.5,
+                              height: height * 0.5,
+                              decoration: BoxDecoration(
+                                color: iconColor,
+                                shape: BoxShape.circle,
+                              ),
+                            )
+                          : null),
+                ),
+              ),
+              if (label != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isEditable ? Colors.white : Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              if (hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    hint,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+
+    return Container(
+      margin: StyleUtils.parsePadding(groupStyle['margin']),
+      padding: StyleUtils.parsePadding(groupStyle['padding']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (component.config['label'] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 28,
+                    color: const Color(0xFF6979F8),
+                    margin: const EdgeInsets.only(right: 8),
+                  ),
+                  Text(
+                    component.config['label'],
+                    style: const TextStyle(
+                      color: Color(0xFF6979F8),
+                      fontSize: 24,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (component.config['hint'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 8),
+              child: Text(
+                component.config['hint'],
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          layout == 'row'
+              ? SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: widgets),
+                )
+              : Column(children: widgets),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleableRow(
+    DynamicFormModel component, {
+    required bool isRadio,
+  }) {
+    // 1. Resolve styles from component's style and states
+    Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+    final bool isSelected = component.config['value'] == true;
+    final bool isEditable = component.config['editable'] != false;
+
+    // Apply state-specific styles
+    String currentState = isSelected ? 'selected' : 'base';
+    if (!isEditable) {
+      // For disabled items, we don't use states, we just use the styles defined directly on the component.
+      // This is based on the new JSON structure.
+    } else if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) {
+        style.addAll(stateStyle);
+      }
+    }
+
+    // 2. Extract configuration
+    final String? label = component.config['label'];
+    final String? hint = component.config['hint'];
+    final String? iconName = component.config['icon'];
+    final IconData? leadingIconData = iconName != null
+        ? _mapIconNameToIconData(iconName)
+        : null;
+    final String? group = component.config['group'];
+
+    // 3. Define visual properties based on style
+    final Color backgroundColor =
+        StyleUtils.parseColor(style['backgroundColor']) ?? Colors.transparent;
+    final Color borderColor =
+        StyleUtils.parseColor(style['borderColor']) ?? const Color(0xFF9E9E9E);
+    final double borderWidth =
+        (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
+    final Color iconColor =
+        StyleUtils.parseColor(style['iconColor']) ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black);
+    final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
+    final double controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
+
+    final controlBorderRadius = isRadio
+        ? controlWidth / 2
+        : (StyleUtils.parseBorderRadius(
+                style['borderRadius'],
+              )?.resolve(TextDirection.ltr).topLeft.x ??
+              6);
+
+    // 4. Build the toggle control (the checkbox or radio button itself)
+    Widget toggleControl = Container(
+      width: controlWidth,
+      height: controlHeight,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(color: borderColor, width: borderWidth),
+        borderRadius: BorderRadius.circular(controlBorderRadius),
+      ),
+      child: isSelected
+          ? (isRadio
+                ? Center(
+                    child: Container(
+                      width: controlWidth * 0.5,
+                      height: controlHeight * 0.5,
+                      decoration: BoxDecoration(
+                        color: iconColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    Icons.check,
+                    color: iconColor,
+                    size: controlWidth * 0.75,
+                  ))
+          : null,
+    );
+
+    // 5. Build the label and hint text column
+    Widget? labelAndHint;
+    if (label != null) {
+      labelAndHint = Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                color:
+                    StyleUtils.parseColor(style['labelColor']) ??
+                    (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black),
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (hint != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  hint,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color:
+                        StyleUtils.parseColor(style['hintColor']) ??
+                        Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // 6. Handle tap gestures
+    void handleTap() {
+      if (!isEditable) return;
+
+      if (isRadio) {
+        if (group != null) {
+          final parent = context
+              .findAncestorWidgetOfExactType<DynamicFormRenderer>()
+              ?.component;
+          if (parent != null &&
+              parent.type == 'container' &&
+              parent.children != null) {
+            setState(() {
+              final isThisSelected = component.config['value'] == true;
+              // Allow toggling off if it's already selected
+              if (isThisSelected) {
+                component.config['value'] = false;
+              } else {
+                // Otherwise, select this and deselect others in the group
+                for (final sibling in parent.children!) {
+                  if (sibling.type == 'radio' &&
+                      sibling.config['group'] == group) {
+                    sibling.config['value'] = sibling.id == component.id;
+                  }
+                }
+              }
+            });
+          }
+        }
+      } else {
+        // Checkbox logic
+        setState(() {
+          component.config['value'] = !isSelected;
+        });
+      }
+    }
+
+    // 7. Assemble the final widget
+    return GestureDetector(
+      onTap: handleTap,
+      child: Container(
+        margin: StyleUtils.parsePadding(style['margin']),
+        padding:
+            StyleUtils.parsePadding(style['padding']) ??
+            const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            toggleControl,
+            const SizedBox(width: 12),
+            if (leadingIconData != null) ...[
+              Icon(
+                leadingIconData,
+                size: 20,
+                color: StyleUtils.parseColor(style['iconColor']),
+              ),
+              const SizedBox(width: 8),
+            ],
+            if (labelAndHint != null) labelAndHint,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlider(DynamicFormModel component) {
+    final style = Map<String, dynamic>.from(component.style);
+    final config = component.config;
+    final bool isRange = config['range'] == true;
+    final double min = (config['min'] as num?)?.toDouble() ?? 0;
+    final double max = (config['max'] as num?)?.toDouble() ?? 100;
+    final int? divisions = (config['divisions'] as num?)?.toInt();
+    final String prefix = config['prefix']?.toString() ?? '';
+
+    final sliderTheme = SliderTheme.of(context).copyWith(
+      activeTrackColor: StyleUtils.parseColor(style['activeColor']),
+      inactiveTrackColor: StyleUtils.parseColor(style['inactiveColor']),
+      thumbColor: StyleUtils.parseColor(style['thumbColor']),
+      overlayColor: StyleUtils.parseColor(
+        style['activeColor'],
+      )?.withOpacity(0.2),
+      trackHeight: 6.0,
+    );
+
+    final currentRangeValues = _sliderRangeValues ?? RangeValues(min, max);
+
+    return Container(
+      margin: StyleUtils.parsePadding(style['margin']),
+      child: SliderTheme(
+        data: sliderTheme.copyWith(
+          rangeThumbShape: _CustomRangeSliderThumbShape(
+            thumbRadius: 14,
+            valuePrefix: prefix,
+            values: currentRangeValues,
+            iconColor: StyleUtils.parseColor(style['thumbIconColor']),
+            labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+          ),
+          thumbShape: _CustomSliderThumbShape(
+            thumbRadius: 14,
+            valuePrefix: prefix,
+            value: _sliderValue ?? min,
+            iconColor: StyleUtils.parseColor(style['thumbIconColor']),
+            labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+          ),
+        ),
+        child: isRange
+            ? RangeSlider(
+                values: currentRangeValues,
+                min: min,
+                max: max,
+                divisions: divisions,
+                labels: RangeLabels(
+                  '$prefix${currentRangeValues.start.round()}',
+                  '$prefix${currentRangeValues.end.round()}',
+                ),
+                onChanged: (values) {
+                  setState(() {
+                    _sliderRangeValues = values;
+                  });
+                },
+              )
+            : Slider(
+                value: _sliderValue ?? min,
+                min: min,
+                max: max,
+                divisions: divisions,
+                label: '$prefix${_sliderValue?.round()}',
+                onChanged: (value) {
+                  setState(() {
+                    _sliderValue = value;
+                  });
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _CustomSliderThumbShape extends SliderComponentShape {
+  final double thumbRadius;
+  final String valuePrefix;
+  final double value;
+  final Color? iconColor;
+  final Color? labelColor;
+
+  _CustomSliderThumbShape({
+    this.thumbRadius = 14.0,
+    this.valuePrefix = '',
+    required this.value,
+    this.iconColor,
+    this.labelColor,
+  });
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(thumbRadius);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final Canvas canvas = context.canvas;
+
+    final paint = Paint()
+      ..color = sliderTheme.thumbColor ?? Colors.blue
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, thumbRadius, paint);
+
+    final icon = Icons.check;
+    final iconPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: thumbRadius * 1.2,
+          fontFamily: icon.fontFamily,
+          color: iconColor ?? sliderTheme.activeTrackColor,
+        ),
+      ),
+    );
+    iconPainter.layout();
+    iconPainter.paint(
+      canvas,
+      center - Offset(iconPainter.width / 2, iconPainter.height / 2),
+    );
+
+    final valueLabelPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        text: '$valuePrefix${value.round()}',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: labelColor ?? Colors.white,
+        ),
+      ),
+    );
+    valueLabelPainter.layout();
+    valueLabelPainter.paint(
+      canvas,
+      center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4),
+    );
+  }
+}
+
+class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
+  final double thumbRadius;
+  final String valuePrefix;
+  final RangeValues values;
+  final Color? iconColor;
+  final Color? labelColor;
+
+  _CustomRangeSliderThumbShape({
+    this.thumbRadius = 14.0,
+    this.valuePrefix = '',
+    required this.values,
+    this.iconColor,
+    this.labelColor,
+  });
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(thumbRadius);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    bool isDiscrete = false,
+    bool isEnabled = false,
+    bool isPressed = false,
+    bool isOnTop = false,
+    required SliderThemeData sliderTheme,
+    TextDirection? textDirection,
+    Thumb? thumb,
+  }) {
+    if (thumb == null) {
+      return;
+    }
+    final Canvas canvas = context.canvas;
+
+    final paint = Paint()
+      ..color = sliderTheme.thumbColor ?? Colors.blue
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, thumbRadius, paint);
+
+    final icon = Icons.check;
+    final iconPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontSize: thumbRadius * 1.2,
+          fontFamily: icon.fontFamily,
+          color: iconColor ?? sliderTheme.activeTrackColor,
+        ),
+      ),
+    );
+    iconPainter.layout();
+    iconPainter.paint(
+      canvas,
+      center - Offset(iconPainter.width / 2, iconPainter.height / 2),
+    );
+
+    final double value = thumb == Thumb.start ? values.start : values.end;
+    final valueLabelPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        text: '$valuePrefix${value.round()}',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: labelColor ?? Colors.white,
+        ),
+      ),
+    );
+    valueLabelPainter.layout();
+    valueLabelPainter.paint(
+      canvas,
+      center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4),
+    );
   }
 }

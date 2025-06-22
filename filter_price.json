@@ -1,0 +1,58 @@
+{
+   "id_form": "filter_price",
+   "title": "Price Filter",
+   "order": 1,
+   "components": [
+      {
+         "id": "price_filter_container",
+         "type": "container",
+         "config": {
+            "label": "Price filter"
+         },
+         "style": {
+            "margin": "16 16 0 16"
+         },
+         "children": [
+            {
+               "id": "price_range_slider",
+               "type": "slider",
+               "config": {
+                  "range": true,
+                  "min": 0,
+                  "max": 2000,
+                  "divisions": 100,
+                  "values": [262, 1043],
+                  "prefix": "$"
+               },
+               "style": {
+                  "activeColor": "#6979F8",
+                  "inactiveColor": "#BDBDBD",
+                  "thumbColor": "#FFFFFF",
+                  "thumbIconColor": "#6979F8",
+                  "valueLabelColor": "#FFFFFF",
+                  "margin": "16 0 48 0"
+               }
+            },
+            {
+               "id": "price_single_slider",
+               "type": "slider",
+               "config": {
+                  "range": false,
+                  "min": 0,
+                  "max": 2000,
+                  "divisions": 100,
+                  "value": 980,
+                  "prefix": "$"
+               },
+               "style": {
+                  "activeColor": "#6979F8",
+                  "inactiveColor": "#BDBDBD",
+                  "thumbColor": "#FFFFFF",
+                  "thumbIconColor": "#6979F8",
+                  "valueLabelColor": "#FFFFFF"
+               }
+            }
+         ]
+      }
+   ]
+}

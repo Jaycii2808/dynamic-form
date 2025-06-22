@@ -59,11 +59,28 @@ class DynamicFormModel extends Equatable {
   ];
 
   Map<String, dynamic> toJson() {
+    // Deep copy config để lấy giá trị hiện tại
+    Map<String, dynamic> deepCopyConfig(Map<String, dynamic> map) {
+      final result = <String, dynamic>{};
+      map.forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          result[key] = deepCopyConfig(value);
+        } else if (value is List) {
+          result[key] = value
+              .map((e) => e is Map<String, dynamic> ? deepCopyConfig(e) : e)
+              .toList();
+        } else {
+          result[key] = value;
+        }
+      });
+      return result;
+    }
+
     return {
       'id': id,
       'type': type,
       'order': order,
-      'config': config,
+      'config': deepCopyConfig(config),
       'style': style,
       if (inputTypes != null) 'inputTypes': inputTypes,
       if (variants != null) 'variants': variants,
