@@ -1,6 +1,8 @@
 import 'package:dynamic_form_bi/core/enum/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,85 +12,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-
-IconData? mapIconNameToIconData(String name) {
-  switch (name) {
-    case 'mail':
-      return Icons.mail;
-    case 'check':
-      return Icons.check;
-    case 'close':
-      return Icons.close;
-    case 'error':
-      return Icons.error;
-    case 'user':
-      return Icons.person;
-    case 'lock':
-      return Icons.lock;
-    case 'chevron-down':
-      return Icons.keyboard_arrow_down;
-    case 'chevron-up':
-      return Icons.keyboard_arrow_up;
-    case 'globe':
-      return Icons.language;
-    case 'heart':
-      return Icons.favorite;
-    case 'search':
-      return Icons.search;
-    case 'location':
-      return Icons.location_on;
-    case 'calendar':
-      return Icons.calendar_today;
-    case 'phone':
-      return Icons.phone;
-    case 'email':
-      return Icons.email;
-    case 'home':
-      return Icons.home;
-    case 'work':
-      return Icons.work;
-    case 'school':
-      return Icons.school;
-    case 'shopping':
-      return Icons.shopping_cart;
-    case 'food':
-      return Icons.restaurant;
-    case 'sports':
-      return Icons.sports_soccer;
-    case 'movie':
-      return Icons.movie;
-    case 'book':
-      return Icons.book;
-    case 'car':
-      return Icons.directions_car;
-    case 'plane':
-      return Icons.flight;
-    case 'train':
-      return Icons.train;
-    case 'bus':
-      return Icons.directions_bus;
-    case 'bike':
-      return Icons.directions_bike;
-    case 'walk':
-      return Icons.directions_walk;
-    case 'settings':
-      return Icons.settings;
-    case 'logout':
-      return Icons.logout;
-    case 'bell':
-      return Icons.notifications;
-    case 'more_horiz':
-      return Icons.more_horiz;
-    case 'edit':
-      return Icons.edit;
-    case 'delete':
-      return Icons.delete;
-    case 'share':
-      return Icons.share;
-    default:
-      return null;
-  }
-}
+import 'package:dynamic_form_bi/core/enum/icon_enum.dart';
 
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
@@ -174,39 +98,37 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
-return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-  listener: (context, state) {
-
-  },
-  builder: (context, state) {
-    return buildForm();
-  },
-);
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        return buildForm();
+      },
+    );
   }
-  
+
   Widget buildForm() {
     final component = widget.component;
     switch (FormTypeEnum.fromJson(component.type.toString())) {
-      case FormTypeEnum.textfield:
-        return _buildTextField(component,
-            onComplete: (value) {
-              //component.values = values;
-              //add bloc event -> current widget model -> parent widget model
-            }
+      case FormTypeEnum.textField:
+        return _buildTextField(
+          component,
+          // ,
+          // onComplete: (value) {
+          //   //component.values = values;
+          //   //add bloc event -> current widget model -> parent widget model
+          // }
         );
       case FormTypeEnum.select:
         return _buildSelect(component);
-      case FormTypeEnum.datepicker:
-        return _buildDatePicker(component);
-      case FormTypeEnum.textarea:
-        return _buildTextArea(component);
-      case FormTypeEnum.datetimePicker:
+      case FormTypeEnum.textArea:
+        return _buildtextArea(component);
+      case FormTypeEnum.dateTimePicker:
         return _buildDateTimePickerForm(component);
       case FormTypeEnum.dropdown:
         return _buildDropdown(component);
-      case FormTypeEnum.checkboxGroup:
+      case FormTypeEnum.checkBoxGroup:
         return _buildCheckboxGroup(component);
-      case FormTypeEnum.checkbox:
+      case FormTypeEnum.checkBox:
         return _buildToggleableRow(component, isRadio: false);
       case FormTypeEnum.radio:
         return _buildToggleableRow(component, isRadio: true);
@@ -218,7 +140,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
         return _buildSelector(component);
       case FormTypeEnum.switchComponent:
         return _buildSwitch(component);
-      case FormTypeEnum.textfieldTags:
+      case FormTypeEnum.textFieldTags:
         return _buildTextFieldTags(component);
       case FormTypeEnum.fileUploader:
         return _FileUploaderWidget(component: component);
@@ -401,8 +323,9 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                       },
                       onChanged: (value) {
                         debugPrint('OnChanged: Input changed to $value');
-                        if (_errorText != null)
+                        if (_errorText != null) {
                           setState(() => _errorText = null);
+                        }
                       },
                       decoration: InputDecoration(
                         hintText: placeholder,
@@ -872,7 +795,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
     );
   }
 
-  Widget _buildTextArea(DynamicFormModel component) {
+  Widget _buildtextArea(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
 
     if (component.variants != null) {
@@ -1086,7 +1009,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = mapIconNameToIconData(iconName);
+      final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -1293,9 +1216,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
         component.children
             ?.map(
               (child) => Padding(
-                padding:
-                    StyleUtils.parsePadding(child.style['margin']) ??
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                padding: StyleUtils.parsePadding(child.style['margin']),
                 child: DynamicFormRenderer(component: child),
               ),
             )
@@ -1320,7 +1241,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                   Container(
                     width: 4,
                     height: 28,
-                    color: Color(0xFF6979F8),
+                    color: const Color(0xFF6979F8),
                     margin: const EdgeInsets.only(right: 8),
                   ),
                   Text(
@@ -1421,7 +1342,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = mapIconNameToIconData(iconName);
+      final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -1436,7 +1357,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = mapIconNameToIconData(iconName);
+      final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
       if (iconData != null) {
         suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -1893,138 +1814,6 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
     return null;
   }
 
-  Widget _buildDatePicker(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-
-    // Determine current state
-    final validationError = _validateDatePicker(component, _selectedDateRange);
-    String currentState = 'base';
-
-    if (_isTouched && validationError != null) {
-      currentState = 'error';
-    } else if (_selectedDateRange != null && validationError == null) {
-      currentState = 'success';
-    }
-
-    // Apply state styles
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    // Helper text
-    final helperText = style['helperText']?.toString();
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
-
-    String displayText = config['placeholder'] ?? 'Select a date range';
-    if (_selectedDateRange != null) {
-      final start = _selectedDateRange!.start;
-      final end = _selectedDateRange!.end;
-      final startDate = '${start.toLocal()}'.split(' ')[0];
-      final endDate = '${end.toLocal()}'.split(' ')[0];
-      displayText = '$startDate - $endDate';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          InkWell(
-            onTap: () async {
-              final picked = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2101),
-                initialDateRange: _selectedDateRange,
-              );
-              setState(() {
-                _isTouched = true;
-                if (picked != null) {
-                  _selectedDateRange = picked;
-                }
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                ),
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                color: StyleUtils.parseColor(style['backgroundColor']),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today,
-                    color: StyleUtils.parseColor(style['iconColor']),
-                    size: (style['iconSize'] as num? ?? 20.0).toDouble(),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      displayText,
-                      style: TextStyle(
-                        fontSize: style['fontSize']?.toDouble() ?? 16,
-                        color: StyleUtils.parseColor(style['color']),
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: StyleUtils.parseColor(style['color']),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isTouched && validationError != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                validationError,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
-          if (helperText != null && !(_isTouched && validationError != null))
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                helperText,
-                style: TextStyle(
-                  color: helperTextColor,
-                  fontSize: 12,
-                  fontStyle: style['fontStyle'] == 'italic'
-                      ? FontStyle.italic
-                      : FontStyle.normal,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDropdown(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
@@ -2104,7 +1893,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
     } else if (triggerIcon != null && _currentDropdownLabel == null) {
       // Icon-only trigger
       triggerContent = Icon(
-        mapIconNameToIconData(triggerIcon),
+        IconEnum.fromJson(triggerIcon)?.mapToIconData(),
         color: StyleUtils.parseColor(style['iconColor']),
         size: (style['iconSize'] as num?)?.toDouble() ?? 24.0,
       );
@@ -2113,7 +1902,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
         children: [
           if (triggerIcon != null) ...[
             Icon(
-              mapIconNameToIconData(triggerIcon),
+              IconEnum.fromJson(triggerIcon)?.mapToIconData(),
               color: StyleUtils.parseColor(style['iconColor']),
               size: (style['iconSize'] as num?)?.toDouble() ?? 18.0,
             ),
@@ -2361,7 +2150,9 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                                   const SizedBox(width: 12),
                                 ] else if (iconName != null) ...[
                                   Icon(
-                                    mapIconNameToIconData(iconName),
+                                    IconEnum.fromJson(
+                                      iconName,
+                                    )?.mapToIconData(),
                                     color: StyleUtils.parseColor(
                                       itemStyle['color'] ?? style['color'],
                                     ),
@@ -2425,25 +2216,17 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       final hint = item.config['hint'] as String?;
       final iconName = item.config['icon'] as String?;
 
-      Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
-      Color borderColor =
-          StyleUtils.parseColor(style['borderColor']) ??
-          const Color(0xFF6979F8);
+      Color bgColor = StyleUtils.parseColor(style['backgroundColor']);
+      Color borderColor = StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
-      Color iconColor =
-          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      Color iconColor = StyleUtils.parseColor(style['iconColor']);
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
-      EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ??
-          const EdgeInsets.only(right: 16);
+      EdgeInsetsGeometry margin = StyleUtils.parsePadding(style['margin']);
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
-        borderColor =
-            StyleUtils.parseColor(style['selectedBorderColor']) ??
-            const Color(0xFF6979F8);
+        borderColor = StyleUtils.parseColor(style['selectedBorderColor']);
       }
 
       // Disabled style
@@ -2455,7 +2238,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
 
       Widget? iconWidget;
       if (iconName != null) {
-        final iconData = mapIconNameToIconData(iconName);
+        final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
         if (iconData != null) {
           iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
         }
@@ -2516,7 +2299,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     hint,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
@@ -2598,20 +2381,14 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       final iconName = item.config['icon'] as String?;
       final itemGroup = item.config['group'] as String? ?? groupName;
 
-      Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
-      Color borderColor =
-          StyleUtils.parseColor(style['borderColor']) ??
-          const Color(0xFF6979F8);
+      Color bgColor = StyleUtils.parseColor(style['backgroundColor']);
+      Color borderColor = StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 20;
       double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 2;
-      Color iconColor =
-          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+      Color iconColor = StyleUtils.parseColor(style['iconColor']);
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
-      EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ??
-          const EdgeInsets.only(right: 16);
+      EdgeInsetsGeometry margin = StyleUtils.parsePadding(style['margin']);
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
@@ -2627,7 +2404,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
 
       Widget? iconWidget;
       if (iconName != null) {
-        final iconData = mapIconNameToIconData(iconName);
+        final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
         if (iconData != null) {
           iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
         }
@@ -2693,7 +2470,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     hint,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
@@ -2786,33 +2563,28 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
     final String? hint = component.config['hint'];
     final String? iconName = component.config['icon'];
     final IconData? leadingIconData = iconName != null
-        ? mapIconNameToIconData(iconName)
+        ? IconEnum.fromJson(iconName)?.mapToIconData()
         : null;
     final String? group = component.config['group'];
 
     // 3. Define visual properties based on style
-    final Color backgroundColor =
-        StyleUtils.parseColor(style['backgroundColor']) ?? Colors.transparent;
-    final Color borderColor =
-        StyleUtils.parseColor(style['borderColor']) ?? const Color(0xFF9E9E9E);
+    final Color backgroundColor = StyleUtils.parseColor(
+      style['backgroundColor'],
+    );
+    final Color borderColor = StyleUtils.parseColor(style['borderColor']);
     final double borderWidth =
         (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
-    final Color iconColor =
-        StyleUtils.parseColor(style['iconColor']) ??
-        (Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black);
+    final Color iconColor = StyleUtils.parseColor(style['iconColor']);
     final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
     final double controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
 
     final controlBorderRadius = isRadio
         ? controlWidth / 2
         : (StyleUtils.parseBorderRadius(
-                style['borderRadius'],
-              )?.resolve(TextDirection.ltr).topLeft.x ??
-              6);
+            style['borderRadius'],
+          ).resolve(TextDirection.ltr).topLeft.x);
 
-    // 4. Build the toggle control (the checkbox or radio button itself)
+    // 4. Build the toggle control (the checkBox or radio button itself)
     Widget toggleControl = Container(
       width: controlWidth,
       height: controlHeight,
@@ -2853,11 +2625,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
               label,
               style: TextStyle(
                 fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                color:
-                    StyleUtils.parseColor(style['labelColor']) ??
-                    (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black),
+                color: StyleUtils.parseColor(style['labelColor']),
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
@@ -2869,9 +2637,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
                   hint,
                   style: TextStyle(
                     fontSize: 12,
-                    color:
-                        StyleUtils.parseColor(style['hintColor']) ??
-                        Colors.grey,
+                    color: StyleUtils.parseColor(style['hintColor']),
                     fontStyle: FontStyle.italic,
                   ),
                   maxLines: 2,
@@ -2893,7 +2659,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
               .findAncestorWidgetOfExactType<DynamicFormRenderer>()
               ?.component;
           if (parent != null &&
-              parent.type == 'container' &&
+              parent.type == FormTypeEnum.container &&
               parent.children != null) {
             setState(() {
               final isThisSelected = component.config['value'] == true;
@@ -2903,7 +2669,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
               } else {
                 // Otherwise, select this and deselect others in the group
                 for (final sibling in parent.children!) {
-                  if (sibling.type == 'radio' &&
+                  if (sibling.type == FormTypeEnum.radio &&
                       sibling.config['group'] == group) {
                     sibling.config['value'] = sibling.id == component.id;
                   }
@@ -2925,9 +2691,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       onTap: handleTap,
       child: Container(
         margin: StyleUtils.parsePadding(style['margin']),
-        padding:
-            StyleUtils.parsePadding(style['padding']) ??
-            const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+        padding: StyleUtils.parsePadding(style['padding']),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -2981,7 +2745,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
     }
 
     final IconData? thumbIcon = thumbIconName != null
-        ? mapIconNameToIconData(thumbIconName)
+        ? IconEnum.fromJson(thumbIconName)?.mapToIconData()
         : null;
 
     final sliderTheme = SliderTheme.of(context).copyWith(
@@ -2990,7 +2754,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       thumbColor: StyleUtils.parseColor(style['thumbColor']),
       overlayColor: StyleUtils.parseColor(
         style['activeColor'],
-      )?.withOpacity(0.2),
+      ).withValues(alpha: 0.2),
       trackHeight: 6.0,
     );
 
@@ -3047,7 +2811,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
 
     Widget? iconWidget;
     if (iconName != null) {
-      final iconData = mapIconNameToIconData(iconName);
+      final iconData = IconEnum.fromJson(iconName)?.mapToIconData();
       if (iconData != null) {
         iconWidget = Icon(
           iconData,
@@ -3074,8 +2838,7 @@ return BlocConsumer<DynamicFormBloc, DynamicFormState>(
               child: Text(
                 hint,
                 style: TextStyle(
-                  color:
-                      StyleUtils.parseColor(style['hintColor']) ?? Colors.grey,
+                  color: StyleUtils.parseColor(style['hintColor']),
                   fontSize: 12,
                 ),
               ),
@@ -3418,14 +3181,14 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     final config = {...baseConfig, ...variantConfig, ...stateConfig};
 
     return DragTarget<List<XFile>>(
-      onWillAccept: (data) {
+      onWillAcceptWithDetails: (data) {
         if (_isProcessing) return false;
         setState(() => _isDragging = true);
         return true;
       },
-      onAccept: (data) {
+      onAcceptWithDetails: (data) {
         setState(() => _isDragging = false);
-        _handleFiles(data);
+        _handleFiles(data as List<XFile>);
       },
       onLeave: (data) {
         setState(() => _isDragging = false);
@@ -3577,7 +3340,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               style: TextStyle(
                 color: StyleUtils.parseColor(
                   style['textColor'],
-                ).withOpacity(0.7),
+                ).withValues(alpha: 0.7),
                 fontSize: 12,
               ),
             ),
@@ -3588,7 +3351,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           style: ElevatedButton.styleFrom(
             backgroundColor: StyleUtils.parseColor(
               style['buttonBackgroundColor'],
-            ).withOpacity(0.5),
+            ).withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3733,9 +3496,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color:
-                      StyleUtils.parseColor(style['fileItemBackgroundColor']) ??
-                      Colors.grey[800],
+                  color: StyleUtils.parseColor(
+                    style['fileItemBackgroundColor'],
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -3790,7 +3553,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                                 style: TextStyle(
                                   color: StyleUtils.parseColor(
                                     style['textColor'],
-                                  )?.withOpacity(0.7),
+                                  ).withValues(alpha: 0.7),
                                   fontSize: 12,
                                 ),
                               );
@@ -3843,9 +3606,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             ElevatedButton(
               onPressed: _isProcessing ? null : _resetState,
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    StyleUtils.parseColor(style['removeAllButtonColor']) ??
-                    Colors.red,
+                backgroundColor: StyleUtils.parseColor(
+                  style['removeAllButtonColor'],
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                     (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3870,7 +3633,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
       final file = File(filePath);
       final size = await file.length();
       if (size < 1024) {
-        return '${size} B';
+        return '$size B';
       } else if (size < 1024 * 1024) {
         return '${(size / 1024).toStringAsFixed(1)} KB';
       } else {
@@ -3890,7 +3653,8 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
       children: [
         if (style['icon'] != null)
           Icon(
-            _mapIconNameToIconData(style['icon']),
+            IconEnum.fromJson(style['icon'])?.mapToIconData() ??
+                Icons.insert_drive_file_outlined,
             color: StyleUtils.parseColor(style['iconColor']),
             size: 48,
           ),
@@ -3933,7 +3697,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
       case 'error':
         return Icons.error_outline;
       default:
-        return mapIconNameToIconData(name);
+        return Icons.insert_drive_file_outlined;
     }
   }
 
