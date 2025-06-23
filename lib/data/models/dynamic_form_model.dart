@@ -1,8 +1,9 @@
+import 'package:dynamic_form_bi/core/enum/form_type_enum.dart';
 import 'package:equatable/equatable.dart';
 
 class DynamicFormModel extends Equatable {
   final String id;
-  final String type;
+  final FormTypeEnum type;
   final int order;
   final Map<String, dynamic> config;
   final Map<String, dynamic> style;
