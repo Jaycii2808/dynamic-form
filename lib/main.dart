@@ -1,6 +1,18 @@
+import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/firebase_options.dart';
+import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize Remote Config
+  await RemoteConfigService().initialize();
+
   runApp(const MyApp());
 }
 
@@ -10,52 +22,87 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Dynamic UI BI',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
+      ),
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  void _navigateToForm(BuildContext context, String configKey) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DynamicFormScreen(
+          configKey: configKey,
+          title: configKey.replaceAll('_', ' ').toUpperCase(),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Predefined remote config keys (extendable in future)
+    final configKeys = [
+      'text_input_screen',
+      'select_input',
+      'text_area_form',
+      'datetime_picker_form',
+      'dropdown_input',
+      'checkbox_input',
+      'radio_button',
+      'filter_price',
+      'selector_component',
+      'switch_component',
+      'textfield_tags_component',
+      'file_uploader',
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
-        title: Text(widget.title),
+        title: const Text('Dynamic Forms'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      body: ListView(
+        children: [
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: configKeys.length,
+            itemBuilder: (context, index) {
+              final configKey = configKeys[index];
+              return ListTile(
+                title: Text(
+                  configKey.replaceAll('_', ' ').toUpperCase(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DynamicFormScreen(
+                        configKey: configKey,
+                        title: configKey.replaceAll('_', ' ').toUpperCase(),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
     );
   }

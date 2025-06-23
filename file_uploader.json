@@ -1,0 +1,255 @@
+{
+   "id_form": "file_uploader_form",
+   "title": "File Uploader",
+   "order": 1,
+   "components": [
+      {
+         "id": "file_uploader_1",
+         "type": "file_uploader",
+         "config": {
+            "title": "Drop files or click to upload",
+            "buttonText": "Browse",
+            "allowedExtensions": ["jpg", "png", "pdf"]
+         },
+         "style": {
+            "width": 320,
+            "height": 200,
+            "backgroundColor": "#000000",
+            "borderColor": "#4A4A4A",
+            "borderRadius": 12,
+            "borderWidth": 1.5,
+            "borderStyle": "dashed",
+            "textColor": "#FFFFFF",
+            "buttonBackgroundColor": "#6979F8",
+            "buttonTextColor": "#FFFFFF",
+            "buttonBorderRadius": 8,
+            "margin": "16"
+         },
+         "variants": {
+            "dragging": {
+               "config": {
+                  "title": "Drop files here",
+                  "subtitle": "or"
+               },
+               "style": {
+                  "backgroundColor": "#1A1A1A",
+                  "borderColor": "#6979F8"
+               }
+            }
+         },
+         "states": {
+            "loading": {
+               "config": {
+                  "statusTextFormat": "Uploading {fileName} {progress}/{total}%",
+                  "subtitle": "very soon it's over",
+                  "buttonText": "Loading"
+               },
+               "style": {
+                  "icon": "file",
+                  "iconColor": "#FFFFFF",
+                  "progressColor": "#6979F8"
+               }
+            },
+            "success": {
+               "config": {
+                  "statusTextFormat": "{fileName} uploaded!",
+                  "buttonText": "Remove"
+               },
+               "style": {
+                  "icon": "check",
+                  "iconColor": "#27AE60"
+               }
+            },
+            "error": {
+               "config": {
+                  "statusText": "Upload failed. Please try again.",
+                  "buttonText": "Retry"
+               },
+               "style": {
+                  "icon": "error",
+                  "iconColor": "#E74C3C",
+                  "borderColor": "#E74C3C"
+               }
+            }
+         }
+      },
+      {
+         "id": "file_uploader_multiple",
+         "type": "file_uploader",
+         "config": {
+            "title": "Drop multiple files or click to upload",
+            "subtitle": "You can select multiple files at once",
+            "buttonText": "Browse Files",
+            "multipleFiles": true,
+            "allowedExtensions": [
+               "jpg",
+               "png",
+               "pdf",
+               "doc",
+               "docx",
+               "txt",
+               "jpeg",
+               "webp"
+            ]
+         },
+         "style": {
+            "width": 400,
+            "height": 300,
+            "backgroundColor": "#000000",
+            "borderColor": "#4A4A4A",
+            "borderRadius": 12,
+            "borderWidth": 1.5,
+            "borderStyle": "dashed",
+            "textColor": "#FFFFFF",
+            "buttonBackgroundColor": "#6979F8",
+            "buttonTextColor": "#FFFFFF",
+            "buttonBorderRadius": 8,
+            "fileItemBackgroundColor": "#2A2A2A",
+            "removeAllButtonColor": "#E74C3C",
+            "margin": "16"
+         },
+         "variants": {
+            "multipleFiles": {},
+            "dragging": {
+               "config": {
+                  "title": "Drop multiple files here",
+                  "subtitle": "or click to browse"
+               },
+               "style": {
+                  "backgroundColor": "#1A1A1A",
+                  "borderColor": "#6979F8"
+               }
+            }
+         },
+         "states": {
+            "loading": {
+               "config": {
+                  "statusTextFormat": "Uploading {fileName} {progress}/{total}%",
+                  "subtitle": "Processing multiple files...",
+                  "buttonText": "Loading"
+               },
+               "style": {
+                  "icon": "file",
+                  "iconColor": "#FFFFFF",
+                  "progressColor": "#6979F8"
+               }
+            },
+            "success": {
+               "config": {
+                  "statusTextFormat": "{fileName} uploaded successfully!",
+                  "addMoreButtonText": "Add More Files",
+                  "removeAllButtonText": "Remove All"
+               },
+               "style": {
+                  "icon": "check",
+                  "iconColor": "#27AE60"
+               }
+            },
+            "error": {
+               "config": {
+                  "statusText": "Some files failed to upload. Please try again.",
+                  "buttonText": "Retry"
+               },
+               "style": {
+                  "icon": "error",
+                  "iconColor": "#E74C3C",
+                  "borderColor": "#E74C3C"
+               }
+            }
+         }
+      },
+      {
+         "id": "file_uploader_compact",
+         "type": "file_uploader",
+         "config": {
+            "title": "Upload Avatar",
+            "buttonText": ""
+         },
+         "style": {
+            "width": 150,
+            "height": 150,
+            "backgroundColor": "#1A1A1A",
+            "borderColor": "#4A4A4A",
+            "borderRadius": 75,
+            "borderWidth": 2,
+            "borderStyle": "dashed",
+            "textColor": "#FFFFFF",
+            "icon": "user",
+            "iconColor": "#FFFFFF",
+            "iconSize": 48,
+            "margin": "16"
+         },
+         "variants": {
+            "dragging": {
+               "style": {
+                  "borderColor": "#6979F8",
+                  "backgroundColor": "#2C2C2C"
+               }
+            }
+         },
+         "states": {
+            "success": {
+               "config": {},
+               "style": {
+                  "icon": "check",
+                  "iconColor": "#27AE60"
+               }
+            }
+         }
+      },
+      {
+         "id": "file_uploader_with_preview",
+         "type": "file_uploader",
+         "config": {
+            "title": "Drop an image to preview",
+            "buttonText": "Upload Image",
+            "allowedExtensions": ["jpg", "png", "gif", "jpeg", "webp"]
+         },
+         "style": {
+            "width": 320,
+            "height": 200,
+            "backgroundColor": "#000000",
+            "borderColor": "#4A4A4A",
+            "borderRadius": 12,
+            "borderWidth": 1.5,
+            "borderStyle": "dashed",
+            "textColor": "#FFFFFF",
+            "buttonBackgroundColor": "#6979F8",
+            "buttonTextColor": "#FFFFFF",
+            "buttonBorderRadius": 8,
+            "margin": "16"
+         },
+         "variants": {
+            "withPreview": {},
+            "dragging": {
+               "config": {
+                  "title": "Drop image here"
+               },
+               "style": {
+                  "backgroundColor": "#1A1A1A",
+                  "borderColor": "#6979F8"
+               }
+            }
+         },
+         "states": {
+            "success": {
+               "config": {
+                  "buttonText": "Change Image"
+               },
+               "style": {}
+            },
+            "error": {
+               "config": {
+                  "statusText": "Upload failed. Not an image?",
+                  "buttonText": "Retry"
+               },
+               "style": {
+                  "icon": "error",
+                  "iconColor": "#E74C3C",
+                  "borderColor": "#E74C3C"
+               }
+            }
+         }
+      }
+   ]
+}

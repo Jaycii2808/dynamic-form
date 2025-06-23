@@ -1,0 +1,244 @@
+{
+   "title": "Advanced Dropdown Showcase",
+   "components": [
+      {
+         "id": "user_menu_with_states",
+         "type": "dropdown",
+         "config": {
+            "label": "Jocelyn Botos",
+            "avatar": "https://randomuser.me/api/portraits/women/68.jpg",
+            "items": [
+               { "id": "account", "label": "Your Account", "icon": "user" },
+               { "type": "divider" },
+               { "id": "settings", "label": "Settings", "icon": "settings" },
+               { "id": "logout", "label": "Log Out", "icon": "logout" }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "borderColor": "#555555",
+            "borderRadius": 8,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "dropdownBackgroundColor": "#0d0d0d",
+            "dropdownWidth": 280,
+            "dividerColor": "#444444"
+         },
+         "variants": {
+            "withAvatar": { "style": { "padding": "8px 12px" } }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#555555" } },
+            "hover": {
+               "style": {
+                  "borderColor": "#A0A5F5",
+                  "backgroundColor": "#2c2c2e"
+               }
+            },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "helperText": "An error occurred with your account.",
+                  "helperTextColor": "#ff4d4f"
+               }
+            }
+         },
+         "validation": {
+            "demo_error": true
+         }
+      },
+      {
+         "id": "search_dropdown",
+         "type": "dropdown",
+         "config": {
+            "searchable": true,
+            "placeholder": "Search actions...",
+            "items": [
+               { "id": "item1", "label": "First Action" },
+               { "id": "item2", "label": "Second Action" },
+               { "id": "item3", "label": "Third Action" },
+               { "id": "item4", "label": "Fourth Action" }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "borderColor": "#6979F8",
+            "borderWidth": 1.5,
+            "borderRadius": 8,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "rgba(105, 121, 248, 0.4)",
+            "dropdownBackgroundColor": "#1c1c1e",
+            "iconColor": "#e0e0e0"
+         },
+         "states": {
+            "base": {
+               "style": { "backgroundColor": "rgba(105, 121, 248, 0.4)" }
+            },
+            "hover": {
+               "style": { "backgroundColor": "rgba(105, 121, 248, 0.6)" }
+            }
+         }
+      },
+      {
+         "id": "notifications_dropdown",
+         "type": "dropdown",
+         "config": {
+            "icon": "bell",
+            "items": [
+               { "id": "notif1", "label": "New message from John Doe" },
+               {
+                  "id": "notif2",
+                  "label": "Your subscription is about to expire"
+               },
+               { "type": "divider" },
+               { "id": "view_all", "label": "View all notifications" }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "padding": "10px",
+            "borderRadius": 50,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "dropdownBackgroundColor": "#0d0d0d",
+            "dividerColor": "#444444",
+            "dropdownWidth": 320
+         },
+         "variants": {
+            "iconOnly": {
+               "style": { "iconColor": "#A0A5F5", "iconSize": 22 }
+            }
+         },
+         "states": {
+            "base": { "style": { "backgroundColor": "#1c1c1e" } },
+            "hover": { "style": { "backgroundColor": "#2c2c2e" } }
+         }
+      },
+      {
+         "id": "language_selector",
+         "type": "dropdown",
+         "config": {
+            "label": "English",
+            "icon": "globe",
+            "items": [
+               { "id": "lang_en", "label": "English" },
+               { "id": "lang_es", "label": "Español" },
+               { "id": "lang_fr", "label": "Français" },
+               { "id": "lang_de", "label": "Deutsch" }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "borderColor": "#555555",
+            "borderRadius": 8,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#1c1c1e",
+            "iconColor": "#e0e0e0",
+            "dropdownBackgroundColor": "#0d0d0d",
+            "dropdownWidth": 200
+         },
+         "variants": {
+            "withIcon": { "style": { "padding": "12px" } }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#555555" } },
+            "hover": {
+               "style": {
+                  "borderColor": "#A0A5F5",
+                  "backgroundColor": "#2c2c2e"
+               }
+            }
+         }
+      },
+      {
+         "id": "status_selector_validated",
+         "type": "dropdown",
+         "config": {
+            "label": "Select Status",
+            "items": [
+               {
+                  "id": "status_todo",
+                  "label": "To Do",
+                  "style": { "color": "#e0e0e0" }
+               },
+               {
+                  "id": "status_progress",
+                  "label": "In Progress",
+                  "style": { "color": "#6979F8" }
+               },
+               {
+                  "id": "status_done",
+                  "label": "Done",
+                  "style": { "color": "#00b96b" }
+               }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "borderColor": "#888888",
+            "borderRadius": 8,
+            "color": "#aaaaaa",
+            "backgroundColor": "#1c1c1e",
+            "dropdownBackgroundColor": "#0d0d0d"
+         },
+         "states": {
+            "base": {
+               "style": { "borderColor": "#888888", "color": "#aaaaaa" }
+            },
+            "hover": { "style": { "borderColor": "#A0A5F5" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "helperText": "Selecting a status is required."
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#e0e0e0",
+                  "helperText": "Status selected!"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Please select a status for the task."
+            }
+         }
+      },
+      {
+         "id": "more_actions_menu",
+         "type": "dropdown",
+         "config": {
+            "icon": "more_horiz",
+            "items": [
+               { "id": "action_edit", "label": "Edit", "icon": "edit" },
+               { "id": "action_delete", "label": "Delete", "icon": "delete" },
+               { "id": "action_share", "label": "Share", "icon": "share" }
+            ]
+         },
+         "style": {
+            "margin": "16px",
+            "padding": "10px",
+            "borderRadius": 50,
+            "backgroundColor": "transparent",
+            "dropdownBackgroundColor": "#1c1c1e",
+            "dividerColor": "#444444",
+            "dropdownWidth": 180
+         },
+         "variants": {
+            "iconOnly": {
+               "style": { "iconColor": "#e0e0e0", "iconSize": 24 }
+            }
+         },
+         "states": {
+            "base": { "style": { "backgroundColor": "transparent" } },
+            "hover": { "style": { "backgroundColor": "#333333" } }
+         }
+      }
+   ]
+}

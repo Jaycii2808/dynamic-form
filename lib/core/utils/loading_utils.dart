@@ -16,9 +16,9 @@ class LoadingUtils {
   static void _showOverlay(BuildContext context) {
     _hideOverlay();
     _overlayEntry = OverlayEntry(
-      builder: (context) => Stack(
+      builder: (context) => const Stack(
         children: [
-          const Opacity(
+          Opacity(
             opacity: 0.5,
             child: ModalBarrier(dismissible: false, color: Colors.black),
           ),
@@ -28,10 +28,10 @@ class LoadingUtils {
               children: [
                // buildSpinKitSpinningLines(),
                 //center circular
-                const CircularProgressIndicator(
+                CircularProgressIndicator(
                   color: Colors.red,
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
               ],
             ),
           ),
