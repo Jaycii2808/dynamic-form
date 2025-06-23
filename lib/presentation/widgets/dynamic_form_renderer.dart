@@ -2929,6 +2929,21 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final double max = (config['max'] as num?)?.toDouble() ?? 100;
     final int? divisions = (config['divisions'] as num?)?.toInt();
     final String prefix = config['prefix']?.toString() ?? '';
+    final String? hint = config['hint'] as String?;
+    final String? iconName = config['icon'] as String?;
+
+    if (component.variants != null) {
+      if (hint != null && component.variants!.containsKey('withHint')) {
+        final variantStyle =
+            component.variants!['withHint']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (iconName != null && component.variants!.containsKey('withIcon')) {
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
 
     final sliderTheme = SliderTheme.of(context).copyWith(
       activeTrackColor: StyleUtils.parseColor(style['activeColor']),
@@ -2942,53 +2957,89 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     final currentRangeValues = _sliderRangeValues ?? RangeValues(min, max);
 
+    final sliderWidget = SliderTheme(
+      data: sliderTheme.copyWith(
+        rangeThumbShape: _CustomRangeSliderThumbShape(
+          thumbRadius: 14,
+          valuePrefix: prefix,
+          values: currentRangeValues,
+          iconColor: StyleUtils.parseColor(style['thumbIconColor']),
+          labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+        ),
+        thumbShape: _CustomSliderThumbShape(
+          thumbRadius: 14,
+          valuePrefix: prefix,
+          displayValue: _sliderValue ?? min,
+          iconColor: StyleUtils.parseColor(style['thumbIconColor']),
+          labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+        ),
+      ),
+      child: isRange
+          ? RangeSlider(
+              values: currentRangeValues,
+              min: min,
+              max: max,
+              divisions: divisions,
+              labels: RangeLabels(
+                '$prefix${currentRangeValues.start.round()}',
+                '$prefix${currentRangeValues.end.round()}',
+              ),
+              onChanged: (values) {
+                setState(() {
+                  _sliderRangeValues = values;
+                });
+              },
+            )
+          : Slider(
+              value: _sliderValue ?? min,
+              min: min,
+              max: max,
+              divisions: divisions,
+              label: '$prefix${_sliderValue?.round()}',
+              onChanged: (value) {
+                setState(() {
+                  _sliderValue = value;
+                });
+              },
+            ),
+    );
+
+    Widget? iconWidget;
+    if (iconName != null) {
+      final iconData = _mapIconNameToIconData(iconName);
+      if (iconData != null) {
+        iconWidget = Icon(
+          iconData,
+          color: StyleUtils.parseColor(style['iconColor']),
+          size: (style['iconSize'] as num?)?.toDouble() ?? 24.0,
+        );
+      }
+    }
+
     return Container(
       margin: StyleUtils.parsePadding(style['margin']),
-      child: SliderTheme(
-        data: sliderTheme.copyWith(
-          rangeThumbShape: _CustomRangeSliderThumbShape(
-            thumbRadius: 14,
-            valuePrefix: prefix,
-            values: currentRangeValues,
-            iconColor: StyleUtils.parseColor(style['thumbIconColor']),
-            labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (iconWidget != null) ...[iconWidget, const SizedBox(width: 8)],
+              Expanded(child: sliderWidget),
+            ],
           ),
-          thumbShape: _CustomSliderThumbShape(
-            thumbRadius: 14,
-            valuePrefix: prefix,
-            displayValue: _sliderValue ?? min,
-            iconColor: StyleUtils.parseColor(style['thumbIconColor']),
-            labelColor: StyleUtils.parseColor(style['valueLabelColor']),
-          ),
-        ),
-        child: isRange
-            ? RangeSlider(
-                values: currentRangeValues,
-                min: min,
-                max: max,
-                divisions: divisions,
-                labels: RangeLabels(
-                  '$prefix${currentRangeValues.start.round()}',
-                  '$prefix${currentRangeValues.end.round()}',
+          if (hint != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+              child: Text(
+                hint,
+                style: TextStyle(
+                  color:
+                      StyleUtils.parseColor(style['hintColor']) ?? Colors.grey,
+                  fontSize: 12,
                 ),
-                onChanged: (values) {
-                  setState(() {
-                    _sliderRangeValues = values;
-                  });
-                },
-              )
-            : Slider(
-                value: _sliderValue ?? min,
-                min: min,
-                max: max,
-                divisions: divisions,
-                label: '$prefix${_sliderValue?.round()}',
-                onChanged: (value) {
-                  setState(() {
-                    _sliderValue = value;
-                  });
-                },
               ),
+            ),
+        ],
       ),
     );
   }

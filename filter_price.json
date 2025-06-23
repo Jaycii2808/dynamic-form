@@ -51,6 +51,59 @@
                   "thumbIconColor": "#6979F8",
                   "valueLabelColor": "#FFFFFF"
                }
+            },
+            {
+               "id": "price_single_slider_with_hint",
+               "type": "slider",
+               "config": {
+                  "range": false,
+                  "min": 0,
+                  "max": 2000,
+                  "value": 500,
+                  "prefix": "$",
+                  "hint": "Adjust the slider to set your maximum price."
+               },
+               "variants": {
+                  "withHint": {
+                     "style": {
+                        "margin": "16 0 0 0"
+                     }
+                  }
+               },
+               "style": {
+                  "activeColor": "#6979F8",
+                  "inactiveColor": "#BDBDBD",
+                  "thumbColor": "#FFFFFF",
+                  "thumbIconColor": "#6979F8",
+                  "valueLabelColor": "#FFFFFF",
+                  "hintColor": "#9E9E9E"
+               }
+            },
+            {
+               "id": "price_range_slider_with_icon",
+               "type": "slider",
+               "config": {
+                  "range": true,
+                  "min": 0,
+                  "max": 2000,
+                  "values": [150, 1250],
+                  "prefix": "$",
+                  "icon": "shopping"
+               },
+               "variants": {
+                  "withIcon": {
+                     "style": {}
+                  }
+               },
+               "style": {
+                  "activeColor": "#6979F8",
+                  "inactiveColor": "#BDBDBD",
+                  "thumbColor": "#FFFFFF",
+                  "thumbIconColor": "#6979F8",
+                  "valueLabelColor": "#FFFFFF",
+                  "iconColor": "#6979F8",
+                  "margin": "16 0 48 0"
+               }
             }
          ]
       }
