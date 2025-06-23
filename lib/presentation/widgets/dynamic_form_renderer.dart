@@ -175,14 +175,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   @override
   Widget build(BuildContext context) {
     final component = widget.component;
-    switch (component.type.toLowerCase()) {
+    switch (component.type) {
       case 'textfield':
         return _buildTextField(component);
       case 'select':
         return _buildSelect(component);
-      case 'textarea':
+      case 'textAreaFormType':
         return _buildTextArea(component);
-      case 'datetime_picker':
+      case 'dateTimePickerFormType':
         return _buildDateTimePickerForm(component);
       case 'dropdown':
         return _buildDropdown(component);
@@ -196,16 +196,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildRadioGroup(component);
       case 'slider':
         return _buildSlider(component);
-      case 'selector':
+      case 'selectorFormType':
         return _buildSelector(component);
-      case 'switch':
+      case 'switchFormType':
         return _buildSwitch(component);
-      case 'textfield_tags':
+      case 'textFieldTagsFormType':
         return _buildTextFieldTags(component);
       case 'file_uploader':
         return _FileUploaderWidget(component: component);
       default:
-        return _buildContainer();
+        return _buildDefaultFormType();
     }
   }
 
@@ -1265,7 +1265,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return null;
   }
 
-  Widget _buildContainer() {
+  Widget _buildDefaultFormType() {
     final component = widget.component;
     final layout =
         component.config['layout']?.toString().toLowerCase() ?? 'column';

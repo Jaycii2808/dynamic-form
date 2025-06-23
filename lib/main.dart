@@ -43,18 +43,18 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)
     final configKeys = [
-      'text_input_screen',
-      'select_input',
-      'text_area_form',
-      'datetime_picker_form',
-      'dropdown_input',
-      'checkbox_input',
-      'radio_button',
-      'filter_price',
+      'text_field_component',
+      'select_component',
+      'text_area_component',
+      'date_time_picker_component',
+      'drop_down_component',
+      'check_box_component',
+      'radio_component',
+      'filter_price_component',
       'selector_component',
       'switch_component',
-      'textfield_tags_component',
-      'file_uploader',
+      'text_field_tags_component',
+      'file_uploader_component',
     ];
 
     return Scaffold(
