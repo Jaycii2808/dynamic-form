@@ -65,7 +65,8 @@ class HomeScreen extends StatelessWidget {
       'filter_price',
       'selector_component',
       'switch_component',
-      'textfield_tags_component'
+      'textfield_tags_component',
+      'file_uploader',
     ];
 
     return Scaffold(

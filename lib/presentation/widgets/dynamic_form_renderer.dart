@@ -3,6 +3,11 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
+import 'dart:async';
+import 'package:cross_file/cross_file.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 IconData? mapIconNameToIconData(String name) {
   switch (name) {
@@ -198,6 +203,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildSwitch(component);
       case 'textfield_tags':
         return _buildTextFieldTags(component);
+      case 'file_uploader':
+        return _FileUploaderWidget(component: component);
       default:
         return _buildContainer();
     }
@@ -3223,5 +3230,450 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
       canvas,
       center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4),
     );
+  }
+}
+
+class _FileUploaderWidget extends StatefulWidget {
+  final DynamicFormModel component;
+  const _FileUploaderWidget({required this.component});
+
+  @override
+  __FileUploaderWidgetState createState() => __FileUploaderWidgetState();
+}
+
+class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
+  String _currentState = 'base'; // base, dragging, loading, success, error
+  bool _isDragging = false;
+  double _progress = 0.0;
+  XFile? _pickedFile;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startUpload(XFile file) {
+    _pickedFile = file;
+    setState(() {
+      _currentState = 'loading';
+      _progress = 0;
+    });
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      setState(() {
+        _progress += 5;
+        if (_progress >= 100) {
+          timer.cancel();
+          // Simulate a random success/error outcome
+          if (DateTime.now().second % 2 == 0) {
+            _currentState = 'success';
+          } else {
+            _currentState = 'error';
+          }
+        }
+      });
+    });
+  }
+
+  void _handleFiles(List<XFile> files) {
+    if (files.isNotEmpty) {
+      final file = files.first;
+      final allowedExtensions =
+          (widget.component.config['allowedExtensions'] as List<dynamic>?)
+              ?.cast<String>() ??
+          [];
+      if (allowedExtensions.isNotEmpty &&
+          !allowedExtensions.any((ext) => file.name.endsWith('.$ext'))) {
+        debugPrint(
+          "File type not allowed: ${file.name}. Allowed: $allowedExtensions",
+        );
+        setState(() => _currentState = 'error');
+        return;
+      }
+      _startUpload(file);
+    }
+  }
+
+  void _browseFiles() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions:
+          (widget.component.config['allowedExtensions'] as List<dynamic>?)
+              ?.cast<String>(),
+    );
+    if (result != null && result.files.isNotEmpty) {
+      _handleFiles([XFile(result.files.single.path!)]);
+    }
+  }
+
+  void _resetState() {
+    setState(() {
+      _currentState = 'base';
+      _pickedFile = null;
+      _progress = 0;
+      _isDragging = false;
+      _timer?.cancel();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Map<String, dynamic> baseStyle = Map.from(widget.component.style);
+    final Map<String, dynamic> variantStyle = _isDragging
+        ? Map.from(widget.component.variants?['dragging']?['style'] ?? {})
+        : {};
+    final Map<String, dynamic> stateStyle = Map.from(
+      widget.component.states?[_currentState]?['style'] ?? {},
+    );
+
+    final style = {...baseStyle, ...variantStyle, ...stateStyle};
+
+    final Map<String, dynamic> baseConfig = Map.from(widget.component.config);
+    final Map<String, dynamic> variantConfig = _isDragging
+        ? Map.from(widget.component.variants?['dragging']?['config'] ?? {})
+        : {};
+    final Map<String, dynamic> stateConfig = Map.from(
+      widget.component.states?[_currentState]?['config'] ?? {},
+    );
+    final config = {...baseConfig, ...variantConfig, ...stateConfig};
+
+    return DragTarget<List<XFile>>(
+      onWillAccept: (data) {
+        setState(() => _isDragging = true);
+        return true;
+      },
+      onAccept: (data) {
+        setState(() => _isDragging = false);
+        _handleFiles(data);
+      },
+      onLeave: (data) {
+        setState(() => _isDragging = false);
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          margin: StyleUtils.parsePadding(style['margin']),
+          child: DottedBorder(
+            color: StyleUtils.parseColor(style['borderColor']),
+            strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
+            radius: Radius.circular(
+              (style['borderRadius'] as num?)?.toDouble() ?? 0,
+            ),
+            dashPattern: const [6, 6],
+            borderType: BorderType.RRect,
+            child: Container(
+              width: (style['width'] as num?)?.toDouble() ?? 300,
+              height: (style['height'] as num?)?.toDouble() ?? 200,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              decoration: BoxDecoration(
+                color: StyleUtils.parseColor(style['backgroundColor']),
+                borderRadius: BorderRadius.circular(
+                  (style['borderRadius'] as num?)?.toDouble() ?? 0,
+                ),
+              ),
+              child: _buildChild(style, config),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChild(Map<String, dynamic> style, Map<String, dynamic> config) {
+    switch (_currentState) {
+      case 'loading':
+        return _buildLoadingState(style, config);
+      case 'success':
+        return _buildSuccessState(style, config);
+      case 'error':
+        return _buildErrorState(style, config);
+      default: // base and dragging
+        return _buildBaseState(style, config);
+    }
+  }
+
+  Widget _buildBaseState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (style['icon'] != null) ...[
+          Icon(
+            _mapIconNameToIconData(style['icon']),
+            color: StyleUtils.parseColor(style['iconColor']),
+            size: (style['iconSize'] as num?)?.toDouble() ?? 48,
+          ),
+          const SizedBox(height: 8),
+        ],
+        Text(
+          config['title'] ?? '',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+        ),
+        if (config['subtitle'] != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              config['subtitle'] ?? '',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['textColor']),
+              ),
+            ),
+          ),
+        if (config['buttonText'] != null &&
+            config['buttonText'].isNotEmpty) ...[
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _browseFiles,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StyleUtils.parseColor(
+                style['buttonBackgroundColor'],
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+                ),
+              ),
+            ),
+            child: Text(
+              config['buttonText'] ?? 'Browse',
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['buttonTextColor']),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLoadingState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    String statusText =
+        config['statusTextFormat'] ?? '{fileName} {progress}/{total}%';
+    statusText = statusText
+        .replaceAll('{fileName}', _pickedFile?.name ?? 'file')
+        .replaceAll('{progress}', _progress.toInt().toString())
+        .replaceAll('{total}', '100');
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (style['icon'] != null)
+          Icon(
+            _mapIconNameToIconData(style['icon']),
+            color: StyleUtils.parseColor(style['iconColor']),
+            size: 48,
+          ),
+        const SizedBox(height: 16),
+        Text(
+          statusText,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+        ),
+        if (config['subtitle'] != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              config['subtitle'],
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: StyleUtils.parseColor(
+                  style['textColor'],
+                ).withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: null, // Disabled
+          style: ElevatedButton.styleFrom(
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ).withOpacity(0.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+              ),
+            ),
+          ),
+          child: Text(
+            config['buttonText'] ?? 'Loading',
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    // Check for the 'withPreview' variant
+    final bool hasPreview =
+        widget.component.variants?.containsKey('withPreview') ?? false;
+
+    if (hasPreview && _pickedFile != null && _isImageFile(_pickedFile!.path)) {
+      // Build the preview state
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  (style['borderRadius'] as num?)?.toDouble() ?? 8.0,
+                ),
+                child: Image.file(
+                  File(_pickedFile!.path),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: _resetState,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: StyleUtils.parseColor(
+                style['buttonBackgroundColor'],
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+                ),
+              ),
+            ),
+            child: Text(
+              config['buttonText'] ?? 'Remove',
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['buttonTextColor']),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    String statusText = config['statusTextFormat'] ?? '{fileName} uploaded!';
+    statusText = statusText.replaceAll(
+      '{fileName}',
+      _pickedFile?.name ?? 'file',
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (style['icon'] != null)
+          Icon(
+            _mapIconNameToIconData(style['icon']),
+            color: StyleUtils.parseColor(style['iconColor']),
+            size: 48,
+          ),
+        const SizedBox(height: 16),
+        Text(
+          statusText,
+          style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _resetState,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+              ),
+            ),
+          ),
+          child: Text(
+            config['buttonText'] ?? 'Remove',
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (style['icon'] != null)
+          Icon(
+            _mapIconNameToIconData(style['icon']),
+            color: StyleUtils.parseColor(style['iconColor']),
+            size: 48,
+          ),
+        const SizedBox(height: 16),
+        Text(
+          config['statusText'] ?? 'Error',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _resetState,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+              ),
+            ),
+          ),
+          child: Text(
+            config['buttonText'] ?? 'Retry',
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData? _mapIconNameToIconData(String name) {
+    switch (name) {
+      case 'file':
+        return Icons.insert_drive_file_outlined;
+      case 'check':
+        return Icons.check_circle_outline;
+      case 'error':
+        return Icons.error_outline;
+      default:
+        return mapIconNameToIconData(name);
+    }
+  }
+
+  bool _isImageFile(String filePath) {
+    final imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+    final extension = filePath.split('.').last.toLowerCase();
+    return imageExtensions.contains(extension);
   }
 }
