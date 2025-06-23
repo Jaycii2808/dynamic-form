@@ -124,15 +124,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   // Remove these lines from initState():
-// tagController = StringTagController<String>();
-// final initialTags = (widget.component.config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
-// initialTags.forEach((tag) => tagController.addTag(tag));
-// _selectedTags.addAll(initialTags);
+  // tagController = StringTagController<String>();
+  // final initialTags = (widget.component.config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
+  // initialTags.forEach((tag) => tagController.addTag(tag));
+  // _selectedTags.addAll(initialTags);
 
   Widget _buildTextFieldTags(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
-    final initialTags = (config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
+    final initialTags =
+        (config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
     final placeholder = config['placeholder'] ?? 'Enter tags...';
 
     debugPrint('TextFieldTags: Initial tags are $initialTags');
@@ -142,8 +143,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     String currentState = 'base';
     if (_selectedTags.isNotEmpty) currentState = 'success';
     if (_errorText != null) currentState = 'error';
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -171,21 +174,33 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       decoration: BoxDecoration(
                         color: StyleUtils.parseColor('#CDD2FD'),
                         borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
+                        border: Border.all(
+                          color: StyleUtils.parseColor('#CDD2FD'),
+                          width: 10.0,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 2.0,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.blue[50],
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: Text(
                               tag,
-                              style: TextStyle(fontSize: 14, color: StyleUtils.parseColor('#6979F8')),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: StyleUtils.parseColor('#6979F8'),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 2),
@@ -193,14 +208,19 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                             onTap: () {
                               setState(() {
                                 _selectedTags.remove(tag);
-                                debugPrint('Removed: Tag $tag removed from ${component.id}');
+                                debugPrint(
+                                  'Removed: Tag $tag removed from ${component.id}',
+                                );
                               });
                             },
                             child: SvgPicture.asset(
                               'assets/svg/Close.svg',
                               width: 16,
                               height: 16,
-                              colorFilter: const ColorFilter.mode(Colors.redAccent, BlendMode.srcIn),
+                              colorFilter: const ColorFilter.mode(
+                                Colors.redAccent,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                         ],
@@ -211,10 +231,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               ),
             Autocomplete<String>(
               optionsBuilder: (TextEditingValue textEditingValue) {
-                debugPrint('Autocomplete: Filtering options for input ${textEditingValue.text}');
-                final availableTags = initialTags.where((tag) => !_selectedTags.contains(tag)).toList();
+                debugPrint(
+                  'Autocomplete: Filtering options for input ${textEditingValue.text}',
+                );
+                final availableTags = initialTags
+                    .where((tag) => !_selectedTags.contains(tag))
+                    .toList();
                 if (textEditingValue.text.isEmpty) return availableTags;
-                return availableTags.where((tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                return availableTags.where(
+                  (tag) => tag.toLowerCase().contains(
+                    textEditingValue.text.toLowerCase(),
+                  ),
+                );
               },
               onSelected: (String selection) {
                 debugPrint('Autocomplete: Selected tag $selection');
@@ -222,63 +250,99 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   setState(() {
                     _selectedTags.add(selection);
                     _errorText = null;
-                    debugPrint('TagAdded: Successfully added tag $selection via autocomplete');
+                    debugPrint(
+                      'TagAdded: Successfully added tag $selection via autocomplete',
+                    );
                   });
                 }
               },
-              fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                return TextField(
-                  controller: textEditingController,
-                  focusNode: focusNode,
-                  onSubmitted: (value) {
-                    debugPrint('OnSubmitted: Submitted value $value');
-                    if (value.isNotEmpty && initialTags.contains(value.trim()) && !_selectedTags.contains(value.trim())) {
-                      textEditingController.clear();
-                      setState(() {
-                        _selectedTags.add(value.trim());
-                        _errorText = null;
-                        debugPrint('TagAdded: Successfully added tag $value');
-                      });
-                    } else if (_selectedTags.contains(value.trim())) {
-                      setState(() {
-                        _errorText = 'Tag already selected';
-                        debugPrint('TagRejected: $value is already selected');
-                      });
-                    } else {
-                      setState(() {
-                        _errorText = 'Tag must match predefined list';
-                        debugPrint('TagRejected: $value does not match predefined tags');
-                      });
-                    }
+              fieldViewBuilder:
+                  (
+                    context,
+                    textEditingController,
+                    focusNode,
+                    onFieldSubmitted,
+                  ) {
+                    return TextField(
+                      controller: textEditingController,
+                      focusNode: focusNode,
+                      onSubmitted: (value) {
+                        debugPrint('OnSubmitted: Submitted value $value');
+                        if (value.isNotEmpty &&
+                            initialTags.contains(value.trim()) &&
+                            !_selectedTags.contains(value.trim())) {
+                          textEditingController.clear();
+                          setState(() {
+                            _selectedTags.add(value.trim());
+                            _errorText = null;
+                            debugPrint(
+                              'TagAdded: Successfully added tag $value',
+                            );
+                          });
+                        } else if (_selectedTags.contains(value.trim())) {
+                          setState(() {
+                            _errorText = 'Tag already selected';
+                            debugPrint(
+                              'TagRejected: $value is already selected',
+                            );
+                          });
+                        } else {
+                          setState(() {
+                            _errorText = 'Tag must match predefined list';
+                            debugPrint(
+                              'TagRejected: $value does not match predefined tags',
+                            );
+                          });
+                        }
+                      },
+                      onChanged: (value) {
+                        debugPrint('OnChanged: Input changed to $value');
+                        if (_errorText != null)
+                          setState(() => _errorText = null);
+                      },
+                      decoration: InputDecoration(
+                        hintText: placeholder,
+                        border: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 1.0,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 1.0,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 2.0,
+                          ),
+                        ),
+                        filled: style['backgroundColor'] != null,
+                        fillColor: StyleUtils.parseColor(
+                          style['backgroundColor'],
+                        ),
+                        errorText: _errorText,
+                      ),
+                      style: TextStyle(
+                        fontSize: style['fontSize']?.toDouble() ?? 16,
+                        color: StyleUtils.parseColor(
+                          style['color'] ?? '#000000',
+                        ),
+                      ),
+                    );
                   },
-                  onChanged: (value) {
-                    debugPrint('OnChanged: Input changed to $value');
-                    if (_errorText != null) setState(() => _errorText = null);
-                  },
-                  decoration: InputDecoration(
-                    hintText: placeholder,
-                    border: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(color: StyleUtils.parseColor(style['borderColor']), width: style['borderWidth']?.toDouble() ?? 1.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(color: StyleUtils.parseColor(style['borderColor']), width: style['borderWidth']?.toDouble() ?? 1.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(color: StyleUtils.parseColor(style['borderColor']), width: style['borderWidth']?.toDouble() ?? 2.0),
-                    ),
-                    filled: style['backgroundColor'] != null,
-                    fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                    errorText: _errorText,
-                  ),
-                  style: TextStyle(
-                    fontSize: style['fontSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['color'] ?? '#000000'),
-                  ),
-                );
-              },
               optionsViewBuilder: (context, onSelected, options) {
                 return Align(
                   alignment: Alignment.topLeft,
@@ -336,53 +400,69 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           ),
           child: _selectedTags.isEmpty
               ? const Center(
-            child: Text(
-              'Click to add tags',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-          )
+                  child: Text(
+                    'Click to add tags',
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                )
               : Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: _selectedTags.map((tag) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: StyleUtils.parseColor('#CDD2FD'),
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      tag,
-                      style: TextStyle(fontSize: 16, color: StyleUtils.parseColor('#6979F8'), fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedTags.remove(tag);
-                          debugPrint('Removed: Tag $tag removed from ${component.id}');
-                        });
-                      },
-                      child: SvgPicture.asset(
-                        'assets/svg/Close.svg',
-                        width: 16,
-                        height: 16,
-                        colorFilter: const ColorFilter.mode(Colors.redAccent, BlendMode.srcIn),
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: _selectedTags.map((tag) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: StyleUtils.parseColor('#CDD2FD'),
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(
+                          color: StyleUtils.parseColor('#CDD2FD'),
+                          width: 10.0,
+                        ),
                       ),
-                    ),
-                  ],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 2.0,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            tag,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: StyleUtils.parseColor('#6979F8'),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedTags.remove(tag);
+                                debugPrint(
+                                  'Removed: Tag $tag removed from ${component.id}',
+                                );
+                              });
+                            },
+                            child: SvgPicture.asset(
+                              'assets/svg/Close.svg',
+                              width: 16,
+                              height: 16,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.redAccent,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
         ),
       );
     }
   }
+
   Widget _buildSwitch(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
@@ -2876,7 +2956,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           thumbShape: _CustomSliderThumbShape(
             thumbRadius: 14,
             valuePrefix: prefix,
-            value: _sliderValue ?? min,
+            displayValue: _sliderValue ?? min,
             iconColor: StyleUtils.parseColor(style['thumbIconColor']),
             labelColor: StyleUtils.parseColor(style['valueLabelColor']),
           ),
@@ -2917,14 +2997,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 class _CustomSliderThumbShape extends SliderComponentShape {
   final double thumbRadius;
   final String valuePrefix;
-  final double value;
+  final double displayValue;
   final Color? iconColor;
   final Color? labelColor;
 
   _CustomSliderThumbShape({
     this.thumbRadius = 14.0,
     this.valuePrefix = '',
-    required this.value,
+    required this.displayValue,
     this.iconColor,
     this.labelColor,
   });
@@ -2978,7 +3058,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
       text: TextSpan(
-        text: '$valuePrefix${value.round()}',
+        text: '$valuePrefix${displayValue.round()}',
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
