@@ -1,6 +1,8 @@
+import 'package:dynamic_form_bi/core/enum/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 import 'dart:async';
@@ -23,7 +25,6 @@ IconData? mapIconNameToIconData(String name) {
       return Icons.person;
     case 'lock':
       return Icons.lock;
-    // Select input icons
     case 'chevron-down':
       return Icons.keyboard_arrow_down;
     case 'chevron-up':
@@ -173,39 +174,55 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
+return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+  listener: (context, state) {
+
+  },
+  builder: (context, state) {
+    return buildForm();
+  },
+);
+  }
+  
+  Widget buildForm() {
     final component = widget.component;
-    switch (component.type.toLowerCase()) {
-      case 'textfield':
-        return _buildTextField(component);
-      case 'select':
+    switch (FormTypeEnum.fromJson(component.type.toString())) {
+      case FormTypeEnum.textfield:
+        return _buildTextField(component,
+            onComplete: (value) {
+              //component.values = values;
+              //add bloc event -> current widget model -> parent widget model
+            }
+        );
+      case FormTypeEnum.select:
         return _buildSelect(component);
-      case 'datepicker':
+      case FormTypeEnum.datepicker:
         return _buildDatePicker(component);
-      case 'textarea':
+      case FormTypeEnum.textarea:
         return _buildTextArea(component);
-      case 'datetime_picker':
+      case FormTypeEnum.datetimePicker:
         return _buildDateTimePickerForm(component);
-      case 'dropdown':
+      case FormTypeEnum.dropdown:
         return _buildDropdown(component);
-      case 'checkbox_group':
+      case FormTypeEnum.checkboxGroup:
         return _buildCheckboxGroup(component);
-      case 'checkbox':
+      case FormTypeEnum.checkbox:
         return _buildToggleableRow(component, isRadio: false);
-      case 'radio':
+      case FormTypeEnum.radio:
         return _buildToggleableRow(component, isRadio: true);
-      case 'radio_group':
+      case FormTypeEnum.radioGroup:
         return _buildRadioGroup(component);
-      case 'slider':
+      case FormTypeEnum.slider:
         return _buildSlider(component);
-      case 'selector':
+      case FormTypeEnum.selector:
         return _buildSelector(component);
-      case 'switch':
+      case FormTypeEnum.switchComponent:
         return _buildSwitch(component);
-      case 'textfield_tags':
+      case FormTypeEnum.textfieldTags:
         return _buildTextFieldTags(component);
-      case 'file_uploader':
+      case FormTypeEnum.fileUploader:
         return _FileUploaderWidget(component: component);
-      default:
+      case FormTypeEnum.container:
         return _buildContainer();
     }
   }
@@ -1101,6 +1118,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           TextField(
             controller: _controller,
             focusNode: _focusNode,
+            onTapOutside: (pointer) {
+              _focusNode.unfocus();
+            },
             enabled: component.config['editable'] ?? true,
             obscureText: component.inputTypes?.containsKey('password') ?? false,
             keyboardType: _getKeyboardType(component),
