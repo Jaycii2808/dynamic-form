@@ -28,7 +28,7 @@ class RemoteConfigService {
     }
   }
 
-  DynamicFormPageModel? getTextInputScreen(String configKey) {
+  DynamicFormPageModel? getConfigKey(String configKey) {
     try {
       final String jsonString = _remoteConfig.getString(configKey);
       debugPrint('RemoteConfig $configKey: $jsonString');
@@ -41,18 +41,6 @@ class RemoteConfigService {
     } catch (e) {
       debugPrint('Error parsing form $configKey: $e');
       return null;
-    }
-  }
-
-  Future<void> updateTextInputScreen(
-    String configKey,
-    String jsonString,
-  ) async {
-    try {
-      await _remoteConfig.setDefaults({configKey: jsonString});
-      await _remoteConfig.fetchAndActivate();
-    } catch (e) {
-      debugPrint('Error updating form $configKey: $e');
     }
   }
 

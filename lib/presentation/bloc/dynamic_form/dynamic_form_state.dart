@@ -3,56 +3,45 @@ import 'package:equatable/equatable.dart';
 
 abstract class DynamicFormState extends Equatable {
   final DynamicFormPageModel? page;
-  final String? errorMessage;
 
-  const DynamicFormState({this.page, this.errorMessage});
+  const DynamicFormState({this.page});
 
   @override
-  List<Object?> get props => [page, errorMessage];
+  List<Object?> get props => [page];
 }
 
 class DynamicFormInitial extends DynamicFormState {
-  const DynamicFormInitial({super.page, super.errorMessage});
+  const DynamicFormInitial({super.page});
 
   @override
-  List<Object?> get props => [page, errorMessage];
+  List<Object?> get props => [page];
 }
 
 class DynamicFormLoading extends DynamicFormState {
-  const DynamicFormLoading({super.page, super.errorMessage});
+  const DynamicFormLoading({super.page});
 
-  DynamicFormLoading.fromState({required DynamicFormState state})
-    : super(page: state.page, errorMessage: state.errorMessage);
+  DynamicFormLoading.fromState({required DynamicFormState state}) : super(page: state.page);
 
   @override
-  List<Object?> get props => [page, errorMessage];
+  List<Object?> get props => [page];
 }
 
 class DynamicFormSuccess extends DynamicFormState {
-  const DynamicFormSuccess({
-    required DynamicFormPageModel page,
-    super.errorMessage,
-  }) : super(page: page);
+  const DynamicFormSuccess({required DynamicFormPageModel page}) : super(page: page);
 
-  DynamicFormSuccess.fromState({
+  const DynamicFormSuccess.fromState({
     required DynamicFormState state,
     required DynamicFormPageModel page,
-  }) : super(page: page, errorMessage: state.errorMessage);
+  }) : super(page: page);
 
   @override
-  List<Object?> get props => [page, errorMessage];
+  List<Object?> get props => [page];
 }
 
 class DynamicFormError extends DynamicFormState {
-  const DynamicFormError({required String errorMessage, super.page})
-    : super(errorMessage: errorMessage);
+  final String? errorMessage;
 
-  @override
-  List<Object?> get props => [page, errorMessage];
-}
-
-class DynamicFormEmpty extends DynamicFormState {
-  const DynamicFormEmpty({super.page, super.errorMessage});
+  const DynamicFormError({required this.errorMessage, super.page});
 
   @override
   List<Object?> get props => [page, errorMessage];

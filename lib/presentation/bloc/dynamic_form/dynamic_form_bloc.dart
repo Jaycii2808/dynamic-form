@@ -11,43 +11,25 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     : _remoteConfigService = remoteConfigService,
       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
-    on<RefreshDynamicFormPageEvent>(_onRefreshDynamicFormPage);
   }
 
   Future<void> _onLoadDynamicFormPage(
     LoadDynamicFormPageEvent event,
     Emitter<DynamicFormState> emit,
   ) async {
+    //delay 0.5s
+
     emit(DynamicFormLoading.fromState(state: state));
+    await Future.delayed(const Duration(milliseconds: 500));
     try {
-      final page = _remoteConfigService.getTextInputScreen(event.configKey);
+      final page = _remoteConfigService.getConfigKey(event.configKey);
       if (page != null) {
         emit(DynamicFormSuccess.fromState(state: state, page: page));
       } else {
-        emit(const DynamicFormEmpty());
+        throw Exception('Form not found');
       }
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to load form: $e';
-      debugPrint('Error: $e, StackTrace: $stackTrace');
-      emit(DynamicFormError(errorMessage: errorMessage));
-    }
-  }
-
-  Future<void> _onRefreshDynamicFormPage(
-    RefreshDynamicFormPageEvent event,
-    Emitter<DynamicFormState> emit,
-  ) async {
-    emit(DynamicFormLoading.fromState(state: state));
-    try {
-      await _remoteConfigService.initialize();
-      final page = _remoteConfigService.getTextInputScreen(event.configKey);
-      if (page != null) {
-        emit(DynamicFormSuccess.fromState(state: state, page: page));
-      } else {
-        emit(const DynamicFormEmpty());
-      }
-    } catch (e, stackTrace) {
-      final errorMessage = 'Failed to refresh form: $e';
       debugPrint('Error: $e, StackTrace: $stackTrace');
       emit(DynamicFormError(errorMessage: errorMessage));
     }

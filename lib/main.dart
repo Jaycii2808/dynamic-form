@@ -1,8 +1,10 @@
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,17 +23,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dynamic UI BI',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => DynamicFormBloc(remoteConfigService: RemoteConfigService()),
         ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.black,
+      ],
+      child: MaterialApp(
+        title: 'Dynamic UI BI',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+          useMaterial3: true,
+          scaffoldBackgroundColor: Colors.black,
+        ),
+        home: const HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }
@@ -71,22 +77,22 @@ class HomeScreen extends StatelessWidget {
             itemCount: configKeys.length,
             itemBuilder: (context, index) {
               final configKey = configKeys[index];
-              return ListTile(
-                title: Text(
-                  configKey.replaceAll('_', ' ').toUpperCase(),
-                  style: const TextStyle(color: Colors.white),
-                ),
+              return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DynamicFormScreen(
-                        configKey: configKey,
-                        title: configKey.replaceAll('_', ' ').toUpperCase(),
-                      ),
+                      builder: (context) =>
+                          DynamicFormScreen(configKey: configKey, title: configKey),
                     ),
                   );
                 },
+                child: Container(
+                  color: Colors.blueGrey,
+                  margin: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
+                  child: Text(configKey, style: const TextStyle(color: Colors.white)),
+                ),
               );
             },
           ),
