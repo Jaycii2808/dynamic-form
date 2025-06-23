@@ -4,151 +4,147 @@
    "order": 1,
    "components": [
       {
-         "id": "variants_container",
-         "type": "container",
+         "id": "cb_base",
+         "type": "checkboxFormType",
          "config": {
-            "label": "Checkbox Variants",
-            "hint": "Each checkbox below is a different variant, rendered in a separate row.",
-            "layout": "column"
+            "label": "Base Checkbox",
+            "hint": "Simple border style.",
+            "value": false
          },
          "style": {
-            "margin": "16 16 0 16"
+            "margin": "16 16 0 16",
+            "padding": "8 12 8 12",
+            "borderRadius": 8,
+            "borderWidth": 2,
+            "width": 40,
+            "height": 40
          },
-         "children": [
-            {
-               "id": "cb_base",
-               "type": "checkbox",
-               "config": {
-                  "label": "Base Checkbox",
-                  "hint": "Simple border style.",
-                  "value": false
-               },
+         "states": {
+            "base": {
                "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "8 12 8 12",
-                  "borderRadius": 8,
-                  "borderWidth": 2
-               },
-               "states": {
-                  "base": {
-                     "style": {
-                        "borderColor": "#9E9E9E",
-                        "backgroundColor": "transparent"
-                     }
-                  },
-                  "selected": {
-                     "style": {
-                        "borderColor": "#6979F8",
-                        "backgroundColor": "transparent",
-                        "iconColor": "#6979F8"
-                     }
-                  }
+                  "borderColor": "#9E9E9E",
+                  "backgroundColor": "transparent"
                }
             },
-            {
-               "id": "cb_filled",
-               "type": "checkbox",
-               "config": {
-                  "label": "Filled Checkbox",
-                  "hint": "Fills with color when selected.",
-                  "value": true
-               },
+            "selected": {
                "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "8 12 8 12",
-                  "borderRadius": 8,
-                  "borderWidth": 2
-               },
-               "states": {
-                  "base": {
-                     "style": {
-                        "borderColor": "#BDBDBD",
-                        "backgroundColor": "#424242"
-                     }
-                  },
-                  "selected": {
-                     "style": {
-                        "borderColor": "#6979F8",
-                        "backgroundColor": "#6979F8",
-                        "iconColor": "#FFFFFF"
-                     }
-                  }
-               }
-            },
-            {
-               "id": "cb_icon_hint",
-               "type": "checkbox",
-               "config": {
-                  "label": "With Leading Icon",
-                  "hint": "Displays an icon next to the checkbox.",
-                  "icon": "book",
-                  "value": false
-               },
-               "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "8 12 8 12",
-                  "borderRadius": 8,
-                  "borderWidth": 2,
-                  "iconColor": "#8D6E63",
-                  "labelColor": "#8D6E63",
-                  "hintColor": "#BCAAA4"
-               },
-               "states": {
-                  "base": {
-                     "style": {
-                        "borderColor": "#8D6E63",
-                        "backgroundColor": "transparent"
-                     }
-                  },
-                  "selected": {
-                     "style": {
-                        "borderColor": "#8D6E63",
-                        "backgroundColor": "#D7CCC8",
-                        "iconColor": "#5D4037"
-                     }
-                  }
-               }
-            },
-            {
-               "id": "cb_disabled_selected",
-               "type": "checkbox",
-               "config": {
-                  "label": "Disabled (Selected)",
-                  "hint": "This checkbox is not interactive.",
-                  "value": true,
-                  "editable": false
-               },
-               "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "8 12 8 12",
-                  "borderRadius": 8,
-                  "backgroundColor": "#424242",
-                  "borderColor": "#616161",
-                  "iconColor": "#757575",
-                  "labelColor": "#9E9E9E",
-                  "hintColor": "#757575"
-               }
-            },
-            {
-               "id": "cb_disabled_unselected",
-               "type": "checkbox",
-               "config": {
-                  "label": "Disabled (Unselected)",
-                  "hint": "This one is also not interactive.",
-                  "value": false,
-                  "editable": false
-               },
-               "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "8 12 8 12",
-                  "borderRadius": 8,
-                  "backgroundColor": "#424242",
-                  "borderColor": "#616161",
-                  "labelColor": "#9E9E9E",
-                  "hintColor": "#757575"
+                  "borderColor": "#6979F8",
+                  "backgroundColor": "transparent",
+                  "iconColor": "#6979F8"
                }
             }
-         ]
+         }
+      },
+      {
+         "id": "cb_filled",
+         "type": "checkboxFormType",
+         "config": {
+            "label": "Filled Checkbox",
+            "hint": "Fills with color when selected.",
+            "value": true
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "8 12 8 12",
+            "borderRadius": 8,
+            "borderWidth": 2,
+            "width": 40,
+            "height": 40
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "borderColor": "#BDBDBD",
+                  "backgroundColor": "#424242"
+               }
+            },
+            "selected": {
+               "style": {
+                  "borderColor": "#6979F8",
+                  "backgroundColor": "#6979F8",
+                  "iconColor": "#FFFFFF"
+               }
+            }
+         }
+      },
+      {
+         "id": "cb_icon_hint",
+         "type": "checkboxFormType",
+         "config": {
+            "label": "With Leading Icon",
+            "hint": "Displays an icon next to the checkbox.",
+            "icon": "book",
+            "value": false
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "8 12 8 12",
+            "borderRadius": 8,
+            "borderWidth": 2,
+            "iconColor": "#8D6E63",
+            "labelColor": "#8D6E63",
+            "hintColor": "#BCAAA4",
+            "width": 40,
+            "height": 40
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "borderColor": "#8D6E63",
+                  "backgroundColor": "transparent"
+               }
+            },
+            "selected": {
+               "style": {
+                  "borderColor": "#8D6E63",
+                  "backgroundColor": "#D7CCC8",
+                  "iconColor": "#5D4037"
+               }
+            }
+         }
+      },
+      {
+         "id": "cb_disabled_selected",
+         "type": "checkboxFormType",
+         "config": {
+            "label": "Disabled (Selected)",
+            "hint": "This checkbox is not interactive.",
+            "value": true,
+            "editable": false
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "8 12 8 12",
+            "borderRadius": 8,
+            "backgroundColor": "#424242",
+            "borderColor": "#616161",
+            "iconColor": "#757575",
+            "labelColor": "#9E9E9E",
+            "hintColor": "#757575",
+            "width": 40,
+            "height": 40
+         }
+      },
+      {
+         "id": "cb_disabled_unselected",
+         "type": "checkboxFormType",
+         "config": {
+            "label": "Disabled (Unselected)",
+            "hint": "This one is also not interactive.",
+            "value": false,
+            "editable": false
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "8 12 8 12",
+            "borderRadius": 8,
+            "backgroundColor": "#424242",
+            "borderColor": "#616161",
+            "labelColor": "#9E9E9E",
+            "hintColor": "#757575",
+            "width": 40,
+            "height": 40
+         }
       }
    ]
 }

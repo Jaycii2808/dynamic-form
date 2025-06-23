@@ -4,11 +4,11 @@
    "order": 1,
    "components": [
       {
-         "id": "variants_container",
-         "type": "container",
+         "id": "gender_group",
+         "type": "radioGroupFormType",
          "config": {
-            "label": "Radio Button Variants",
-            "hint": "Each radio button below is a different variant, rendered in a separate row.",
+            "label": "Gender Selection",
+            "group": "gender",
             "layout": "column"
          },
          "style": {
@@ -16,261 +16,201 @@
          },
          "children": [
             {
-               "id": "gender_group",
-               "type": "container",
+               "id": "radio_male",
+               "type": "radioFormType",
                "config": {
-                  "label": "Gender Selection",
+                  "label": "Male",
+                  "hint": "Select if you identify as male.",
                   "group": "gender",
-                  "layout": "column"
+                  "value": true
                },
                "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "12 12 0 12",
-                  "borderWidth": 1,
-                  "borderColor": "#424242",
-                  "borderRadius": 8
+                  "margin": "0 0 12 0"
                },
-               "children": [
-                  {
-                     "id": "radio_male",
-                     "type": "radio",
-                     "config": {
-                        "label": "Male",
-                        "hint": "Select if you identify as male.",
-                        "group": "gender",
-                        "value": true
-                     },
+               "states": {
+                  "base": {
                      "style": {
-                        "margin": "0 0 12 0"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#9E9E9E"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#6979F8",
-                              "iconColor": "#6979F8"
-                           }
-                        }
+                        "borderColor": "#9E9E9E"
                      }
                   },
-                  {
-                     "id": "radio_female",
-                     "type": "radio",
-                     "config": {
-                        "label": "Female",
-                        "hint": "Select if you identify as female.",
-                        "group": "gender",
-                        "value": false
-                     },
+                  "selected": {
                      "style": {
-                        "margin": "0 0 12 0"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#9E9E9E"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#E040FB",
-                              "iconColor": "#E040FB"
-                           }
-                        }
-                     }
-                  },
-                  {
-                     "id": "radio_label_only",
-                     "type": "radio",
-                     "config": {
-                        "label": "Label Only",
-                        "hint": "This is a label-only variant.",
-                        "group": "gender",
-                        "value": false
-                     },
-                     "style": {
-                        "margin": "0 0 12 0"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#9E9E9E"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#00BCD4",
-                              "iconColor": "#00BCD4"
-                           }
-                        }
-                     }
-                  },
-                  {
-                     "id": "r1",
-                     "type": "radio",
-                     "config": {
-                        "label": "Khóa",
-                        "value": false,
-                        "editable": false,
-                        "group": "gender",
-                        "hint": "Không thể chọn"
-                     },
-                     "style": {
-                        "backgroundColor": "#e0e0e0",
-                        "borderColor": "#e0e0e0",
-                        "borderRadius": 20,
-                        "borderWidth": 2,
-                        "iconColor": "#bdbdbd",
-                        "width": 40,
-                        "height": 40
-                     }
-                  },
-                  {
-                     "id": "r7_label_only",
-                     "type": "radio",
-                     "config": {
-                        "label": "Chỉ nhãn",
-                        "value": false,
-                        "group": "gender"
-                     },
-                     "style": {
-                        "backgroundColor": "transparent",
-                        "borderColor": "#00BCD4",
-                        "borderRadius": 20,
-                        "borderWidth": 2,
-                        "iconColor": "#00BCD4",
-                        "width": 40,
-                        "height": 40
-                     }
-                  },
-                  {
-                     "id": "radio_anonymous",
-                     "type": "radio",
-                     "config": {
-                        "label": "Anonymous",
-                        "hint": "With a leading icon.",
-                        "group": "gender",
-                        "icon": "user",
-                        "value": false
-                     },
-                     "style": {
-                        "margin": "0 0 12 0",
-                        "iconColor": "#8D6E63",
-                        "labelColor": "#8D6E63",
-                        "hintColor": "#BCAAA4"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#8D6E63"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#5D4037",
-                              "iconColor": "#5D4037"
-                           }
-                        }
+                        "borderColor": "#6979F8",
+                        "iconColor": "#6979F8"
                      }
                   }
-               ]
+               }
             },
             {
-               "id": "shipping_group",
-               "type": "container",
+               "id": "radio_female",
+               "type": "radioFormType",
                "config": {
-                  "label": "Shipping Method",
-                  "group": "shipping",
-                  "layout": "column"
+                  "label": "Female",
+                  "hint": "Select if you identify as female.",
+                  "group": "gender",
+                  "value": false
                },
                "style": {
-                  "margin": "0 0 16 0",
-                  "padding": "12 12 0 12",
-                  "borderWidth": 1,
-                  "borderColor": "#424242",
-                  "borderRadius": 8
+                  "margin": "0 0 12 0"
                },
-               "children": [
-                  {
-                     "id": "radio_standard",
-                     "type": "radio",
-                     "config": {
-                        "label": "Standard Shipping",
-                        "hint": "5-7 business days",
-                        "group": "shipping",
-                        "icon": "local_shipping",
-                        "value": false
-                     },
+               "states": {
+                  "base": {
                      "style": {
-                        "margin": "0 0 12 0",
-                        "iconColor": "#FF7043"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#9E9E9E"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#FF7043",
-                              "iconColor": "#FF7043"
-                           }
-                        }
+                        "borderColor": "#9E9E9E"
                      }
                   },
-                  {
-                     "id": "radio_express",
-                     "type": "radio",
-                     "config": {
-                        "label": "Express Shipping",
-                        "hint": "1-2 business days",
-                        "group": "shipping",
-                        "icon": "flight_takeoff",
-                        "value": true
-                     },
+                  "selected": {
                      "style": {
-                        "margin": "0 0 12 0",
-                        "iconColor": "#29B6F6"
-                     },
-                     "states": {
-                        "base": {
-                           "style": {
-                              "borderColor": "#9E9E9E"
-                           }
-                        },
-                        "selected": {
-                           "style": {
-                              "borderColor": "#29B6F6",
-                              "iconColor": "#29B6F6"
-                           }
-                        }
-                     }
-                  },
-                  {
-                     "id": "radio_disabled",
-                     "type": "radio",
-                     "config": {
-                        "label": "Overnight (Disabled)",
-                        "hint": "Currently unavailable",
-                        "group": "shipping",
-                        "icon": "moon",
-                        "value": false,
-                        "editable": false
-                     },
-                     "style": {
-                        "margin": "0 0 12 0",
-                        "borderColor": "#616161",
-                        "labelColor": "#9E9E9E",
-                        "hintColor": "#757575",
-                        "iconColor": "#757575"
+                        "borderColor": "#E040FB",
+                        "iconColor": "#E040FB"
                      }
                   }
-               ]
+               }
+            },
+            {
+               "id": "radio_label_only",
+               "type": "radioFormType",
+               "config": {
+                  "label": "Label Only",
+                  "hint": "This is a label-only variant.",
+                  "group": "gender",
+                  "value": false
+               },
+               "style": {
+                  "margin": "0 0 12 0"
+               },
+               "states": {
+                  "base": {
+                     "style": {
+                        "borderColor": "#9E9E9E"
+                     }
+                  },
+                  "selected": {
+                     "style": {
+                        "borderColor": "#00BCD4",
+                        "iconColor": "#00BCD4"
+                     }
+                  }
+               }
+            },
+            {
+               "id": "radio_anonymous",
+               "type": "radioFormType",
+               "config": {
+                  "label": "Anonymous",
+                  "hint": "With a leading icon.",
+                  "group": "gender",
+                  "icon": "user",
+                  "value": false
+               },
+               "style": {
+                  "margin": "0 0 12 0",
+                  "iconColor": "#8D6E63",
+                  "labelColor": "#8D6E63",
+                  "hintColor": "#BCAAA4"
+               },
+               "states": {
+                  "base": {
+                     "style": {
+                        "borderColor": "#8D6E63"
+                     }
+                  },
+                  "selected": {
+                     "style": {
+                        "borderColor": "#5D4037",
+                        "iconColor": "#5D4037"
+                     }
+                  }
+               }
+            }
+         ]
+      },
+      {
+         "id": "shipping_group",
+         "type": "radioGroupFormType",
+         "config": {
+            "label": "Shipping Method",
+            "group": "shipping",
+            "layout": "column"
+         },
+         "style": {
+            "margin": "16 16 0 16"
+         },
+         "children": [
+            {
+               "id": "radio_standard",
+               "type": "radioFormType",
+               "config": {
+                  "label": "Standard Shipping",
+                  "hint": "5-7 business days",
+                  "group": "shipping",
+                  "icon": "local_shipping",
+                  "value": false
+               },
+               "style": {
+                  "margin": "0 0 12 0",
+                  "iconColor": "#FF7043"
+               },
+               "states": {
+                  "base": {
+                     "style": {
+                        "borderColor": "#9E9E9E"
+                     }
+                  },
+                  "selected": {
+                     "style": {
+                        "borderColor": "#FF7043",
+                        "iconColor": "#FF7043"
+                     }
+                  }
+               }
+            },
+            {
+               "id": "radio_express",
+               "type": "radioFormType",
+               "config": {
+                  "label": "Express Shipping",
+                  "hint": "1-2 business days",
+                  "group": "shipping",
+                  "icon": "flight_takeoff",
+                  "value": true
+               },
+               "style": {
+                  "margin": "0 0 12 0",
+                  "iconColor": "#29B6F6"
+               },
+               "states": {
+                  "base": {
+                     "style": {
+                        "borderColor": "#9E9E9E"
+                     }
+                  },
+                  "selected": {
+                     "style": {
+                        "borderColor": "#29B6F6",
+                        "iconColor": "#29B6F6"
+                     }
+                  }
+               }
+            },
+            {
+               "id": "radio_disabled",
+               "type": "radioFormType",
+               "config": {
+                  "label": "Overnight (Disabled)",
+                  "hint": "Currently unavailable",
+                  "group": "shipping",
+                  "icon": "moon",
+                  "value": false,
+                  "editable": false
+               },
+               "style": {
+                  "margin": "0 0 12 0",
+                  "borderColor": "#616161",
+                  "labelColor": "#9E9E9E",
+                  "hintColor": "#757575",
+                  "iconColor": "#757575"
+               }
             }
          ]
       }

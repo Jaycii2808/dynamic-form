@@ -176,25 +176,25 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   Widget build(BuildContext context) {
     final component = widget.component;
     switch (component.type) {
-      case 'textfield':
+      case 'textFieldFormType':
         return _buildTextField(component);
-      case 'select':
+      case 'selectFormType':
         return _buildSelect(component);
       case 'textAreaFormType':
         return _buildTextArea(component);
       case 'dateTimePickerFormType':
         return _buildDateTimePickerForm(component);
-      case 'dropdown':
+      case 'dropdownFormType':
         return _buildDropdown(component);
-      case 'checkbox_group':
+      case 'checkboxGroupFormType':
         return _buildCheckboxGroup(component);
-      case 'checkbox':
+      case 'checkboxFormType':
         return _buildToggleableRow(component, isRadio: false);
-      case 'radio':
+      case 'radioFormType':
         return _buildToggleableRow(component, isRadio: true);
-      case 'radio_group':
+      case 'radioGroupFormType':
         return _buildRadioGroup(component);
-      case 'slider':
+      case 'sliderFormType':
         return _buildSlider(component);
       case 'selectorFormType':
         return _buildSelector(component);
@@ -202,7 +202,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildSwitch(component);
       case 'textFieldTagsFormType':
         return _buildTextFieldTags(component);
-      case 'file_uploader':
+      case 'fileUploaderFormType':
         return _FileUploaderWidget(component: component);
       default:
         return _buildDefaultFormType();
@@ -1273,8 +1273,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         component.children
             ?.map(
               (child) => Padding(
-                padding:
-                    StyleUtils.parsePadding(child.style['margin']),
+                padding: StyleUtils.parsePadding(child.style['margin']),
                 child: DynamicFormRenderer(component: child),
               ),
             )
@@ -1872,7 +1871,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return null;
   }
 
-
   Widget _buildDropdown(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
@@ -2273,22 +2271,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final hint = item.config['hint'] as String?;
       final iconName = item.config['icon'] as String?;
 
-      Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']);
-      Color borderColor =
-          StyleUtils.parseColor(style['borderColor']);
+      Color bgColor = StyleUtils.parseColor(style['backgroundColor']);
+      Color borderColor = StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
-      Color iconColor =
-          StyleUtils.parseColor(style['iconColor']);
+      Color iconColor = StyleUtils.parseColor(style['iconColor']);
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
-      EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ;
+      EdgeInsetsGeometry margin = StyleUtils.parsePadding(style['margin']);
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
-        borderColor =
-            StyleUtils.parseColor(style['selectedBorderColor']) ;
+        borderColor = StyleUtils.parseColor(style['selectedBorderColor']);
       }
 
       // Disabled style
@@ -2325,9 +2318,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 height: height,
                 decoration: BoxDecoration(
                   color: bgColor,
-                  border: isSelected || !isEditable
-                      ? null
-                      : Border.all(color: borderColor, width: 2),
+                  border: Border.all(
+                    color: borderColor,
+                    width: 2,
+                  ), // Luôn luôn có border
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),
                 child: Stack(
@@ -2443,18 +2437,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final iconName = item.config['icon'] as String?;
       final itemGroup = item.config['group'] as String? ?? groupName;
 
-      Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']) ;
-      Color borderColor =
-          StyleUtils.parseColor(style['borderColor']);
+      Color bgColor = StyleUtils.parseColor(style['backgroundColor']);
+      Color borderColor = StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 20;
       double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 2;
-      Color iconColor =
-          StyleUtils.parseColor(style['iconColor']) ;
+      Color iconColor = StyleUtils.parseColor(style['iconColor']);
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
-      EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ;
+      EdgeInsetsGeometry margin = StyleUtils.parsePadding(style['margin']);
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
@@ -2634,22 +2624,21 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final String? group = component.config['group'];
 
     // 3. Define visual properties based on style
-    final Color backgroundColor =
-        StyleUtils.parseColor(style['backgroundColor']) ;
-    final Color borderColor =
-        StyleUtils.parseColor(style['borderColor']) ;
+    final Color backgroundColor = StyleUtils.parseColor(
+      style['backgroundColor'],
+    );
+    final Color borderColor = StyleUtils.parseColor(style['borderColor']);
     final double borderWidth =
         (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
-    final Color iconColor =
-        StyleUtils.parseColor(style['iconColor']);
+    final Color iconColor = StyleUtils.parseColor(style['iconColor']);
     final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
     final double controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
 
     final controlBorderRadius = isRadio
         ? controlWidth / 2
         : (StyleUtils.parseBorderRadius(
-                style['borderRadius'],
-              ).resolve(TextDirection.ltr).topLeft.x );
+            style['borderRadius'],
+          ).resolve(TextDirection.ltr).topLeft.x);
 
     // 4. Build the toggle control (the checkbox or radio button itself)
     Widget toggleControl = Container(
@@ -2692,8 +2681,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               label,
               style: TextStyle(
                 fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                color:
-                    StyleUtils.parseColor(style['labelColor']) ,
+                color: StyleUtils.parseColor(style['labelColor']),
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
@@ -2705,8 +2693,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   hint,
                   style: TextStyle(
                     fontSize: 12,
-                    color:
-                        StyleUtils.parseColor(style['hintColor']),
+                    color: StyleUtils.parseColor(style['hintColor']),
                     fontStyle: FontStyle.italic,
                   ),
                   maxLines: 2,
@@ -2727,23 +2714,33 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           final parent = context
               .findAncestorWidgetOfExactType<DynamicFormRenderer>()
               ?.component;
-          if (parent != null &&
-              parent.type == 'container' &&
-              parent.children != null) {
+          if (parent != null && parent.children != null) {
             setState(() {
-              final isThisSelected = component.config['value'] == true;
-              // Allow toggling off if it's already selected
-              if (isThisSelected) {
-                component.config['value'] = false;
-              } else {
-                // Otherwise, select this and deselect others in the group
-                for (final sibling in parent.children!) {
-                  if (sibling.type == 'radio' &&
-                      sibling.config['group'] == group) {
-                    sibling.config['value'] = sibling.id == component.id;
-                  }
+              for (final sibling in parent.children!) {
+                if (sibling.type == 'radioFormType' &&
+                    (sibling.config['group'] == group)) {
+                  sibling.config['value'] = sibling.id == component.id;
                 }
               }
+            });
+          }
+        } else {
+          // No group: allow only one selected among siblings of type radioFormType
+          final parent = context
+              .findAncestorWidgetOfExactType<DynamicFormRenderer>()
+              ?.component;
+          if (parent != null && parent.children != null) {
+            setState(() {
+              for (final sibling in parent.children!) {
+                if (sibling.type == 'radioFormType') {
+                  sibling.config['value'] = sibling.id == component.id;
+                }
+              }
+            });
+          } else {
+            // If no parent, just toggle this radio
+            setState(() {
+              component.config['value'] = true;
             });
           }
         }
@@ -2760,8 +2757,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       onTap: handleTap,
       child: Container(
         margin: StyleUtils.parsePadding(style['margin']),
-        padding:
-            StyleUtils.parsePadding(style['padding']),
+        padding: StyleUtils.parsePadding(style['padding']),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -2908,8 +2904,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               child: Text(
                 hint,
                 style: TextStyle(
-                  color:
-                      StyleUtils.parseColor(style['hintColor']) ,
+                  color: StyleUtils.parseColor(style['hintColor']),
                   fontSize: 12,
                 ),
               ),
@@ -3567,8 +3562,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color:
-                      StyleUtils.parseColor(style['fileItemBackgroundColor']),
+                  color: StyleUtils.parseColor(
+                    style['fileItemBackgroundColor'],
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -3676,8 +3672,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             ElevatedButton(
               onPressed: _isProcessing ? null : _resetState,
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    StyleUtils.parseColor(style['removeAllButtonColor']) ,
+                backgroundColor: StyleUtils.parseColor(
+                  style['removeAllButtonColor'],
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                     (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
