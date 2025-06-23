@@ -74,6 +74,91 @@
          }
       },
       {
+         "id": "file_uploader_multiple",
+         "type": "file_uploader",
+         "config": {
+            "title": "Drop multiple files or click to upload",
+            "subtitle": "You can select multiple files at once",
+            "buttonText": "Browse Files",
+            "multipleFiles": true,
+            "allowedExtensions": [
+               "jpg",
+               "png",
+               "pdf",
+               "doc",
+               "docx",
+               "txt",
+               "jpeg",
+               "webp"
+            ]
+         },
+         "style": {
+            "width": 400,
+            "height": 300,
+            "backgroundColor": "#000000",
+            "borderColor": "#4A4A4A",
+            "borderRadius": 12,
+            "borderWidth": 1.5,
+            "borderStyle": "dashed",
+            "textColor": "#FFFFFF",
+            "buttonBackgroundColor": "#6979F8",
+            "buttonTextColor": "#FFFFFF",
+            "buttonBorderRadius": 8,
+            "fileItemBackgroundColor": "#2A2A2A",
+            "removeAllButtonColor": "#E74C3C",
+            "margin": "16"
+         },
+         "variants": {
+            "multipleFiles": {},
+            "dragging": {
+               "config": {
+                  "title": "Drop multiple files here",
+                  "subtitle": "or click to browse"
+               },
+               "style": {
+                  "backgroundColor": "#1A1A1A",
+                  "borderColor": "#6979F8"
+               }
+            }
+         },
+         "states": {
+            "loading": {
+               "config": {
+                  "statusTextFormat": "Uploading {fileName} {progress}/{total}%",
+                  "subtitle": "Processing multiple files...",
+                  "buttonText": "Loading"
+               },
+               "style": {
+                  "icon": "file",
+                  "iconColor": "#FFFFFF",
+                  "progressColor": "#6979F8"
+               }
+            },
+            "success": {
+               "config": {
+                  "statusTextFormat": "{fileName} uploaded successfully!",
+                  "addMoreButtonText": "Add More Files",
+                  "removeAllButtonText": "Remove All"
+               },
+               "style": {
+                  "icon": "check",
+                  "iconColor": "#27AE60"
+               }
+            },
+            "error": {
+               "config": {
+                  "statusText": "Some files failed to upload. Please try again.",
+                  "buttonText": "Retry"
+               },
+               "style": {
+                  "icon": "error",
+                  "iconColor": "#E74C3C",
+                  "borderColor": "#E74C3C"
+               }
+            }
+         }
+      },
+      {
          "id": "file_uploader_compact",
          "type": "file_uploader",
          "config": {

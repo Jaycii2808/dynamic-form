@@ -3245,8 +3245,16 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
   String _currentState = 'base'; // base, dragging, loading, success, error
   bool _isDragging = false;
   double _progress = 0.0;
-  XFile? _pickedFile;
+  List<XFile> _pickedFiles = [];
   Timer? _timer;
+  bool _isMultipleFiles = false;
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMultipleFiles = widget.component.config['multipleFiles'] == true;
+  }
 
   @override
   void dispose() {
@@ -3254,19 +3262,29 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     super.dispose();
   }
 
-  void _startUpload(XFile file) {
-    _pickedFile = file;
+  void _startUpload(List<XFile> files) {
+    if (_isProcessing) return; // Prevent multiple simultaneous uploads
+
+    _pickedFiles = files;
+    _isProcessing = true;
+
     setState(() {
       _currentState = 'loading';
       _progress = 0;
     });
 
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
       setState(() {
-        _progress += 5;
+        _progress += 2; // Slower progress for better stability
         if (_progress >= 100) {
           timer.cancel();
+          _isProcessing = false;
           // Simulate a random success/error outcome
           if (DateTime.now().second % 2 == 0) {
             _currentState = 'success';
@@ -3279,43 +3297,82 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
   }
 
   void _handleFiles(List<XFile> files) {
-    if (files.isNotEmpty) {
-      final file = files.first;
-      final allowedExtensions =
-          (widget.component.config['allowedExtensions'] as List<dynamic>?)
-              ?.cast<String>() ??
-          [];
-      if (allowedExtensions.isNotEmpty &&
-          !allowedExtensions.any((ext) => file.name.endsWith('.$ext'))) {
-        debugPrint(
-          "File type not allowed: ${file.name}. Allowed: $allowedExtensions",
-        );
-        setState(() => _currentState = 'error');
-        return;
+    if (files.isEmpty || _isProcessing) return;
+
+    final allowedExtensions =
+        (widget.component.config['allowedExtensions'] as List<dynamic>?)
+            ?.cast<String>() ??
+        [];
+
+    // Check if all files have allowed extensions
+    if (allowedExtensions.isNotEmpty) {
+      for (final file in files) {
+        if (!allowedExtensions.any(
+          (ext) => file.name.toLowerCase().endsWith('.${ext.toLowerCase()}'),
+        )) {
+          debugPrint(
+            "File type not allowed: ${file.name}. Allowed: $allowedExtensions",
+          );
+          setState(() {
+            _currentState = 'error';
+            _isProcessing = false;
+          });
+          return;
+        }
       }
-      _startUpload(file);
     }
+
+    _startUpload(files);
   }
 
   void _browseFiles() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions:
-          (widget.component.config['allowedExtensions'] as List<dynamic>?)
-              ?.cast<String>(),
-    );
-    if (result != null && result.files.isNotEmpty) {
-      _handleFiles([XFile(result.files.single.path!)]);
+    if (_isProcessing) return;
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions:
+            (widget.component.config['allowedExtensions'] as List<dynamic>?)
+                ?.cast<String>(),
+        allowMultiple: _isMultipleFiles,
+      );
+
+      if (result != null && result.files.isNotEmpty && mounted) {
+        final files = result.files.map((f) => XFile(f.path!)).toList();
+        _handleFiles(files);
+      }
+    } catch (e) {
+      debugPrint('Error picking files: $e');
+      if (mounted) {
+        setState(() {
+          _currentState = 'error';
+          _isProcessing = false;
+        });
+      }
     }
   }
 
   void _resetState() {
+    if (!mounted) return;
+
     setState(() {
       _currentState = 'base';
-      _pickedFile = null;
+      _pickedFiles.clear();
       _progress = 0;
       _isDragging = false;
+      _isProcessing = false;
       _timer?.cancel();
+    });
+  }
+
+  void _removeFile(int index) {
+    if (!mounted || _isProcessing) return;
+
+    setState(() {
+      _pickedFiles.removeAt(index);
+      if (_pickedFiles.isEmpty) {
+        _currentState = 'base';
+      }
     });
   }
 
@@ -3342,6 +3399,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
 
     return DragTarget<List<XFile>>(
       onWillAccept: (data) {
+        if (_isProcessing) return false;
         setState(() => _isDragging = true);
         return true;
       },
@@ -3432,7 +3490,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             config['buttonText'].isNotEmpty) ...[
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _browseFiles,
+            onPressed: _isProcessing ? null : _browseFiles,
             style: ElevatedButton.styleFrom(
               backgroundColor: StyleUtils.parseColor(
                 style['buttonBackgroundColor'],
@@ -3460,11 +3518,20 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     Map<String, dynamic> config,
   ) {
     String statusText =
-        config['statusTextFormat'] ?? '{fileName} {progress}/{total}%';
-    statusText = statusText
-        .replaceAll('{fileName}', _pickedFile?.name ?? 'file')
-        .replaceAll('{progress}', _progress.toInt().toString())
-        .replaceAll('{total}', '100');
+        config['statusTextFormat'] ??
+        'Uploading {fileName} {progress}/{total}%';
+
+    if (_isMultipleFiles && _pickedFiles.length > 1) {
+      statusText = statusText
+          .replaceAll('{fileName}', '${_pickedFiles.length} files')
+          .replaceAll('{progress}', _progress.toInt().toString())
+          .replaceAll('{total}', '100');
+    } else if (_pickedFiles.isNotEmpty) {
+      statusText = statusText
+          .replaceAll('{fileName}', _pickedFiles.first.name)
+          .replaceAll('{progress}', _progress.toInt().toString())
+          .replaceAll('{total}', '100');
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -3527,8 +3594,18 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     final bool hasPreview =
         widget.component.variants?.containsKey('withPreview') ?? false;
 
-    if (hasPreview && _pickedFile != null && _isImageFile(_pickedFile!.path)) {
-      // Build the preview state
+    // Check for the 'multipleFiles' variant
+    final bool isMultipleVariant =
+        widget.component.variants?.containsKey('multipleFiles') ?? false;
+
+    if (isMultipleVariant && _pickedFiles.length > 1) {
+      return _buildMultipleFilesSuccessState(style, config);
+    }
+
+    if (hasPreview &&
+        _pickedFiles.isNotEmpty &&
+        _isImageFile(_pickedFiles.first.path)) {
+      // Build the preview state for single image
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -3540,7 +3617,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                   (style['borderRadius'] as num?)?.toDouble() ?? 8.0,
                 ),
                 child: Image.file(
-                  File(_pickedFile!.path),
+                  File(_pickedFiles.first.path),
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),
@@ -3572,10 +3649,14 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     }
 
     String statusText = config['statusTextFormat'] ?? '{fileName} uploaded!';
-    statusText = statusText.replaceAll(
-      '{fileName}',
-      _pickedFile?.name ?? 'file',
-    );
+    if (_isMultipleFiles && _pickedFiles.length > 1) {
+      statusText = statusText.replaceAll(
+        '{fileName}',
+        '${_pickedFiles.length} files',
+      );
+    } else if (_pickedFiles.isNotEmpty) {
+      statusText = statusText.replaceAll('{fileName}', _pickedFiles.first.name);
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -3613,6 +3694,171 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
         ),
       ],
     );
+  }
+
+  Widget _buildMultipleFilesSuccessState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: _pickedFiles.length,
+            itemBuilder: (context, index) {
+              final file = _pickedFiles[index];
+              final isImage = _isImageFile(file.path);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      StyleUtils.parseColor(style['fileItemBackgroundColor']) ??
+                      Colors.grey[800],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    if (isImage) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Image.file(
+                            File(file.path),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.broken_image,
+                                color: StyleUtils.parseColor(
+                                  style['iconColor'],
+                                ),
+                                size: 40,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ] else ...[
+                      Icon(
+                        Icons.insert_drive_file,
+                        color: StyleUtils.parseColor(style['iconColor']),
+                        size: 40,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            file.name,
+                            style: TextStyle(
+                              color: StyleUtils.parseColor(style['textColor']),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          FutureBuilder<String>(
+                            future: _getFileSize(file.path),
+                            builder: (context, snapshot) {
+                              return Text(
+                                snapshot.data ?? 'Calculating...',
+                                style: TextStyle(
+                                  color: StyleUtils.parseColor(
+                                    style['textColor'],
+                                  )?.withOpacity(0.7),
+                                  fontSize: 12,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _isProcessing
+                          ? null
+                          : () => _removeFile(index),
+                      icon: Icon(
+                        Icons.close,
+                        color: StyleUtils.parseColor(style['iconColor']),
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _isProcessing ? null : _browseFiles,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StyleUtils.parseColor(
+                    style['buttonBackgroundColor'],
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  config['addMoreButtonText'] ?? 'Add More',
+                  style: TextStyle(
+                    color: StyleUtils.parseColor(style['buttonTextColor']),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: _isProcessing ? null : _resetState,
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    StyleUtils.parseColor(style['removeAllButtonColor']) ??
+                    Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+                  ),
+                ),
+              ),
+              child: Text(
+                config['removeAllButtonText'] ?? 'Remove All',
+                style: TextStyle(
+                  color: StyleUtils.parseColor(style['buttonTextColor']),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<String> _getFileSize(String filePath) async {
+    try {
+      final file = File(filePath);
+      final size = await file.length();
+      if (size < 1024) {
+        return '${size} B';
+      } else if (size < 1024 * 1024) {
+        return '${(size / 1024).toStringAsFixed(1)} KB';
+      } else {
+        return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+      }
+    } catch (e) {
+      return 'Unknown size';
+    }
   }
 
   Widget _buildErrorState(
