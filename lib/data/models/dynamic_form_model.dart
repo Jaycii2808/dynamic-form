@@ -1,8 +1,9 @@
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:equatable/equatable.dart';
 
 class DynamicFormModel extends Equatable {
   final String id;
-  final String type;
+  final FormTypeEnum type;
   final int order;
   final Map<String, dynamic> config;
   final Map<String, dynamic> style;
@@ -28,7 +29,7 @@ class DynamicFormModel extends Equatable {
   factory DynamicFormModel.fromJson(Map<String, dynamic> json) {
     return DynamicFormModel(
       id: json['id'] ?? '',
-      type: json['type'] ?? '',
+      type: FormTypeEnum.fromJson(json['type']),
       order: json['order'] ?? 0,
       config: json['config'] ?? {},
       style: json['style'] ?? {},
@@ -78,7 +79,7 @@ class DynamicFormModel extends Equatable {
 
     return {
       'id': id,
-      'type': type,
+      'type': type.toJson(),
       'order': order,
       'config': deepCopyConfig(config),
       'style': style,
