@@ -39,34 +39,22 @@ class MyApp extends StatelessWidget {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _navigateToForm(BuildContext context, String configKey) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DynamicFormScreen(
-          configKey: configKey,
-          title: configKey.replaceAll('_', ' ').toUpperCase(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)
     final configKeys = [
-      'text_input_screen',
-      'select_input',
+      'text_input_form',
+      'select_input_component',
       'text_area_form',
       'datetime_picker_form',
-      'dropdown_input',
-      'checkbox_input',
-      'radio_button',
-      'filter_price',
+      'dropdown_input_component',
+      'checkbox_input_component',
+      'radio_button_component',
+      'filter_price_component',
       'selector_component',
       'switch_component',
-      'textfield_tags_component',
-      'file_uploader',
+      'text_field_tags_component',
+      'file_uploader_component',
     ];
 
     return Scaffold(

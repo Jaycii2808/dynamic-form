@@ -1,12 +1,11 @@
 enum FormTypeEnum {
   textField,
   select,
-  datePicker,
   textArea,
-  datetimePicker,
+  dateTimePicker,
   dropdown,
-  checkboxGroup,
-  checkbox,
+  checkBoxGroup,
+  checkBox,
   radio,
   radioGroup,
   slider,
@@ -18,25 +17,23 @@ enum FormTypeEnum {
 
   static FormTypeEnum fromJson(String type) {
     switch (type.toLowerCase()) {
-      case 'textfield':
+      case 'textField':
         return FormTypeEnum.textField;
       case 'select':
         return FormTypeEnum.select;
-      case 'datepicker':
-        return FormTypeEnum.datePicker;
-      case 'textarea':
+      case 'textArea':
         return FormTypeEnum.textArea;
       case 'datetime_picker':
-        return FormTypeEnum.datetimePicker;
+        return FormTypeEnum.dateTimePicker;
       case 'dropdown':
         return FormTypeEnum.dropdown;
-      case 'checkbox_group':
-        return FormTypeEnum.checkboxGroup;
-      case 'checkbox':
-        return FormTypeEnum.checkbox;
+      case 'checkBoxGroup':
+        return FormTypeEnum.checkBoxGroup;
+      case 'checkBox':
+        return FormTypeEnum.checkBox;
       case 'radio':
         return FormTypeEnum.radio;
-      case 'radio_group':
+      case 'radioGroup':
         return FormTypeEnum.radioGroup;
       case 'slider':
         return FormTypeEnum.slider;
@@ -44,9 +41,9 @@ enum FormTypeEnum {
         return FormTypeEnum.selector;
       case 'switch':
         return FormTypeEnum.switchComponent;
-      case 'textfield_tags':
+      case 'textFieldTags':
         return FormTypeEnum.textFieldTags;
-      case 'file_uploader':
+      case 'fileUploader':
         return FormTypeEnum.fileUploader;
       default:
         return FormTypeEnum.container;
@@ -56,25 +53,23 @@ enum FormTypeEnum {
   String toJson() {
     switch (this) {
       case FormTypeEnum.textField:
-        return 'textfield';
+        return 'textField';
       case FormTypeEnum.select:
         return 'select';
-      case FormTypeEnum.datePicker:
-        return 'datepicker';
       case FormTypeEnum.textArea:
-        return 'textarea';
-      case FormTypeEnum.datetimePicker:
+        return 'textArea';
+      case FormTypeEnum.dateTimePicker:
         return 'datetime_picker';
       case FormTypeEnum.dropdown:
         return 'dropdown';
-      case FormTypeEnum.checkboxGroup:
-        return 'checkbox_group';
-      case FormTypeEnum.checkbox:
-        return 'checkbox';
+      case FormTypeEnum.checkBoxGroup:
+        return 'checkBoxGroup';
+      case FormTypeEnum.checkBox:
+        return 'checkBox';
       case FormTypeEnum.radio:
         return 'radio';
       case FormTypeEnum.radioGroup:
-        return 'radio_group';
+        return 'radioGroup';
       case FormTypeEnum.slider:
         return 'slider';
       case FormTypeEnum.selector:
@@ -82,9 +77,9 @@ enum FormTypeEnum {
       case FormTypeEnum.switchComponent:
         return 'switch';
       case FormTypeEnum.textFieldTags:
-        return 'textfield_tags';
+        return 'textFieldTags';
       case FormTypeEnum.fileUploader:
-        return 'file_uploader';
+        return 'fileUploader';
       case FormTypeEnum.container:
         return 'container';
     }
