@@ -39,18 +39,6 @@ class MyApp extends StatelessWidget {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _navigateToForm(BuildContext context, String configKey) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DynamicFormScreen(
-          configKey: configKey,
-          title: configKey.replaceAll('_', ' ').toUpperCase(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // Predefined remote config keys (extendable in future)

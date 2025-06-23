@@ -1,13 +1,14 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:cross_file/cross_file.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
-import 'dart:async';
-import 'package:cross_file/cross_file.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 
 IconData? mapIconNameToIconData(String name) {
   switch (name) {
@@ -179,8 +180,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextField(component);
       case 'select':
         return _buildSelect(component);
-      case 'datepicker':
-        return _buildDatePicker(component);
       case 'textarea':
         return _buildTextArea(component);
       case 'datetime_picker':
@@ -384,8 +383,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       },
                       onChanged: (value) {
                         debugPrint('OnChanged: Input changed to $value');
-                        if (_errorText != null)
+                        if (_errorText != null) {
                           setState(() => _errorText = null);
+                        }
                       },
                       decoration: InputDecoration(
                         hintText: placeholder,
@@ -1274,8 +1274,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             ?.map(
               (child) => Padding(
                 padding:
-                    StyleUtils.parsePadding(child.style['margin']) ??
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                    StyleUtils.parsePadding(child.style['margin']),
                 child: DynamicFormRenderer(component: child),
               ),
             )
@@ -1300,7 +1299,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   Container(
                     width: 4,
                     height: 28,
-                    color: Color(0xFF6979F8),
+                    color: const Color(0xFF6979F8),
                     margin: const EdgeInsets.only(right: 8),
                   ),
                   Text(
@@ -1873,137 +1872,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return null;
   }
 
-  Widget _buildDatePicker(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-
-    // Determine current state
-    final validationError = _validateDatePicker(component, _selectedDateRange);
-    String currentState = 'base';
-
-    if (_isTouched && validationError != null) {
-      currentState = 'error';
-    } else if (_selectedDateRange != null && validationError == null) {
-      currentState = 'success';
-    }
-
-    // Apply state styles
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    // Helper text
-    final helperText = style['helperText']?.toString();
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
-
-    String displayText = config['placeholder'] ?? 'Select a date range';
-    if (_selectedDateRange != null) {
-      final start = _selectedDateRange!.start;
-      final end = _selectedDateRange!.end;
-      final startDate = '${start.toLocal()}'.split(' ')[0];
-      final endDate = '${end.toLocal()}'.split(' ')[0];
-      displayText = '$startDate - $endDate';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          InkWell(
-            onTap: () async {
-              final picked = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2101),
-                initialDateRange: _selectedDateRange,
-              );
-              setState(() {
-                _isTouched = true;
-                if (picked != null) {
-                  _selectedDateRange = picked;
-                }
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                ),
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                color: StyleUtils.parseColor(style['backgroundColor']),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today,
-                    color: StyleUtils.parseColor(style['iconColor']),
-                    size: (style['iconSize'] as num? ?? 20.0).toDouble(),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      displayText,
-                      style: TextStyle(
-                        fontSize: style['fontSize']?.toDouble() ?? 16,
-                        color: StyleUtils.parseColor(style['color']),
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: StyleUtils.parseColor(style['color']),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isTouched && validationError != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                validationError,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
-          if (helperText != null && !(_isTouched && validationError != null))
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                helperText,
-                style: TextStyle(
-                  color: helperTextColor,
-                  fontSize: 12,
-                  fontStyle: style['fontStyle'] == 'italic'
-                      ? FontStyle.italic
-                      : FontStyle.normal,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDropdown(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
@@ -2406,24 +2274,21 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final iconName = item.config['icon'] as String?;
 
       Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
+          StyleUtils.parseColor(style['backgroundColor']);
       Color borderColor =
-          StyleUtils.parseColor(style['borderColor']) ??
-          const Color(0xFF6979F8);
+          StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
       Color iconColor =
-          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+          StyleUtils.parseColor(style['iconColor']);
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
       EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ??
-          const EdgeInsets.only(right: 16);
+          StyleUtils.parsePadding(style['margin']) ;
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
         borderColor =
-            StyleUtils.parseColor(style['selectedBorderColor']) ??
-            const Color(0xFF6979F8);
+            StyleUtils.parseColor(style['selectedBorderColor']) ;
       }
 
       // Disabled style
@@ -2496,7 +2361,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     hint,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
@@ -2579,19 +2444,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final itemGroup = item.config['group'] as String? ?? groupName;
 
       Color bgColor =
-          StyleUtils.parseColor(style['backgroundColor']) ?? Colors.white;
+          StyleUtils.parseColor(style['backgroundColor']) ;
       Color borderColor =
-          StyleUtils.parseColor(style['borderColor']) ??
-          const Color(0xFF6979F8);
+          StyleUtils.parseColor(style['borderColor']);
       double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 20;
       double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 2;
       Color iconColor =
-          StyleUtils.parseColor(style['iconColor']) ?? Colors.white;
+          StyleUtils.parseColor(style['iconColor']) ;
       double width = (style['width'] as num?)?.toDouble() ?? 40;
       double height = (style['height'] as num?)?.toDouble() ?? 40;
       EdgeInsetsGeometry margin =
-          StyleUtils.parsePadding(style['margin']) ??
-          const EdgeInsets.only(right: 16);
+          StyleUtils.parsePadding(style['margin']) ;
 
       // Increase border width if selected to give visual feedback
       if (isSelected) {
@@ -2673,7 +2536,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     hint,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
@@ -2772,16 +2635,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     // 3. Define visual properties based on style
     final Color backgroundColor =
-        StyleUtils.parseColor(style['backgroundColor']) ?? Colors.transparent;
+        StyleUtils.parseColor(style['backgroundColor']) ;
     final Color borderColor =
-        StyleUtils.parseColor(style['borderColor']) ?? const Color(0xFF9E9E9E);
+        StyleUtils.parseColor(style['borderColor']) ;
     final double borderWidth =
         (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
     final Color iconColor =
-        StyleUtils.parseColor(style['iconColor']) ??
-        (Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black);
+        StyleUtils.parseColor(style['iconColor']);
     final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
     final double controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
 
@@ -2789,8 +2649,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         ? controlWidth / 2
         : (StyleUtils.parseBorderRadius(
                 style['borderRadius'],
-              )?.resolve(TextDirection.ltr).topLeft.x ??
-              6);
+              ).resolve(TextDirection.ltr).topLeft.x );
 
     // 4. Build the toggle control (the checkbox or radio button itself)
     Widget toggleControl = Container(
@@ -2834,10 +2693,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               style: TextStyle(
                 fontSize: style['labelTextSize']?.toDouble() ?? 16,
                 color:
-                    StyleUtils.parseColor(style['labelColor']) ??
-                    (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black),
+                    StyleUtils.parseColor(style['labelColor']) ,
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
@@ -2850,8 +2706,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   style: TextStyle(
                     fontSize: 12,
                     color:
-                        StyleUtils.parseColor(style['hintColor']) ??
-                        Colors.grey,
+                        StyleUtils.parseColor(style['hintColor']),
                     fontStyle: FontStyle.italic,
                   ),
                   maxLines: 2,
@@ -2906,8 +2761,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: Container(
         margin: StyleUtils.parsePadding(style['margin']),
         padding:
-            StyleUtils.parsePadding(style['padding']) ??
-            const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+            StyleUtils.parsePadding(style['padding']),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -2970,7 +2824,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       thumbColor: StyleUtils.parseColor(style['thumbColor']),
       overlayColor: StyleUtils.parseColor(
         style['activeColor'],
-      )?.withOpacity(0.2),
+      ).withOpacity(0.2),
       trackHeight: 6.0,
     );
 
@@ -3055,7 +2909,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 hint,
                 style: TextStyle(
                   color:
-                      StyleUtils.parseColor(style['hintColor']) ?? Colors.grey,
+                      StyleUtils.parseColor(style['hintColor']) ,
                   fontSize: 12,
                 ),
               ),
@@ -3714,8 +3568,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color:
-                      StyleUtils.parseColor(style['fileItemBackgroundColor']) ??
-                      Colors.grey[800],
+                      StyleUtils.parseColor(style['fileItemBackgroundColor']),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -3770,7 +3623,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                                 style: TextStyle(
                                   color: StyleUtils.parseColor(
                                     style['textColor'],
-                                  )?.withOpacity(0.7),
+                                  ).withOpacity(0.7),
                                   fontSize: 12,
                                 ),
                               );
@@ -3824,8 +3677,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               onPressed: _isProcessing ? null : _resetState,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    StyleUtils.parseColor(style['removeAllButtonColor']) ??
-                    Colors.red,
+                    StyleUtils.parseColor(style['removeAllButtonColor']) ,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                     (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3850,7 +3702,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
       final file = File(filePath);
       final size = await file.length();
       if (size < 1024) {
-        return '${size} B';
+        return '$size B';
       } else if (size < 1024 * 1024) {
         return '${(size / 1024).toStringAsFixed(1)} KB';
       } else {
