@@ -8,7 +8,7 @@
          "type": "container",
          "config": {
             "label": "Checkbox Variants",
-            "hint": "Each checkbox below is a different variant, rendered in a separate row.",
+            "hint": "Each checkBox below is a different variant, rendered in a separate row.",
             "layout": "column"
          },
          "style": {
@@ -17,7 +17,7 @@
          "children": [
             {
                "id": "cb_base",
-               "type": "checkbox",
+               "type": "checkBox",
                "config": {
                   "label": "Base Checkbox",
                   "hint": "Simple border style.",
@@ -47,7 +47,7 @@
             },
             {
                "id": "cb_filled",
-               "type": "checkbox",
+               "type": "checkBox",
                "config": {
                   "label": "Filled Checkbox",
                   "hint": "Fills with color when selected.",
@@ -77,10 +77,10 @@
             },
             {
                "id": "cb_icon_hint",
-               "type": "checkbox",
+               "type": "checkBox",
                "config": {
                   "label": "With Leading Icon",
-                  "hint": "Displays an icon next to the checkbox.",
+                  "hint": "Displays an icon next to the checkBox.",
                   "icon": "book",
                   "value": false
                },
@@ -111,10 +111,10 @@
             },
             {
                "id": "cb_disabled_selected",
-               "type": "checkbox",
+               "type": "checkBox",
                "config": {
                   "label": "Disabled (Selected)",
-                  "hint": "This checkbox is not interactive.",
+                  "hint": "This checkBox is not interactive.",
                   "value": true,
                   "editable": false
                },
@@ -131,7 +131,7 @@
             },
             {
                "id": "cb_disabled_unselected",
-               "type": "checkbox",
+               "type": "checkBox",
                "config": {
                   "label": "Disabled (Unselected)",
                   "hint": "This one is also not interactive.",

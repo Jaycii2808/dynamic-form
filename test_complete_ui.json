@@ -3,7 +3,7 @@
    "components": [
       {
          "id": "text_input_template",
-         "type": "textfield",
+         "type": "textField",
          "title": "Input Template",
          "order": 0,
          "config": {
@@ -97,7 +97,7 @@
       },
       {
          "id": "email_input",
-         "type": "textfield",
+         "type": "textField",
          "title": "Email Input",
          "order": 1,
          "config": {
@@ -153,7 +153,7 @@
       },
       {
          "id": "password_input",
-         "type": "textfield",
+         "type": "textField",
          "title": "Password Input",
          "order": 2,
          "config": {
@@ -209,7 +209,7 @@
       },
       {
          "id": "phone_input",
-         "type": "textfield",
+         "type": "textField",
          "title": "Phone Input",
          "order": 3,
          "config": {

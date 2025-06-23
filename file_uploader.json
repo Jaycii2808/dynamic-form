@@ -5,7 +5,7 @@
    "components": [
       {
          "id": "file_uploader_1",
-         "type": "file_uploader",
+         "type": "fileUploader",
          "config": {
             "title": "Drop files or click to upload",
             "buttonText": "Browse",
@@ -75,7 +75,7 @@
       },
       {
          "id": "file_uploader_multiple",
-         "type": "file_uploader",
+         "type": "fileUploader",
          "config": {
             "title": "Drop multiple files or click to upload",
             "subtitle": "You can select multiple files at once",
@@ -160,7 +160,7 @@
       },
       {
          "id": "file_uploader_compact",
-         "type": "file_uploader",
+         "type": "fileUploader",
          "config": {
             "title": "Upload Avatar",
             "buttonText": ""
@@ -199,7 +199,7 @@
       },
       {
          "id": "file_uploader_with_preview",
-         "type": "file_uploader",
+         "type": "fileUploader",
          "config": {
             "title": "Drop an image to preview",
             "buttonText": "Upload Image",

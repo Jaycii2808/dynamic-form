@@ -3,7 +3,7 @@
    "components": [
       {
          "id": "name_validation",
-         "type": "textfield",
+         "type": "textField",
          "config": {
             "label": "Họ và tên (Test: Nguyễn Văn A)",
             "placeholder": "Nhập họ và tên",
@@ -48,7 +48,7 @@
       },
       {
          "id": "email_validation",
-         "type": "textfield",
+         "type": "textField",
          "config": {
             "label": "Email (Test: test@example.com)",
             "placeholder": "Nhập email",
@@ -93,7 +93,7 @@
       },
       {
          "id": "password_validation",
-         "type": "textfield",
+         "type": "textField",
          "config": {
             "label": "Mật khẩu (Test: Password123)",
             "placeholder": "Nhập mật khẩu",
@@ -138,7 +138,7 @@
       },
       {
          "id": "phone_validation",
-         "type": "textfield",
+         "type": "textField",
          "config": {
             "label": "Số điện thoại (Test: 0123456789)",
             "placeholder": "Nhập số điện thoại",
