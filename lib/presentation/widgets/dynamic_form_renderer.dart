@@ -2416,7 +2416,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           if (parent != null && parent.children != null) {
             setState(() {
               for (final sibling in parent.children!) {
-                if (sibling.type == 'radioFormType' && (sibling.config['group'] == group)) {
+                if (sibling.type == FormTypeEnum.radioFormType && (sibling.config['group'] == group)) {
                   sibling.config['value'] = sibling.id == component.id;
                 }
               }
@@ -2428,7 +2428,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           if (parent != null && parent.children != null) {
             setState(() {
               for (final sibling in parent.children!) {
-                if (sibling.type == 'radioFormType') {
+                if (sibling.type == FormTypeEnum.radioFormType) {
                   sibling.config['value'] = sibling.id == component.id;
                 }
               }
@@ -2503,7 +2503,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       activeTrackColor: StyleUtils.parseColor(style['activeColor']),
       inactiveTrackColor: StyleUtils.parseColor(style['inactiveColor']),
       thumbColor: StyleUtils.parseColor(style['thumbColor']),
-      overlayColor: StyleUtils.parseColor(style['activeColor']).withOpacity(0.2),
+      overlayColor: StyleUtils.parseColor(style['activeColor']).withValues(alpha:0.2),
       trackHeight: 6.0,
     );
 
@@ -2911,7 +2911,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     final config = {...baseConfig, ...variantConfig, ...stateConfig};
 
     return DragTarget<List<XFile>>(
-      onWillAccept: (data) {
+      onWillAcceptWithDetails: (data) {
         if (_isProcessing) return false;
         setState(() => _isDragging = true);
         return true;
@@ -3048,7 +3048,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               config['subtitle'],
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: StyleUtils.parseColor(style['textColor']).withOpacity(0.7),
+                color: StyleUtils.parseColor(style['textColor']).withValues(alpha:0.7),
                 fontSize: 12,
               ),
             ),
@@ -3057,7 +3057,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
         ElevatedButton(
           onPressed: null, // Disabled
           style: ElevatedButton.styleFrom(
-            backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']).withOpacity(0.5),
+            backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']).withValues(alpha:0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3227,7 +3227,7 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                               return Text(
                                 snapshot.data ?? 'Calculating...',
                                 style: TextStyle(
-                                  color: StyleUtils.parseColor(style['textColor']).withOpacity(0.7),
+                                  color: StyleUtils.parseColor(style['textColor']).withValues(alpha:0.7),
                                   fontSize: 12,
                                 ),
                               );
