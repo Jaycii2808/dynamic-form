@@ -4,6 +4,86 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
+IconData? mapIconNameToIconData(String name) {
+  switch (name) {
+    case 'mail':
+      return Icons.mail;
+    case 'check':
+      return Icons.check;
+    case 'close':
+      return Icons.close;
+    case 'error':
+      return Icons.error;
+    case 'user':
+      return Icons.person;
+    case 'lock':
+      return Icons.lock;
+    // Select input icons
+    case 'chevron-down':
+      return Icons.keyboard_arrow_down;
+    case 'chevron-up':
+      return Icons.keyboard_arrow_up;
+    case 'globe':
+      return Icons.language;
+    case 'heart':
+      return Icons.favorite;
+    case 'search':
+      return Icons.search;
+    case 'location':
+      return Icons.location_on;
+    case 'calendar':
+      return Icons.calendar_today;
+    case 'phone':
+      return Icons.phone;
+    case 'email':
+      return Icons.email;
+    case 'home':
+      return Icons.home;
+    case 'work':
+      return Icons.work;
+    case 'school':
+      return Icons.school;
+    case 'shopping':
+      return Icons.shopping_cart;
+    case 'food':
+      return Icons.restaurant;
+    case 'sports':
+      return Icons.sports_soccer;
+    case 'movie':
+      return Icons.movie;
+    case 'book':
+      return Icons.book;
+    case 'car':
+      return Icons.directions_car;
+    case 'plane':
+      return Icons.flight;
+    case 'train':
+      return Icons.train;
+    case 'bus':
+      return Icons.directions_bus;
+    case 'bike':
+      return Icons.directions_bike;
+    case 'walk':
+      return Icons.directions_walk;
+    case 'settings':
+      return Icons.settings;
+    case 'logout':
+      return Icons.logout;
+    case 'bell':
+      return Icons.notifications;
+    case 'more_horiz':
+      return Icons.more_horiz;
+    case 'edit':
+      return Icons.edit;
+    case 'delete':
+      return Icons.delete;
+    case 'share':
+      return Icons.share;
+    default:
+      return null;
+  }
+}
+
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
 
@@ -982,7 +1062,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
+      final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -1178,86 +1258,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return null;
   }
 
-  IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'mail':
-        return Icons.mail;
-      case 'check':
-        return Icons.check;
-      case 'close':
-        return Icons.close;
-      case 'error':
-        return Icons.error;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      // Select input icons
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
-    }
-  }
-
   Widget _buildContainer() {
     final component = widget.component;
     final layout =
@@ -1394,7 +1394,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
+      final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -1409,7 +1409,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       final iconSize = (style['iconSize'] is num)
           ? (style['iconSize'] as num).toDouble()
           : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
+      final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
       }
@@ -2077,7 +2077,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     } else if (triggerIcon != null && _currentDropdownLabel == null) {
       // Icon-only trigger
       triggerContent = Icon(
-        _mapIconNameToIconData(triggerIcon),
+        mapIconNameToIconData(triggerIcon),
         color: StyleUtils.parseColor(style['iconColor']),
         size: (style['iconSize'] as num?)?.toDouble() ?? 24.0,
       );
@@ -2086,7 +2086,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         children: [
           if (triggerIcon != null) ...[
             Icon(
-              _mapIconNameToIconData(triggerIcon),
+              mapIconNameToIconData(triggerIcon),
               color: StyleUtils.parseColor(style['iconColor']),
               size: (style['iconSize'] as num?)?.toDouble() ?? 18.0,
             ),
@@ -2334,7 +2334,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                                   const SizedBox(width: 12),
                                 ] else if (iconName != null) ...[
                                   Icon(
-                                    _mapIconNameToIconData(iconName),
+                                    mapIconNameToIconData(iconName),
                                     color: StyleUtils.parseColor(
                                       itemStyle['color'] ?? style['color'],
                                     ),
@@ -2428,7 +2428,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
       Widget? iconWidget;
       if (iconName != null) {
-        final iconData = _mapIconNameToIconData(iconName);
+        final iconData = mapIconNameToIconData(iconName);
         if (iconData != null) {
           iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
         }
@@ -2600,7 +2600,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
       Widget? iconWidget;
       if (iconName != null) {
-        final iconData = _mapIconNameToIconData(iconName);
+        final iconData = mapIconNameToIconData(iconName);
         if (iconData != null) {
           iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
         }
@@ -2759,7 +2759,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final String? hint = component.config['hint'];
     final String? iconName = component.config['icon'];
     final IconData? leadingIconData = iconName != null
-        ? _mapIconNameToIconData(iconName)
+        ? mapIconNameToIconData(iconName)
         : null;
     final String? group = component.config['group'];
 
@@ -2931,6 +2931,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final String prefix = config['prefix']?.toString() ?? '';
     final String? hint = config['hint'] as String?;
     final String? iconName = config['icon'] as String?;
+    final String? thumbIconName = config['thumbIcon'] as String?;
 
     if (component.variants != null) {
       if (hint != null && component.variants!.containsKey('withHint')) {
@@ -2943,7 +2944,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             component.variants!['withIcon']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
+      if (thumbIconName != null &&
+          component.variants!.containsKey('withThumbIcon')) {
+        final variantStyle =
+            component.variants!['withThumbIcon']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
     }
+
+    final IconData? thumbIcon = thumbIconName != null
+        ? mapIconNameToIconData(thumbIconName)
+        : null;
 
     final sliderTheme = SliderTheme.of(context).copyWith(
       activeTrackColor: StyleUtils.parseColor(style['activeColor']),
@@ -2965,6 +2977,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           values: currentRangeValues,
           iconColor: StyleUtils.parseColor(style['thumbIconColor']),
           labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+          thumbIcon: thumbIcon,
         ),
         thumbShape: _CustomSliderThumbShape(
           thumbRadius: 14,
@@ -2972,6 +2985,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           displayValue: _sliderValue ?? min,
           iconColor: StyleUtils.parseColor(style['thumbIconColor']),
           labelColor: StyleUtils.parseColor(style['valueLabelColor']),
+          thumbIcon: thumbIcon,
         ),
       ),
       child: isRange
@@ -3006,7 +3020,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     Widget? iconWidget;
     if (iconName != null) {
-      final iconData = _mapIconNameToIconData(iconName);
+      final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         iconWidget = Icon(
           iconData,
@@ -3051,6 +3065,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
   final double displayValue;
   final Color? iconColor;
   final Color? labelColor;
+  final IconData? thumbIcon;
 
   _CustomSliderThumbShape({
     this.thumbRadius = 14.0,
@@ -3058,6 +3073,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
     required this.displayValue,
     this.iconColor,
     this.labelColor,
+    this.thumbIcon,
   });
 
   @override
@@ -3087,7 +3103,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, thumbRadius, paint);
 
-    final icon = Icons.check;
+    final icon = thumbIcon ?? Icons.check;
     final iconPainter = TextPainter(
       textDirection: TextDirection.ltr,
       text: TextSpan(
@@ -3131,6 +3147,7 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
   final RangeValues values;
   final Color? iconColor;
   final Color? labelColor;
+  final IconData? thumbIcon;
 
   _CustomRangeSliderThumbShape({
     this.thumbRadius = 14.0,
@@ -3138,6 +3155,7 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
     required this.values,
     this.iconColor,
     this.labelColor,
+    this.thumbIcon,
   });
 
   @override
@@ -3169,7 +3187,7 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, thumbRadius, paint);
 
-    final icon = Icons.check;
+    final icon = thumbIcon ?? Icons.check;
     final iconPainter = TextPainter(
       textDirection: TextDirection.ltr,
       text: TextSpan(

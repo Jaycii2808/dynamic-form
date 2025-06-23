@@ -104,6 +104,31 @@
                   "iconColor": "#6979F8",
                   "margin": "16 0 48 0"
                }
+            },
+            {
+               "id": "price_single_slider_with_thumb_icon",
+               "type": "slider",
+               "config": {
+                  "range": false,
+                  "min": 0,
+                  "max": 2000,
+                  "value": 1500,
+                  "prefix": "$",
+                  "thumbIcon": "plane"
+               },
+               "variants": {
+                  "withThumbIcon": {
+                     "style": {}
+                  }
+               },
+               "style": {
+                  "activeColor": "#1ABC9C",
+                  "inactiveColor": "#BDBDBD",
+                  "thumbColor": "#FFFFFF",
+                  "thumbIconColor": "#1ABC9C",
+                  "valueLabelColor": "#FFFFFF",
+                  "margin": "16 0 48 0"
+               }
             }
          ]
       }
