@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -11,6 +14,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     : _remoteConfigService = remoteConfigService,
       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
+   on<UpdateFormField>(_onUpdateFormField);
   }
 
   Future<void> _onLoadDynamicFormPage(
@@ -32,6 +36,40 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       final errorMessage = 'Failed to load form: $e';
       debugPrint('Error: $e, StackTrace: $stackTrace');
       emit(DynamicFormError(errorMessage: errorMessage));
+    }
+  }
+
+  void _onUpdateFormField(UpdateFormField event, Emitter<DynamicFormState> emit) {
+    // Cập nhật giá trị component trong page
+    if (state.page != null) {
+      final updatedComponents = state.page!.components.map((component) {
+        if (component.id == event.componentId) {
+          final updatedConfig = Map<String, dynamic>.from(component.config);
+          updatedConfig['value'] = event.value;
+          return DynamicFormModel(
+            id: component.id,
+            type: component.type,
+            order: component.order,
+            config: updatedConfig,
+            style: component.style,
+            inputTypes: component.inputTypes,
+            variants: component.variants,
+            states: component.states,
+            validation: component.validation,
+            children: component.children,
+          );
+        }
+        return component;
+      }).toList();
+
+      final updatedPage = DynamicFormPageModel(
+        pageId: state.page!.pageId,
+        title: state.page!.title,
+        order: state.page!.order,
+        components: updatedComponents,
+      );
+
+      emit(DynamicFormSuccess(page: updatedPage));
     }
   }
 }

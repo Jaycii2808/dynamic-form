@@ -6,8 +6,12 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
@@ -166,11 +170,23 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   void _handleFocusChange() {
+    // phai xu li khi  //bam ra ngoai , ban phim enter, field khac
     setState(() {});
+    debugPrint('FocusNode changed for component ${widget.component.id}: hasFocus=${_focusNode.hasFocus}, value=${_controller.text}');
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {
+
+      },
+      builder: (context, state) {
+        return buildForm();
+      },
+    );
+  }
+  Widget buildForm(){
     final component = widget.component;
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
@@ -178,7 +194,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return _buildSelect(component);
       case FormTypeEnum.textAreaFormType:
-        return _buildTextArea(component);
+        return _buildTextArea(component,
+            onComplete: (value) {
+              //component.values = values;
+              //add bloc event -> current widget model -> parent widget model
+            }
+        );
       case FormTypeEnum.dateTimePickerFormType:
         return _buildDateTimePickerForm(component);
       case FormTypeEnum.dropdownFormType:
@@ -203,7 +224,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _FileUploaderWidget(component: component);
       case FormTypeEnum.unknown:
         return _buildDefaultFormType();
-      }
+    }
   }
 
   Widget _buildTextFieldTags(DynamicFormModel component) {
@@ -780,17 +801,21 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     );
   }
 
-  Widget _buildTextArea(DynamicFormModel component) {
+  Widget _buildTextArea(DynamicFormModel component, {required Null Function(dynamic value) onComplete}) {
     final style = Map<String, dynamic>.from(component.style);
 
+    // Apply variant styles
     if (component.variants != null) {
+      if (component.config['placeholder'] != null && component.variants!.containsKey('placeholders')) {
+        final variantStyle = component.variants!['placeholders']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
       if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
         final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
-        final variantStyle =
-            component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+      if (component.config['label'] != null && component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
+        final variantStyle = component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (component.config['value'] != null && component.variants!.containsKey('withValue')) {
@@ -817,8 +842,22 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
-    //final helperText = style['helperText']?.toString();
     final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+
+    // Thêm logic để cập nhật giá trị khi unfocus
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        final newValue = _controller.text;
+        if (newValue != component.config['value']) {
+          component.config['value'] = newValue;
+          context.read<DynamicFormBloc>().add(UpdateFormField(
+            componentId: component.id,
+            value: newValue,
+          ));
+          onComplete(newValue);
+        }
+      }
+    });
 
     return Container(
       key: Key(component.id),
@@ -882,7 +921,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   filled: style['backgroundColor'] != null,
                   fillColor: StyleUtils.parseColor(style['backgroundColor']),
                   helperText: _errorText,
-                  // Đảm bảo helperText hiển thị _errorText
                   helperStyle: TextStyle(
                     color: helperTextColor,
                     fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
@@ -898,10 +936,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                     _errorText = _validate(component, value);
                   });
                 },
+                // Xóa onEditingComplete vì đã xử lý trong focusNode listener
               ),
               if (_errorText != null)
                 Positioned(
-                  //
                   right: 10,
                   bottom: 0,
                   child: Text(
@@ -915,7 +953,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
-
   Widget _buildTextField(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
 
