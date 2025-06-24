@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
@@ -93,8 +94,13 @@ IconData? mapIconNameToIconData(String name) {
 
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
+  final Function(String componentId, dynamic value)? onValueChanged;
 
-  const DynamicFormRenderer({super.key, required this.component});
+  const DynamicFormRenderer({
+    super.key,
+    required this.component,
+    this.onValueChanged,
+  });
 
   @override
   State<DynamicFormRenderer> createState() => _DynamicFormRendererState();
@@ -143,13 +149,44 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
 
     if (values is List) {
-      _sliderRangeValues = RangeValues(values[0].toDouble(), values[1].toDouble());
+      _sliderRangeValues = RangeValues(
+        values[0].toDouble(),
+        values[1].toDouble(),
+      );
     }
 
+    // Initialize dropdown values
     _currentDropdownLabel = widget.component.config['label'];
+    if (widget.component.type == FormTypeEnum.dropdownFormType) {
+      final selectedValue = widget.component.config['value'] as String?;
+      if (selectedValue != null) {
+        _selectedActionId = selectedValue;
+        // Find the corresponding item to set the label
+        final items = widget.component.config['items'] as List<dynamic>? ?? [];
+        final selectedItem = items.firstWhere(
+          (item) => item['id'] == selectedValue,
+          orElse: () => null,
+        );
+        if (selectedItem != null) {
+          _currentDropdownLabel = selectedItem['label'];
+        }
+        // Save initial value
+        _saveInitialDropdownValue();
+      }
+    } else if (widget.component.type == FormTypeEnum.selectFormType) {
+      final selectedValue = widget.component.config['value'];
+      if (selectedValue is String) {
+        _selectedValue = selectedValue;
+      } else if (selectedValue is List) {
+        _selectedValues = selectedValue.cast<String>();
+      }
+    }
+
     tagController = StringTagController<String>();
     final initialTags =
-        (widget.component.config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
+        (widget.component.config['initialTags'] as List<dynamic>?)
+            ?.cast<String>() ??
+        [];
     for (var tag in initialTags) {
       tagController.addTag(tag);
     }
@@ -167,6 +204,58 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   void _handleFocusChange() {
     setState(() {});
+  }
+
+  void _notifyValueChanged(dynamic value) {
+    if (widget.onValueChanged != null) {
+      widget.onValueChanged!(widget.component.id, value);
+    }
+  }
+
+  void _saveValueOnEnter() {
+    _saveDropdownValue('Enter');
+  }
+
+  void _saveValueOnUnfocus() {
+    _saveDropdownValue('Unfocus');
+  }
+
+  void _saveValueOnBlur() {
+    _saveDropdownValue('Blur');
+  }
+
+  void _saveDropdownValue(String trigger) {
+    if (widget.component.type == FormTypeEnum.dropdownFormType) {
+      final currentValue = widget.component.config['value'];
+      if (currentValue != null) {
+        _notifyValueChanged(currentValue);
+        debugPrint(
+          'Value saved on $trigger - Component: ${widget.component.id}, Value: $currentValue',
+        );
+      }
+    }
+  }
+
+  void _saveInitialDropdownValue() {
+    if (widget.component.type == FormTypeEnum.dropdownFormType) {
+      final initialValue = widget.component.config['value'];
+      if (initialValue != null) {
+        _notifyValueChanged(initialValue);
+        debugPrint(
+          'Initial value saved - Component: ${widget.component.id}, Value: $initialValue',
+        );
+      }
+    }
+  }
+
+  void _saveDropdownSelection(String selectedId) {
+    if (widget.component.type == FormTypeEnum.dropdownFormType) {
+      widget.component.config['value'] = selectedId;
+      _notifyValueChanged(selectedId);
+      debugPrint(
+        'Dropdown selection saved - Component: ${widget.component.id}, Value: $selectedId',
+      );
+    }
   }
 
   @override
@@ -203,13 +292,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _FileUploaderWidget(component: component);
       case FormTypeEnum.unknown:
         return _buildDefaultFormType();
-      }
+    }
   }
 
   Widget _buildTextFieldTags(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
-    final initialTags = (config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
+    final initialTags =
+        (config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
     final placeholder = config['placeholder'] ?? 'Enter tags...';
 
     debugPrint('TextFieldTags: Initial tags are $initialTags');
@@ -219,8 +309,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     String currentState = 'base';
     if (_selectedTags.isNotEmpty) currentState = 'success';
     if (_errorText != null) currentState = 'error';
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -248,14 +340,23 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       decoration: BoxDecoration(
                         color: StyleUtils.parseColor('#CDD2FD'),
                         borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
+                        border: Border.all(
+                          color: StyleUtils.parseColor('#CDD2FD'),
+                          width: 10.0,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 2.0,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.blue[50],
                               borderRadius: BorderRadius.circular(10.0),
@@ -273,7 +374,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                             onTap: () {
                               setState(() {
                                 _selectedTags.remove(tag);
-                                debugPrint('Removed: Tag $tag removed from ${component.id}');
+                                debugPrint(
+                                  'Removed: Tag $tag removed from ${component.id}',
+                                );
                               });
                             },
                             child: SvgPicture.asset(
@@ -294,13 +397,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               ),
             Autocomplete<String>(
               optionsBuilder: (TextEditingValue textEditingValue) {
-                debugPrint('Autocomplete: Filtering options for input ${textEditingValue.text}');
+                debugPrint(
+                  'Autocomplete: Filtering options for input ${textEditingValue.text}',
+                );
                 final availableTags = initialTags
                     .where((tag) => !_selectedTags.contains(tag))
                     .toList();
                 if (textEditingValue.text.isEmpty) return availableTags;
                 return availableTags.where(
-                  (tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+                  (tag) => tag.toLowerCase().contains(
+                    textEditingValue.text.toLowerCase(),
+                  ),
                 );
               },
               onSelected: (String selection) {
@@ -309,76 +416,100 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   setState(() {
                     _selectedTags.add(selection);
                     _errorText = null;
-                    debugPrint('TagAdded: Successfully added tag $selection via autocomplete');
+                    debugPrint(
+                      'TagAdded: Successfully added tag $selection via autocomplete',
+                    );
                   });
                 }
               },
-              fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                return TextField(
-                  controller: textEditingController,
-                  focusNode: focusNode,
-                  onSubmitted: (value) {
-                    debugPrint('OnSubmitted: Submitted value $value');
-                    if (value.isNotEmpty &&
-                        initialTags.contains(value.trim()) &&
-                        !_selectedTags.contains(value.trim())) {
-                      textEditingController.clear();
-                      setState(() {
-                        _selectedTags.add(value.trim());
-                        _errorText = null;
-                        debugPrint('TagAdded: Successfully added tag $value');
-                      });
-                    } else if (_selectedTags.contains(value.trim())) {
-                      setState(() {
-                        _errorText = 'Tag already selected';
-                        debugPrint('TagRejected: $value is already selected');
-                      });
-                    } else {
-                      setState(() {
-                        _errorText = 'Tag must match predefined list';
-                        debugPrint('TagRejected: $value does not match predefined tags');
-                      });
-                    }
+              fieldViewBuilder:
+                  (
+                    context,
+                    textEditingController,
+                    focusNode,
+                    onFieldSubmitted,
+                  ) {
+                    return TextField(
+                      controller: textEditingController,
+                      focusNode: focusNode,
+                      onSubmitted: (value) {
+                        debugPrint('OnSubmitted: Submitted value $value');
+                        if (value.isNotEmpty &&
+                            initialTags.contains(value.trim()) &&
+                            !_selectedTags.contains(value.trim())) {
+                          textEditingController.clear();
+                          setState(() {
+                            _selectedTags.add(value.trim());
+                            _errorText = null;
+                            debugPrint(
+                              'TagAdded: Successfully added tag $value',
+                            );
+                          });
+                        } else if (_selectedTags.contains(value.trim())) {
+                          setState(() {
+                            _errorText = 'Tag already selected';
+                            debugPrint(
+                              'TagRejected: $value is already selected',
+                            );
+                          });
+                        } else {
+                          setState(() {
+                            _errorText = 'Tag must match predefined list';
+                            debugPrint(
+                              'TagRejected: $value does not match predefined tags',
+                            );
+                          });
+                        }
+                      },
+                      onChanged: (value) {
+                        debugPrint('OnChanged: Input changed to $value');
+                        if (_errorText != null) {
+                          setState(() => _errorText = null);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: placeholder,
+                        border: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 1.0,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 1.0,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: StyleUtils.parseBorderRadius(
+                            style['borderRadius'],
+                          ),
+                          borderSide: BorderSide(
+                            color: StyleUtils.parseColor(style['borderColor']),
+                            width: style['borderWidth']?.toDouble() ?? 2.0,
+                          ),
+                        ),
+                        filled: style['backgroundColor'] != null,
+                        fillColor: StyleUtils.parseColor(
+                          style['backgroundColor'],
+                        ),
+                        errorText: _errorText,
+                      ),
+                      style: TextStyle(
+                        fontSize: style['fontSize']?.toDouble() ?? 16,
+                        color: StyleUtils.parseColor(
+                          style['color'] ?? '#000000',
+                        ),
+                      ),
+                    );
                   },
-                  onChanged: (value) {
-                    debugPrint('OnChanged: Input changed to $value');
-                    if (_errorText != null) {
-                      setState(() => _errorText = null);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: placeholder,
-                    border: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 1.0,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 1.0,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 2.0,
-                      ),
-                    ),
-                    filled: style['backgroundColor'] != null,
-                    fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                    errorText: _errorText,
-                  ),
-                  style: TextStyle(
-                    fontSize: style['fontSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['color'] ?? '#000000'),
-                  ),
-                );
-              },
               optionsViewBuilder: (context, onSelected, options) {
                 return Align(
                   alignment: Alignment.topLeft,
@@ -449,9 +580,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       decoration: BoxDecoration(
                         color: StyleUtils.parseColor('#CDD2FD'),
                         borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
+                        border: Border.all(
+                          color: StyleUtils.parseColor('#CDD2FD'),
+                          width: 10.0,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 2.0,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -468,7 +605,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                             onTap: () {
                               setState(() {
                                 _selectedTags.remove(tag);
-                                debugPrint('Removed: Tag $tag removed from ${component.id}');
+                                debugPrint(
+                                  'Removed: Tag $tag removed from ${component.id}',
+                                );
                               });
                             },
                             child: SvgPicture.asset(
@@ -500,11 +639,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     // Apply variant styles
     if (component.variants != null) {
       if (hasLabel && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (!hasLabel && component.variants!.containsKey('withoutLabel')) {
-        final variantStyle = component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withoutLabel']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -513,8 +655,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     String currentState = 'base';
     if (selected) currentState = 'success';
 
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -543,7 +687,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   config['label'],
                   style: TextStyle(
                     fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['labelColor'] ?? '#6979F8'),
+                    color: StyleUtils.parseColor(
+                      style['labelColor'] ?? '#6979F8',
+                    ),
                   ),
                 ),
               ),
@@ -562,11 +708,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     // Apply variant styles
     if (component.variants != null) {
       if (hasLabel && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (!hasLabel && component.variants!.containsKey('withoutLabel')) {
-        final variantStyle = component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withoutLabel']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -575,8 +724,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     String currentState = 'base';
     if (selected) currentState = 'success';
 
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -623,7 +774,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     if (component.variants != null) {
       final variantKey = isRange ? 'range' : 'single';
       if (component.variants!.containsKey(variantKey)) {
-        final variantStyle = component.variants![variantKey]['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants![variantKey]['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -636,12 +788,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       currentState = 'success';
     }
 
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
-    String dateDisplay = config['value'] ?? (isRange ? 'dd/mm/yyyy - dd/mm/yyyy' : 'dd/mm/yyyy');
+    String dateDisplay =
+        config['value'] ?? (isRange ? 'dd/mm/yyyy - dd/mm/yyyy' : 'dd/mm/yyyy');
     if (_selectedDateRange != null) {
       if (isRange) {
         final start = _selectedDateRange!.start;
@@ -735,12 +890,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: StyleUtils.parseColor(
-                    style['borderColor'],
-                  ).withValues(alpha: style['borderOpacity']?.toDouble() ?? 1.0),
+                  color: StyleUtils.parseColor(style['borderColor']).withValues(
+                    alpha: style['borderOpacity']?.toDouble() ?? 1.0,
+                  ),
                   width: style['borderWidth']?.toDouble() ?? 1.0,
                 ),
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 color: StyleUtils.parseColor(style['backgroundColor']),
               ),
               child: Row(
@@ -768,7 +925,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           if (_errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(
+                _errorText!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
             ),
         ],
       ),
@@ -779,17 +939,23 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final style = Map<String, dynamic>.from(component.style);
 
     if (component.variants != null) {
-      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
+      if (component.config['label'] != null &&
+          component.variants!.containsKey('withLabel')) {
         final variantStyle =
-            component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['value'] != null && component.variants!.containsKey('withValue')) {
-        final variantStyle = component.variants!['withValue']['style'] as Map<String, dynamic>?;
+      if (component.config['value'] != null &&
+          component.variants!.containsKey('withLabelValue')) {
+        final variantStyle =
+            component.variants!['withLabelValue']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (component.config['value'] != null &&
+          component.variants!.containsKey('withValue')) {
+        final variantStyle =
+            component.variants!['withValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -807,8 +973,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       }
     }
 
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -840,53 +1008,73 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 controller: _controller,
                 focusNode: _focusNode,
                 enabled: component.config['editable'] ?? true,
-                obscureText: component.inputTypes?.containsKey('password') ?? false,
+                obscureText:
+                    component.inputTypes?.containsKey('password') ?? false,
                 keyboardType: _getKeyboardType(component),
-                maxLines: (style['maxLines'] is num) ? (style['maxLines'] as num).toInt() : 10,
-                minLines: (style['minLines'] is num) ? (style['minLines'] as num).toInt() : 6,
+                maxLines: (style['maxLines'] is num)
+                    ? (style['maxLines'] as num).toInt()
+                    : 10,
+                minLines: (style['minLines'] is num)
+                    ? (style['minLines'] as num).toInt()
+                    : 6,
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: component.config['placeholder'] ?? '',
                   border: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 1,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: BorderSide(
                       color: StyleUtils.parseColor(style['borderColor']),
                       width: style['borderWidth']?.toDouble() ?? 2,
                     ),
                   ),
                   errorBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     borderSide: const BorderSide(color: Colors.red, width: 2),
                   ),
                   errorText: null,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 12,
+                  ),
                   filled: style['backgroundColor'] != null,
                   fillColor: StyleUtils.parseColor(style['backgroundColor']),
                   helperText: _errorText,
                   // Đảm bảo helperText hiển thị _errorText
                   helperStyle: TextStyle(
                     color: helperTextColor,
-                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                    fontStyle: style['fontStyle'] == 'italic'
+                        ? FontStyle.italic
+                        : FontStyle.normal,
                   ),
                 ),
                 style: TextStyle(
                   fontSize: style['fontSize']?.toDouble() ?? 16,
                   color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                  fontStyle: style['fontStyle'] == 'italic'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -916,12 +1104,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     // Apply variant styles
     if (component.variants != null) {
-      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+      if (component.config['label'] != null &&
+          component.variants!.containsKey('withLabel')) {
+        final variantStyle =
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['icon'] != null && component.variants!.containsKey('withIcon')) {
-        final variantStyle = component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+      if (component.config['icon'] != null &&
+          component.variants!.containsKey('withIcon')) {
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -941,17 +1133,22 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
 
     // Apply state styles (base, error, success, ...)
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
     // Icon rendering (dynamic)
     Widget? prefixIcon;
     if (component.config['icon'] != null || style['icon'] != null) {
-      final iconName = (style['icon'] ?? component.config['icon'] ?? '').toString();
+      final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+          .toString();
       final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num) ? (style['iconSize'] as num).toDouble() : 20.0;
+      final iconSize = (style['iconSize'] is num)
+          ? (style['iconSize'] as num).toDouble()
+          : 20.0;
       final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
@@ -998,38 +1195,57 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               ),
               hintText: component.config['placeholder'] ?? '',
               border: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: BorderSide(color: StyleUtils.parseColor(style['borderColor'])),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
+                borderSide: BorderSide(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: BorderSide(color: StyleUtils.parseColor(style['borderColor'])),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
+                borderSide: BorderSide(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: BorderSide(
                   color: StyleUtils.parseColor(style['borderColor']),
                   width: 2,
                 ),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
               errorText: _errorText,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
+              ),
               filled: style['backgroundColor'] != null,
               fillColor: StyleUtils.parseColor(style['backgroundColor']),
               helperText: helperText,
               helperStyle: TextStyle(
                 color: helperTextColor,
-                fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                fontStyle: style['fontStyle'] == 'italic'
+                    ? FontStyle.italic
+                    : FontStyle.normal,
               ),
             ),
             style: TextStyle(
               fontSize: style['fontSize']?.toDouble() ?? 16,
               color: StyleUtils.parseColor(style['color']),
-              fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+              fontStyle: style['fontStyle'] == 'italic'
+                  ? FontStyle.italic
+                  : FontStyle.normal,
             ),
             onChanged: (value) {
               setState(() {
@@ -1081,7 +1297,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       if (selectedType == null) {
         if (inputTypes.containsKey('email') && value.contains('@')) {
           selectedType = 'email';
-        } else if (inputTypes.containsKey('tel') && RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
+        } else if (inputTypes.containsKey('tel') &&
+            RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
           selectedType = 'tel';
         } else if (inputTypes.containsKey('password')) {
           selectedType = 'password';
@@ -1130,7 +1347,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildDefaultFormType() {
     final component = widget.component;
-    final layout = component.config['layout']?.toString().toLowerCase() ?? 'column';
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'column';
     final childrenWidgets =
         component.children
             ?.map(
@@ -1186,7 +1404,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       children: childrenWidgets,
                     ),
                   )
-                : Column(crossAxisAlignment: CrossAxisAlignment.start, children: childrenWidgets),
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: childrenWidgets,
+                  ),
         ],
       ),
     );
@@ -1200,20 +1421,26 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     // Apply variant styles
     if (component.variants != null) {
-      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+      if (component.config['label'] != null &&
+          component.variants!.containsKey('withLabel')) {
+        final variantStyle =
+            component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (component.config['icon'] != null && component.variants!.containsKey('withIcon')) {
-        final variantStyle = component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+      if (component.config['icon'] != null &&
+          component.variants!.containsKey('withIcon')) {
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (isMultiple && component.variants!.containsKey('multiple')) {
-        final variantStyle = component.variants!['multiple']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['multiple']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (searchable && component.variants!.containsKey('searchable')) {
-        final variantStyle = component.variants!['searchable']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['searchable']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -1235,8 +1462,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
 
     // Apply state styles
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -1244,9 +1473,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     Widget? prefixIcon;
     if ((component.config['icon'] != null || style['icon'] != null) &&
         style['iconPosition'] != 'right') {
-      final iconName = (style['icon'] ?? component.config['icon'] ?? '').toString();
+      final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+          .toString();
       final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num) ? (style['iconSize'] as num).toDouble() : 20.0;
+      final iconSize = (style['iconSize'] is num)
+          ? (style['iconSize'] as num).toDouble()
+          : 20.0;
       final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
@@ -1256,9 +1488,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     Widget? suffixIcon;
     if ((component.config['icon'] != null || style['icon'] != null) &&
         style['iconPosition'] == 'right') {
-      final iconName = (style['icon'] ?? component.config['icon'] ?? '').toString();
+      final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+          .toString();
       final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num) ? (style['iconSize'] as num).toDouble() : 20.0;
+      final iconSize = (style['iconSize'] is num)
+          ? (style['iconSize'] as num).toDouble()
+          : 20.0;
       final iconData = mapIconNameToIconData(iconName);
       if (iconData != null) {
         suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
@@ -1273,7 +1508,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final textStyle = TextStyle(
       fontSize: style['fontSize']?.toDouble() ?? 16,
       color: StyleUtils.parseColor(style['color']),
-      fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+      fontStyle: style['fontStyle'] == 'italic'
+          ? FontStyle.italic
+          : FontStyle.normal,
     );
 
     Widget displayContent;
@@ -1303,7 +1540,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         if (avatarUrl != null) {
           displayContent = Row(
             children: [
-              CircleAvatar(backgroundImage: NetworkImage(avatarUrl), radius: 16),
+              CircleAvatar(
+                backgroundImage: NetworkImage(avatarUrl),
+                radius: 16,
+              ),
               const SizedBox(width: 8),
               Text(displayText, style: textStyle),
             ],
@@ -1319,7 +1559,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       }
     }
 
-    final hasLabel = component.config['label'] != null && component.config['label'].isNotEmpty;
+    final hasLabel =
+        component.config['label'] != null &&
+        component.config['label'].isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
@@ -1343,7 +1585,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             key: _selectKey,
             onTap: () {
               if (isMultiple || searchable) {
-                _showMultiSelectDialog(context, component, options, isMultiple, searchable);
+                _showMultiSelectDialog(
+                  context,
+                  component,
+                  options,
+                  isMultiple,
+                  searchable,
+                );
               } else {
                 _toggleDropdown();
               }
@@ -1351,17 +1599,29 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               decoration: BoxDecoration(
-                border: Border.all(color: StyleUtils.parseColor(style['borderColor'])),
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                border: Border.all(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                ),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 color: StyleUtils.parseColor(style['backgroundColor']),
               ),
               child: Row(
                 children: [
-                  if (prefixIcon != null) ...[prefixIcon, const SizedBox(width: 8)],
+                  if (prefixIcon != null) ...[
+                    prefixIcon,
+                    const SizedBox(width: 8),
+                  ],
                   Expanded(child: displayContent),
-                  if (suffixIcon != null) ...[const SizedBox(width: 8), suffixIcon],
+                  if (suffixIcon != null) ...[
+                    const SizedBox(width: 8),
+                    suffixIcon,
+                  ],
                   Icon(
-                    _isDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    _isDropdownOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
                     color: StyleUtils.parseColor(style['color']),
                   ),
                 ],
@@ -1371,7 +1631,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           if (_errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(
+                _errorText!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
             ),
           if (helperText != null && _errorText == null)
             Padding(
@@ -1381,7 +1644,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 style: TextStyle(
                   color: helperTextColor,
                   fontSize: 12,
-                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+                  fontStyle: style['fontStyle'] == 'italic'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
                 ),
               ),
             ),
@@ -1400,7 +1665,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   void _openDropdown() {
     final component = widget.component;
-    final RenderBox renderBox = _selectKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox renderBox =
+        _selectKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
 
@@ -1409,7 +1675,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         children: [
           Positioned.fill(
             child: GestureDetector(
-              onTap: _closeDropdown,
+              onTap: () {
+                // Save value on blur when dropdown is dismissed
+                _saveValueOnBlur();
+                _overlayEntry?.remove();
+              },
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -1419,7 +1689,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             width: size.width,
             child: Material(
               elevation: 4.0,
-              borderRadius: StyleUtils.parseBorderRadius(component.style['borderRadius']),
+              borderRadius: StyleUtils.parseBorderRadius(
+                component.style['borderRadius'],
+              ),
               child: _buildDropdownList(component),
             ),
           ),
@@ -1435,6 +1707,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   void _closeDropdown() {
     if (!_isDropdownOpen) return;
+    // Save value on blur when dropdown is closed
+    _saveValueOnBlur();
     _overlayEntry?.remove();
     _overlayEntry = null;
     setState(() {
@@ -1467,6 +1741,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               _isTouched = true;
               _selectedValue = value;
               _errorText = _validateSelect(component, [_selectedValue ?? '']);
+              // Store the selected value in component config
+              component.config['value'] = value;
+              // Notify value change
+              _notifyValueChanged(value);
             });
             _closeDropdown();
           },
@@ -1519,7 +1797,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
             return AlertDialog(
               title: Text(component.config['label'] ?? 'Chọn tùy chọn'),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 8,
+              ),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
@@ -1530,7 +1811,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: TextField(
                           decoration: InputDecoration(
-                            hintText: style['searchPlaceholder'] ?? 'Tìm kiếm...',
+                            hintText:
+                                style['searchPlaceholder'] ?? 'Tìm kiếm...',
                             prefixIcon: const Icon(Icons.search),
                           ),
                           onChanged: (value) {
@@ -1551,7 +1833,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                           final label = option['label']?.toString() ?? '';
 
                           if (isMultiple) {
-                            bool isSelected = tempSelectedValues.contains(value);
+                            bool isSelected = tempSelectedValues.contains(
+                              value,
+                            );
                             return CheckboxListTile(
                               title: Text(label),
                               value: isSelected,
@@ -1575,7 +1859,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                                 setState(() {
                                   _isTouched = true;
                                   _selectedValue = value;
-                                  _errorText = _validateSelect(component, [_selectedValue ?? '']);
+                                  _errorText = _validateSelect(component, [
+                                    _selectedValue ?? '',
+                                  ]);
+                                  // Store the selected value in component config
+                                  component.config['value'] = value;
+                                  // Notify value change
+                                  _notifyValueChanged(value);
                                 });
                                 Navigator.of(context).pop();
                               },
@@ -1589,21 +1879,34 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
                           style['noResultsText'] ?? 'Không tìm thấy kết quả',
-                          style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ),
                   ],
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Hủy'),
+                ),
                 if (isMultiple)
                   TextButton(
                     onPressed: () {
                       setState(() {
                         _isTouched = true;
                         _selectedValues = tempSelectedValues;
-                        _errorText = _validateSelect(component, _selectedValues);
+                        _errorText = _validateSelect(
+                          component,
+                          _selectedValues,
+                        );
+                        // Store the selected values in component config
+                        component.config['value'] = _selectedValues;
+                        // Notify value change
+                        _notifyValueChanged(_selectedValues);
                       });
                       Navigator.of(context).pop();
                     },
@@ -1622,9 +1925,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     if (validationConfig == null) return null;
 
     // Check required field
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
     if (requiredValidation?['isRequired'] == true && values.isEmpty) {
-      return requiredValidation?['error_message'] as String? ?? 'Trường này là bắt buộc';
+      return requiredValidation?['error_message'] as String? ??
+          'Trường này là bắt buộc';
     }
 
     // If empty and not required, no validation needed
@@ -1634,7 +1939,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     // Check max selections for multiple select
     if (component.config['multiple'] == true) {
-      final maxSelectionsValidation = validationConfig['maxSelections'] as Map<String, dynamic>?;
+      final maxSelectionsValidation =
+          validationConfig['maxSelections'] as Map<String, dynamic>?;
       if (maxSelectionsValidation != null) {
         final max = maxSelectionsValidation['max'];
         if (max != null && values.length > max) {
@@ -1647,13 +1953,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return null;
   }
 
-  String? _validateDatePicker(DynamicFormModel component, DateTimeRange? range) {
+  String? _validateDatePicker(
+    DynamicFormModel component,
+    DateTimeRange? range,
+  ) {
     final validationConfig = component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
     if (requiredValidation?['isRequired'] == true && range == null) {
-      return requiredValidation?['error_message'] as String? ?? 'Trường này là bắt buộc';
+      return requiredValidation?['error_message'] as String? ??
+          'Trường này là bắt buộc';
     }
     return null;
   }
@@ -1668,20 +1979,24 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     // Apply variant styles
     if (component.variants != null) {
-      if (triggerAvatar != null && component.variants!.containsKey('withAvatar')) {
-        final variantStyle = component.variants!['withAvatar']['style'] as Map<String, dynamic>?;
+      if (triggerAvatar != null &&
+          component.variants!.containsKey('withAvatar')) {
+        final variantStyle =
+            component.variants!['withAvatar']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (triggerIcon != null &&
           _currentDropdownLabel == null &&
           component.variants!.containsKey('iconOnly')) {
-        final variantStyle = component.variants!['iconOnly']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['iconOnly']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (triggerIcon != null &&
           _currentDropdownLabel != null &&
           component.variants!.containsKey('withIcon')) {
-        final variantStyle = component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -1695,19 +2010,23 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     String currentState = 'base';
     if (_isTouched && _dropdownErrorText != null) {
       currentState = 'error';
-    } else if (_selectedActionId != null && component.states!.containsKey('success')) {
+    } else if (_selectedActionId != null &&
+        component.states!.containsKey('success')) {
       currentState = 'success';
     } else if (_isHovering) {
       currentState = 'hover';
     }
 
     // Apply state styles
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
-    final String? helperText = _dropdownErrorText ?? style['helperText'] as String?;
+    final String? helperText =
+        _dropdownErrorText ?? style['helperText'] as String?;
     final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
     // This key will be used to position the dropdown overlay.
@@ -1745,7 +2064,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             const SizedBox(width: 8),
           ],
           if (triggerAvatar != null) ...[
-            CircleAvatar(backgroundImage: NetworkImage(triggerAvatar), radius: 16),
+            CircleAvatar(
+              backgroundImage: NetworkImage(triggerAvatar),
+              radius: 16,
+            ),
             const SizedBox(width: 8),
           ],
           if (_currentDropdownLabel != null)
@@ -1763,53 +2085,88 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MouseRegion(
-          onEnter: (_) => setState(() => _isHovering = true),
-          onExit: (_) => setState(() => _isHovering = false),
-          child: InkWell(
-            key: dropdownKey,
-            onTap: () {
-              // Find the render box and position of the trigger widget.
-              final renderBox = dropdownKey.currentContext!.findRenderObject() as RenderBox;
-              final size = renderBox.size;
-              final offset = renderBox.localToGlobal(Offset.zero);
-
-              // Show the dropdown panel as an overlay.
-              showDropdownPanel(
-                context,
-                component,
-                Rect.fromLTWH(offset.dx, offset.dy + size.height, size.width, 0),
-              );
+        Focus(
+          onFocusChange: (hasFocus) {
+            if (!hasFocus) {
+              // Save value when dropdown loses focus
+              _saveValueOnUnfocus();
+            }
+          },
+          child: RawKeyboardListener(
+            focusNode: FocusNode(),
+            onKey: (event) {
+              if (event is RawKeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.enter) {
+                // Save value when Enter key is pressed
+                _saveValueOnEnter();
+              }
             },
-            child: Container(
-              padding: StyleUtils.parsePadding(style['padding']),
-              margin: StyleUtils.parsePadding(style['margin']),
-              decoration: BoxDecoration(
-                color: StyleUtils.parseColor(style['backgroundColor']),
-                border: Border.all(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                  width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
+            child: MouseRegion(
+              onEnter: (_) => setState(() => _isHovering = true),
+              onExit: (_) => setState(() => _isHovering = false),
+              child: InkWell(
+                key: dropdownKey,
+                onTap: () {
+                  // Find the render box and position of the trigger widget.
+                  final renderBox =
+                      dropdownKey.currentContext!.findRenderObject()
+                          as RenderBox;
+                  final size = renderBox.size;
+                  final offset = renderBox.localToGlobal(Offset.zero);
+
+                  // Show the dropdown panel as an overlay.
+                  showDropdownPanel(
+                    context,
+                    component,
+                    Rect.fromLTWH(
+                      offset.dx,
+                      offset.dy + size.height,
+                      size.width,
+                      0,
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: StyleUtils.parsePadding(style['padding']),
+                  margin: StyleUtils.parsePadding(style['margin']),
+                  decoration: BoxDecoration(
+                    color: StyleUtils.parseColor(style['backgroundColor']),
+                    border: Border.all(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                      width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
+                    ),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                  ),
+                  child: triggerContent,
                 ),
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
               ),
-              child: triggerContent,
             ),
           ),
         ),
         if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 16),
-            child: Text(helperText, style: TextStyle(color: helperTextColor, fontSize: 12)),
+            child: Text(
+              helperText,
+              style: TextStyle(color: helperTextColor, fontSize: 12),
+            ),
           ),
       ],
     );
   }
 
-  void showDropdownPanel(BuildContext context, DynamicFormModel component, Rect rect) {
+  void showDropdownPanel(
+    BuildContext context,
+    DynamicFormModel component,
+    Rect rect,
+  ) {
     final items = component.config['items'] as List<dynamic>? ?? [];
     final style = component.style;
     final isSearchable = component.config['searchable'] as bool? ?? false;
-    final dropdownWidth = (style['dropdownWidth'] as num?)?.toDouble() ?? rect.width;
+    final dropdownWidth =
+        (style['dropdownWidth'] as num?)?.toDouble() ?? rect.width;
 
     OverlayEntry? overlayEntry;
     overlayEntry = OverlayEntry(
@@ -1825,7 +2182,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 // Full screen GestureDetector to dismiss the dropdown.
                 Positioned.fill(
                   child: GestureDetector(
-                    onTap: () => overlayEntry?.remove(),
+                    onTap: () {
+                      // Save value on blur when dropdown is dismissed
+                      _saveValueOnBlur();
+                      overlayEntry?.remove();
+                    },
                     child: Container(color: Colors.transparent),
                   ),
                 ),
@@ -1836,8 +2197,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                   width: dropdownWidth,
                   child: Material(
                     elevation: 4.0,
-                    color: StyleUtils.parseColor(style['dropdownBackgroundColor']),
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                    color: StyleUtils.parseColor(
+                      style['dropdownBackgroundColor'],
+                    ),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shrinkWrap: true,
@@ -1845,22 +2210,30 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                       separatorBuilder: (context, index) {
                         // This logic handles separators for both searchable and non-searchable lists.
                         final itemIndex = isSearchable ? index - 1 : index;
-                        if (itemIndex < 0 || itemIndex >= filteredItems.length) {
+                        if (itemIndex < 0 ||
+                            itemIndex >= filteredItems.length) {
                           return const SizedBox.shrink();
                         }
                         final item = filteredItems[itemIndex];
                         final nextItem = (itemIndex + 1 < filteredItems.length)
                             ? filteredItems[itemIndex + 1]
                             : null;
-                        if (item['type'] == 'divider' || nextItem?['type'] == 'divider') {
+                        if (item['type'] == 'divider' ||
+                            nextItem?['type'] == 'divider') {
                           return const SizedBox.shrink();
                         }
-                        return const Divider(color: Colors.transparent, height: 1);
+                        return const Divider(
+                          color: Colors.transparent,
+                          height: 1,
+                        );
                       },
                       itemBuilder: (context, index) {
                         if (isSearchable && index == 0) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
                             child: TextField(
                               controller: searchController,
                               decoration: InputDecoration(
@@ -1872,7 +2245,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                                 setPanelState(() {
                                   searchQuery = value.toLowerCase();
                                   filteredItems = items.where((item) {
-                                    final label = item['label']?.toString().toLowerCase() ?? '';
+                                    final label =
+                                        item['label']
+                                            ?.toString()
+                                            .toLowerCase() ??
+                                        '';
                                     if (item['type'] == 'divider') return true;
                                     return label.contains(searchQuery);
                                   }).toList();
@@ -1882,7 +2259,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                           );
                         }
 
-                        final item = filteredItems[isSearchable ? index - 1 : index];
+                        final item =
+                            filteredItems[isSearchable ? index - 1 : index];
                         final itemType = item['type'] as String? ?? 'item';
 
                         if (itemType == 'divider') {
@@ -1895,7 +2273,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                         final label = item['label'] as String? ?? '';
                         final iconName = item['icon'] as String?;
                         final avatarUrl = item['avatar'] as String?;
-                        final itemStyle = item['style'] as Map<String, dynamic>? ?? {};
+                        final itemStyle =
+                            item['style'] as Map<String, dynamic>? ?? {};
 
                         return InkWell(
                           onTap: () {
@@ -1907,27 +2286,41 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                             setState(() {
                               _isTouched = true;
                               _selectedActionId = item['id'];
-                              _dropdownErrorText = _validateDropdown(component, _selectedActionId);
+                              _dropdownErrorText = _validateDropdown(
+                                component,
+                                _selectedActionId,
+                              );
+
+                              // Save dropdown selection
+                              _saveDropdownSelection(item['id']);
 
                               // Update trigger label unless it's a special display type
                               final bool isIconOnly =
                                   component.config['icon'] != null &&
                                   component.config['label'] == null;
-                              final bool hasAvatar = component.config['avatar'] != null;
-                              final items = component.config['items'] as List<dynamic>? ?? [];
+                              final bool hasAvatar =
+                                  component.config['avatar'] != null;
+                              final items =
+                                  component.config['items'] as List<dynamic>? ??
+                                  [];
                               final selectedItem = items.firstWhere(
                                 (i) => i['id'] == _selectedActionId,
                                 orElse: () => null,
                               );
 
-                              if (!isIconOnly && !hasAvatar && selectedItem != null) {
+                              if (!isIconOnly &&
+                                  !hasAvatar &&
+                                  selectedItem != null) {
                                 _currentDropdownLabel = selectedItem['label'];
                               }
                             });
                             overlayEntry?.remove();
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
                             child: Row(
                               children: [
                                 if (avatarUrl != null) ...[
@@ -1977,16 +2370,20 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final validationConfig = component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true && (selectedId == null || selectedId.isEmpty)) {
-      return requiredValidation?['error_message'] as String? ?? 'This field is required.';
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
+    if (requiredValidation?['isRequired'] == true &&
+        (selectedId == null || selectedId.isEmpty)) {
+      return requiredValidation?['error_message'] as String? ??
+          'This field is required.';
     }
 
     return null;
   }
 
   Widget _buildCheckboxGroup(DynamicFormModel component) {
-    final layout = component.config['layout']?.toString().toLowerCase() ?? 'row';
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'row';
     final groupStyle = Map<String, dynamic>.from(component.style);
     final children = component.children ?? [];
 
@@ -2045,13 +2442,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 height: height,
                 decoration: BoxDecoration(
                   color: bgColor,
-                  border: Border.all(color: borderColor, width: 2), // Luôn luôn có border
+                  border: Border.all(
+                    color: borderColor,
+                    width: 2,
+                  ), // Luôn luôn có border
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    if (iconWidget != null) iconWidget, // Custom icon always visible
+                    if (iconWidget != null)
+                      iconWidget, // Custom icon always visible
                     if (isSelected)
                       Icon(
                         // Overlay checkmark
@@ -2144,7 +2545,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   Widget _buildRadioGroup(DynamicFormModel component) {
-    final layout = component.config['layout']?.toString().toLowerCase() ?? 'row';
+    final layout =
+        component.config['layout']?.toString().toLowerCase() ?? 'row';
     final groupStyle = Map<String, dynamic>.from(component.style);
     final children = component.children ?? [];
     // Tìm group name
@@ -2195,7 +2597,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                 setState(() {
                   // Unselect all in group
                   for (final other in children) {
-                    final otherGroup = other.config['group'] as String? ?? groupName;
+                    final otherGroup =
+                        other.config['group'] as String? ?? groupName;
                     if (otherGroup == itemGroup) {
                       other.config['value'] = other.id == item.id;
                     }
@@ -2223,7 +2626,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                           ? Container(
                               width: width * 0.5,
                               height: height * 0.5,
-                              decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle),
+                              decoration: BoxDecoration(
+                                color: iconColor,
+                                shape: BoxShape.circle,
+                              ),
                             )
                           : null),
                 ),
@@ -2309,7 +2715,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     );
   }
 
-  Widget _buildToggleableRow(DynamicFormModel component, {required bool isRadio}) {
+  Widget _buildToggleableRow(
+    DynamicFormModel component, {
+    required bool isRadio,
+  }) {
     // 1. Resolve styles from component's style and states
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
     final bool isSelected = component.config['value'] == true;
@@ -2320,8 +2729,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     if (!isEditable) {
       // For disabled items, we don't use states, we just use the styles defined directly on the component.
       // This is based on the new JSON structure.
-    } else if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+    } else if (component.states != null &&
+        component.states!.containsKey(currentState)) {
+      final stateStyle =
+          component.states![currentState]['style'] as Map<String, dynamic>?;
       if (stateStyle != null) {
         style.addAll(stateStyle);
       }
@@ -2331,13 +2742,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final String? label = component.config['label'];
     final String? hint = component.config['hint'];
     final String? iconName = component.config['icon'];
-    final IconData? leadingIconData = iconName != null ? mapIconNameToIconData(iconName) : null;
+    final IconData? leadingIconData = iconName != null
+        ? mapIconNameToIconData(iconName)
+        : null;
     final String? group = component.config['group'];
 
     // 3. Define visual properties based on style
-    final Color backgroundColor = StyleUtils.parseColor(style['backgroundColor']);
+    final Color backgroundColor = StyleUtils.parseColor(
+      style['backgroundColor'],
+    );
     final Color borderColor = StyleUtils.parseColor(style['borderColor']);
-    final double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
+    final double borderWidth =
+        (style['borderWidth'] as num?)?.toDouble() ?? 1.0;
     final Color iconColor = StyleUtils.parseColor(style['iconColor']);
     final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
     final double controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
@@ -2363,10 +2779,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
                     child: Container(
                       width: controlWidth * 0.5,
                       height: controlHeight * 0.5,
-                      decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                        color: iconColor,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   )
-                : Icon(Icons.check, color: iconColor, size: controlWidth * 0.75))
+                : Icon(
+                    Icons.check,
+                    color: iconColor,
+                    size: controlWidth * 0.75,
+                  ))
           : null,
     );
 
@@ -2412,11 +2835,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
       if (isRadio) {
         if (group != null) {
-          final parent = context.findAncestorWidgetOfExactType<DynamicFormRenderer>()?.component;
+          final parent = context
+              .findAncestorWidgetOfExactType<DynamicFormRenderer>()
+              ?.component;
           if (parent != null && parent.children != null) {
             setState(() {
               for (final sibling in parent.children!) {
-                if (sibling.type == FormTypeEnum.radioFormType && (sibling.config['group'] == group)) {
+                if (sibling.type == FormTypeEnum.radioFormType &&
+                    (sibling.config['group'] == group)) {
                   sibling.config['value'] = sibling.id == component.id;
                 }
               }
@@ -2424,7 +2850,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           }
         } else {
           // No group: allow only one selected among siblings of type radioFormType
-          final parent = context.findAncestorWidgetOfExactType<DynamicFormRenderer>()?.component;
+          final parent = context
+              .findAncestorWidgetOfExactType<DynamicFormRenderer>()
+              ?.component;
           if (parent != null && parent.children != null) {
             setState(() {
               for (final sibling in parent.children!) {
@@ -2437,6 +2865,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             // If no parent, just toggle this radio
             setState(() {
               component.config['value'] = true;
+              _notifyValueChanged(true);
             });
           }
         }
@@ -2444,6 +2873,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         // Checkbox logic
         setState(() {
           component.config['value'] = !isSelected;
+          _notifyValueChanged(!isSelected);
         });
       }
     }
@@ -2460,7 +2890,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
             toggleControl,
             const SizedBox(width: 12),
             if (leadingIconData != null) ...[
-              Icon(leadingIconData, size: 20, color: StyleUtils.parseColor(style['iconColor'])),
+              Icon(
+                leadingIconData,
+                size: 20,
+                color: StyleUtils.parseColor(style['iconColor']),
+              ),
               const SizedBox(width: 8),
             ],
             if (labelAndHint != null) labelAndHint,
@@ -2484,26 +2918,35 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     if (component.variants != null) {
       if (hint != null && component.variants!.containsKey('withHint')) {
-        final variantStyle = component.variants!['withHint']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withHint']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (iconName != null && component.variants!.containsKey('withIcon')) {
-        final variantStyle = component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            component.variants!['withIcon']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
-      if (thumbIconName != null && component.variants!.containsKey('withThumbIcon')) {
-        final variantStyle = component.variants!['withThumbIcon']['style'] as Map<String, dynamic>?;
+      if (thumbIconName != null &&
+          component.variants!.containsKey('withThumbIcon')) {
+        final variantStyle =
+            component.variants!['withThumbIcon']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
 
-    final IconData? thumbIcon = thumbIconName != null ? mapIconNameToIconData(thumbIconName) : null;
+    final IconData? thumbIcon = thumbIconName != null
+        ? mapIconNameToIconData(thumbIconName)
+        : null;
 
     final sliderTheme = SliderTheme.of(context).copyWith(
       activeTrackColor: StyleUtils.parseColor(style['activeColor']),
       inactiveTrackColor: StyleUtils.parseColor(style['inactiveColor']),
       thumbColor: StyleUtils.parseColor(style['thumbColor']),
-      overlayColor: StyleUtils.parseColor(style['activeColor']).withValues(alpha:0.2),
+      overlayColor: StyleUtils.parseColor(
+        style['activeColor'],
+      ).withValues(alpha: 0.2),
       trackHeight: 6.0,
     );
 
@@ -2586,7 +3029,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               padding: const EdgeInsets.only(top: 8.0, left: 4.0),
               child: Text(
                 hint,
-                style: TextStyle(color: StyleUtils.parseColor(style['hintColor']), fontSize: 12),
+                style: TextStyle(
+                  color: StyleUtils.parseColor(style['hintColor']),
+                  fontSize: 12,
+                ),
               ),
             ),
         ],
@@ -2652,7 +3098,10 @@ class _CustomSliderThumbShape extends SliderComponentShape {
       ),
     );
     iconPainter.layout();
-    iconPainter.paint(canvas, center - Offset(iconPainter.width / 2, iconPainter.height / 2));
+    iconPainter.paint(
+      canvas,
+      center - Offset(iconPainter.width / 2, iconPainter.height / 2),
+    );
 
     final valueLabelPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -2667,7 +3116,10 @@ class _CustomSliderThumbShape extends SliderComponentShape {
       ),
     );
     valueLabelPainter.layout();
-    valueLabelPainter.paint(canvas, center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4));
+    valueLabelPainter.paint(
+      canvas,
+      center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4),
+    );
   }
 }
 
@@ -2730,7 +3182,10 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
       ),
     );
     iconPainter.layout();
-    iconPainter.paint(canvas, center - Offset(iconPainter.width / 2, iconPainter.height / 2));
+    iconPainter.paint(
+      canvas,
+      center - Offset(iconPainter.width / 2, iconPainter.height / 2),
+    );
 
     final double value = thumb == Thumb.start ? values.start : values.end;
     final valueLabelPainter = TextPainter(
@@ -2746,7 +3201,10 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
       ),
     );
     valueLabelPainter.layout();
-    valueLabelPainter.paint(canvas, center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4));
+    valueLabelPainter.paint(
+      canvas,
+      center + Offset(-valueLabelPainter.width / 2, thumbRadius + 4),
+    );
   }
 }
 
@@ -2818,7 +3276,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     if (files.isEmpty || _isProcessing) return;
 
     final allowedExtensions =
-        (widget.component.config['allowedExtensions'] as List<dynamic>?)?.cast<String>() ?? [];
+        (widget.component.config['allowedExtensions'] as List<dynamic>?)
+            ?.cast<String>() ??
+        [];
 
     // Check if all files have allowed extensions
     if (allowedExtensions.isNotEmpty) {
@@ -2826,7 +3286,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
         if (!allowedExtensions.any(
           (ext) => file.name.toLowerCase().endsWith('.${ext.toLowerCase()}'),
         )) {
-          debugPrint("File type not allowed: ${file.name}. Allowed: $allowedExtensions");
+          debugPrint(
+            "File type not allowed: ${file.name}. Allowed: $allowedExtensions",
+          );
           setState(() {
             _currentState = 'error';
             _isProcessing = false;
@@ -2845,8 +3307,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: (widget.component.config['allowedExtensions'] as List<dynamic>?)
-            ?.cast<String>(),
+        allowedExtensions:
+            (widget.component.config['allowedExtensions'] as List<dynamic>?)
+                ?.cast<String>(),
         allowMultiple: _isMultipleFiles,
       );
 
@@ -2929,13 +3392,18 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           child: DottedBorder(
             color: StyleUtils.parseColor(style['borderColor']),
             strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-            radius: Radius.circular((style['borderRadius'] as num?)?.toDouble() ?? 0),
+            radius: Radius.circular(
+              (style['borderRadius'] as num?)?.toDouble() ?? 0,
+            ),
             dashPattern: const [6, 6],
             borderType: BorderType.RRect,
             child: Container(
               width: (style['width'] as num?)?.toDouble() ?? 300,
               height: (style['height'] as num?)?.toDouble() ?? 200,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               decoration: BoxDecoration(
                 color: StyleUtils.parseColor(style['backgroundColor']),
                 borderRadius: BorderRadius.circular(
@@ -2963,7 +3431,10 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     }
   }
 
-  Widget _buildBaseState(Map<String, dynamic> style, Map<String, dynamic> config) {
+  Widget _buildBaseState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -2986,15 +3457,20 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             child: Text(
               config['subtitle'] ?? '',
               textAlign: TextAlign.center,
-              style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['textColor']),
+              ),
             ),
           ),
-        if (config['buttonText'] != null && config['buttonText'].isNotEmpty) ...[
+        if (config['buttonText'] != null &&
+            config['buttonText'].isNotEmpty) ...[
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _isProcessing ? null : _browseFiles,
             style: ElevatedButton.styleFrom(
-              backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']),
+              backgroundColor: StyleUtils.parseColor(
+                style['buttonBackgroundColor'],
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
                   (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3003,7 +3479,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             ),
             child: Text(
               config['buttonText'] ?? 'Browse',
-              style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['buttonTextColor']),
+              ),
             ),
           ),
         ],
@@ -3011,8 +3489,13 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     );
   }
 
-  Widget _buildLoadingState(Map<String, dynamic> style, Map<String, dynamic> config) {
-    String statusText = config['statusTextFormat'] ?? 'Uploading {fileName} {progress}/{total}%';
+  Widget _buildLoadingState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
+    String statusText =
+        config['statusTextFormat'] ??
+        'Uploading {fileName} {progress}/{total}%';
 
     if (_isMultipleFiles && _pickedFiles.length > 1) {
       statusText = statusText
@@ -3048,7 +3531,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               config['subtitle'],
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: StyleUtils.parseColor(style['textColor']).withValues(alpha:0.7),
+                color: StyleUtils.parseColor(
+                  style['textColor'],
+                ).withValues(alpha: 0.7),
                 fontSize: 12,
               ),
             ),
@@ -3057,7 +3542,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
         ElevatedButton(
           onPressed: null, // Disabled
           style: ElevatedButton.styleFrom(
-            backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']).withValues(alpha:0.5),
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ).withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3066,25 +3553,34 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           ),
           child: Text(
             config['buttonText'] ?? 'Loading',
-            style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSuccessState(Map<String, dynamic> style, Map<String, dynamic> config) {
+  Widget _buildSuccessState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
     // Check for the 'withPreview' variant
-    final bool hasPreview = widget.component.variants?.containsKey('withPreview') ?? false;
+    final bool hasPreview =
+        widget.component.variants?.containsKey('withPreview') ?? false;
 
     // Check for the 'multipleFiles' variant
-    final bool isMultipleVariant = widget.component.variants?.containsKey('multipleFiles') ?? false;
+    final bool isMultipleVariant =
+        widget.component.variants?.containsKey('multipleFiles') ?? false;
 
     if (isMultipleVariant && _pickedFiles.length > 1) {
       return _buildMultipleFilesSuccessState(style, config);
     }
 
-    if (hasPreview && _pickedFiles.isNotEmpty && _isImageFile(_pickedFiles.first.path)) {
+    if (hasPreview &&
+        _pickedFiles.isNotEmpty &&
+        _isImageFile(_pickedFiles.first.path)) {
       // Build the preview state for single image
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -3108,7 +3604,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           ElevatedButton(
             onPressed: _resetState,
             style: ElevatedButton.styleFrom(
-              backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']),
+              backgroundColor: StyleUtils.parseColor(
+                style['buttonBackgroundColor'],
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
                   (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3117,7 +3615,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             ),
             child: Text(
               config['buttonText'] ?? 'Remove',
-              style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+              style: TextStyle(
+                color: StyleUtils.parseColor(style['buttonTextColor']),
+              ),
             ),
           ),
         ],
@@ -3126,7 +3626,10 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
 
     String statusText = config['statusTextFormat'] ?? '{fileName} uploaded!';
     if (_isMultipleFiles && _pickedFiles.length > 1) {
-      statusText = statusText.replaceAll('{fileName}', '${_pickedFiles.length} files');
+      statusText = statusText.replaceAll(
+        '{fileName}',
+        '${_pickedFiles.length} files',
+      );
     } else if (_pickedFiles.isNotEmpty) {
       statusText = statusText.replaceAll('{fileName}', _pickedFiles.first.name);
     }
@@ -3141,12 +3644,17 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             size: 48,
           ),
         const SizedBox(height: 16),
-        Text(statusText, style: TextStyle(color: StyleUtils.parseColor(style['textColor']))),
+        Text(
+          statusText,
+          style: TextStyle(color: StyleUtils.parseColor(style['textColor'])),
+        ),
         const SizedBox(height: 16),
         ElevatedButton(
           onPressed: _resetState,
           style: ElevatedButton.styleFrom(
-            backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']),
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3155,14 +3663,19 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           ),
           child: Text(
             config['buttonText'] ?? 'Remove',
-            style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMultipleFilesSuccessState(Map<String, dynamic> style, Map<String, dynamic> config) {
+  Widget _buildMultipleFilesSuccessState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
     return Column(
       children: [
         Expanded(
@@ -3176,7 +3689,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: StyleUtils.parseColor(style['fileItemBackgroundColor']),
+                  color: StyleUtils.parseColor(
+                    style['fileItemBackgroundColor'],
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -3193,7 +3708,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
                                 Icons.broken_image,
-                                color: StyleUtils.parseColor(style['iconColor']),
+                                color: StyleUtils.parseColor(
+                                  style['iconColor'],
+                                ),
                                 size: 40,
                               );
                             },
@@ -3227,7 +3744,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                               return Text(
                                 snapshot.data ?? 'Calculating...',
                                 style: TextStyle(
-                                  color: StyleUtils.parseColor(style['textColor']).withValues(alpha:0.7),
+                                  color: StyleUtils.parseColor(
+                                    style['textColor'],
+                                  ).withValues(alpha: 0.7),
                                   fontSize: 12,
                                 ),
                               );
@@ -3237,7 +3756,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                       ),
                     ),
                     IconButton(
-                      onPressed: _isProcessing ? null : () => _removeFile(index),
+                      onPressed: _isProcessing
+                          ? null
+                          : () => _removeFile(index),
                       icon: Icon(
                         Icons.close,
                         color: StyleUtils.parseColor(style['iconColor']),
@@ -3257,7 +3778,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               child: ElevatedButton(
                 onPressed: _isProcessing ? null : _browseFiles,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']),
+                  backgroundColor: StyleUtils.parseColor(
+                    style['buttonBackgroundColor'],
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
                       (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3266,7 +3789,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
                 ),
                 child: Text(
                   config['addMoreButtonText'] ?? 'Add More',
-                  style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+                  style: TextStyle(
+                    color: StyleUtils.parseColor(style['buttonTextColor']),
+                  ),
                 ),
               ),
             ),
@@ -3274,7 +3799,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
             ElevatedButton(
               onPressed: _isProcessing ? null : _resetState,
               style: ElevatedButton.styleFrom(
-                backgroundColor: StyleUtils.parseColor(style['removeAllButtonColor']),
+                backgroundColor: StyleUtils.parseColor(
+                  style['removeAllButtonColor'],
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                     (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3283,7 +3810,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
               ),
               child: Text(
                 config['removeAllButtonText'] ?? 'Remove All',
-                style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+                style: TextStyle(
+                  color: StyleUtils.parseColor(style['buttonTextColor']),
+                ),
               ),
             ),
           ],
@@ -3308,7 +3837,10 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
     }
   }
 
-  Widget _buildErrorState(Map<String, dynamic> style, Map<String, dynamic> config) {
+  Widget _buildErrorState(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -3328,7 +3860,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
         ElevatedButton(
           onPressed: _resetState,
           style: ElevatedButton.styleFrom(
-            backgroundColor: StyleUtils.parseColor(style['buttonBackgroundColor']),
+            backgroundColor: StyleUtils.parseColor(
+              style['buttonBackgroundColor'],
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
@@ -3337,7 +3871,9 @@ class __FileUploaderWidgetState extends State<_FileUploaderWidget> {
           ),
           child: Text(
             config['buttonText'] ?? 'Retry',
-            style: TextStyle(color: StyleUtils.parseColor(style['buttonTextColor'])),
+            style: TextStyle(
+              color: StyleUtils.parseColor(style['buttonTextColor']),
+            ),
           ),
         ),
       ],
