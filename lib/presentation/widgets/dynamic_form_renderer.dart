@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
@@ -9,6 +8,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -194,11 +194,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return _buildSelect(component);
       case FormTypeEnum.textAreaFormType:
-        return _buildTextArea(component,
-            onComplete: (value) {
-              //component.values = values;
-              //add bloc event -> current widget model -> parent widget model
-            }
+        return DynamicTextArea(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
         );
       case FormTypeEnum.dateTimePickerFormType:
         return _buildDateTimePickerForm(component);
@@ -796,159 +799,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               padding: const EdgeInsets.only(top: 4, left: 12),
               child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextArea(DynamicFormModel component, {required Null Function(dynamic value) onComplete}) {
-    final style = Map<String, dynamic>.from(component.style);
-
-    // Apply variant styles
-    if (component.variants != null) {
-      if (component.config['placeholder'] != null && component.variants!.containsKey('placeholders')) {
-        final variantStyle = component.variants!['placeholders']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (component.config['label'] != null && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (component.config['label'] != null && component.config['value'] != null && component.variants!.containsKey('withLabelValue')) {
-        final variantStyle = component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (component.config['value'] != null && component.variants!.containsKey('withValue')) {
-        final variantStyle = component.variants!['withValue']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    String currentState = 'base';
-    final value = _controller.text;
-    if (value.isEmpty) {
-      currentState = 'base';
-    } else {
-      final validationError = _validate(component, value);
-      if (validationError != null) {
-        currentState = 'error';
-      } else {
-        currentState = 'success';
-      }
-    }
-
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
-
-    // Thêm logic để cập nhật giá trị khi unfocus
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        final newValue = _controller.text;
-        if (newValue != component.config['value']) {
-          component.config['value'] = newValue;
-          context.read<DynamicFormBloc>().add(UpdateFormField(
-            componentId: component.id,
-            value: newValue,
-          ));
-          onComplete(newValue);
-        }
-      }
-    });
-
-    return Container(
-      key: Key(component.id),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (component.config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                component.config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          Stack(
-            children: [
-              TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: component.config['editable'] ?? true,
-                obscureText: component.inputTypes?.containsKey('password') ?? false,
-                keyboardType: _getKeyboardType(component),
-                maxLines: (style['maxLines'] is num) ? (style['maxLines'] as num).toInt() : 10,
-                minLines: (style['minLines'] is num) ? (style['minLines'] as num).toInt() : 6,
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: component.config['placeholder'] ?? '',
-                  border: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                      width: style['borderWidth']?.toDouble() ?? 1,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                      width: style['borderWidth']?.toDouble() ?? 1,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                      width: style['borderWidth']?.toDouble() ?? 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                    borderSide: const BorderSide(color: Colors.red, width: 2),
-                  ),
-                  errorText: null,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  filled: style['backgroundColor'] != null,
-                  fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                  helperText: _errorText,
-                  helperStyle: TextStyle(
-                    color: helperTextColor,
-                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-                  ),
-                ),
-                style: TextStyle(
-                  fontSize: style['fontSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _errorText = _validate(component, value);
-                  });
-                },
-                // Xóa onEditingComplete vì đã xử lý trong focusNode listener
-              ),
-              if (_errorText != null)
-                Positioned(
-                  right: 10,
-                  bottom: 0,
-                  child: Text(
-                    '$_errorText (Now ${value.length - 100})',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
-          ),
         ],
       ),
     );
