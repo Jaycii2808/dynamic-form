@@ -9,6 +9,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
@@ -203,7 +204,9 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   void _handleFocusChange() {
+    // phai xu li khi  //bam ra ngoai , ban phim enter, field khac
     setState(() {});
+    debugPrint('FocusNode changed for component ${widget.component.id}: hasFocus=${_focusNode.hasFocus}, value=${_controller.text}');
   }
 
   void _notifyValueChanged(dynamic value) {
@@ -260,6 +263,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {
+
+      },
+      builder: (context, state) {
+        return buildForm();
+      },
+    );
+  }
+  Widget buildForm(){
     final component = widget.component;
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
@@ -267,7 +280,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return _buildSelect(component);
       case FormTypeEnum.textAreaFormType:
-        return _buildTextArea(component);
+        return DynamicTextArea(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
       case FormTypeEnum.dateTimePickerFormType:
         return _buildDateTimePickerForm(component);
       case FormTypeEnum.dropdownFormType:
@@ -695,6 +716,33 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               ),
           ],
         ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Switch(
+            value: selected,
+            onChanged: (bool value) {
+              setState(() {
+                component.config['selected'] = value;
+              });
+            },
+            activeColor: activeColor,
+            inactiveThumbColor: inactiveThumbColor,
+            inactiveTrackColor: inactiveTrackColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          if (hasLabel)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor'] ?? '#6979F8'),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
