@@ -1,0 +1,284 @@
+{
+   "title": "Test Select Input Components",
+   "components": [
+      {
+         "id": "select_basic",
+         "type": "select",
+         "order": 1,
+         "config": {
+            "placeholder": "Chọn một tùy chọn",
+            "isRequired": true,
+            "options": [
+               { "value": "option1", "label": "Tùy chọn 1" },
+               { "value": "option2", "label": "Tùy chọn 2" },
+               { "value": "option3", "label": "Tùy chọn 3" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "normal": { "style": {} }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn một tùy chọn",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Đã chọn thành công",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Trường này là bắt buộc"
+            }
+         }
+      },
+      {
+         "id": "select_with_icon",
+         "type": "select",
+         "order": 2,
+         "config": {
+            "placeholder": "Chọn quốc gia",
+            "icon": "globe",
+            "isRequired": false,
+            "options": [
+               { "value": "vn", "label": "Việt Nam" },
+               { "value": "us", "label": "Hoa Kỳ" },
+               { "value": "jp", "label": "Nhật Bản" },
+               { "value": "kr", "label": "Hàn Quốc" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn quốc gia",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Quốc gia đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn quốc gia"
+            }
+         }
+      },
+      {
+         "id": "select_multiple",
+         "type": "select",
+         "order": 3,
+         "config": {
+            "label": "Chọn nhiều sở thích",
+            "placeholder": "Chọn các sở thích của bạn",
+            "icon": "heart",
+            "isRequired": true,
+            "multiple": true,
+            "options": [
+               { "value": "reading", "label": "Đọc sách" },
+               { "value": "music", "label": "Âm nhạc" },
+               { "value": "sports", "label": "Thể thao" },
+               { "value": "travel", "label": "Du lịch" },
+               { "value": "cooking", "label": "Nấu ăn" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            },
+            "multiple": {
+               "style": {
+                  "maxSelections": 3,
+                  "selectionDisplay": "chips"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn ít nhất một sở thích",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Sở thích đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn ít nhất một sở thích"
+            },
+            "maxSelections": {
+               "max": 3,
+               "error_message": "Chỉ được chọn tối đa 3 sở thích"
+            }
+         }
+      },
+      {
+         "id": "select_searchable",
+         "type": "select",
+         "order": 4,
+         "config": {
+            "label": "Tìm kiếm thành phố",
+            "placeholder": "Nhập để tìm kiếm thành phố",
+            "icon": "search",
+            "isRequired": false,
+            "searchable": true,
+            "options": [
+               { "value": "hanoi", "label": "Hà Nội" },
+               { "value": "hcm", "label": "TP. Hồ Chí Minh" },
+               { "value": "danang", "label": "Đà Nẵng" },
+               { "value": "haiphong", "label": "Hải Phòng" },
+               { "value": "cantho", "label": "Cần Thơ" },
+               { "value": "nhatrang", "label": "Nha Trang" },
+               { "value": "dalat", "label": "Đà Lạt" },
+               { "value": "vungtau", "label": "Vũng Tàu" }
+            ]
+         },
+         "style": {
+            "padding": "10px 12px",
+            "borderColor": "#888888",
+            "borderRadius": 6,
+            "fontSize": 15,
+            "color": "#e0e0e0",
+            "backgroundColor": "#000000"
+         },
+         "variants": {
+            "withLabel": {
+               "style": { "labelTextSize": 14, "labelColor": "#3b82f6" }
+            },
+            "withIcon": {
+               "style": {
+                  "iconPosition": "left",
+                  "iconSize": 18,
+                  "iconColor": "#ffffff"
+               }
+            },
+            "searchable": {
+               "style": {
+                  "searchPlaceholder": "Tìm kiếm thành phố...",
+                  "noResultsText": "Không tìm thấy thành phố"
+               }
+            }
+         },
+         "states": {
+            "base": { "style": { "borderColor": "#888888" } },
+            "error": {
+               "style": {
+                  "borderColor": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "icon": "close",
+                  "iconColor": "#ff4d4f",
+                  "labelColor": "#ff4d4f",
+                  "fontStyle": "italic",
+                  "helperText": "Vui lòng chọn một thành phố",
+                  "helperTextColor": "#ff4d4f"
+               }
+            },
+            "success": {
+               "style": {
+                  "borderColor": "#00b96b",
+                  "color": "#00b96b",
+                  "icon": "check",
+                  "iconColor": "#00b96b",
+                  "labelColor": "#00b96b",
+                  "fontStyle": "italic",
+                  "helperText": "Thành phố đã được chọn",
+                  "helperTextColor": "#00b96b"
+               }
+            }
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn một thành phố"
+            }
+         }
+      }
+   ]
+}

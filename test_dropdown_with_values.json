@@ -119,10 +119,6 @@
                   "backgroundColor": "rgba(105, 121, 248, 0.6)"
                }
             }
-         },
-         "states": {
-            "base": { "style": { "backgroundColor": "#1c1c1e" } },
-            "hover": { "style": { "backgroundColor": "#2c2c2e" } }
          }
       },
       {
