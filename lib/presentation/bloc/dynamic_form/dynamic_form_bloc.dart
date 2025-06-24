@@ -15,6 +15,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
    on<UpdateFormField>(_onUpdateFormField);
+    on<RefreshDynamicFormEvent>(_onRefreshDynamicForm);
   }
 
   Future<void> _onLoadDynamicFormPage(
@@ -70,6 +71,29 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       );
 
       emit(DynamicFormSuccess(page: updatedPage));
+    }
+  }
+
+  Future<void> _onRefreshDynamicForm(
+      RefreshDynamicFormEvent event,
+      Emitter<DynamicFormState> emit,
+      ) async {
+    emit(DynamicFormLoading.fromState(state: state));
+    try {
+      // Gọi initialize trước khi load form
+      await _remoteConfigService.initialize();
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final page = _remoteConfigService.getConfigKey(event.configKey);
+      if (page != null) {
+        emit(DynamicFormSuccess.fromState(state: state, page: page));
+      } else {
+        throw Exception('Form not found');
+      }
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to refresh form: $e';
+      debugPrint('Error: $e, StackTrace: $stackTrace');
+      emit(DynamicFormError(errorMessage: errorMessage));
     }
   }
 }

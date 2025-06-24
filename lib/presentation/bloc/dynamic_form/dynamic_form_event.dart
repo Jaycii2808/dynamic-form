@@ -25,3 +25,12 @@ class UpdateFormField extends DynamicFormEvent {
   List<Object?> get props => [componentId, value];
 
 }
+
+class RefreshDynamicFormEvent extends DynamicFormEvent {
+  final String configKey;
+
+  const RefreshDynamicFormEvent({required this.configKey});
+
+  @override
+  List<Object?> get props => [configKey];
+}
