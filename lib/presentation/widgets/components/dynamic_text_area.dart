@@ -110,7 +110,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         return OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: borderColor.withOpacity(borderOpacity),
+            color: borderColor.withAlpha(borderOpacity),
             width: borderWidth + 1,
           ),
         );
@@ -126,7 +126,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         return OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: borderColor.withOpacity(borderOpacity),
+            color: borderColor.withAlpha(borderOpacity),
             width: borderWidth,
           ),
         );
