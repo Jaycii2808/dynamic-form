@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -108,7 +109,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   final TextEditingController _controller = TextEditingController();
   String? _errorText;
   late FocusNode _focusNode;
-  DateTimeRange? _selectedDateRange;
+  //DateTimeRange? _selectedDateRange;
   RangeValues? _sliderRangeValues;
   double? _sliderValue;
 
@@ -204,7 +205,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           },
         );
       case FormTypeEnum.dateTimePickerFormType:
-        return _buildDateTimePickerForm(component);
+        return DynamicDateTimePicker(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
       case FormTypeEnum.dropdownFormType:
         return _buildDropdown(component);
       case FormTypeEnum.checkboxGroupFormType:
@@ -644,165 +653,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     );
   }
 
-  Widget _buildDateTimePickerForm(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final isRange = config['range'] == true;
 
-    if (component.variants != null) {
-      final variantKey = isRange ? 'range' : 'single';
-      if (component.variants!.containsKey(variantKey)) {
-        final variantStyle = component.variants![variantKey]['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    String currentState = 'base';
-    final validationError = _validateDatePicker(component, _selectedDateRange);
-    if (_isTouched && validationError != null) {
-      currentState = 'error';
-    } else if (_selectedDateRange != null && validationError == null) {
-      currentState = 'success';
-    }
-
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    String dateDisplay = config['value'] ?? (isRange ? 'dd/mm/yyyy - dd/mm/yyyy' : 'dd/mm/yyyy');
-    if (_selectedDateRange != null) {
-      if (isRange) {
-        final start = _selectedDateRange!.start;
-        final end = _selectedDateRange!.end;
-        dateDisplay =
-            "${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year} - "
-            "${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}";
-      } else {
-        final date = _selectedDateRange!.start;
-        dateDisplay =
-            "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-      }
-    }
-
-    Future<void> selectDate(BuildContext context) async {
-      if (isRange) {
-        final DateTimeRange? picked = await showDateRangePicker(
-          context: context,
-          initialDateRange: _selectedDateRange,
-          firstDate: DateTime(2016),
-          lastDate: DateTime(2030),
-          builder: (context, child) {
-            return Theme(
-              data: ThemeData.dark().copyWith(
-                colorScheme: const ColorScheme.dark(primary: Color(0xFF6979F8)),
-              ),
-              child: child!,
-            );
-          },
-        );
-        if (picked != null) {
-          setState(() {
-            _isTouched = true;
-            _selectedDateRange = picked;
-            _errorText = _validateDatePicker(component, picked);
-            component.config['value'] =
-                "${picked.start.day.toString().padLeft(2, '0')}/${picked.start.month.toString().padLeft(2, '0')}/${picked.start.year} - "
-                "${picked.end.day.toString().padLeft(2, '0')}/${picked.end.month.toString().padLeft(2, '0')}/${picked.end.year}";
-          });
-        }
-      } else {
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: _selectedDateRange?.start ?? DateTime.now(),
-          firstDate: DateTime(2016),
-          lastDate: DateTime(2030),
-          builder: (context, child) {
-            return Theme(
-              data: ThemeData.dark().copyWith(
-                colorScheme: const ColorScheme.dark(primary: Color(0xFF6979F8)),
-              ),
-              child: child!,
-            );
-          },
-        );
-        if (picked != null) {
-          setState(() {
-            _isTouched = true;
-            _selectedDateRange = DateTimeRange(start: picked, end: picked);
-            _errorText = _validateDatePicker(component, _selectedDateRange);
-            component.config['value'] =
-                "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
-          });
-        }
-      }
-    }
-
-    return Container(
-      key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          GestureDetector(
-            onTap: () => selectDate(context),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: StyleUtils.parseColor(
-                    style['borderColor'],
-                  ).withValues(alpha: style['borderOpacity']?.toDouble() ?? 1.0),
-                  width: style['borderWidth']?.toDouble() ?? 1.0,
-                ),
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                color: StyleUtils.parseColor(style['backgroundColor']),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    dateDisplay,
-                    style: TextStyle(
-                      fontSize: style['fontSize']?.toDouble() ?? 16,
-                      color: StyleUtils.parseColor(style['color']),
-                      fontStyle: style['fontStyle'] == 'italic'
-                          ? FontStyle.italic
-                          : FontStyle.normal,
-                    ),
-                  ),
-                  Icon(
-                    Icons.calendar_today,
-                    color: StyleUtils.parseColor(style['iconColor']),
-                    size: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_errorText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(_errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
-            ),
-        ],
-      ),
-    );
-  }
   Widget _buildTextField(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
 
@@ -1536,17 +1387,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       }
     }
 
-    return null;
-  }
-
-  String? _validateDatePicker(DynamicFormModel component, DateTimeRange? range) {
-    final validationConfig = component.validation;
-    if (validationConfig == null) return null;
-
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true && range == null) {
-      return requiredValidation?['error_message'] as String? ?? 'Trường này là bắt buộc';
-    }
     return null;
   }
 
