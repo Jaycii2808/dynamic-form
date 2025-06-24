@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -16,112 +17,76 @@ class DynamicSlider extends StatefulWidget {
 }
 
 class _DynamicSliderState extends State<DynamicSlider> {
-  RangeValues? _sliderRangeValues;
   double? _sliderValue;
+  RangeValues? _sliderRangeValues;
 
   @override
   void initState() {
     super.initState();
-    final value = widget.component.config['value'];
-    final values = widget.component.config['values'];
+    _initLocalState(widget.component);
+  }
 
-    if (value is num) {
-      _sliderValue = value.toDouble();
-    }
-    if (values is List) {
-      _sliderRangeValues = RangeValues(
-        values[0].toDouble(),
-        values[1].toDouble(),
-      );
+  @override
+  void didUpdateWidget(covariant DynamicSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _initLocalState(widget.component);
+  }
+
+  void _initLocalState(DynamicFormModel component) {
+    final config = component.config;
+    final isRange = config['range'] == true;
+    if (isRange) {
+      final values = config['values'];
+      if (values is List && values.length == 2) {
+        _sliderRangeValues = RangeValues(
+          (values[0] as num).toDouble(),
+          (values[1] as num).toDouble(),
+        );
+      }
+    } else {
+      final value = config['value'];
+      if (value is num) {
+        _sliderValue = value.toDouble();
+      }
     }
   }
 
-  // Common utility function for mapping icon names to IconData
-  IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'mail':
-        return Icons.mail;
-      case 'check':
-        return Icons.check;
-      case 'close':
-        return Icons.close;
-      case 'error':
-        return Icons.error;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
+  void _syncWithBloc(DynamicFormModel component) {
+    final config = component.config;
+    final isRange = config['range'] == true;
+    if (isRange) {
+      final values = config['values'];
+      if (values is List && values.length == 2) {
+        final range = RangeValues(
+          (values[0] as num).toDouble(),
+          (values[1] as num).toDouble(),
+        );
+        if (_sliderRangeValues == null ||
+            _sliderRangeValues!.start != range.start ||
+            _sliderRangeValues!.end != range.end) {
+          setState(() {
+            _sliderRangeValues = range;
+          });
+        }
+      }
+    } else {
+      final value = config['value'];
+      if (value is num && _sliderValue != value.toDouble()) {
+        setState(() {
+          _sliderValue = value.toDouble();
+        });
+      }
     }
+  }
+
+  IconData? _mapIconNameToIconData(String name) {
+    return IconTypeEnum.fromString(name).toIconData();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {},
-      builder: (context, state) {
-        // Lấy component mới nhất từ state (theo id)
+      listener: (context, state) {
         final component =
             (state is DynamicFormState && state.page?.components != null)
             ? state.page!.components.firstWhere(
@@ -129,22 +94,16 @@ class _DynamicSliderState extends State<DynamicSlider> {
                 orElse: () => widget.component,
               )
             : widget.component;
-
-        // Only initialize local state once, don't override during build
-        if (_sliderValue == null && _sliderRangeValues == null) {
-          final value = component.config['value'];
-          final values = component.config['values'];
-
-          if (value is num) {
-            _sliderValue = value.toDouble();
-          }
-          if (values is List) {
-            _sliderRangeValues = RangeValues(
-              values[0].toDouble(),
-              values[1].toDouble(),
-            );
-          }
-        }
+        _syncWithBloc(component);
+      },
+      builder: (context, state) {
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
 
         final style = Map<String, dynamic>.from(component.style);
         final config = component.config;
@@ -156,6 +115,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
         final String? hint = config['hint'] as String?;
         final String? iconName = config['icon'] as String?;
         final String? thumbIconName = config['thumbIcon'] as String?;
+        final String? errorText = config['errorText'] as String?;
 
         if (component.variants != null) {
           if (hint != null && component.variants!.containsKey('withHint')) {
@@ -189,23 +149,16 @@ class _DynamicSliderState extends State<DynamicSlider> {
           thumbColor: StyleUtils.parseColor(style['thumbColor']),
           overlayColor: StyleUtils.parseColor(
             style['activeColor'],
-          ).withValues(alpha: 0.2),
+          ).withOpacity(0.2),
           trackHeight: 6.0,
         );
-
-        final currentRangeValues = _sliderRangeValues ?? RangeValues(min, max);
-
-        debugPrint(
-          '[Slider][build] id=${component.id} value=${isRange ? currentRangeValues : _sliderValue}',
-        );
-        debugPrint('[Slider][build] style=${style.toString()}');
 
         final sliderWidget = SliderTheme(
           data: sliderTheme.copyWith(
             rangeThumbShape: _CustomRangeSliderThumbShape(
               thumbRadius: 14,
               valuePrefix: prefix,
-              values: currentRangeValues,
+              values: _sliderRangeValues ?? RangeValues(min, max),
               iconColor: StyleUtils.parseColor(style['thumbIconColor']),
               labelColor: StyleUtils.parseColor(style['valueLabelColor']),
               thumbIcon: thumbIcon,
@@ -221,29 +174,25 @@ class _DynamicSliderState extends State<DynamicSlider> {
           ),
           child: isRange
               ? RangeSlider(
-                  values: currentRangeValues,
+                  values: _sliderRangeValues ?? RangeValues(min, max),
                   min: min,
                   max: max,
                   divisions: divisions,
                   labels: RangeLabels(
-                    '$prefix${currentRangeValues.start.round()}',
-                    '$prefix${currentRangeValues.end.round()}',
+                    '$prefix${(_sliderRangeValues?.start ?? min).round()}',
+                    '$prefix${(_sliderRangeValues?.end ?? max).round()}',
                   ),
                   onChanged: (values) {
-                    // Update local state for immediate UI feedback
                     setState(() {
                       _sliderRangeValues = values;
                     });
-
-                    // Send to BLoC
+                  },
+                  onChangeEnd: (values) {
                     context.read<DynamicFormBloc>().add(
                       UpdateFormField(
                         componentId: component.id,
                         value: [values.start, values.end],
                       ),
-                    );
-                    debugPrint(
-                      '[Slider] Save value (range): ${component.id} = [${values.start}, ${values.end}]',
                     );
                   },
                 )
@@ -254,16 +203,14 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   divisions: divisions,
                   label: '$prefix${_sliderValue?.round()}',
                   onChanged: (value) {
-                    // Update local state for immediate UI feedback
                     setState(() {
                       _sliderValue = value;
                     });
-
-                    // Send to BLoC
+                  },
+                  onChangeEnd: (value) {
                     context.read<DynamicFormBloc>().add(
                       UpdateFormField(componentId: component.id, value: value),
                     );
-                    debugPrint('[Slider] Save value: ${component.id} = $value');
                   },
                 ),
         );
@@ -304,6 +251,14 @@ class _DynamicSliderState extends State<DynamicSlider> {
                       color: StyleUtils.parseColor(style['hintColor']),
                       fontSize: 12,
                     ),
+                  ),
+                ),
+              if (errorText != null && errorText.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                  child: Text(
+                    errorText,
+                    style: TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
             ],

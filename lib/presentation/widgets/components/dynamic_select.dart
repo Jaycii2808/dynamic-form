@@ -1,10 +1,13 @@
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 class DynamicSelect extends StatefulWidget {
   final DynamicFormModel component;
@@ -16,10 +19,7 @@ class DynamicSelect extends StatefulWidget {
 }
 
 class _DynamicSelectState extends State<DynamicSelect> {
-  String? _selectedValue;
-  List<String> _selectedValues = []; // For multiple selection
   bool _isDropdownOpen = false;
-  bool _isTouched = false; // To track if the field has been interacted with
   String? _errorText;
 
   final GlobalKey _selectKey = GlobalKey();
@@ -28,12 +28,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
   @override
   void initState() {
     super.initState();
-    final value = widget.component.config['value'];
-    if (widget.component.config['multiple'] == true) {
-      _selectedValues = (value as List<dynamic>?)?.cast<String>() ?? [];
-    } else {
-      _selectedValue = value?.toString();
-    }
+    // Không cần setState cho value ở đây nữa, chỉ cần cho UI tạm thời như dropdown
   }
 
   @override
@@ -44,110 +39,35 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
   // Common utility function for mapping icon names to IconData
   IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'mail':
-        return Icons.mail;
-      case 'check':
-        return Icons.check;
-      case 'close':
-        return Icons.close;
-      case 'error':
-        return Icons.error;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
-    }
+    return IconTypeEnum.fromString(name).toIconData();
   }
 
   String? _validateSelect(DynamicFormModel component, List<String> values) {
-    final validationConfig = component.validation;
-    if (validationConfig == null) return null;
-
-    // Check required field
-    final requiredValidation =
-        validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true && values.isEmpty) {
-      return requiredValidation?['error_message'] as String? ??
-          'Trường này là bắt buộc';
-    }
-
-    // If empty and not required, no validation needed
+    // Use validateForm for basic validation (required field, etc.)
     if (values.isEmpty) {
-      return null;
+      return validateForm(component, '');
     }
 
-    // Check max selections for multiple select
+    // For multiple values, validate each one
+    for (String value in values) {
+      final validationError = validateForm(component, value);
+      if (validationError != null) {
+        return validationError;
+      }
+    }
+
+    // Check max selections for multiple select (specific to select widget)
     if (component.config['multiple'] == true) {
-      final maxSelectionsValidation =
-          validationConfig['maxSelections'] as Map<String, dynamic>?;
-      if (maxSelectionsValidation != null) {
-        final max = maxSelectionsValidation['max'];
-        if (max != null && values.length > max) {
-          return maxSelectionsValidation['error_message'] as String? ??
-              'Vượt quá số lượng cho phép';
+      final validationConfig = component.validation;
+      if (validationConfig != null) {
+        final maxSelectionsValidation =
+            validationConfig['maxSelections'] as Map<String, dynamic>?;
+        if (maxSelectionsValidation != null) {
+          final max = maxSelectionsValidation['max'];
+          if (max != null && values.length > max) {
+            return maxSelectionsValidation['error_message'] as String? ??
+                'Vượt quá số lượng cho phép';
+          }
         }
       }
     }
@@ -201,20 +121,15 @@ class _DynamicSelectState extends State<DynamicSelect> {
         ],
       ),
     );
-
+    _isDropdownOpen = true;
     Overlay.of(context).insert(_overlayEntry!);
-    setState(() {
-      _isDropdownOpen = true;
-    });
   }
 
   void _closeDropdown() {
     if (!_isDropdownOpen) return;
     _overlayEntry?.remove();
     _overlayEntry = null;
-    setState(() {
-      _isDropdownOpen = false;
-    });
+    _isDropdownOpen = false;
   }
 
   Widget _buildDropdownList(DynamicFormModel component) {
@@ -222,7 +137,16 @@ class _DynamicSelectState extends State<DynamicSelect> {
     final dynamic height = component.config['height'];
     final style = component.style;
     final isMultiple = component.config['multiple'] ?? false;
-
+    // Lấy selectedValues từ BLoC state
+    final value = component.config['value'];
+    List<String> selectedValues = [];
+    if (component.config['multiple'] == true) {
+      if (value is List) {
+        selectedValues = value.cast<String>();
+      } else {
+        selectedValues = [];
+      }
+    }
     Widget listView = ListView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: height == null || height == 'auto',
@@ -234,12 +158,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
         final avatarUrl = option['avatar']?.toString();
 
         if (isMultiple) {
-          bool isSelected = _selectedValues.contains(value);
+          bool isSelected = selectedValues.contains(value);
           return CheckboxListTile(
             title: Text(label),
             value: isSelected,
             onChanged: (bool? newValue) {
-              List<String> newValues = List.from(_selectedValues);
+              List<String> newValues = List.from(selectedValues);
               if (newValue == true) {
                 if (!newValues.contains(value)) {
                   newValues.add(value);
@@ -247,12 +171,11 @@ class _DynamicSelectState extends State<DynamicSelect> {
               } else {
                 newValues.remove(value);
               }
-              // Không update trực tiếp component.config nữa
               context.read<DynamicFormBloc>().add(
                 UpdateFormField(componentId: component.id, value: newValues),
               );
               debugPrint(
-                '[Select] Save value (multiple): ${component.id} = $newValues',
+                '[Select] ${component.id} value updated: $newValues (multiple)',
               );
             },
             secondary: avatarUrl != null
@@ -266,11 +189,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
                 : null,
             title: Text(label),
             onTap: () {
-              // Không update trực tiếp component.config nữa
               context.read<DynamicFormBloc>().add(
                 UpdateFormField(componentId: component.id, value: value),
               );
-              debugPrint('[Select] Save value: ${component.id} = $value');
+              debugPrint(
+                '[Select] ${component.id} value updated: $value (single)',
+              );
               _closeDropdown();
             },
           );
@@ -300,148 +224,20 @@ class _DynamicSelectState extends State<DynamicSelect> {
     DynamicFormModel component,
     List<dynamic> options,
     bool isMultiple,
-    bool searchable,
-  ) {
+    bool searchable, {
+    String searchQuery = '',
+  }) {
     final style = Map<String, dynamic>.from(component.style);
-    String searchQuery = '';
-    List<dynamic> filteredOptions = List.from(options);
-
-    List<String> tempSelectedValues = List.from(_selectedValues);
-
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            if (searchable) {
-              filteredOptions = options.where((option) {
-                final label = option['label']?.toString().toLowerCase() ?? '';
-                return label.contains(searchQuery.toLowerCase());
-              }).toList();
-            }
-
-            return AlertDialog(
-              title: Text(component.config['label'] ?? 'Chọn tùy chọn'),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 8,
-              ),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (searchable)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText:
-                                style['searchPlaceholder'] ?? 'Tìm kiếm...',
-                            prefixIcon: const Icon(Icons.search),
-                          ),
-                          onChanged: (value) {
-                            setStateDialog(() {
-                              searchQuery = value;
-                            });
-                          },
-                        ),
-                      ),
-                    if (searchable) const SizedBox(height: 16),
-                    Flexible(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: filteredOptions.length,
-                        itemBuilder: (context, index) {
-                          final option = filteredOptions[index];
-                          final value = option['value']?.toString() ?? '';
-                          final label = option['label']?.toString() ?? '';
-
-                          if (isMultiple) {
-                            bool isSelected = tempSelectedValues.contains(
-                              value,
-                            );
-                            return CheckboxListTile(
-                              title: Text(label),
-                              value: isSelected,
-                              onChanged: (bool? newValue) {
-                                setStateDialog(() {
-                                  if (newValue == true) {
-                                    if (!tempSelectedValues.contains(value)) {
-                                      tempSelectedValues.add(value);
-                                    }
-                                  } else {
-                                    tempSelectedValues.remove(value);
-                                  }
-                                });
-                              },
-                            );
-                          } else {
-                            // For searchable single-select
-                            return ListTile(
-                              title: Text(label),
-                              onTap: () {
-                                setState(() {
-                                  _isTouched = true;
-                                  _selectedValue = value;
-                                  _errorText = _validateSelect(component, [
-                                    _selectedValue ?? '',
-                                  ]);
-                                  context.read<DynamicFormBloc>().add(
-                                    UpdateFormField(
-                                      componentId: component.id,
-                                      value: _selectedValue,
-                                    ),
-                                  );
-                                });
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    if (filteredOptions.isEmpty && searchable)
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          style['noResultsText'] ?? 'Không tìm thấy kết quả',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Hủy'),
-                ),
-                if (isMultiple)
-                  TextButton(
-                    onPressed: () {
-                      // Không update trực tiếp component.config nữa
-                      context.read<DynamicFormBloc>().add(
-                        UpdateFormField(
-                          componentId: component.id,
-                          value: tempSelectedValues,
-                        ),
-                      );
-                      debugPrint(
-                        '[Select] Save value (multiple): ${component.id} = $tempSelectedValues',
-                      );
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Xác nhận'),
-                  ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (BuildContext context) => MultiSelectDialogBloc(
+        componentId: component.id,
+        options: options,
+        label: component.config['label'] ?? 'Chọn tùy chọn',
+        style: style,
+        searchable: searchable,
+        searchQuery: searchQuery,
+      ),
     );
   }
 
@@ -459,12 +255,15 @@ class _DynamicSelectState extends State<DynamicSelect> {
               )
             : widget.component;
 
-        // Update local state from component config
+        // Đọc value từ BLoC state, không dùng setState
         final value = component.config['value'];
-        if (component.config['multiple'] == true) {
-          _selectedValues = (value as List<dynamic>?)?.cast<String>() ?? [];
+        List<String> selectedValues = [];
+        String? selectedValue;
+        if (value is List) {
+          selectedValues = value.cast<String>();
+          selectedValue = value.isNotEmpty ? value.first.toString() : null;
         } else {
-          _selectedValue = value?.toString();
+          selectedValue = value?.toString();
         }
 
         final style = Map<String, dynamic>.from(component.style);
@@ -505,12 +304,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
         // Determine current state
         String currentState = 'base';
         final List<String> currentValues = isMultiple
-            ? _selectedValues
-            : (_selectedValue != null ? [_selectedValue!] : []);
+            ? selectedValues
+            : (selectedValue != null ? [selectedValue!] : []);
 
         final validationError = _validateSelect(component, currentValues);
 
-        if (_isTouched && validationError != null) {
+        if (validationError != null) {
           currentState = 'error';
         } else if (currentValues.isNotEmpty && validationError == null) {
           currentState = 'success';
@@ -527,7 +326,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         }
 
         debugPrint(
-          '[Select][build] id=${component.id} value=${isMultiple ? _selectedValues : _selectedValue} state=$currentState',
+          '[Select][build] id=${component.id} value=${isMultiple ? selectedValues : selectedValue} state=$currentState',
         );
         debugPrint('[Select][build] style=${style.toString()}');
 
@@ -579,8 +378,8 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
         if (isMultiple) {
           String displayText = 'Chọn các tùy chọn';
-          if (_selectedValues.isNotEmpty) {
-            final selectedLabels = _selectedValues.map((value) {
+          if (selectedValues.isNotEmpty) {
+            final selectedLabels = selectedValues.map((value) {
               final option = options.firstWhere(
                 (opt) => opt['value'] == value,
                 orElse: () => {'label': value},
@@ -591,12 +390,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
           }
           displayContent = Text(displayText, style: textStyle);
         } else {
-          if (_selectedValue != null && _selectedValue!.isNotEmpty) {
+          if (selectedValue != null && selectedValue!.isNotEmpty) {
             final option = options.firstWhere(
-              (opt) => opt['value'] == _selectedValue,
-              orElse: () => {'label': _selectedValue},
+              (opt) => opt['value'] == selectedValue,
+              orElse: () => {'label': selectedValue},
             );
-            final displayText = option['label'] ?? _selectedValue!;
+            final displayText = option['label'] ?? selectedValue!;
             final avatarUrl = option['avatar']?.toString();
 
             if (avatarUrl != null) {
@@ -647,13 +446,25 @@ class _DynamicSelectState extends State<DynamicSelect> {
               InkWell(
                 key: _selectKey,
                 onTap: () {
-                  if (isMultiple || searchable) {
+                  if (isMultiple) {
                     _showMultiSelectDialog(
                       context,
                       component,
                       options,
                       isMultiple,
                       searchable,
+                    );
+                  } else if (searchable) {
+                    // Single-select + searchable: dialog thành phố
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => CitySearchDialogBloc(
+                        componentId: component.id,
+                        options: options,
+                        label: component.config['label'] ?? 'Chọn tùy chọn',
+                        style: style,
+                        initialSearchQuery: '',
+                      ),
                     );
                   } else {
                     _toggleDropdown();
@@ -722,4 +533,360 @@ class _DynamicSelectState extends State<DynamicSelect> {
       },
     );
   }
+}
+
+class MultiSelectDialogBloc extends StatelessWidget {
+  final String componentId;
+  final List<dynamic> options;
+  final String label;
+  final Map<String, dynamic> style;
+  final bool searchable;
+  final String searchQuery;
+
+  const MultiSelectDialogBloc({
+    super.key,
+    required this.componentId,
+    required this.options,
+    required this.label,
+    required this.style,
+    required this.searchable,
+    this.searchQuery = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
+      builder: (context, state) {
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == componentId,
+                orElse: () => DynamicFormModel(
+                  id: componentId,
+                  type: FormTypeEnum.unknown,
+                  order: 0,
+                  config: {},
+                  style: {},
+                ),
+              )
+            : DynamicFormModel(
+                id: componentId,
+                type: FormTypeEnum.unknown,
+                order: 0,
+                config: {},
+                style: {},
+              );
+        if (component.type == FormTypeEnum.unknown)
+          return const SizedBox.shrink();
+        final value = component.config['value'];
+        List<String> selectedValues = [];
+        if (component.config['multiple'] == true) {
+          if (value is List) {
+            selectedValues = value.cast<String>();
+          }
+        }
+        List<dynamic> filteredOptions = options;
+        if (searchable && searchQuery.isNotEmpty) {
+          filteredOptions = options.where((option) {
+            final label = option['label']?.toString().toLowerCase() ?? '';
+            return label.contains(searchQuery.toLowerCase());
+          }).toList();
+        }
+        return AlertDialog(
+          title: Text(label),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 8,
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (searchable)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _SearchFieldBloc(
+                      style: style,
+                      searchQuery: searchQuery,
+                      onChanged: (value) {
+                        Navigator.of(context).pop();
+                        Future.delayed(const Duration(milliseconds: 10), () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => MultiSelectDialogBloc(
+                              componentId: componentId,
+                              options: options,
+                              label: label,
+                              style: style,
+                              searchable: searchable,
+                              searchQuery: value,
+                            ),
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                if (searchable) const SizedBox(height: 16),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filteredOptions.length,
+                    itemBuilder: (context, index) {
+                      final option = filteredOptions[index];
+                      final value = option['value']?.toString() ?? '';
+                      final label = option['label']?.toString() ?? '';
+                      bool isSelected = selectedValues.contains(value);
+                      return CheckboxListTile(
+                        title: Text(label),
+                        value: isSelected,
+                        onChanged: (bool? newValue) {
+                          List<String> newValues = List.from(selectedValues);
+                          if (newValue == true) {
+                            if (!newValues.contains(value)) {
+                              newValues.add(value);
+                            }
+                          } else {
+                            newValues.remove(value);
+                          }
+                          context.read<DynamicFormBloc>().add(
+                            UpdateFormField(
+                              componentId: componentId,
+                              value: newValues,
+                            ),
+                          );
+                          debugPrint(
+                            '[Select] $componentId value updated: $newValues (multiple, dialog)',
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                if (filteredOptions.isEmpty && searchable)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      style['noResultsText'] ?? 'Không tìm thấy kết quả',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SearchFieldBloc extends StatelessWidget {
+  final Map<String, dynamic> style;
+  final String searchQuery;
+  final ValueChanged<String> onChanged;
+  const _SearchFieldBloc({
+    required this.style,
+    required this.searchQuery,
+    required this.onChanged,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: style['searchPlaceholder'] ?? 'Tìm kiếm...',
+        prefixIcon: const Icon(Icons.search),
+      ),
+      controller: TextEditingController(text: searchQuery),
+      onChanged: onChanged,
+    );
+  }
+}
+
+class CitySearchDialogBloc extends StatefulWidget {
+  final String componentId;
+  final List<dynamic> options;
+  final String label;
+  final Map<String, dynamic> style;
+  final String initialSearchQuery;
+
+  const CitySearchDialogBloc({
+    super.key,
+    required this.componentId,
+    required this.options,
+    required this.label,
+    required this.style,
+    this.initialSearchQuery = '',
+  });
+
+  @override
+  State<CitySearchDialogBloc> createState() => _CitySearchDialogBlocState();
+}
+
+class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
+  late String searchQuery;
+
+  @override
+  void initState() {
+    super.initState();
+    searchQuery = widget.initialSearchQuery;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
+      builder: (context, state) {
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.componentId,
+                orElse: () => DynamicFormModel(
+                  id: widget.componentId,
+                  type: FormTypeEnum.unknown,
+                  order: 0,
+                  config: {},
+                  style: {},
+                ),
+              )
+            : DynamicFormModel(
+                id: widget.componentId,
+                type: FormTypeEnum.unknown,
+                order: 0,
+                config: {},
+                style: {},
+              );
+        if (component.type == FormTypeEnum.unknown)
+          return const SizedBox.shrink();
+        final value = component.config['value'];
+        String? selectedValue;
+        if (value is List) {
+          selectedValue = value.isNotEmpty ? value.first.toString() : null;
+        } else {
+          selectedValue = value?.toString();
+        }
+        List<dynamic> filteredOptions = widget.options;
+        if (searchQuery.isNotEmpty) {
+          filteredOptions = widget.options.where((option) {
+            final label = option['label']?.toString().toLowerCase() ?? '';
+            return label.contains(searchQuery.toLowerCase());
+          }).toList();
+        }
+        return AlertDialog(
+          title: Text(widget.label),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 8,
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText:
+                          widget.style['searchPlaceholder'] ?? 'Tìm kiếm...',
+                      prefixIcon: const Icon(Icons.search),
+                    ),
+                    controller: TextEditingController(text: searchQuery),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filteredOptions.length,
+                    itemBuilder: (context, index) {
+                      final option = filteredOptions[index];
+                      final value = option['value']?.toString() ?? '';
+                      final label = option['label']?.toString() ?? '';
+                      bool isSelected = selectedValue == value;
+                      return ListTile(
+                        title: Text(label),
+                        selected: isSelected,
+                        onTap: () {
+                          context.read<DynamicFormBloc>().add(
+                            UpdateFormField(
+                              componentId: widget.componentId,
+                              value: value,
+                            ),
+                          );
+                          debugPrint(
+                            '[Select] ${widget.componentId} value updated: $value (single, city search dialog)',
+                          );
+                        },
+                        trailing: isSelected
+                            ? Icon(Icons.check, color: Colors.blue)
+                            : null,
+                      );
+                    },
+                  ),
+                ),
+                if (filteredOptions.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      widget.style['noResultsText'] ?? 'Không tìm thấy kết quả',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+void _showCitySearchDialog(
+  BuildContext context,
+  DynamicFormModel component,
+  List<dynamic> options,
+  String label,
+  Map<String, dynamic> style, {
+  String searchQuery = '',
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => CitySearchDialogBloc(
+      componentId: component.id,
+      options: options,
+      label: label,
+      style: style,
+      initialSearchQuery: searchQuery,
+    ),
+  );
 }

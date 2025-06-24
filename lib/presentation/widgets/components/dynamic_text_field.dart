@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -29,7 +29,6 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   @override
   void initState() {
     super.initState();
-    _controller.text = widget.component.config['value'] ?? '';
     _focusNode.addListener(_handleFocusChange);
   }
 
@@ -45,259 +44,58 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   void _handleFocusChange() {
     if (!_focusNode.hasFocus) {
       final newValue = _controller.text;
-      if (newValue != widget.component.config['value']) {
-        widget.component.config['value'] = newValue;
-        context.read<DynamicFormBloc>().add(
-          UpdateFormField(componentId: widget.component.id, value: newValue),
-        );
-        widget.onComplete(newValue);
-      }
-      debugPrint(
-        'FocusNode changed for component ${widget.component.id}: hasFocus=${_focusNode.hasFocus}, value=${_controller.text}',
+      context.read<DynamicFormBloc>().add(
+        UpdateFormField(componentId: widget.component.id, value: newValue),
       );
-    }
-  }
-
-  void _handleValueChange(String value) {
-    // Update component config immediately for validation
-    widget.component.config['value'] = value;
-
-    // Send to BLoC for state management
-    context.read<DynamicFormBloc>().add(
-      UpdateFormField(componentId: widget.component.id, value: value),
-    );
-
-    // Call onComplete callback
-    widget.onComplete(value);
-  }
-
-  Map<String, dynamic> _resolveStyles() {
-    final style = Map<String, dynamic>.from(widget.component.style);
-
-    // Apply variant styles
-    if (widget.component.variants != null) {
-      if (widget.component.config['label'] != null &&
-          widget.component.variants!.containsKey('withLabel')) {
-        final variantStyle =
-            widget.component.variants!['withLabel']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (widget.component.config['icon'] != null &&
-          widget.component.variants!.containsKey('withIcon')) {
-        final variantStyle =
-            widget.component.variants!['withIcon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    // Determine current state
-    String currentState = _determineState();
-
-    // Apply state styles (base, error, success, ...)
-    if (widget.component.states != null &&
-        widget.component.states!.containsKey(currentState)) {
-      final stateStyle =
-          widget.component.states![currentState]['style']
-              as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    return style;
-  }
-
-  String _determineState() {
-    final value = _controller.text;
-    if (value.isEmpty) return 'base';
-    final validationError = _validate(widget.component, value);
-    return validationError != null ? 'error' : 'success';
-  }
-
-  TextInputType _getKeyboardType(DynamicFormModel component) {
-    if (component.inputTypes != null) {
-      if (component.inputTypes!.containsKey('email')) {
-        return TextInputType.emailAddress;
-      } else if (component.inputTypes!.containsKey('tel')) {
-        return TextInputType.phone;
-      } else if (component.inputTypes!.containsKey('password')) {
-        return TextInputType.visiblePassword;
-      }
-    }
-    return TextInputType.text;
-  }
-
-  String? _validate(DynamicFormModel component, String value) {
-    // Check required field first
-    if ((component.config['isRequired'] ?? false) && value.trim().isEmpty) {
-      return 'Trường này là bắt buộc';
-    }
-
-    // If empty and not required, no validation needed
-    if (value.trim().isEmpty) {
-      return null;
-    }
-
-    // Validate based on inputTypes
-    final inputTypes = component.inputTypes;
-    if (inputTypes != null && inputTypes.isNotEmpty) {
-      // Try to determine which input type to use based on component config or validation
-      String? selectedType;
-
-      // Check if there's a specific type mentioned in config
-      if (component.config['inputType'] != null) {
-        selectedType = component.config['inputType'];
-      }
-
-      // If no specific type, try to infer from available types
-      if (selectedType == null) {
-        if (inputTypes.containsKey('email') && value.contains('@')) {
-          selectedType = 'email';
-        } else if (inputTypes.containsKey('tel') &&
-            RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
-          selectedType = 'tel';
-        } else if (inputTypes.containsKey('password')) {
-          selectedType = 'password';
-        } else if (inputTypes.containsKey('text')) {
-          selectedType = 'text';
-        }
-      }
-
-      // If still no type selected, use the first available type
-      selectedType ??= inputTypes.keys.first;
-
-      // Validate using the selected type
-      if (inputTypes.containsKey(selectedType)) {
-        final typeConfig = inputTypes[selectedType];
-        final validation = typeConfig['validation'] as Map<String, dynamic>?;
-
-        if (validation != null) {
-          final minLength = validation['min_length'] ?? 0;
-          final maxLength = validation['max_length'] ?? 9999;
-          final regexStr = validation['regex'] ?? '';
-          final errorMsg = validation['error_message'] ?? 'Invalid input';
-
-          // Check length
-          if (value.length < minLength || value.length > maxLength) {
-            return errorMsg;
-          }
-
-          // Check regex pattern
-          if (regexStr.isNotEmpty) {
-            try {
-              final regex = RegExp(regexStr);
-              if (!regex.hasMatch(value)) {
-                return errorMsg;
-              }
-            } catch (e) {
-              // If regex is invalid, skip regex validation
-              debugPrint('Invalid regex pattern: $regexStr');
-            }
-          }
-        }
-      }
-    }
-
-    return null;
-  }
-
-  IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'mail':
-        return Icons.mail;
-      case 'check':
-        return Icons.check;
-      case 'close':
-        return Icons.close;
-      case 'error':
-        return Icons.error;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      // Select input icons
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
+      debugPrint('[TextField] ${widget.component.id} value updated: $newValue');
+      widget.onComplete(newValue);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {
-        // Listen to state changes if needed for validation feedback
-      },
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        final style = _resolveStyles();
-        final currentState = _determineState();
-        final errorText = _validate(widget.component, _controller.text);
-
-        // Icon rendering (dynamic)
+        // Lấy component mới nhất từ BLoC state
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
+        // Lấy trạng thái động
+        final currentState = component.config['currentState'] ?? 'base';
+        Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+        // Always apply variant withIcon if icon exists
+        if ((component.config['icon'] != null || style['icon'] != null) &&
+            component.variants != null &&
+            component.variants!.containsKey('withIcon')) {
+          final variantStyle =
+              component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+          if (variantStyle != null) style.addAll(variantStyle);
+        }
+        // Apply state style nếu có
+        if (component.states != null &&
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
+        }
+        final value = component.config['value']?.toString() ?? '';
+        final errorText = component.config['errorText'] as String?;
+        // Sync controller nếu value thay đổi từ BLoC
+        if (_controller.text != value) {
+          _controller.text = value;
+          _controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: _controller.text.length),
+          );
+        }
         Widget? prefixIcon;
-        if (widget.component.config['icon'] != null || style['icon'] != null) {
-          final iconName =
-              (style['icon'] ?? widget.component.config['icon'] ?? '')
-                  .toString();
+        final iconName = style.containsKey('icon') && style['icon'] != null
+            ? style['icon'].toString()
+            : (component.config['icon'] ?? '').toString();
+        if (iconName.isNotEmpty) {
           final iconColor = StyleUtils.parseColor(style['iconColor']);
           final iconSize = (style['iconSize'] is num)
               ? (style['iconSize'] as num).toDouble()
@@ -307,23 +105,20 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
             prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
           }
         }
-
-        // Helper text
         final helperText = style['helperText']?.toString();
         final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
-
         return Container(
-          key: Key(widget.component.id),
+          key: Key(component.id),
           padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
           margin: StyleUtils.parsePadding(style['margin']),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.component.config['label'] != null)
+              if (component.config['label'] != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 2, bottom: 7),
                   child: Text(
-                    widget.component.config['label'],
+                    component.config['label'],
                     style: TextStyle(
                       fontSize: style['labelTextSize']?.toDouble() ?? 16,
                       color: StyleUtils.parseColor(style['labelColor']),
@@ -334,52 +129,40 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
               TextField(
                 controller: _controller,
                 focusNode: _focusNode,
-                enabled: widget.component.config['editable'] ?? true,
+                enabled: component.config['editable'] ?? true,
                 obscureText:
-                    widget.component.inputTypes?.containsKey('password') ??
-                    false,
-                keyboardType: _getKeyboardType(widget.component),
+                    component.inputTypes?.containsKey('password') ?? false,
+                keyboardType: _getKeyboardType(component),
+                onChanged: (value) {
+                  context.read<DynamicFormBloc>().add(
+                    UpdateFormField(componentId: component.id, value: value),
+                  );
+                  debugPrint(
+                    '[TextField] ${component.id} value updated: $value',
+                  );
+                  widget.onComplete(value);
+                },
+                onSubmitted: (value) {
+                  context.read<DynamicFormBloc>().add(
+                    UpdateFormField(componentId: component.id, value: value),
+                  );
+                  debugPrint(
+                    '[TextField] ${component.id} value updated: $value',
+                  );
+                  widget.onComplete(value);
+                },
                 decoration: InputDecoration(
                   isDense: true,
                   prefixIcon: prefixIcon,
                   prefixIconConstraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
-                    maxWidth: 36,
-                    maxHeight: 36,
                   ),
-                  hintText: widget.component.config['placeholder'] ?? '',
-                  border: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
-                    borderSide: BorderSide(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                      width: 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
-                    borderSide: const BorderSide(color: Colors.red, width: 2),
-                  ),
+                  hintText: component.config['placeholder'] ?? '',
+                  border: _buildBorder(style, currentState),
+                  enabledBorder: _buildBorder(style, 'enabled'),
+                  focusedBorder: _buildBorder(style, 'focused'),
+                  errorBorder: _buildBorder(style, 'error'),
                   errorText: errorText,
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 12,
@@ -402,17 +185,52 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                       ? FontStyle.italic
                       : FontStyle.normal,
                 ),
-                onChanged: (value) {
-                  debugPrint(
-                    '[TextField] onChanged: ${widget.component.id} = $value',
-                  );
-                  _handleValueChange(value);
-                },
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  TextInputType _getKeyboardType(DynamicFormModel component) {
+    if (component.inputTypes != null) {
+      if (component.inputTypes!.containsKey('email')) {
+        return TextInputType.emailAddress;
+      } else if (component.inputTypes!.containsKey('tel')) {
+        return TextInputType.phone;
+      } else if (component.inputTypes!.containsKey('password')) {
+        return TextInputType.visiblePassword;
+      }
+    }
+    return TextInputType.text;
+  }
+
+  IconData? _mapIconNameToIconData(String name) {
+    return IconTypeEnum.fromString(name).toIconData();
+  }
+
+  OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
+    final borderRadius = StyleUtils.parseBorderRadius(style['borderRadius']);
+    final borderColor = StyleUtils.parseColor(style['borderColor']);
+    final borderWidth = style['borderWidth']?.toDouble() ?? 1.0;
+
+    switch (state) {
+      case 'focused':
+        return OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: borderColor, width: borderWidth + 1),
+        );
+      case 'error':
+        return OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        );
+      default:
+        return OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: BorderSide(color: borderColor, width: borderWidth),
+        );
+    }
   }
 }

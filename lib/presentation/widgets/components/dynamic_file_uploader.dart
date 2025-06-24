@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -33,6 +34,34 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   void initState() {
     super.initState();
     _isMultipleFiles = widget.component.config['multipleFiles'] == true;
+    _syncWithBloc(widget.component);
+  }
+
+  @override
+  void didUpdateWidget(covariant DynamicFileUploader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncWithBloc(widget.component);
+  }
+
+  void _syncWithBloc(DynamicFormModel component) {
+    final value = component.config['value'];
+    if (value is Map<String, dynamic>) {
+      final state = value['state'] as String? ?? 'base';
+      final files = value['files'] as List?;
+      final progress = value['progress'] as num?;
+      if (_currentState != state ||
+          (files != null && files.length != _pickedFiles.length) ||
+          (progress != null && _progress != progress.toDouble())) {
+        setState(() {
+          _currentState = state;
+          _pickedFiles = files != null
+              ? files.map((f) => XFile(f.toString())).toList()
+              : [];
+          _progress = progress?.toDouble() ?? 0.0;
+          _isProcessing = state == 'loading';
+        });
+      }
+    }
   }
 
   @override
@@ -241,84 +270,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   }
 
   IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'file':
-        return Icons.insert_drive_file_outlined;
-      case 'check':
-        return Icons.check_circle_outline;
-      case 'error':
-        return Icons.error_outline;
-      case 'mail':
-        return Icons.mail;
-      case 'close':
-        return Icons.close;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
-    }
+    return IconTypeEnum.fromString(name).toIconData();
   }
 
   bool _isImageFile(String filePath) {
@@ -796,9 +748,17 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {},
+      listener: (context, state) {
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
+        _syncWithBloc(component);
+      },
       builder: (context, state) {
-        // Lấy component mới nhất từ state (theo id)
         final component =
             (state is DynamicFormState && state.page?.components != null)
             ? state.page!.components.firstWhere(
@@ -838,12 +798,8 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             return true;
           },
           onAcceptWithDetails: (details) {
-            // Changed from onAccept to onAcceptWithDetails
             setState(() => _isDragging = false);
-            _handleFiles(
-              details.data,
-              component,
-            ); // Use details.data instead of details.files
+            _handleFiles(details.data, component);
           },
           onLeave: (data) {
             setState(() => _isDragging = false);

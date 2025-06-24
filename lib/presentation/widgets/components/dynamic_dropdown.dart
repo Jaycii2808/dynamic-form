@@ -1,8 +1,10 @@
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,192 +18,27 @@ class DynamicDropdown extends StatefulWidget {
 }
 
 class _DynamicDropdownState extends State<DynamicDropdown> {
-  String? _selectedValue; // This stores the value/id, not the label
-  String? _currentDisplayLabel; // This stores the label for display purposes
   bool _isHovering = false;
-  bool _isTouched = false; // To track if the field has been interacted with
   final FocusNode _focusNode = FocusNode();
-  String? _tempSearchValue; // Temporary value while searching
-
   final GlobalKey _dropdownKey = GlobalKey();
   OverlayEntry? _overlayEntry;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedValue = widget.component.config['value'];
-    _updateDisplayLabel();
-    _focusNode.addListener(_handleFocusChange);
-  }
-
-  @override
   void dispose() {
     _overlayEntry?.remove();
-    _focusNode.removeListener(_handleFocusChange);
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _handleFocusChange() {
-    if (!_focusNode.hasFocus) {
-      // Case 2: User unfocuses (tabs out)
-      _saveCurrentValue();
-    }
-  }
-
-  // Update display label based on selected value
-  void _updateDisplayLabel() {
-    if (_selectedValue == null) {
-      _currentDisplayLabel =
-          widget.component.config['label'] ??
-          widget.component.config['placeholder'] ??
-          'Select an option';
-      return;
-    }
-
-    final items = widget.component.config['items'] as List<dynamic>? ?? [];
-    final selectedItem = items.firstWhere(
-      (item) => item['id'] == _selectedValue && item['type'] != 'divider',
-      orElse: () => null,
-    );
-
-    if (selectedItem != null) {
-      _currentDisplayLabel = selectedItem['label'] as String? ?? _selectedValue;
-    } else {
-      _currentDisplayLabel = _selectedValue;
-    }
-  }
-
-  // Save the current value (either selected or temporary search value)
-  void _saveCurrentValue() {
-    String? valueToSave = _tempSearchValue ?? _selectedValue;
-
-    if (valueToSave != widget.component.config['value']) {
-      widget.component.config['value'] = valueToSave;
-      context.read<DynamicFormBloc>().add(
-        UpdateFormField(componentId: widget.component.id, value: valueToSave),
-      );
-      debugPrint('Dropdown value saved: ${widget.component.id} = $valueToSave');
-    }
-  }
-
-  // Save value when explicitly selecting an item
-  void _saveValue() {
-    if (_selectedValue != widget.component.config['value']) {
-      widget.component.config['value'] = _selectedValue;
-      context.read<DynamicFormBloc>().add(
-        UpdateFormField(
-          componentId: widget.component.id,
-          value: _selectedValue,
-        ),
-      );
-    }
-    debugPrint(
-      '[Dropdown] Save value: ${widget.component.id} = $_selectedValue',
-    );
-    // Clear temporary search value when explicitly saving
-    _tempSearchValue = null;
-  }
-
-  // Common utility function for mapping icon names to IconData
   IconData? _mapIconNameToIconData(String name) {
-    switch (name) {
-      case 'mail':
-        return Icons.mail;
-      case 'check':
-        return Icons.check;
-      case 'close':
-        return Icons.close;
-      case 'error':
-        return Icons.error;
-      case 'user':
-        return Icons.person;
-      case 'lock':
-        return Icons.lock;
-      case 'chevron-down':
-        return Icons.keyboard_arrow_down;
-      case 'chevron-up':
-        return Icons.keyboard_arrow_up;
-      case 'globe':
-        return Icons.language;
-      case 'heart':
-        return Icons.favorite;
-      case 'search':
-        return Icons.search;
-      case 'location':
-        return Icons.location_on;
-      case 'calendar':
-        return Icons.calendar_today;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'school':
-        return Icons.school;
-      case 'shopping':
-        return Icons.shopping_cart;
-      case 'food':
-        return Icons.restaurant;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'movie':
-        return Icons.movie;
-      case 'book':
-        return Icons.book;
-      case 'car':
-        return Icons.directions_car;
-      case 'plane':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'bus':
-        return Icons.directions_bus;
-      case 'bike':
-        return Icons.directions_bike;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'settings':
-        return Icons.settings;
-      case 'logout':
-        return Icons.logout;
-      case 'bell':
-        return Icons.notifications;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'edit':
-        return Icons.edit;
-      case 'delete':
-        return Icons.delete;
-      case 'share':
-        return Icons.share;
-      default:
-        return null;
-    }
-  }
-
-  String? _validateDropdown(DynamicFormModel component, String? selectedValue) {
-    final validationConfig = component.validation;
-    if (validationConfig == null) return null;
-
-    final requiredValidation =
-        validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true &&
-        (selectedValue == null || selectedValue.isEmpty)) {
-      return requiredValidation?['error_message'] as String? ??
-          'This field is required.';
-    }
-
-    return null;
+    return IconTypeEnum.fromString(name).toIconData();
   }
 
   void _showDropdownPanel(
     BuildContext context,
     DynamicFormModel component,
     Rect rect,
+    String? selectedValue,
   ) {
     final items = component.config['items'] as List<dynamic>? ?? [];
     final style = component.style;
@@ -227,26 +64,15 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
             return Stack(
               children: [
-                // Full screen GestureDetector to dismiss the dropdown.
                 Positioned.fill(
                   child: GestureDetector(
                     onTap: () {
-                      // Case 3: User clicks outside component
-                      _saveValue();
                       _overlayEntry?.remove();
                       _overlayEntry = null;
-                      // Trigger rebuild through BLoC instead of setState
-                      context.read<DynamicFormBloc>().add(
-                        UpdateFormField(
-                          componentId: widget.component.id,
-                          value: widget.component.config['value'],
-                        ),
-                      );
                     },
                     child: Container(color: Colors.transparent),
                   ),
                 ),
-                // The dropdown panel itself.
                 Positioned(
                   top: rect.top,
                   left: rect.left,
@@ -260,9 +86,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                       style['borderRadius'],
                     ),
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxHeight: 300,
-                      ), // Max height for dropdown list
+                      constraints: const BoxConstraints(maxHeight: 300),
                       child: ListView.separated(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shrinkWrap: true,
@@ -307,24 +131,33 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                   setPanelState(() {
                                     searchQuery = value;
                                   });
-                                  // Store temporary search value
-                                  _tempSearchValue = value.isNotEmpty
-                                      ? value
-                                      : null;
+                                  // Không gửi event ở đây vì chỉ là search tạm
                                 },
                                 onSubmitted: (value) {
-                                  // Case 1: User presses Enter
                                   if (filteredItems.isNotEmpty &&
                                       filteredItems.first['type'] !=
                                           'divider') {
                                     final firstItem = filteredItems.first;
-                                    _selectedValue = firstItem['id'];
-                                    _updateDisplayLabel();
-                                    _saveValue();
+                                    final newValue = firstItem['id'];
+                                    context.read<DynamicFormBloc>().add(
+                                      UpdateFormField(
+                                        componentId: component.id,
+                                        value: newValue,
+                                      ),
+                                    );
+                                    debugPrint(
+                                      '[Dropdown] ${component.id} value updated: $newValue',
+                                    );
                                   } else if (value.isNotEmpty) {
-                                    // If no filtered items but user entered text, save the text
-                                    _tempSearchValue = value;
-                                    _saveCurrentValue();
+                                    context.read<DynamicFormBloc>().add(
+                                      UpdateFormField(
+                                        componentId: component.id,
+                                        value: value,
+                                      ),
+                                    );
+                                    debugPrint(
+                                      '[Dropdown] ${component.id} value updated: $value',
+                                    );
                                   }
                                   _overlayEntry?.remove();
                                   _overlayEntry = null;
@@ -355,17 +188,15 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
                           return InkWell(
                             onTap: () {
-                              debugPrint(
-                                "Dropdown Action Tapped: Value='$value', Label='$label'",
+                              context.read<DynamicFormBloc>().add(
+                                UpdateFormField(
+                                  componentId: component.id,
+                                  value: value,
+                                ),
                               );
-
-                              _isTouched = true;
-                              _selectedValue = value;
-                              _updateDisplayLabel();
-
-                              // Save value immediately when item is selected
-                              _saveValue();
-
+                              debugPrint(
+                                '[Dropdown] ${component.id} value updated: $value',
+                              );
                               _overlayEntry?.remove();
                               _overlayEntry = null;
                             },
@@ -422,77 +253,59 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {
-        // Listen to state changes if needed
-      },
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        final style = Map<String, dynamic>.from(widget.component.style);
-        final config = widget.component.config;
+        // Lấy component mới nhất từ BLoC state
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
+        final config = component.config;
+        final style = Map<String, dynamic>.from(component.style);
         final triggerAvatar = config['avatar'] as String?;
         final triggerIcon = config['icon'] as String?;
         final isSearchable = config['searchable'] as bool? ?? false;
         final placeholder = config['placeholder'] as String? ?? 'Search';
+        final value = config['value']?.toString();
+        final errorText = config['errorText'] as String?;
+        final currentState = config['currentState'] ?? 'base';
 
-        // Apply variant styles
-        if (widget.component.variants != null) {
-          if (triggerAvatar != null &&
-              widget.component.variants!.containsKey('withAvatar')) {
-            final variantStyle =
-                widget.component.variants!['withAvatar']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (triggerIcon != null &&
-              _currentDisplayLabel == null &&
-              widget.component.variants!.containsKey('iconOnly')) {
-            final variantStyle =
-                widget.component.variants!['iconOnly']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (triggerIcon != null &&
-              _currentDisplayLabel != null &&
-              widget.component.variants!.containsKey('withIcon')) {
-            final variantStyle =
-                widget.component.variants!['withIcon']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
+        // Always apply variant withIcon if icon exists
+        if ((triggerIcon != null || style['icon'] != null) &&
+            component.variants != null &&
+            component.variants!.containsKey('withIcon')) {
+          final variantStyle =
+              component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+          if (variantStyle != null) style.addAll(variantStyle);
         }
-
-        // Determine current state
-        final validationError = _validateDropdown(
-          widget.component,
-          _selectedValue,
-        );
-        if (_isTouched) {
-          // Validation error is handled through BLoC state
-        }
-
-        String currentState = 'base';
-        if (_isTouched && validationError != null) {
-          currentState = 'error';
-        } else if (_selectedValue != null &&
-            _selectedValue!.isNotEmpty &&
-            widget.component.states!.containsKey('success')) {
-          currentState = 'success';
-        } else if (_isHovering) {
-          currentState = 'hover';
-        }
-
-        // Apply state styles
-        if (widget.component.states != null &&
-            widget.component.states!.containsKey(currentState)) {
+        // Apply state style nếu có
+        if (component.states != null &&
+            component.states!.containsKey(currentState)) {
           final stateStyle =
-              widget.component.states![currentState]['style']
-                  as Map<String, dynamic>?;
+              component.states![currentState]['style'] as Map<String, dynamic>?;
           if (stateStyle != null) style.addAll(stateStyle);
         }
 
-        final String? helperText =
-            validationError ?? style['helperText'] as String?;
-        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+        // Tính toán label hiển thị
+        String? displayLabel;
+        if (value == null || value.isEmpty) {
+          displayLabel =
+              config['label'] ?? config['placeholder'] ?? 'Select an option';
+        } else {
+          final items = config['items'] as List<dynamic>? ?? [];
+          final selectedItem = items.firstWhere(
+            (item) => item['id'] == value && item['type'] != 'divider',
+            orElse: () => null,
+          );
+          if (selectedItem != null) {
+            displayLabel = selectedItem['label'] as String? ?? value;
+          } else {
+            displayLabel = value;
+          }
+        }
 
         Widget triggerContent;
         if (isSearchable) {
@@ -500,7 +313,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             children: [
               Expanded(
                 child: Text(
-                  _currentDisplayLabel ?? placeholder,
+                  displayLabel ?? placeholder,
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
@@ -512,7 +325,8 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
               ),
             ],
           );
-        } else if (triggerIcon != null && _currentDisplayLabel == null) {
+        } else if (triggerIcon != null &&
+            (displayLabel == null || displayLabel.isEmpty)) {
           // Icon-only trigger
           triggerContent = Icon(
             _mapIconNameToIconData(triggerIcon),
@@ -539,9 +353,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
               ],
               Expanded(
                 child: Text(
-                  _currentDisplayLabel ??
-                      widget.component.config['placeholder'] ??
-                      'Select an option',
+                  displayLabel ?? config['placeholder'] ?? 'Select an option',
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
@@ -557,12 +369,13 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           );
         }
 
+        final helperText = errorText ?? style['helperText'] as String?;
+        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             MouseRegion(
-              onEnter: (_) => _isHovering = true,
-              onExit: (_) => _isHovering = false,
               child: InkWell(
                 key: _dropdownKey,
                 focusNode: _focusNode,
@@ -575,13 +388,14 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
                   _showDropdownPanel(
                     context,
-                    widget.component,
+                    component,
                     Rect.fromLTWH(
                       offset.dx,
                       offset.dy + size.height,
                       size.width,
                       0,
                     ),
+                    value,
                   );
                 },
                 child: Container(
