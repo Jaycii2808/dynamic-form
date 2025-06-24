@@ -133,6 +133,21 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             validation: c.validation,
             children: c.children,
           );
+        } else if (c.type == FormTypeEnum.fileUploaderFormType) {
+          // Xử lý riêng cho file uploader: value là Map (state, files, progress...)
+          newConfig['value'] = event.value;
+          return DynamicFormModel(
+            id: c.id,
+            type: c.type,
+            order: c.order,
+            config: newConfig,
+            style: c.style,
+            inputTypes: c.inputTypes,
+            variants: c.variants,
+            states: c.states,
+            validation: c.validation,
+            children: c.children,
+          );
         } else {
           String value = '';
           if (c.type == FormTypeEnum.selectFormType &&
