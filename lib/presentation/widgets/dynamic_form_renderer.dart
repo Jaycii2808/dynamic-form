@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
@@ -12,10 +13,10 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_tim
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
 IconData? mapIconNameToIconData(String name) {
@@ -120,7 +121,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   List<String> _selectedValues = []; // For multiple selection
   bool _isDropdownOpen = false;
   bool _isTouched = false; // To track if the field has been interacted with
-  bool _showSuggestions = false;
+  //bool _showSuggestions = false;
   final Set<String> _selectedTags = {};
   late StringTagController<String> tagController;
 
@@ -250,299 +251,21 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           },
         );
       case FormTypeEnum.textFieldTagsFormType:
-        return _buildTextFieldTags(component);
+        return DynamicTextFieldTags(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
       case FormTypeEnum.fileUploaderFormType:
         return _FileUploaderWidget(component: component);
       case FormTypeEnum.unknown:
         return _buildDefaultFormType();
     }
   }
-
-  Widget _buildTextFieldTags(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final initialTags = (config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
-    final placeholder = config['placeholder'] ?? 'Enter tags...';
-
-    debugPrint('TextFieldTags: Initial tags are $initialTags');
-    debugPrint('TextFieldTags: Selected tags are ${_selectedTags.toList()}');
-
-    // Determine current state
-    String currentState = 'base';
-    if (_selectedTags.isNotEmpty) currentState = 'success';
-    if (_errorText != null) currentState = 'error';
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    if (_showSuggestions) {
-      return Container(
-        key: Key(component.id),
-        padding: StyleUtils.parsePadding(style['padding']),
-        margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.blueAccent, width: 1.5),
-          borderRadius: BorderRadius.circular(14.0),
-          color: Colors.white,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_selectedTags.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: _selectedTags.map((tag) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: StyleUtils.parseColor('#CDD2FD'),
-                        borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Text(
-                              tag,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: StyleUtils.parseColor('#6979F8'),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedTags.remove(tag);
-                                debugPrint('Removed: Tag $tag removed from ${component.id}');
-                              });
-                            },
-                            child: SvgPicture.asset(
-                              'assets/svg/Close.svg',
-                              width: 16,
-                              height: 16,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.redAccent,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            Autocomplete<String>(
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                debugPrint('Autocomplete: Filtering options for input ${textEditingValue.text}');
-                final availableTags = initialTags
-                    .where((tag) => !_selectedTags.contains(tag))
-                    .toList();
-                if (textEditingValue.text.isEmpty) return availableTags;
-                return availableTags.where(
-                  (tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()),
-                );
-              },
-              onSelected: (String selection) {
-                debugPrint('Autocomplete: Selected tag $selection');
-                if (!_selectedTags.contains(selection)) {
-                  setState(() {
-                    _selectedTags.add(selection);
-                    _errorText = null;
-                    debugPrint('TagAdded: Successfully added tag $selection via autocomplete');
-                  });
-                }
-              },
-              fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                return TextField(
-                  controller: textEditingController,
-                  focusNode: focusNode,
-                  onSubmitted: (value) {
-                    debugPrint('OnSubmitted: Submitted value $value');
-                    if (value.isNotEmpty &&
-                        initialTags.contains(value.trim()) &&
-                        !_selectedTags.contains(value.trim())) {
-                      textEditingController.clear();
-                      setState(() {
-                        _selectedTags.add(value.trim());
-                        _errorText = null;
-                        debugPrint('TagAdded: Successfully added tag $value');
-                      });
-                    } else if (_selectedTags.contains(value.trim())) {
-                      setState(() {
-                        _errorText = 'Tag already selected';
-                        debugPrint('TagRejected: $value is already selected');
-                      });
-                    } else {
-                      setState(() {
-                        _errorText = 'Tag must match predefined list';
-                        debugPrint('TagRejected: $value does not match predefined tags');
-                      });
-                    }
-                  },
-                  onChanged: (value) {
-                    debugPrint('OnChanged: Input changed to $value');
-                    if (_errorText != null) {
-                      setState(() => _errorText = null);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: placeholder,
-                    border: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 1.0,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 1.0,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                      borderSide: BorderSide(
-                        color: StyleUtils.parseColor(style['borderColor']),
-                        width: style['borderWidth']?.toDouble() ?? 2.0,
-                      ),
-                    ),
-                    filled: style['backgroundColor'] != null,
-                    fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                    errorText: _errorText,
-                  ),
-                  style: TextStyle(
-                    fontSize: style['fontSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['color'] ?? '#000000'),
-                  ),
-                );
-              },
-              optionsViewBuilder: (context, onSelected, options) {
-                return Align(
-                  alignment: Alignment.topLeft,
-                  child: Material(
-                    elevation: 4.0,
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Container(
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        itemCount: options.length,
-                        itemBuilder: (context, index) {
-                          final option = options.elementAt(index);
-                          return ListTile(
-                            dense: true,
-                            title: Text(option),
-                            onTap: () => onSelected(option),
-                            hoverColor: Colors.grey[100],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => setState(() => _showSuggestions = false),
-                child: const Text('Done'),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _showSuggestions = true;
-            debugPrint('Tap: Showing suggestions for ${component.id}');
-          });
-        },
-        child: Container(
-          key: Key(component.id),
-          padding: StyleUtils.parsePadding(style['padding']),
-          margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent, width: 1.5),
-            borderRadius: BorderRadius.circular(14.0),
-            color: Colors.white,
-          ),
-          child: _selectedTags.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Click to add tags',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                )
-              : Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: _selectedTags.map((tag) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: StyleUtils.parseColor('#CDD2FD'),
-                        borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            tag,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: StyleUtils.parseColor('#6979F8'),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedTags.remove(tag);
-                                debugPrint('Removed: Tag $tag removed from ${component.id}');
-                              });
-                            },
-                            child: SvgPicture.asset(
-                              'assets/svg/Close.svg',
-                              width: 16,
-                              height: 16,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.redAccent,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-        ),
-      );
-    }
-  }
-
 
 
   Widget _buildTextField(DynamicFormModel component) {
