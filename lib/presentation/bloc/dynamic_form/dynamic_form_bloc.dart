@@ -40,7 +40,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   void _onUpdateFormField(UpdateFormField event, Emitter<DynamicFormState> emit) {
-    // Cập nhật giá trị component trong page
+    debugPrint('UpdateFormField: Component ${event.componentId}, Value: ${event.value}');
     if (state.page != null) {
       final updatedComponents = state.page!.components.map((component) {
         if (component.id == event.componentId) {

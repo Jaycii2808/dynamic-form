@@ -9,6 +9,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -227,7 +228,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.sliderFormType:
         return _buildSlider(component);
       case FormTypeEnum.selectorFormType:
-        return _buildSelector(component);
+        //return _buildSelector(component);
+        return DynamicSelector(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
       case FormTypeEnum.switchFormType:
         return _buildSwitch(component);
       case FormTypeEnum.textFieldTagsFormType:
@@ -587,68 +597,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSelector(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-    final selected = config['selected'] ?? false;
-
-    // Apply variant styles
-    if (component.variants != null) {
-      if (hasLabel && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (!hasLabel && component.variants!.containsKey('withoutLabel')) {
-        final variantStyle = component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    // Determine current state
-    String currentState = 'base';
-    if (selected) currentState = 'success';
-
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    return Container(
-      key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            component.config['selected'] = !selected;
-          });
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              selected ? 'assets/svg/Active.svg' : 'assets/svg/Inactive.svg',
-              width: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-              height: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-            ),
-            if (hasLabel)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  config['label'],
-                  style: TextStyle(
-                    fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['labelColor']),
-                  ),
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
