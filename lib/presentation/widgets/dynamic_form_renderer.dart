@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
@@ -209,6 +210,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         );
       case FormTypeEnum.dateTimePickerFormType:
         return DynamicDateTimePicker(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
+      case FormTypeEnum.dateTimeRangePickerFormType:
+        return DynamicDateTimeRangePicker(
           component: component,
           onComplete: (value) {
             context.read<DynamicFormBloc>().add(UpdateFormField(
