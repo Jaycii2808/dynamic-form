@@ -518,37 +518,42 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
+    // Switch colors
+    final activeColor = StyleUtils.parseColor(style['activeColor'] ?? '#6979F8');
+    final inactiveThumbColor = StyleUtils.parseColor(style['inactiveThumbColor'] ?? '#CCCCCC');
+    final inactiveTrackColor = StyleUtils.parseColor(style['inactiveTrackColor'] ?? '#E5E5E5');
+
     return Container(
       key: Key(component.id),
       padding: StyleUtils.parsePadding(style['padding']),
       margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            component.config['selected'] = !selected;
-          });
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              selected ? 'assets/svg/On.svg' : 'assets/svg/Off.svg',
-              // width: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-              // height: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-            ),
-            if (hasLabel)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  config['label'],
-                  style: TextStyle(
-                    fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['labelColor'] ?? '#6979F8'),
-                  ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Switch(
+            value: selected,
+            onChanged: (bool value) {
+              setState(() {
+                component.config['selected'] = value;
+              });
+            },
+            activeColor: activeColor,
+            inactiveThumbColor: inactiveThumbColor,
+            inactiveTrackColor: inactiveTrackColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          if (hasLabel)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor'] ?? '#6979F8'),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
