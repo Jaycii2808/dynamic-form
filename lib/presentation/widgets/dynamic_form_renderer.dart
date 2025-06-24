@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -239,7 +240,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           },
         );
       case FormTypeEnum.switchFormType:
-        return _buildSwitch(component);
+        return DynamicSwitch(
+          component: component,
+          onComplete: (value) {
+            context.read<DynamicFormBloc>().add(UpdateFormField(
+              componentId: component.id,
+              value: value,
+            ));
+          },
+        );
       case FormTypeEnum.textFieldTagsFormType:
         return _buildTextFieldTags(component);
       case FormTypeEnum.fileUploaderFormType:
@@ -534,72 +543,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
   }
 
-  Widget _buildSwitch(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final config = component.config;
-    final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-    final selected = config['selected'] ?? false;
-
-    // Apply variant styles
-    if (component.variants != null) {
-      if (hasLabel && component.variants!.containsKey('withLabel')) {
-        final variantStyle = component.variants!['withLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (!hasLabel && component.variants!.containsKey('withoutLabel')) {
-        final variantStyle = component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    // Determine current state
-    String currentState = 'base';
-    if (selected) currentState = 'success';
-
-    if (component.states != null && component.states!.containsKey(currentState)) {
-      final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    // Switch colors
-    final activeColor = StyleUtils.parseColor(style['activeColor'] ?? '#6979F8');
-    final inactiveThumbColor = StyleUtils.parseColor(style['inactiveThumbColor'] ?? '#CCCCCC');
-    final inactiveTrackColor = StyleUtils.parseColor(style['inactiveTrackColor'] ?? '#E5E5E5');
-
-    return Container(
-      key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Switch(
-            value: selected,
-            onChanged: (bool value) {
-              setState(() {
-                component.config['selected'] = value;
-              });
-            },
-            activeColor: activeColor,
-            inactiveThumbColor: inactiveThumbColor,
-            inactiveTrackColor: inactiveTrackColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor'] ?? '#6979F8'),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 
 
   Widget _buildTextField(DynamicFormModel component) {
