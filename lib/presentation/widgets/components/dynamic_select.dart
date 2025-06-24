@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -163,7 +164,14 @@ class _DynamicSelectState extends State<DynamicSelect> {
   }
 
   void _openDropdown() {
-    final component = widget.component;
+    // Get component from current state
+    final component =
+        context.read<DynamicFormBloc>().state.page?.components.firstWhere(
+          (c) => c.id == widget.component.id,
+          orElse: () => widget.component,
+        ) ??
+        widget.component;
+
     final RenderBox renderBox =
         _selectKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
@@ -231,22 +239,21 @@ class _DynamicSelectState extends State<DynamicSelect> {
             title: Text(label),
             value: isSelected,
             onChanged: (bool? newValue) {
-              setState(() {
-                if (newValue == true) {
-                  if (!_selectedValues.contains(value)) {
-                    _selectedValues.add(value);
-                  }
-                } else {
-                  _selectedValues.remove(value);
+              List<String> newValues = List.from(_selectedValues);
+              if (newValue == true) {
+                if (!newValues.contains(value)) {
+                  newValues.add(value);
                 }
-                _errorText = _validateSelect(component, _selectedValues);
-                context.read<DynamicFormBloc>().add(
-                  UpdateFormField(
-                    componentId: component.id,
-                    value: _selectedValues,
-                  ),
-                );
-              });
+              } else {
+                newValues.remove(value);
+              }
+              // Không update trực tiếp component.config nữa
+              context.read<DynamicFormBloc>().add(
+                UpdateFormField(componentId: component.id, value: newValues),
+              );
+              debugPrint(
+                '[Select] Save value (multiple): ${component.id} = $newValues',
+              );
             },
             secondary: avatarUrl != null
                 ? CircleAvatar(backgroundImage: NetworkImage(avatarUrl))
@@ -259,17 +266,11 @@ class _DynamicSelectState extends State<DynamicSelect> {
                 : null,
             title: Text(label),
             onTap: () {
-              setState(() {
-                _isTouched = true;
-                _selectedValue = value;
-                _errorText = _validateSelect(component, [_selectedValue ?? '']);
-                context.read<DynamicFormBloc>().add(
-                  UpdateFormField(
-                    componentId: component.id,
-                    value: _selectedValue,
-                  ),
-                );
-              });
+              // Không update trực tiếp component.config nữa
+              context.read<DynamicFormBloc>().add(
+                UpdateFormField(componentId: component.id, value: value),
+              );
+              debugPrint('[Select] Save value: ${component.id} = $value');
               _closeDropdown();
             },
           );
@@ -422,20 +423,16 @@ class _DynamicSelectState extends State<DynamicSelect> {
                 if (isMultiple)
                   TextButton(
                     onPressed: () {
-                      setState(() {
-                        _isTouched = true;
-                        _selectedValues = tempSelectedValues;
-                        _errorText = _validateSelect(
-                          component,
-                          _selectedValues,
-                        );
-                        context.read<DynamicFormBloc>().add(
-                          UpdateFormField(
-                            componentId: component.id,
-                            value: _selectedValues,
-                          ),
-                        );
-                      });
+                      // Không update trực tiếp component.config nữa
+                      context.read<DynamicFormBloc>().add(
+                        UpdateFormField(
+                          componentId: component.id,
+                          value: tempSelectedValues,
+                        ),
+                      );
+                      debugPrint(
+                        '[Select] Save value (multiple): ${component.id} = $tempSelectedValues',
+                      );
                       Navigator.of(context).pop();
                     },
                     child: const Text('Xác nhận'),
@@ -450,250 +447,279 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
   @override
   Widget build(BuildContext context) {
-    final style = Map<String, dynamic>.from(widget.component.style);
-    final options = widget.component.config['options'] as List<dynamic>? ?? [];
-    final isMultiple = widget.component.config['multiple'] ?? false;
-    final searchable = widget.component.config['searchable'] ?? false;
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        // Lấy component mới nhất từ state (theo id)
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
 
-    // Apply variant styles
-    if (widget.component.variants != null) {
-      if (widget.component.config['label'] != null &&
-          widget.component.variants!.containsKey('withLabel')) {
-        final variantStyle =
-            widget.component.variants!['withLabel']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (widget.component.config['icon'] != null &&
-          widget.component.variants!.containsKey('withIcon')) {
-        final variantStyle =
-            widget.component.variants!['withIcon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (isMultiple && widget.component.variants!.containsKey('multiple')) {
-        final variantStyle =
-            widget.component.variants!['multiple']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (searchable && widget.component.variants!.containsKey('searchable')) {
-        final variantStyle =
-            widget.component.variants!['searchable']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
-
-    // Determine current state
-    String currentState = 'base';
-    final List<String> currentValues = isMultiple
-        ? _selectedValues
-        : (_selectedValue != null ? [_selectedValue!] : []);
-
-    final validationError = _validateSelect(widget.component, currentValues);
-
-    if (_isTouched && validationError != null) {
-      currentState = 'error';
-    } else if (currentValues.isNotEmpty && validationError == null) {
-      currentState = 'success';
-    } else {
-      currentState = 'base';
-    }
-
-    // Apply state styles
-    if (widget.component.states != null &&
-        widget.component.states!.containsKey(currentState)) {
-      final stateStyle =
-          widget.component.states![currentState]['style']
-              as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
-    // Icon rendering
-    Widget? prefixIcon;
-    if ((widget.component.config['icon'] != null || style['icon'] != null) &&
-        style['iconPosition'] != 'right') {
-      final iconName = (style['icon'] ?? widget.component.config['icon'] ?? '')
-          .toString();
-      final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num)
-          ? (style['iconSize'] as num).toDouble()
-          : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
-      if (iconData != null) {
-        prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
-      }
-    }
-
-    Widget? suffixIcon;
-    if ((widget.component.config['icon'] != null || style['icon'] != null) &&
-        style['iconPosition'] == 'right') {
-      final iconName = (style['icon'] ?? widget.component.config['icon'] ?? '')
-          .toString();
-      final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num)
-          ? (style['iconSize'] as num).toDouble()
-          : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
-      if (iconData != null) {
-        suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
-      }
-    }
-
-    // Helper text
-    final helperText = style['helperText']?.toString();
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
-
-    // Get display text
-    final textStyle = TextStyle(
-      fontSize: style['fontSize']?.toDouble() ?? 16,
-      color: StyleUtils.parseColor(style['color']),
-      fontStyle: style['fontStyle'] == 'italic'
-          ? FontStyle.italic
-          : FontStyle.normal,
-    );
-
-    Widget displayContent;
-
-    if (isMultiple) {
-      String displayText = 'Chọn các tùy chọn';
-      if (_selectedValues.isNotEmpty) {
-        final selectedLabels = _selectedValues.map((value) {
-          final option = options.firstWhere(
-            (opt) => opt['value'] == value,
-            orElse: () => {'label': value},
-          );
-          return option['label'] ?? value;
-        }).toList();
-        displayText = selectedLabels.join(', ');
-      }
-      displayContent = Text(displayText, style: textStyle);
-    } else {
-      if (_selectedValue != null && _selectedValue!.isNotEmpty) {
-        final option = options.firstWhere(
-          (opt) => opt['value'] == _selectedValue,
-          orElse: () => {'label': _selectedValue},
-        );
-        final displayText = option['label'] ?? _selectedValue!;
-        final avatarUrl = option['avatar']?.toString();
-
-        if (avatarUrl != null) {
-          displayContent = Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(avatarUrl),
-                radius: 16,
-              ),
-              const SizedBox(width: 8),
-              Text(displayText, style: textStyle),
-            ],
-          );
+        // Update local state from component config
+        final value = component.config['value'];
+        if (component.config['multiple'] == true) {
+          _selectedValues = (value as List<dynamic>?)?.cast<String>() ?? [];
         } else {
-          displayContent = Text(displayText, style: textStyle);
+          _selectedValue = value?.toString();
         }
-      } else {
-        displayContent = Text(
-          widget.component.config['placeholder'] ?? 'Chọn một tùy chọn',
-          style: textStyle,
+
+        final style = Map<String, dynamic>.from(component.style);
+        final options = component.config['options'] as List<dynamic>? ?? [];
+        final isMultiple = component.config['multiple'] ?? false;
+        final searchable = component.config['searchable'] ?? false;
+
+        // Apply variant styles
+        if (component.variants != null) {
+          if (component.config['label'] != null &&
+              component.variants!.containsKey('withLabel')) {
+            final variantStyle =
+                component.variants!['withLabel']['style']
+                    as Map<String, dynamic>?;
+            if (variantStyle != null) style.addAll(variantStyle);
+          }
+          if (component.config['icon'] != null &&
+              component.variants!.containsKey('withIcon')) {
+            final variantStyle =
+                component.variants!['withIcon']['style']
+                    as Map<String, dynamic>?;
+            if (variantStyle != null) style.addAll(variantStyle);
+          }
+          if (isMultiple && component.variants!.containsKey('multiple')) {
+            final variantStyle =
+                component.variants!['multiple']['style']
+                    as Map<String, dynamic>?;
+            if (variantStyle != null) style.addAll(variantStyle);
+          }
+          if (searchable && component.variants!.containsKey('searchable')) {
+            final variantStyle =
+                component.variants!['searchable']['style']
+                    as Map<String, dynamic>?;
+            if (variantStyle != null) style.addAll(variantStyle);
+          }
+        }
+
+        // Determine current state
+        String currentState = 'base';
+        final List<String> currentValues = isMultiple
+            ? _selectedValues
+            : (_selectedValue != null ? [_selectedValue!] : []);
+
+        final validationError = _validateSelect(component, currentValues);
+
+        if (_isTouched && validationError != null) {
+          currentState = 'error';
+        } else if (currentValues.isNotEmpty && validationError == null) {
+          currentState = 'success';
+        } else {
+          currentState = 'base';
+        }
+
+        // Apply state styles
+        if (component.states != null &&
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
+        }
+
+        debugPrint(
+          '[Select][build] id=${component.id} value=${isMultiple ? _selectedValues : _selectedValue} state=$currentState',
         );
-      }
-    }
+        debugPrint('[Select][build] style=${style.toString()}');
 
-    final hasLabel =
-        widget.component.config['label'] != null &&
-        widget.component.config['label'].isNotEmpty;
+        // Icon rendering
+        Widget? prefixIcon;
+        if ((component.config['icon'] != null || style['icon'] != null) &&
+            style['iconPosition'] != 'right') {
+          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+              .toString();
+          final iconColor = StyleUtils.parseColor(style['iconColor']);
+          final iconSize = (style['iconSize'] is num)
+              ? (style['iconSize'] as num).toDouble()
+              : 20.0;
+          final iconData = _mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
+          }
+        }
 
-    return Container(
-      key: Key(widget.component.id),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                widget.component.config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          InkWell(
-            key: _selectKey,
-            onTap: () {
-              if (isMultiple || searchable) {
-                _showMultiSelectDialog(
-                  context,
-                  widget.component,
-                  options,
-                  isMultiple,
-                  searchable,
-                );
-              } else {
-                _toggleDropdown();
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                ),
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                color: StyleUtils.parseColor(style['backgroundColor']),
-              ),
-              child: Row(
+        Widget? suffixIcon;
+        if ((component.config['icon'] != null || style['icon'] != null) &&
+            style['iconPosition'] == 'right') {
+          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
+              .toString();
+          final iconColor = StyleUtils.parseColor(style['iconColor']);
+          final iconSize = (style['iconSize'] is num)
+              ? (style['iconSize'] as num).toDouble()
+              : 20.0;
+          final iconData = _mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
+          }
+        }
+
+        // Helper text
+        final helperText = style['helperText']?.toString();
+        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+
+        // Get display text
+        final textStyle = TextStyle(
+          fontSize: style['fontSize']?.toDouble() ?? 16,
+          color: StyleUtils.parseColor(style['color']),
+          fontStyle: style['fontStyle'] == 'italic'
+              ? FontStyle.italic
+              : FontStyle.normal,
+        );
+
+        Widget displayContent;
+
+        if (isMultiple) {
+          String displayText = 'Chọn các tùy chọn';
+          if (_selectedValues.isNotEmpty) {
+            final selectedLabels = _selectedValues.map((value) {
+              final option = options.firstWhere(
+                (opt) => opt['value'] == value,
+                orElse: () => {'label': value},
+              );
+              return option['label'] ?? value;
+            }).toList();
+            displayText = selectedLabels.join(', ');
+          }
+          displayContent = Text(displayText, style: textStyle);
+        } else {
+          if (_selectedValue != null && _selectedValue!.isNotEmpty) {
+            final option = options.firstWhere(
+              (opt) => opt['value'] == _selectedValue,
+              orElse: () => {'label': _selectedValue},
+            );
+            final displayText = option['label'] ?? _selectedValue!;
+            final avatarUrl = option['avatar']?.toString();
+
+            if (avatarUrl != null) {
+              displayContent = Row(
                 children: [
-                  if (prefixIcon != null) ...[
-                    prefixIcon,
-                    const SizedBox(width: 8),
-                  ],
-                  Expanded(child: displayContent),
-                  if (suffixIcon != null) ...[
-                    const SizedBox(width: 8),
-                    suffixIcon,
-                  ],
-                  Icon(
-                    _isDropdownOpen
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: StyleUtils.parseColor(style['color']),
+                  CircleAvatar(
+                    backgroundImage: NetworkImage(avatarUrl),
+                    radius: 16,
                   ),
+                  const SizedBox(width: 8),
+                  Text(displayText, style: textStyle),
                 ],
-              ),
-            ),
-          ),
-          if (_errorText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                _errorText!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
-          if (helperText != null && _errorText == null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 12),
-              child: Text(
-                helperText,
-                style: TextStyle(
-                  color: helperTextColor,
-                  fontSize: 12,
-                  fontStyle: style['fontStyle'] == 'italic'
-                      ? FontStyle.italic
-                      : FontStyle.normal,
+              );
+            } else {
+              displayContent = Text(displayText, style: textStyle);
+            }
+          } else {
+            displayContent = Text(
+              component.config['placeholder'] ?? 'Chọn một tùy chọn',
+              style: textStyle,
+            );
+          }
+        }
+
+        final hasLabel =
+            component.config['label'] != null &&
+            component.config['label'].isNotEmpty;
+
+        return Container(
+          key: Key(component.id),
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+          margin: StyleUtils.parsePadding(style['margin']),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasLabel)
+                Padding(
+                  padding: const EdgeInsets.only(left: 2, bottom: 7),
+                  child: Text(
+                    component.config['label'],
+                    style: TextStyle(
+                      fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                      color: StyleUtils.parseColor(style['labelColor']),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              InkWell(
+                key: _selectKey,
+                onTap: () {
+                  if (isMultiple || searchable) {
+                    _showMultiSelectDialog(
+                      context,
+                      component,
+                      options,
+                      isMultiple,
+                      searchable,
+                    );
+                  } else {
+                    _toggleDropdown();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                    ),
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    color: StyleUtils.parseColor(style['backgroundColor']),
+                  ),
+                  child: Row(
+                    children: [
+                      if (prefixIcon != null) ...[
+                        prefixIcon,
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(child: displayContent),
+                      if (suffixIcon != null) ...[
+                        const SizedBox(width: 8),
+                        suffixIcon,
+                      ],
+                      Icon(
+                        _isDropdownOpen
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: StyleUtils.parseColor(style['color']),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+              if (_errorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 12),
+                  child: Text(
+                    _errorText!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+              if (helperText != null && _errorText == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 12),
+                  child: Text(
+                    helperText,
+                    style: TextStyle(
+                      color: helperTextColor,
+                      fontSize: 12,
+                      fontStyle: style['fontStyle'] == 'italic'
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

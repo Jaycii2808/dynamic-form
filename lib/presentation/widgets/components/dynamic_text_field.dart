@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +25,6 @@ class DynamicTextField extends StatefulWidget {
 class _DynamicTextFieldState extends State<DynamicTextField> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  String? _errorText;
 
   @override
   void initState() {
@@ -56,7 +56,19 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
         'FocusNode changed for component ${widget.component.id}: hasFocus=${_focusNode.hasFocus}, value=${_controller.text}',
       );
     }
-    setState(() {});
+  }
+
+  void _handleValueChange(String value) {
+    // Update component config immediately for validation
+    widget.component.config['value'] = value;
+
+    // Send to BLoC for state management
+    context.read<DynamicFormBloc>().add(
+      UpdateFormField(componentId: widget.component.id, value: value),
+    );
+
+    // Call onComplete callback
+    widget.onComplete(value);
   }
 
   Map<String, dynamic> _resolveStyles() {
@@ -271,125 +283,136 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final style = _resolveStyles();
-    final currentState = _determineState();
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {
+        // Listen to state changes if needed for validation feedback
+      },
+      builder: (context, state) {
+        final style = _resolveStyles();
+        final currentState = _determineState();
+        final errorText = _validate(widget.component, _controller.text);
 
-    // Icon rendering (dynamic)
-    Widget? prefixIcon;
-    if (widget.component.config['icon'] != null || style['icon'] != null) {
-      final iconName = (style['icon'] ?? widget.component.config['icon'] ?? '')
-          .toString();
-      final iconColor = StyleUtils.parseColor(style['iconColor']);
-      final iconSize = (style['iconSize'] is num)
-          ? (style['iconSize'] as num).toDouble()
-          : 20.0;
-      final iconData = _mapIconNameToIconData(iconName);
-      if (iconData != null) {
-        prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
-      }
-    }
+        // Icon rendering (dynamic)
+        Widget? prefixIcon;
+        if (widget.component.config['icon'] != null || style['icon'] != null) {
+          final iconName =
+              (style['icon'] ?? widget.component.config['icon'] ?? '')
+                  .toString();
+          final iconColor = StyleUtils.parseColor(style['iconColor']);
+          final iconSize = (style['iconSize'] is num)
+              ? (style['iconSize'] as num).toDouble()
+              : 20.0;
+          final iconData = _mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
+          }
+        }
 
-    // Helper text
-    final helperText = style['helperText']?.toString();
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
+        // Helper text
+        final helperText = style['helperText']?.toString();
+        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
-    return Container(
-      key: Key(widget.component.id),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      margin: StyleUtils.parsePadding(style['margin']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.component.config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                widget.component.config['label'],
+        return Container(
+          key: Key(widget.component.id),
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+          margin: StyleUtils.parsePadding(style['margin']),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.component.config['label'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 2, bottom: 7),
+                  child: Text(
+                    widget.component.config['label'],
+                    style: TextStyle(
+                      fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                      color: StyleUtils.parseColor(style['labelColor']),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                enabled: widget.component.config['editable'] ?? true,
+                obscureText:
+                    widget.component.inputTypes?.containsKey('password') ??
+                    false,
+                keyboardType: _getKeyboardType(widget.component),
+                decoration: InputDecoration(
+                  isDense: true,
+                  prefixIcon: prefixIcon,
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                    maxWidth: 36,
+                    maxHeight: 36,
+                  ),
+                  hintText: widget.component.config['placeholder'] ?? '',
+                  border: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    borderSide: BorderSide(
+                      color: StyleUtils.parseColor(style['borderColor']),
+                      width: 2,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: StyleUtils.parseBorderRadius(
+                      style['borderRadius'],
+                    ),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
+                  ),
+                  errorText: errorText,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 12,
+                  ),
+                  filled: style['backgroundColor'] != null,
+                  fillColor: StyleUtils.parseColor(style['backgroundColor']),
+                  helperText: helperText,
+                  helperStyle: TextStyle(
+                    color: helperTextColor,
+                    fontStyle: style['fontStyle'] == 'italic'
+                        ? FontStyle.italic
+                        : FontStyle.normal,
+                  ),
+                ),
                 style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
-                  fontWeight: FontWeight.bold,
+                  fontSize: style['fontSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['color']),
+                  fontStyle: style['fontStyle'] == 'italic'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
                 ),
+                onChanged: (value) {
+                  debugPrint(
+                    '[TextField] onChanged: ${widget.component.id} = $value',
+                  );
+                  _handleValueChange(value);
+                },
               ),
-            ),
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            enabled: widget.component.config['editable'] ?? true,
-            obscureText:
-                widget.component.inputTypes?.containsKey('password') ?? false,
-            keyboardType: _getKeyboardType(widget.component),
-            decoration: InputDecoration(
-              isDense: true,
-              prefixIcon: prefixIcon,
-              prefixIconConstraints: const BoxConstraints(
-                minWidth: 36,
-                minHeight: 36,
-                maxWidth: 36,
-                maxHeight: 36,
-              ),
-              hintText: widget.component.config['placeholder'] ?? '',
-              border: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                  width: 2,
-                ),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(
-                  style['borderRadius'],
-                ),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
-              ),
-              errorText: _errorText,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 12,
-              ),
-              filled: style['backgroundColor'] != null,
-              fillColor: StyleUtils.parseColor(style['backgroundColor']),
-              helperText: helperText,
-              helperStyle: TextStyle(
-                color: helperTextColor,
-                fontStyle: style['fontStyle'] == 'italic'
-                    ? FontStyle.italic
-                    : FontStyle.normal,
-              ),
-            ),
-            style: TextStyle(
-              fontSize: style['fontSize']?.toDouble() ?? 16,
-              color: StyleUtils.parseColor(style['color']),
-              fontStyle: style['fontStyle'] == 'italic'
-                  ? FontStyle.italic
-                  : FontStyle.normal,
-            ),
-            onChanged: (value) {
-              setState(() {
-                _errorText = _validate(widget.component, value);
-              });
-            },
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

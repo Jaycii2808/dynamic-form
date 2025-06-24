@@ -4,8 +4,12 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicFileUploader extends StatefulWidget {
   final DynamicFormModel component;
@@ -48,42 +52,89 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
       _progress = 0;
     });
 
+    debugPrint('[FileUploader] Starting upload for ${widget.component.id}');
+
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
 
       setState(() {
-        _progress += 2; // Slower progress for better stability
+        _progress += 5; // Faster progress
+        debugPrint('[FileUploader] Progress: $_progress%');
+
         if (_progress >= 100) {
           timer.cancel();
           _isProcessing = false;
-          // Simulate a random success/error outcome
-          if (DateTime.now().second % 2 == 0) {
-            _currentState = 'success';
-          } else {
-            _currentState = 'error';
-          }
+
+          // Always succeed for now (remove random logic)
+          _currentState = 'success';
+          debugPrint('[FileUploader] Upload completed successfully');
+
+          // Send success state to BLoC
+          context.read<DynamicFormBloc>().add(
+            UpdateFormField(
+              componentId: widget.component.id,
+              value: {
+                'state': 'success',
+                'files': files.map((f) => f.name).toList(),
+                'progress': 100,
+              },
+            ),
+          );
         }
       });
     });
   }
 
-  void _handleFiles(List<XFile> files) {
+  // Force complete upload for debugging
+  void _forceComplete() {
+    if (!_isProcessing) return;
+
+    debugPrint(
+      '[FileUploader] Force completing upload for ${widget.component.id}',
+    );
+
+    _timer?.cancel();
+    _isProcessing = false;
+
+    setState(() {
+      _currentState = 'success';
+      _progress = 100;
+    });
+
+    // Send success state to BLoC
+    context.read<DynamicFormBloc>().add(
+      UpdateFormField(
+        componentId: widget.component.id,
+        value: {
+          'state': 'success',
+          'files': _pickedFiles.map((f) => f.name).toList(),
+          'progress': 100,
+        },
+      ),
+    );
+  }
+
+  void _handleFiles(List<XFile> files, DynamicFormModel component) {
     if (files.isEmpty || _isProcessing) return;
 
     final allowedExtensions =
-        (widget.component.config['allowedExtensions'] as List<dynamic>?)
+        (component.config['allowedExtensions'] as List<dynamic>?)
             ?.cast<String>() ??
         [];
 
-    // Check if all files have allowed extensions
+    debugPrint('[FileUploader] Handling ${files.length} files');
+    debugPrint('[FileUploader] Allowed extensions: $allowedExtensions');
+
+    // Check if all files have allowed extensions (only if extensions are specified)
     if (allowedExtensions.isNotEmpty) {
       for (final file in files) {
+        final fileExtension = file.name.split('.').last.toLowerCase();
         if (!allowedExtensions.any(
-          (ext) => file.name.toLowerCase().endsWith('.${ext.toLowerCase()}'),
+          (ext) => ext.toLowerCase() == fileExtension,
         )) {
           debugPrint(
             "File type not allowed: ${file.name}. Allowed: $allowedExtensions",
@@ -97,24 +148,33 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
       }
     }
 
+    debugPrint('[FileUploader] Files validated, starting upload');
     _startUpload(files);
   }
 
-  void _browseFiles() async {
+  void _browseFiles(DynamicFormModel component) async {
     if (_isProcessing) return;
+
+    debugPrint('[FileUploader] Starting file picker for ${component.id}');
 
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions:
-            (widget.component.config['allowedExtensions'] as List<dynamic>?)
-                ?.cast<String>(),
+        type: FileType.any, // Allow any file type for testing
         allowMultiple: _isMultipleFiles,
+      );
+
+      debugPrint(
+        '[FileUploader] File picker result: ${result?.files.length ?? 0} files',
       );
 
       if (result != null && result.files.isNotEmpty && mounted) {
         final files = result.files.map((f) => XFile(f.path!)).toList();
-        _handleFiles(files);
+        debugPrint(
+          '[FileUploader] Selected files: ${files.map((f) => f.name).toList()}',
+        );
+        _handleFiles(files, component);
+      } else {
+        debugPrint('[FileUploader] No files selected or picker cancelled');
       }
     } catch (e) {
       debugPrint('Error picking files: $e');
@@ -130,14 +190,27 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   void _resetState() {
     if (!mounted) return;
 
+    debugPrint('[FileUploader] Resetting state for ${widget.component.id}');
+
+    _timer?.cancel();
+
     setState(() {
       _currentState = 'base';
       _pickedFiles.clear();
       _progress = 0;
       _isDragging = false;
       _isProcessing = false;
-      _timer?.cancel();
     });
+
+    // Send reset state to BLoC
+    context.read<DynamicFormBloc>().add(
+      UpdateFormField(
+        componentId: widget.component.id,
+        value: {'state': 'base', 'files': [], 'progress': 0},
+      ),
+    );
+
+    debugPrint('[FileUploader] Reset completed for ${widget.component.id}');
   }
 
   void _removeFile(int index) {
@@ -149,6 +222,22 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         _currentState = 'base';
       }
     });
+
+    // Send updated file list to BLoC
+    context.read<DynamicFormBloc>().add(
+      UpdateFormField(
+        componentId: widget.component.id,
+        value: {
+          'state': _pickedFiles.isEmpty ? 'base' : _currentState,
+          'files': _pickedFiles.map((f) => f.name).toList(),
+          'progress': _progress,
+        },
+      ),
+    );
+
+    debugPrint(
+      '[FileUploader] Removed file at index $index from ${widget.component.id}',
+    );
   }
 
   IconData? _mapIconNameToIconData(String name) {
@@ -257,6 +346,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   Widget _buildBaseState(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
+    DynamicFormModel component,
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -289,7 +379,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             config['buttonText'].isNotEmpty) ...[
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _isProcessing ? null : _browseFiles,
+            onPressed: _isProcessing ? null : () => _browseFiles(component),
             style: ElevatedButton.styleFrom(
               backgroundColor: StyleUtils.parseColor(
                 style['buttonBackgroundColor'],
@@ -315,6 +405,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   Widget _buildLoadingState(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
+    DynamicFormModel component,
   ) {
     String statusText =
         config['statusTextFormat'] ??
@@ -381,6 +472,22 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: () => _forceComplete(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                (style['buttonBorderRadius'] as num?)?.toDouble() ?? 8,
+              ),
+            ),
+          ),
+          child: const Text(
+            'Force Complete',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       ],
     );
   }
@@ -388,14 +495,15 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   Widget _buildSuccessState(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
+    DynamicFormModel component,
   ) {
     final bool hasPreview =
-        widget.component.variants?.containsKey('withPreview') ?? false;
+        component.variants?.containsKey('withPreview') ?? false;
     final bool isMultipleVariant =
-        widget.component.variants?.containsKey('multipleFiles') ?? false;
+        component.variants?.containsKey('multipleFiles') ?? false;
 
     if (isMultipleVariant && _pickedFiles.length > 1) {
-      return _buildMultipleFilesSuccessState(style, config);
+      return _buildMultipleFilesSuccessState(style, config, component);
     }
 
     if (hasPreview &&
@@ -494,6 +602,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   Widget _buildMultipleFilesSuccessState(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
+    DynamicFormModel component,
   ) {
     return Column(
       children: [
@@ -595,7 +704,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: _isProcessing ? null : _browseFiles,
+                onPressed: _isProcessing ? null : () => _browseFiles(component),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: StyleUtils.parseColor(
                     style['buttonBackgroundColor'],
@@ -643,6 +752,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   Widget _buildErrorState(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
+    DynamicFormModel component,
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -685,83 +795,109 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> baseStyle = Map.from(widget.component.style);
-    final Map<String, dynamic> variantStyle = _isDragging
-        ? Map.from(widget.component.variants?['dragging']?['style'] ?? {})
-        : {};
-    final Map<String, dynamic> stateStyle = Map.from(
-      widget.component.states?[_currentState]?['style'] ?? {},
-    );
+    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        // Lấy component mới nhất từ state (theo id)
+        final component =
+            (state is DynamicFormState && state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
 
-    final style = {...baseStyle, ...variantStyle, ...stateStyle};
+        final Map<String, dynamic> baseStyle = Map.from(component.style);
+        final Map<String, dynamic> variantStyle = _isDragging
+            ? Map.from(component.variants?['dragging']?['style'] ?? {})
+            : {};
+        final Map<String, dynamic> stateStyle = Map.from(
+          component.states?[_currentState]?['style'] ?? {},
+        );
 
-    final Map<String, dynamic> baseConfig = Map.from(widget.component.config);
-    final Map<String, dynamic> variantConfig = _isDragging
-        ? Map.from(widget.component.variants?['dragging']?['config'] ?? {})
-        : {};
-    final Map<String, dynamic> stateConfig = Map.from(
-      widget.component.states?[_currentState]?['config'] ?? {},
-    );
-    final config = {...baseConfig, ...variantConfig, ...stateConfig};
+        final style = {...baseStyle, ...variantStyle, ...stateStyle};
 
-    return DragTarget<List<XFile>>(
-      onWillAcceptWithDetails: (data) {
-        if (_isProcessing) return false;
-        setState(() => _isDragging = true);
-        return true;
-      },
-      onAcceptWithDetails: (details) {
-        // Changed from onAccept to onAcceptWithDetails
-        setState(() => _isDragging = false);
-        _handleFiles(details.data); // Use details.data instead of details.files
-      },
-      onLeave: (data) {
-        setState(() => _isDragging = false);
-      },
-      builder: (context, candidateData, rejectedData) {
-        return Container(
-          key: Key(widget.component.id),
-          margin: StyleUtils.parsePadding(style['margin']),
-          child: DottedBorder(
-            color: StyleUtils.parseColor(style['borderColor']),
-            strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-            radius: Radius.circular(
-              (style['borderRadius'] as num?)?.toDouble() ?? 0,
-            ),
-            dashPattern: const [6, 6],
-            borderType: BorderType.RRect,
-            child: Container(
-              width: (style['width'] as num?)?.toDouble() ?? 300,
-              height: (style['height'] as num?)?.toDouble() ?? 200,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              decoration: BoxDecoration(
-                color: StyleUtils.parseColor(style['backgroundColor']),
-                borderRadius: BorderRadius.circular(
+        final Map<String, dynamic> baseConfig = Map.from(component.config);
+        final Map<String, dynamic> variantConfig = _isDragging
+            ? Map.from(component.variants?['dragging']?['config'] ?? {})
+            : {};
+        final Map<String, dynamic> stateConfig = Map.from(
+          component.states?[_currentState]?['config'] ?? {},
+        );
+        final config = {...baseConfig, ...variantConfig, ...stateConfig};
+
+        debugPrint(
+          '[FileUploader][build] id=${component.id} state=$_currentState files=${_pickedFiles.length}',
+        );
+        debugPrint('[FileUploader][build] style=${style.toString()}');
+
+        return DragTarget<List<XFile>>(
+          onWillAcceptWithDetails: (data) {
+            if (_isProcessing) return false;
+            setState(() => _isDragging = true);
+            return true;
+          },
+          onAcceptWithDetails: (details) {
+            // Changed from onAccept to onAcceptWithDetails
+            setState(() => _isDragging = false);
+            _handleFiles(
+              details.data,
+              component,
+            ); // Use details.data instead of details.files
+          },
+          onLeave: (data) {
+            setState(() => _isDragging = false);
+          },
+          builder: (context, candidateData, rejectedData) {
+            return Container(
+              key: Key(component.id),
+              margin: StyleUtils.parsePadding(style['margin']),
+              child: DottedBorder(
+                color: StyleUtils.parseColor(style['borderColor']),
+                strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
+                radius: Radius.circular(
                   (style['borderRadius'] as num?)?.toDouble() ?? 0,
                 ),
+                dashPattern: const [6, 6],
+                borderType: BorderType.RRect,
+                child: Container(
+                  width: (style['width'] as num?)?.toDouble() ?? 300,
+                  height: (style['height'] as num?)?.toDouble() ?? 200,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: StyleUtils.parseColor(style['backgroundColor']),
+                    borderRadius: BorderRadius.circular(
+                      (style['borderRadius'] as num?)?.toDouble() ?? 0,
+                    ),
+                  ),
+                  child: _buildChild(style, config, component),
+                ),
               ),
-              child: _buildChild(style, config),
-            ),
-          ),
+            );
+          },
         );
       },
     );
   }
 
   // Moved into build method for clarity or can remain as private helper if only used here
-  Widget _buildChild(Map<String, dynamic> style, Map<String, dynamic> config) {
+  Widget _buildChild(
+    Map<String, dynamic> style,
+    Map<String, dynamic> config,
+    DynamicFormModel component,
+  ) {
     switch (_currentState) {
       case 'loading':
-        return _buildLoadingState(style, config);
+        return _buildLoadingState(style, config, component);
       case 'success':
-        return _buildSuccessState(style, config);
+        return _buildSuccessState(style, config, component);
       case 'error':
-        return _buildErrorState(style, config);
+        return _buildErrorState(style, config, component);
       default: // base and dragging
-        return _buildBaseState(style, config);
+        return _buildBaseState(style, config, component);
     }
   }
 }
