@@ -13,9 +13,7 @@ class DynamicTextArea extends StatefulWidget {
   const DynamicTextArea({super.key, required this.component, required this.onComplete});
 
   @override
-  State<DynamicTextArea> createState() {
-    return _DynamicTextAreaState();
-  }
+  State<DynamicTextArea> createState() => _DynamicTextAreaState();
 }
 
 class _DynamicTextAreaState extends State<DynamicTextArea> {
@@ -26,36 +24,36 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   @override
   void initState() {
     super.initState();
-
     _controller.text = widget.component.config['value'] ?? '';
-
     _focusNode.addListener(_handleFocusChange);
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _focusNode
-      ..removeListener(_handleFocusChange)
-      ..dispose();
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
     super.dispose();
   }
 
   void _handleFocusChange() {
     if (!_focusNode.hasFocus) {
-      final newValue = _controller.text;
-      if (newValue != widget.component.config['value']) {
-        widget.component.config['value'] = newValue;
-        context.read<DynamicFormBloc>().add(
-          UpdateFormField(componentId: widget.component.id, value: newValue),
-        );
-        widget.onComplete(newValue);
-      }
-      debugPrint(
-        'FocusNode changed for component ${widget.component.id}: hasFocus=${_focusNode.hasFocus}, value=${_controller.text}',
-      );
+      _saveAndValidate();
     }
-    setState(() {});
+  }
+  //Handle three cases (click outside, press Enter, click on another field).
+  void _saveAndValidate() {
+    final newValue = _controller.text;
+    if (newValue != widget.component.config['value']) {
+      widget.component.config['value'] = newValue;
+      context.read<DynamicFormBloc>().add(
+        UpdateFormField(componentId: widget.component.id, value: newValue),
+      );
+      widget.onComplete(newValue);
+    }
+    setState(() {
+      _errorText = validateForm(widget.component, newValue);
+    });
   }
 
   Map<String, dynamic> _resolveStyles() {
@@ -64,27 +62,23 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     if (widget.component.variants != null) {
       if (widget.component.config['placeholder'] != null &&
           widget.component.variants!.containsKey('placeholders')) {
-        final variantStyle =
-            widget.component.variants!['placeholders']['style'] as Map<String, dynamic>?;
+        final variantStyle = widget.component.variants!['placeholders']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.variants!.containsKey('withLabel')) {
-        final variantStyle =
-            widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle = widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withLabelValue')) {
-        final variantStyle =
-            widget.component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+        final variantStyle = widget.component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withValue')) {
-        final variantStyle =
-            widget.component.variants!['withValue']['style'] as Map<String, dynamic>?;
+        final variantStyle = widget.component.variants!['withValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -109,22 +103,32 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     final borderRadius = StyleUtils.parseBorderRadius(style['borderRadius']);
     final borderColor = StyleUtils.parseColor(style['borderColor']);
     final borderWidth = style['borderWidth']?.toDouble() ?? 1.0;
+    final borderOpacity = style['borderOpacity']?.toDouble() ?? 1.0;
 
     switch (state) {
       case 'focused':
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: BorderSide(color: borderColor, width: borderWidth + 1),
+          borderSide: BorderSide(
+            color: borderColor.withOpacity(borderOpacity),
+            width: borderWidth + 1,
+          ),
         );
       case 'error':
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: BorderSide(
+            color: StyleUtils.parseColor('#ff4d4f'),
+            width: 2,
+          ),
         );
       default:
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: BorderSide(color: borderColor, width: borderWidth),
+          borderSide: BorderSide(
+            color: borderColor.withOpacity(borderOpacity),
+            width: borderWidth,
+          ),
         );
     }
   }
@@ -133,11 +137,10 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   Widget build(BuildContext context) {
     final style = _resolveStyles();
     final currentState = _determineState();
-    final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
     return Container(
       key: Key(widget.component.id),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      padding: StyleUtils.parsePadding(style['padding']),
       margin: StyleUtils.parsePadding(style['margin']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,59 +152,61 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
                 widget.component.config['label'],
                 style: TextStyle(
                   fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor']),
+                  color: StyleUtils.parseColor(
+                    currentState == 'error' && style['labelColor'] != null
+                        ? style['labelColor']
+                        : style['labelColor'] ?? '#000000',
+                  ),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          Stack(
-            children: [
-              TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: widget.component.config['editable'] ?? true,
-                obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
-                keyboardType: _getKeyboardType(widget.component),
-                maxLines: (style['maxLines'] is num) ? (style['maxLines'] as num).toInt() : 10,
-                minLines: (style['minLines'] is num) ? (style['minLines'] as num).toInt() : 6,
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: widget.component.config['placeholder'] ?? '',
-                  border: _buildBorder(style, currentState),
-                  enabledBorder: _buildBorder(style, 'enabled'),
-                  focusedBorder: _buildBorder(style, 'focused'),
-                  errorBorder: _buildBorder(style, 'error'),
-                  errorText: null,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  filled: style['backgroundColor'] != null,
-                  fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                  helperText: _errorText,
-                  helperStyle: TextStyle(
-                    color: helperTextColor,
-                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-                  ),
+          TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            enabled: widget.component.config['editable'] ?? true,
+            obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
+            keyboardType: _getKeyboardType(widget.component),
+            maxLines: (style['maxLines'] as num?)?.toInt() ?? 10,
+            minLines: (style['minLines'] as num?)?.toInt() ?? 6,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: widget.component.config['placeholder'] ?? '',
+              border: _buildBorder(style, currentState),
+              enabledBorder: _buildBorder(style, 'enabled'),
+              focusedBorder: _buildBorder(style, 'focused'),
+              errorBorder: _buildBorder(style, 'error'),
+              errorText: _errorText,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              filled: style['backgroundColor'] != null,
+              fillColor: StyleUtils.parseColor(style['backgroundColor']),
+              helperText: style['helperText']?.toString(),
+              helperStyle: TextStyle(
+                color: StyleUtils.parseColor(
+                  currentState == 'error' && style['helperTextColor'] != null
+                      ? style['helperTextColor']
+                      : style['helperTextColor'] ?? '#000000',
                 ),
-                style: TextStyle(
-                  fontSize: style['fontSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _errorText = validateForm(widget.component, value);
-                  });
-                },
+                fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
               ),
-              if (_errorText != null)
-                Positioned(
-                  right: 10,
-                  bottom: 0,
-                  child: Text(
-                    '$_errorText (Now ${_controller.text.length - 100})',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
+            ),
+            style: TextStyle(
+              fontSize: style['fontSize']?.toDouble() ?? 16,
+              color: StyleUtils.parseColor(
+                currentState == 'error' && style['color'] != null
+                    ? style['color']
+                    : style['color'] ?? '#000000',
+              ),
+              fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+            ),
+            onChanged: (value) {
+              setState(() {
+                _errorText = validateForm(widget.component, value);
+              });
+            },
+            onSubmitted: (value) {
+              _saveAndValidate();
+            },
           ),
         ],
       ),
@@ -219,7 +224,5 @@ TextInputType _getKeyboardType(DynamicFormModel component) {
       return TextInputType.visiblePassword;
     }
   }
-  return TextInputType.text;
+  return TextInputType.multiline;
 }
-
-
