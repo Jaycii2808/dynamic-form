@@ -172,7 +172,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
                 newValues.remove(value);
               }
               context.read<DynamicFormBloc>().add(
-                UpdateFormField(componentId: component.id, value: newValues),
+                UpdateFormFieldEvent(componentId: component.id, value: newValues),
               );
               debugPrint(
                 '[Select] ${component.id} value updated: $newValues (multiple)',
@@ -190,7 +190,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
             title: Text(label),
             onTap: () {
               context.read<DynamicFormBloc>().add(
-                UpdateFormField(componentId: component.id, value: value),
+                UpdateFormFieldEvent(componentId: component.id, value: value),
               );
               debugPrint(
                 '[Select] ${component.id} value updated: $value (single)',
@@ -651,7 +651,7 @@ class MultiSelectDialogBloc extends StatelessWidget {
                             newValues.remove(value);
                           }
                           context.read<DynamicFormBloc>().add(
-                            UpdateFormField(
+                            UpdateFormFieldEvent(
                               componentId: componentId,
                               value: newValues,
                             ),
@@ -826,7 +826,7 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
                         selected: isSelected,
                         onTap: () {
                           context.read<DynamicFormBloc>().add(
-                            UpdateFormField(
+                            UpdateFormFieldEvent(
                               componentId: widget.componentId,
                               value: value,
                             ),

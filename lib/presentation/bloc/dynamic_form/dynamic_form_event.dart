@@ -15,17 +15,6 @@ class LoadDynamicFormPageEvent extends DynamicFormEvent {
   @override
   List<Object?> get props => [configKey];
 }
-class UpdateFormField extends DynamicFormEvent {
-  final String componentId;
-  final dynamic value;
-
-  const UpdateFormField({required this.componentId, required this.value});
-  //props
-  @override
-  List<Object?> get props => [componentId, value];
-
-}
-
 class UpdateFormFieldEvent extends DynamicFormEvent {
   final String componentId;
   final dynamic value;
@@ -36,6 +25,17 @@ class UpdateFormFieldEvent extends DynamicFormEvent {
   List<Object?> get props => [componentId, value];
 
 }
+
+// class UpdateFormField extends DynamicFormEvent {
+//   final String componentId;
+//   final dynamic value;
+//
+//   const UpdateFormFieldEvent({required this.componentId, required this.value});
+//   //props
+//   @override
+//   List<Object?> get props => [componentId, value];
+//
+// }
 
 class RefreshDynamicFormEvent extends DynamicFormEvent {
   final String configKey;

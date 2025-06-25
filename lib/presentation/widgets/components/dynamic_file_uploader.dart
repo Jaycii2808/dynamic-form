@@ -40,7 +40,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   void _startUpload(List<XFile> files, DynamicFormModel component) {
     // Gửi event lên BLoC: bắt đầu upload (state=loading, progress=0, isProcessing=true)
     context.read<DynamicFormBloc>().add(
-      UpdateFormField(
+      UpdateFormFieldEvent(
         componentId: component.id,
         value: {
           'state': 'loading',
@@ -63,7 +63,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         timer.cancel();
         // Gửi event thành công lên BLoC
         context.read<DynamicFormBloc>().add(
-          UpdateFormField(
+          UpdateFormFieldEvent(
             componentId: component.id,
             value: {
               'state': 'success',
@@ -76,7 +76,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
       } else {
         // Gửi event progress lên BLoC
         context.read<DynamicFormBloc>().add(
-          UpdateFormField(
+          UpdateFormFieldEvent(
             componentId: component.id,
             value: {
               'state': 'loading',
@@ -104,7 +104,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         )) {
           // Gửi event lỗi lên BLoC
           context.read<DynamicFormBloc>().add(
-            UpdateFormField(
+            UpdateFormFieldEvent(
               componentId: component.id,
               value: {
                 'state': 'error',
@@ -136,7 +136,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     } catch (e) {
       if (mounted) {
         context.read<DynamicFormBloc>().add(
-          UpdateFormField(
+          UpdateFormFieldEvent(
             componentId: widget.component.id,
             value: {
               'state': 'error',
@@ -154,7 +154,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   void _resetState(DynamicFormModel component) {
     _timer?.cancel();
     context.read<DynamicFormBloc>().add(
-      UpdateFormField(
+      UpdateFormFieldEvent(
         componentId: component.id,
         value: {
           'state': 'base',
@@ -175,7 +175,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   ) {
     final newFiles = List<String>.from(files)..removeAt(index);
     context.read<DynamicFormBloc>().add(
-      UpdateFormField(
+      UpdateFormFieldEvent(
         componentId: component.id,
         value: {
           'state': newFiles.isEmpty ? 'base' : state,
@@ -431,7 +431,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             if (isProcessing) return false;
             // Gửi event lên BLoC để set isDragging=true
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(
+              UpdateFormFieldEvent(
                 componentId: component.id,
                 value: {...value, 'isDragging': true},
               ),
@@ -441,7 +441,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
           onAcceptWithDetails: (details) {
             // Gửi event lên BLoC để set isDragging=false
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(
+              UpdateFormFieldEvent(
                 componentId: component.id,
                 value: {...value, 'isDragging': false},
               ),
@@ -451,7 +451,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
           onLeave: (data) {
             // Gửi event lên BLoC để set isDragging=false
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(
+              UpdateFormFieldEvent(
                 componentId: component.id,
                 value: {...value, 'isDragging': false},
               ),

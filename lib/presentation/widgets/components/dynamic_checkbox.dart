@@ -133,7 +133,7 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
           final newValue = !isSelected;
           // Không update trực tiếp component.config nữa
           context.read<DynamicFormBloc>().add(
-            UpdateFormField(componentId: component.id, value: newValue),
+            UpdateFormFieldEvent(componentId: component.id, value: newValue),
           );
           debugPrint(
             '[Checkbox][tap] id=${component.id} value_after=$newValue',

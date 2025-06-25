@@ -45,12 +45,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {},
-      builder: (context, state) {
-        return buildForm();
-      },
-    );
+    return buildForm();
   }
 
   Widget buildForm() {
@@ -138,7 +133,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         onTap: isEditable
             ? () {
                 context.read<DynamicFormBloc>().add(
-                  UpdateFormField(componentId: item.id, value: true),
+                  UpdateFormFieldEvent(componentId: item.id, value: true),
                 );
               }
             : null,

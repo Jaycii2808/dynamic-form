@@ -139,7 +139,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                     final firstItem = filteredItems.first;
                                     final newValue = firstItem['id'];
                                     context.read<DynamicFormBloc>().add(
-                                      UpdateFormField(
+                                      UpdateFormFieldEvent(
                                         componentId: component.id,
                                         value: newValue,
                                       ),
@@ -149,7 +149,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                     );
                                   } else if (value.isNotEmpty) {
                                     context.read<DynamicFormBloc>().add(
-                                      UpdateFormField(
+                                      UpdateFormFieldEvent(
                                         componentId: component.id,
                                         value: value,
                                       ),
@@ -188,7 +188,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                           return InkWell(
                             onTap: () {
                               context.read<DynamicFormBloc>().add(
-                                UpdateFormField(
+                                UpdateFormFieldEvent(
                                   componentId: component.id,
                                   value: value,
                                 ),

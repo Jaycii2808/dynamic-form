@@ -158,14 +158,14 @@ class _DynamicRadioState extends State<DynamicRadio> {
           if (group != null) {
             // Find all siblings in the same group and unselect them
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(componentId: component.id, value: true),
+              UpdateFormFieldEvent(componentId: component.id, value: true),
             );
             debugPrint('[Radio][tap] id=${component.id} value_after=true');
             debugPrint('[Radio] Save value: ${component.id} = true');
           } else {
             // If no explicit group, treat it as a single radio button (not common)
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(componentId: component.id, value: true),
+              UpdateFormFieldEvent(componentId: component.id, value: true),
             );
             debugPrint('[Radio][tap] id=${component.id} value_after=true');
             debugPrint('[Radio] Save value: ${component.id} = true');

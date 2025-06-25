@@ -187,7 +187,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   },
                   onChangeEnd: (values) {
                     context.read<DynamicFormBloc>().add(
-                      UpdateFormField(
+                      UpdateFormFieldEvent(
                         componentId: component.id,
                         value: [values.start, values.end],
                       ),
@@ -207,7 +207,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   },
                   onChangeEnd: (value) {
                     context.read<DynamicFormBloc>().add(
-                      UpdateFormField(componentId: component.id, value: value),
+                      UpdateFormFieldEvent(componentId: component.id, value: value),
                     );
                   },
                 ),
