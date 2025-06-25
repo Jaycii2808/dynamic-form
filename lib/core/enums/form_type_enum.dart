@@ -13,12 +13,13 @@ enum FormTypeEnum {
   switchFormType,
   textFieldTagsFormType,
   fileUploaderFormType,
+  buttonFormType,
   unknown;
 
   factory FormTypeEnum.fromJson(String? json) {
     try {
       return FormTypeEnum.values.firstWhere(
-            (e) => e.toString().split('.').last == json,
+        (e) => e.toString().split('.').last == json,
         orElse: () => FormTypeEnum.unknown,
       );
     } catch (_) {

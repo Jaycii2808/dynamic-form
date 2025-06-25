@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,9 @@ void main() async {
 
   // Initialize Remote Config
   await RemoteConfigService().initialize();
+
+  // Load templates from local storage
+  await FormMemoryRepository.loadTemplatesFromStorage();
 
   runApp(const MyApp());
 }
@@ -26,13 +30,17 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => DynamicFormBloc(remoteConfigService: RemoteConfigService()),
+          create: (context) =>
+              DynamicFormBloc(remoteConfigService: RemoteConfigService()),
         ),
       ],
       child: MaterialApp(
         title: 'Dynamic UI BI',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
           useMaterial3: true,
           scaffoldBackgroundColor: Colors.black,
         ),
@@ -61,6 +69,7 @@ class HomeScreen extends StatelessWidget {
       'switch_component',
       'text_field_tags_component',
       'file_uploader_component',
+      'form_template_component',
     ];
 
     return Scaffold(
@@ -82,8 +91,10 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          DynamicFormScreen(configKey: configKey, title: configKey),
+                      builder: (context) => DynamicFormScreen(
+                        configKey: configKey,
+                        title: configKey,
+                      ),
                     ),
                   );
                 },
@@ -91,7 +102,10 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.blueGrey,
                   margin: const EdgeInsets.all(10),
                   padding: const EdgeInsets.all(10),
-                  child: Text(configKey, style: const TextStyle(color: Colors.white)),
+                  child: Text(
+                    configKey,
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               );
             },

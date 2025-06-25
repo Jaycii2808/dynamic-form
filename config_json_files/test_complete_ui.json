@@ -265,12 +265,13 @@
       },
       {
          "id": "submit_button",
-         "type": "button",
+         "type": "buttonFormType",
          "title": "Submit Button",
          "order": 4,
          "config": {
             "text": "Submit Form",
-            "action": "submit"
+            "action": "submit",
+            "variant": "primary"
          },
          "style": {
             "padding": "12px 24px",

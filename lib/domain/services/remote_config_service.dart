@@ -36,8 +36,18 @@ class RemoteConfigService {
         debugPrint('RemoteConfig: $configKey is empty or {}');
         return null;
       }
-      final Map<String, dynamic> json = jsonDecode(jsonString);
-      return DynamicFormPageModel.fromJson(json);
+      final dynamic json = jsonDecode(jsonString);
+      if (json is List) {
+        // Wrap array as {components: array}
+        return DynamicFormPageModel.fromJson({'components': json});
+      } else if (json is Map<String, dynamic>) {
+        return DynamicFormPageModel.fromJson(json);
+      } else {
+        debugPrint(
+          'RemoteConfig: $configKey is not a valid JSON object or array',
+        );
+        return null;
+      }
     } catch (e) {
       debugPrint('Error parsing form $configKey: $e');
       return null;

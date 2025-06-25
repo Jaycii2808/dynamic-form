@@ -134,4 +134,143 @@ class DynamicFormPageModel extends Equatable {
       'components': components.map((c) => c.toJson()).toList(),
     };
   }
+
+  // Convert to the format {form_id: id, layout: [components]}
+  Map<String, dynamic> toFormLayoutJson() {
+    return {
+      'form_id': pageId,
+      'layout': components.map((c) => c.toJson()).toList(),
+    };
+  }
+
+  // Create from the format {form_id: id, layout: [components]}
+  factory DynamicFormPageModel.fromFormLayoutJson(Map<String, dynamic> json) {
+    List<DynamicFormModel> components = [];
+    if (json['layout'] != null) {
+      components = List<DynamicFormModel>.from(
+        json['layout'].map((x) => DynamicFormModel.fromJson(x)),
+      );
+      components.sort((a, b) => a.order.compareTo(b.order));
+    }
+
+    return DynamicFormPageModel(
+      pageId: json['form_id'] ?? '',
+      title: json['title'] ?? '',
+      order: json['order'] ?? 1,
+      components: components,
+    );
+  }
+}
+
+class FormTemplateModel extends Equatable {
+  final String id;
+  final String name;
+  final String description;
+  final String originalConfigKey;
+  final DynamicFormPageModel formData;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final Map<String, dynamic>? metadata;
+
+  const FormTemplateModel({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.originalConfigKey,
+    required this.formData,
+    required this.createdAt,
+    required this.updatedAt,
+    this.metadata,
+  });
+
+  factory FormTemplateModel.fromJson(Map<String, dynamic> json) {
+    return FormTemplateModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      originalConfigKey: json['originalConfigKey'] ?? '',
+      formData: DynamicFormPageModel.fromJson(json['formData'] ?? {}),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      metadata: json['metadata'],
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    originalConfigKey,
+    formData,
+    createdAt,
+    updatedAt,
+    metadata,
+  ];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'originalConfigKey': originalConfigKey,
+      'formData': formData.toJson(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      if (metadata != null) 'metadata': metadata,
+    };
+  }
+
+  // Get form data in the format {form_id: id, layout: [components]}
+  Map<String, dynamic> getFormLayoutData() {
+    return formData.toFormLayoutJson();
+  }
+
+  // Create from form layout data
+  factory FormTemplateModel.fromFormLayoutData({
+    required String id,
+    required String name,
+    required String description,
+    required String originalConfigKey,
+    required Map<String, dynamic> formLayoutData,
+    Map<String, dynamic>? metadata,
+  }) {
+    final formData = DynamicFormPageModel.fromFormLayoutJson(formLayoutData);
+    return FormTemplateModel(
+      id: id,
+      name: name,
+      description: description,
+      originalConfigKey: originalConfigKey,
+      formData: formData,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      metadata: metadata,
+    );
+  }
+
+  FormTemplateModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? originalConfigKey,
+    DynamicFormPageModel? formData,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Map<String, dynamic>? metadata,
+  }) {
+    return FormTemplateModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      originalConfigKey: originalConfigKey ?? this.originalConfigKey,
+      formData: formData ?? this.formData,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      metadata: metadata ?? this.metadata,
+    );
+  }
 }

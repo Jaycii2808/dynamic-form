@@ -130,6 +130,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextFieldTags(component);
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
+      case FormTypeEnum.buttonFormType:
+        return SizedBox.shrink();
       case FormTypeEnum.unknown:
         return _buildDefaultFormType();
     }
