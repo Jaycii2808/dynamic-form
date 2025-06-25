@@ -101,86 +101,114 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     final style = _resolveStyles();
     final config = widget.component.config;
 
+    return _buildBody(style, config, context);
+  }
+
+  Container _buildBody(Map<String, dynamic> style, Map<String, dynamic> config, BuildContext context) {
     return Container(
-      key: Key(widget.component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0px 0px'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor'] ?? '#333333'),
-                  fontWeight: FontWeight.bold,
-                ),
+    key: Key(widget.component.id),
+    padding: StyleUtils.parsePadding(style['padding']),
+    margin: StyleUtils.parsePadding(style['margin'] ?? '0px 0px'),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (config['label'] != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              config['label'],
+              style: TextStyle(
+                fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                color: StyleUtils.parseColor(style['labelColor'] ?? '#333333'),
+                fontWeight: FontWeight.bold,
               ),
             ),
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            keyboardType: TextInputType.datetime,
-            readOnly: true, // Prevent manual input to ensure format consistency
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: config['placeholder'] ?? 'HH:mm:ss dd/MM/yyyy',
-              border: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                  width: style['borderWidth']?.toDouble() ?? 1,
+          ),
+        TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          keyboardType: TextInputType.datetime,
+          readOnly: true, // Prevent manual input to ensure format consistency
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: config['placeholder'] ?? 'HH:mm:ss dd/MM/yyyy',
+            border: OutlineInputBorder(
+              borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              borderSide: BorderSide(
+                color: StyleUtils.parseColor(style['borderColor']),
+                width: style['borderWidth']?.toDouble() ?? 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              borderSide: BorderSide(
+                color: StyleUtils.parseColor(style['borderColor']),
+                width: style['borderWidth']?.toDouble() ?? 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              borderSide: BorderSide(
+                color: StyleUtils.parseColor(style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8'),
+                width: style['borderWidth']?.toDouble() ?? 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+            errorText: _errorText,
+            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            filled: style['backgroundColor'] != null,
+            fillColor: StyleUtils.parseColor(style['backgroundColor']),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SvgPicture.asset(
+                'assets/svg/SelectDate.svg',
+                colorFilter: ColorFilter.mode(
+                  StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
+                  BlendMode.srcIn,
                 ),
+                width: style['iconSize']?.toDouble() ?? 20,
+                height: style['iconSize']?.toDouble() ?? 20,
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['borderColor']),
-                  width: style['borderWidth']?.toDouble() ?? 1,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8'),
-                  width: style['borderWidth']?.toDouble() ?? 2,
-                ),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
-              ),
-              errorText: _errorText,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              filled: style['backgroundColor'] != null,
-              fillColor: StyleUtils.parseColor(style['backgroundColor']),
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SvgPicture.asset(
-                  'assets/svg/SelectDate.svg',
-                  colorFilter: ColorFilter.mode(
-                    StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
-                    BlendMode.srcIn,
+            ),
+          ),
+          style: TextStyle(
+            fontSize: style['fontSize']?.toDouble() ?? 14,
+            color: StyleUtils.parseColor(style['color'] ?? '#333333'),
+            fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+          ),
+          onTap: () async {
+            final pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
+                      onPrimary: Colors.white,
+                      surface: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF'),
+                      onSurface: StyleUtils.parseColor(style['color'] ?? '#333333'),
+                    ),
+                    textButtonTheme: TextButtonThemeData(
+                      style: TextButton.styleFrom(
+                        foregroundColor: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
+                      ),
+                    ),
+                    dialogTheme: DialogThemeData(backgroundColor: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF')),
                   ),
-                  width: style['iconSize']?.toDouble() ?? 20,
-                  height: style['iconSize']?.toDouble() ?? 20,
-                ),
-              ),
-            ),
-            style: TextStyle(
-              fontSize: style['fontSize']?.toDouble() ?? 14,
-              color: StyleUtils.parseColor(style['color'] ?? '#333333'),
-              fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-            ),
-            onTap: () async {
-              final pickedDate = await showDatePicker(
+                  child: child!,
+                );
+              },
+            );
+            if (context.mounted && pickedDate != null) {
+              final pickedTime = await showTimePicker(
                 context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
+                initialTime: TimeOfDay.now(),
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
@@ -201,60 +229,36 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
                   );
                 },
               );
-              if (context.mounted && pickedDate != null) {
-                final pickedTime = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                  builder: (context, child) {
-                    return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
-                          onPrimary: Colors.white,
-                          surface: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF'),
-                          onSurface: StyleUtils.parseColor(style['color'] ?? '#333333'),
-                        ),
-                        textButtonTheme: TextButtonThemeData(
-                          style: TextButton.styleFrom(
-                            foregroundColor: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
-                          ),
-                        ),
-                        dialogTheme: DialogThemeData(backgroundColor: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF')),
-                      ),
-                      child: child!,
-                    );
-                  },
+              if (pickedTime != null && context.mounted) {
+                final dateTime = DateTime(
+                  pickedDate.year,
+                  pickedDate.month,
+                  pickedDate.day,
+                  pickedTime.hour,
+                  pickedTime.minute,
                 );
-                if (pickedTime != null && context.mounted) {
-                  final dateTime = DateTime(
-                    pickedDate.year,
-                    pickedDate.month,
-                    pickedDate.day,
-                    pickedTime.hour,
-                    pickedTime.minute,
-                  );
-                  final formattedDateTime = DateFormat('HH:mm:ss dd/MM/yyyy').format(dateTime);
-                  setState(() {
-                    _controller.text = formattedDateTime;
-                    _errorText = validateForm(widget.component, formattedDateTime);
-                  });
-                  widget.component.config['value'] = formattedDateTime;
-                  widget.onComplete(formattedDateTime);
-                  context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
-                    componentId: widget.component.id,
-                    value: formattedDateTime,
-                  ));
-                }
+                final formattedDateTime = DateFormat('HH:mm:ss dd/MM/yyyy').format(dateTime);
+                setState(() {
+                  _controller.text = formattedDateTime;
+                  _errorText = validateForm(widget.component, formattedDateTime);
+                });
+                widget.component.config['value'] = formattedDateTime;
+                widget.onComplete(formattedDateTime);
+                context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
+                  componentId: widget.component.id,
+                  value: formattedDateTime,
+                ));
               }
-            },
-            onChanged: (value) {
-              setState(() {
-                _errorText = validateForm(widget.component, value);
-              });
-            },
-          ),
-        ],
-      ),
-    );
+            }
+          },
+          onChanged: (value) {
+            setState(() {
+              _errorText = validateForm(widget.component, value);
+            });
+          },
+        ),
+      ],
+    ),
+  );
   }
 }

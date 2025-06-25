@@ -141,29 +141,33 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
       if (stateStyle != null) combinedStyle.addAll(stateStyle);
     }
 
+    return _buildBody(combinedStyle, config, context);
+  }
+
+  Container _buildBody(Map<String, dynamic> combinedStyle, Map<String, dynamic> config, BuildContext context) {
     return Container(
-      padding: StyleUtils.parsePadding(combinedStyle['padding']),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (config['label'] != null)
-            _buildLabelText(
-              label: config['label'],
-              style: combinedStyle,
-            ),
-          _buildDatePickerTextField(
-            context,
-            controller: _controller,
-            focusNode: _focusNode,
-            errorText: _errorText,
-            hintText: config['placeholder'] ?? 'MMM d,yyyy - MMM d,yyyy',
+    padding: StyleUtils.parsePadding(combinedStyle['padding']),
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (config['label'] != null)
+          _buildLabelText(
+            label: config['label'],
             style: combinedStyle,
-            onTap: _showDateRangePickerDialog,
           ),
-        ],
-      ),
-    );
+        _buildDatePickerTextField(
+          context,
+          controller: _controller,
+          focusNode: _focusNode,
+          errorText: _errorText,
+          hintText: config['placeholder'] ?? 'MMM d,yyyy - MMM d,yyyy',
+          style: combinedStyle,
+          onTap: _showDateRangePickerDialog,
+        ),
+      ],
+    ),
+  );
   }
 
   // Helper function for the label text widget

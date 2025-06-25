@@ -10,7 +10,11 @@ class DynamicTextArea extends StatefulWidget {
   final DynamicFormModel component;
   final Function(dynamic value) onComplete;
 
-  const DynamicTextArea({super.key, required this.component, required this.onComplete});
+  const DynamicTextArea({
+    super.key,
+    required this.component,
+    required this.onComplete,
+  });
 
   @override
   State<DynamicTextArea> createState() => _DynamicTextAreaState();
@@ -21,11 +25,27 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   final FocusNode _focusNode = FocusNode();
   String? _errorText;
 
+  late Map<String, dynamic> _resolvedStyle;
+  late String _currentState;
+
   @override
   void initState() {
     super.initState();
     _controller.text = widget.component.config['value'] ?? '';
     _focusNode.addListener(_handleFocusChange);
+    _resolvedStyle = _resolveStyles();
+    _currentState = _determineState();
+  }
+
+  @override
+  void didUpdateWidget(covariant DynamicTextArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.component.config['value'] != widget.component.config['value'] &&
+        _controller.text != widget.component.config['value']) {
+      _controller.text = widget.component.config['value'] ?? '';
+    }
+    _resolvedStyle = _resolveStyles();
+    _currentState = _determineState();
   }
 
   @override
@@ -41,7 +61,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       _saveAndValidate();
     }
   }
-  //Handle three cases (click outside, press Enter, click on another field).
+
   void _saveAndValidate() {
     final newValue = _controller.text;
     if (newValue != widget.component.config['value']) {
@@ -50,9 +70,10 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
       );
       widget.onComplete(newValue);
-        }
+    }
     setState(() {
       _errorText = validateForm(widget.component, newValue);
+      _currentState = _determineState();
     });
   }
 
@@ -99,11 +120,11 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     return validationError != null ? 'error' : 'success';
   }
 
-  OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
-    final borderRadius = StyleUtils.parseBorderRadius(style['borderRadius']);
-    final borderColor = StyleUtils.parseColor(style['borderColor']);
-    final borderWidth = style['borderWidth']?.toDouble() ?? 1.0;
-    final borderOpacity = style['borderOpacity']?.toDouble() ?? 1.0;
+  OutlineInputBorder _buildBorder(String state) {
+    final borderRadius = StyleUtils.parseBorderRadius(_resolvedStyle['borderRadius']);
+    final borderColor = StyleUtils.parseColor(_resolvedStyle['borderColor']);
+    final borderWidth = _resolvedStyle['borderWidth']?.toDouble() ?? 1.0;
+    final borderOpacity = _resolvedStyle['borderOpacity']?.toDouble() ?? 1.0;
 
     switch (state) {
       case 'focused':
@@ -117,7 +138,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       case 'error':
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: BorderSide(
+          borderSide:  BorderSide(
             color: StyleUtils.parseColor('#ff4d4f'),
             width: 2,
           ),
@@ -133,81 +154,92 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     }
   }
 
+  Widget _buildLabel() {
+    if (widget.component.config['label'] == null) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, bottom: 7),
+      child: Text(
+        widget.component.config['label'],
+        style: TextStyle(
+          fontSize: _resolvedStyle['labelTextSize']?.toDouble() ?? 16,
+          color: StyleUtils.parseColor(
+            _currentState == 'error' && _resolvedStyle['labelColor'] != null
+                ? _resolvedStyle['labelColor']
+                : _resolvedStyle['labelColor'] ?? '#000000',
+          ),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField() {
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      enabled: widget.component.config['editable'] ?? true,
+      obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
+      keyboardType: _getKeyboardType(widget.component),
+      maxLines: (_resolvedStyle['maxLines'] as num?)?.toInt() ?? 10,
+      minLines: (_resolvedStyle['minLines'] as num?)?.toInt() ?? 6,
+      decoration: InputDecoration(
+        isDense: true,
+        hintText: widget.component.config['placeholder'] ?? '',
+        border: _buildBorder(_currentState),
+        enabledBorder: _buildBorder('enabled'),
+        focusedBorder: _buildBorder('focused'),
+        errorBorder: _buildBorder('error'),
+        errorText: _errorText,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        filled: _resolvedStyle['backgroundColor'] != null,
+        fillColor: StyleUtils.parseColor(_resolvedStyle['backgroundColor']),
+        helperText: _resolvedStyle['helperText']?.toString(),
+        helperStyle: TextStyle(
+          color: StyleUtils.parseColor(
+            _currentState == 'error' && _resolvedStyle['helperTextColor'] != null
+                ? _resolvedStyle['helperTextColor']
+                : _resolvedStyle['helperTextColor'] ?? '#000000',
+          ),
+          fontStyle: _resolvedStyle['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+        ),
+      ),
+      style: TextStyle(
+        fontSize: _resolvedStyle['fontSize']?.toDouble() ?? 16,
+        color: StyleUtils.parseColor(
+          _currentState == 'error' && _resolvedStyle['color'] != null
+              ? _resolvedStyle['color']
+              : _resolvedStyle['color'] ?? '#000000',
+        ),
+        fontStyle: _resolvedStyle['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+      ),
+      onChanged: (value) {
+        setState(() {
+          _errorText = validateForm(widget.component, value);
+          _currentState = _determineState();
+        });
+      },
+      onSubmitted: (value) {
+        _saveAndValidate();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final style = _resolveStyles();
-    final currentState = _determineState();
+    _resolvedStyle = _resolveStyles();
+    _currentState = _determineState();
 
     return Container(
       key: Key(widget.component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin']),
+      padding: StyleUtils.parsePadding(_resolvedStyle['padding']),
+      margin: StyleUtils.parsePadding(_resolvedStyle['margin']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.component.config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 7),
-              child: Text(
-                widget.component.config['label'],
-                style: TextStyle(
-                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(
-                    currentState == 'error' && style['labelColor'] != null
-                        ? style['labelColor']
-                        : style['labelColor'] ?? '#000000',
-                  ),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            enabled: widget.component.config['editable'] ?? true,
-            obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
-            keyboardType: _getKeyboardType(widget.component),
-            maxLines: (style['maxLines'] as num?)?.toInt() ?? 10,
-            minLines: (style['minLines'] as num?)?.toInt() ?? 6,
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: widget.component.config['placeholder'] ?? '',
-              border: _buildBorder(style, currentState),
-              enabledBorder: _buildBorder(style, 'enabled'),
-              focusedBorder: _buildBorder(style, 'focused'),
-              errorBorder: _buildBorder(style, 'error'),
-              errorText: _errorText,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              filled: style['backgroundColor'] != null,
-              fillColor: StyleUtils.parseColor(style['backgroundColor']),
-              helperText: style['helperText']?.toString(),
-              helperStyle: TextStyle(
-                color: StyleUtils.parseColor(
-                  currentState == 'error' && style['helperTextColor'] != null
-                      ? style['helperTextColor']
-                      : style['helperTextColor'] ?? '#000000',
-                ),
-                fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-              ),
-            ),
-            style: TextStyle(
-              fontSize: style['fontSize']?.toDouble() ?? 16,
-              color: StyleUtils.parseColor(
-                currentState == 'error' && style['color'] != null
-                    ? style['color']
-                    : style['color'] ?? '#000000',
-              ),
-              fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
-            ),
-            onChanged: (value) {
-              setState(() {
-                _errorText = validateForm(widget.component, value);
-              });
-            },
-            onSubmitted: (value) {
-              _saveAndValidate();
-            },
-          ),
+          _buildLabel(),
+          _buildTextField(),
         ],
       ),
     );

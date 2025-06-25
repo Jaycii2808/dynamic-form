@@ -45,45 +45,49 @@ class _DynamicSelectorState extends State<DynamicSelector> {
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
+    return _buildBody(style, config, selected, context, hasLabel);
+  }
+
+  Container _buildBody(Map<String, dynamic> style, Map<String, dynamic> config, selected, BuildContext context, bool hasLabel) {
     return Container(
-      key: Key(widget.component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            config['selected'] = !selected;
-            context.read<DynamicFormBloc>().add(
-              UpdateFormFieldEvent(
-                componentId: widget.component.id,
-                value: !selected,
-              ),
-            );
-            widget.onComplete(!selected);
-          });
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              selected ? 'assets/svg/Active.svg' : 'assets/svg/Inactive.svg',
-              width: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
-              height: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
+    key: Key(widget.component.id),
+    padding: StyleUtils.parsePadding(style['padding']),
+    margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+    child: GestureDetector(
+      onTap: () {
+        setState(() {
+          config['selected'] = !selected;
+          context.read<DynamicFormBloc>().add(
+            UpdateFormFieldEvent(
+              componentId: widget.component.id,
+              value: !selected,
             ),
-            if (hasLabel)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  config['label'],
-                  style: TextStyle(
-                    fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['labelColor']),
-                  ),
+          );
+          widget.onComplete(!selected);
+        });
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            selected ? 'assets/svg/Active.svg' : 'assets/svg/Inactive.svg',
+            width: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
+            height: (style['iconSize'] as num?)?.toDouble() ?? 20.0,
+          ),
+          if (hasLabel)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                config['label'],
+                style: TextStyle(
+                  fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                  color: StyleUtils.parseColor(style['labelColor']),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
-    );
+    ),
+  );
   }
 }

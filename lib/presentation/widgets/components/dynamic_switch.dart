@@ -49,45 +49,49 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
     final inactiveThumbColor = StyleUtils.parseColor(style['inactiveColor'] ?? '#CCCCCC');
     final inactiveTrackColor = StyleUtils.parseColor(style['inactiveColor'] ?? '#E5E5E5');
 
+    return _buildBody(style, selected, config, context, activeColor, inactiveThumbColor, inactiveTrackColor, hasLabel);
+  }
+
+  Container _buildBody(Map<String, dynamic> style, selected, Map<String, dynamic> config, BuildContext context, Color activeColor, Color inactiveThumbColor, Color inactiveTrackColor, bool hasLabel) {
     return Container(
-      key: ValueKey(widget.component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Switch(
-            value: selected,
-            onChanged: (bool value) {
-              setState(() {
-                config['selected'] = value;
-                context.read<DynamicFormBloc>().add(
-                  UpdateFormFieldEvent(
-                    componentId: widget.component.id,
-                    value: value,
-                  ),
-                );
-                widget.onComplete(value);
-              });
-            },
-            activeColor: activeColor,
-            inactiveThumbColor: inactiveThumbColor,
-            inactiveTrackColor: inactiveTrackColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize: style['textSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['color'] ?? '#6979F8'),
+    key: ValueKey(widget.component.id),
+    padding: StyleUtils.parsePadding(style['padding']),
+    margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Switch(
+          value: selected,
+          onChanged: (bool value) {
+            setState(() {
+              config['selected'] = value;
+              context.read<DynamicFormBloc>().add(
+                UpdateFormFieldEvent(
+                  componentId: widget.component.id,
+                  value: value,
                 ),
+              );
+              widget.onComplete(value);
+            });
+          },
+          activeColor: activeColor,
+          inactiveThumbColor: inactiveThumbColor,
+          inactiveTrackColor: inactiveTrackColor,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        if (hasLabel)
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text(
+              config['label'],
+              style: TextStyle(
+                fontSize: style['textSize']?.toDouble() ?? 16,
+                color: StyleUtils.parseColor(style['color'] ?? '#6979F8'),
               ),
             ),
-        ],
-      ),
-    );
+          ),
+      ],
+    ),
+  );
   }
 }

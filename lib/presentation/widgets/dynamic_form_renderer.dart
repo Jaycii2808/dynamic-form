@@ -207,27 +207,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return DynamicTextArea(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.dateTimePickerFormType:
         return DynamicDateTimePicker(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.dateTimeRangePickerFormType:
         return DynamicDateTimeRangePicker(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.dropdownFormType:
@@ -247,27 +238,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return DynamicSelector(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.switchFormType:
         return DynamicSwitch(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.textFieldTagsFormType:
         return DynamicTextFieldTags(
           component: component,
           onComplete: (value) {
-            // context.read<DynamicFormBloc>().add(
-            //   UpdateFormField(componentId: component.id, value: value),
-            // );
           },
         );
       case FormTypeEnum.fileUploaderFormType:
