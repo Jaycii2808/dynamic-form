@@ -1,0 +1,191 @@
+{
+   "id_form": "form_template_test",
+   "title": "Form Template Test",
+   "order": 1,
+   "components": [
+      {
+         "id": "name_field",
+         "type": "textFieldFormType",
+         "order": 1,
+         "config": {
+            "label": "Họ và tên",
+            "placeholder": "Nhập họ và tên của bạn",
+            "value": "",
+            "currentState": "base"
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "12 16",
+            "backgroundColor": "#ffffff",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "borderWidth": 1,
+            "fontSize": 16,
+            "labelColor": "#333333",
+            "placeholderColor": "#999999"
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng nhập họ và tên"
+            }
+         }
+      },
+      {
+         "id": "email_field",
+         "type": "textFieldFormType",
+         "order": 2,
+         "config": {
+            "label": "Email",
+            "placeholder": "Nhập email của bạn",
+            "value": "",
+            "currentState": "base"
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "12 16",
+            "backgroundColor": "#ffffff",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "borderWidth": 1,
+            "fontSize": 16,
+            "labelColor": "#333333",
+            "placeholderColor": "#999999"
+         },
+         "inputTypes": {
+            "email": true
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng nhập email"
+            }
+         }
+      },
+      {
+         "id": "department_dropdown",
+         "type": "dropdownFormType",
+         "order": 3,
+         "config": {
+            "label": "Phòng ban",
+            "placeholder": "Chọn phòng ban",
+            "value": "",
+            "currentState": "base",
+            "options": [
+               { "label": "Kỹ thuật", "value": "tech" },
+               { "label": "Kinh doanh", "value": "sales" },
+               { "label": "Marketing", "value": "marketing" },
+               { "label": "Nhân sự", "value": "hr" },
+               { "label": "Tài chính", "value": "finance" }
+            ]
+         },
+         "style": {
+            "margin": "16 16 0 16",
+            "padding": "12 16",
+            "backgroundColor": "#ffffff",
+            "borderColor": "#e0e0e0",
+            "borderRadius": 8,
+            "borderWidth": 1,
+            "fontSize": 16,
+            "labelColor": "#333333",
+            "placeholderColor": "#999999"
+         },
+         "validation": {
+            "required": {
+               "isRequired": true,
+               "error_message": "Vui lòng chọn phòng ban"
+            }
+         }
+      },
+      {
+         "id": "submit_button",
+         "type": "buttonFormType",
+         "order": 4,
+         "config": {
+            "text": "Gửi thông tin",
+            "action": "submit",
+            "variant": "primary"
+         },
+         "style": {
+            "margin": "24 16 16 16",
+            "padding": "12 24",
+            "backgroundColor": "#2196f3",
+            "color": "#ffffff",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "fontWeight": "bold"
+         },
+         "variants": {
+            "primary": {
+               "style": {
+                  "backgroundColor": "#2196f3",
+                  "color": "#ffffff"
+               }
+            },
+            "secondary": {
+               "style": {
+                  "backgroundColor": "#6c757d",
+                  "color": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "backgroundColor": "#2196f3"
+               }
+            },
+            "hover": {
+               "style": {
+                  "backgroundColor": "#1976d2"
+               }
+            },
+            "disabled": {
+               "style": {
+                  "backgroundColor": "#cccccc",
+                  "color": "#666666"
+               }
+            }
+         }
+      },
+      {
+         "id": "save_template_button",
+         "type": "buttonFormType",
+         "order": 5,
+         "config": {
+            "text": "Lưu làm template",
+            "action": "save",
+            "variant": "secondary"
+         },
+         "style": {
+            "margin": "0 16 16 16",
+            "padding": "12 24",
+            "backgroundColor": "#28a745",
+            "color": "#ffffff",
+            "borderRadius": 8,
+            "fontSize": 16,
+            "fontWeight": "bold"
+         },
+         "variants": {
+            "secondary": {
+               "style": {
+                  "backgroundColor": "#28a745",
+                  "color": "#ffffff"
+               }
+            }
+         },
+         "states": {
+            "default": {
+               "style": {
+                  "backgroundColor": "#28a745"
+               }
+            },
+            "hover": {
+               "style": {
+                  "backgroundColor": "#218838"
+               }
+            }
+         }
+      }
+   ]
+}
