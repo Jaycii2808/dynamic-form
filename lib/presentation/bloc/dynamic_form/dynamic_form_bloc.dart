@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -8,9 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   final RemoteConfigService _remoteConfigService;
-
-  DynamicFormBloc({required RemoteConfigService remoteConfigService})
+  final FormTemplateService _formTemplateService;
+  DynamicFormBloc({required RemoteConfigService remoteConfigService, required FormTemplateService formTemplateService})
     : _remoteConfigService = remoteConfigService,
+        _formTemplateService=formTemplateService,
+
 
       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
@@ -25,7 +28,25 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     emit(DynamicFormLoading.fromState(state: state));
     await Future.delayed(const Duration(milliseconds: 500));
     try {
-      final page = _remoteConfigService.getConfigKey(event.configKey);
+      //final page = _remoteConfigService.getConfigKey(event.configKey);
+      DynamicFormPageModel? page;
+
+      // First, check if this is a template ID (starts with 'template_')
+      if (event.configKey.startsWith('template_')) {
+        page = _formTemplateService.loadFormFromTemplate(event.configKey);
+        if (page != null) {
+          debugPrint('Loaded form from template: ${event.configKey}');
+        }
+      }
+
+      // If not a template or template not found, try Remote Config
+      if (page == null) {
+        page = _remoteConfigService.getConfigKey(event.configKey);
+        if (page != null) {
+          debugPrint('Loaded form from Remote Config: ${event.configKey}');
+        }
+      }
+
       if (page != null) {
         emit(DynamicFormSuccess.fromState(state: state, page: page));
       } else {
