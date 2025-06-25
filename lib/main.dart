@@ -58,22 +58,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Predefined remote config keys (extendable in future)
-    final configKeys = [
-      'text_field_component',
-      'select_component',
-      'text_area_component',
-      'date_time_picker_component',
-      'drop_down_component',
-      'check_box_component',
-      'radio_component',
-      'filter_price_component',
-      'selector_component',
-      'switch_component',
-      'text_field_tags_component',
-      'file_uploader_component',
-      'form_template_component',
-    ];
+    // list parameters on remote configs Firebase
+    final configKeys = RemoteConfigService().getAll().keys.toList();
 
     return Scaffold(
       appBar: AppBar(
