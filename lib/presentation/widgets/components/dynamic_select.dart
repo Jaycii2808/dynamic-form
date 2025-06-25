@@ -28,7 +28,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
   @override
   void initState() {
     super.initState();
-    // Không cần setState cho value ở đây nữa, chỉ cần cho UI tạm thời như dropdown
+    // No need to setState for value here anymore, just for temporary UI like dropdown
   }
 
   @override
@@ -137,7 +137,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
     final dynamic height = component.config['height'];
     final style = component.style;
     final isMultiple = component.config['multiple'] ?? false;
-    // Lấy selectedValues từ BLoC state
+    // Get selectedValues from BLoC state
     final value = component.config['value'];
     List<String> selectedValues = [];
     if (component.config['multiple'] == true) {
@@ -172,7 +172,10 @@ class _DynamicSelectState extends State<DynamicSelect> {
                 newValues.remove(value);
               }
               context.read<DynamicFormBloc>().add(
-                UpdateFormFieldEvent(componentId: component.id, value: newValues),
+                UpdateFormFieldEvent(
+                  componentId: component.id,
+                  value: newValues,
+                ),
               );
               debugPrint(
                 '[Select] ${component.id} value updated: $newValues (multiple)',
@@ -254,7 +257,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
               )
             : widget.component;
 
-        // Đọc value từ BLoC state, không dùng setState
+        // Read value from BLoC state, do not use setState
         final value = component.config['value'];
         List<String> selectedValues = [];
         String? selectedValue;
@@ -454,7 +457,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
                       searchable,
                     );
                   } else if (searchable) {
-                    // Single-select + searchable: dialog thành phố
+                    // Single-select + searchable: city dialog
                     showDialog(
                       context: context,
                       builder: (BuildContext context) => CitySearchDialogBloc(

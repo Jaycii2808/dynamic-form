@@ -130,7 +130,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                   setPanelState(() {
                                     searchQuery = value;
                                   });
-                                  // Không gửi event ở đây vì chỉ là search tạm
+                                  // Do not send event here because this is just temporary search
                                 },
                                 onSubmitted: (value) {
                                   if (filteredItems.isNotEmpty &&
@@ -254,9 +254,8 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        // Lấy component mới nhất từ BLoC state
-        final component =
-            (state.page?.components != null)
+        // Get the latest component from BLoC state
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -280,7 +279,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
               component.variants!['withIcon']['style'] as Map<String, dynamic>?;
           if (variantStyle != null) style.addAll(variantStyle);
         }
-        // Apply state style nếu có
+        // Apply state style if available
         if (component.states != null &&
             component.states!.containsKey(currentState)) {
           final stateStyle =
@@ -288,7 +287,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           if (stateStyle != null) style.addAll(stateStyle);
         }
 
-        // Tính toán label hiển thị
+        // Calculate display label
         String? displayLabel;
         if (value == null || value.isEmpty) {
           displayLabel =
