@@ -1,10 +1,9 @@
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
@@ -64,13 +63,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
       case FormTypeEnum.checkboxGroupFormType:
-        return _buildCheckboxGroup(component);
+        return const SizedBox.shrink();
       case FormTypeEnum.checkboxFormType:
         return DynamicCheckbox(component: component);
       case FormTypeEnum.radioFormType:
         return DynamicRadio(component: component);
       case FormTypeEnum.radioGroupFormType:
-        return _buildRadioGroup(component);
+        return const SizedBox.shrink();
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorFormType:
@@ -86,198 +85,5 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
-  }
-
-  Widget _buildRadioGroup(DynamicFormModel component) {
-    final layout = component.config['layout']?.toString().toLowerCase() ?? 'row';
-    final groupStyle = Map<String, dynamic>.from(component.style);
-    final children = component.children ?? [];
-
-    final widgets = children.map((item) {
-      final style = {...groupStyle, ...item.style};
-      final isSelected = item.config['value'] == true;
-      final isEditable = item.config['editable'] != false;
-      final label = item.config['label'] as String?;
-      final hint = item.config['hint'] as String?;
-      final iconName = item.config['icon'] as String?;
-
-      Color bgColor = StyleUtils.parseColor(style['backgroundColor']);
-      Color borderColor = StyleUtils.parseColor(style['borderColor']);
-      double borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 20;
-      double borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 2;
-      Color iconColor = StyleUtils.parseColor(style['iconColor']);
-      double width = (style['width'] as num?)?.toDouble() ?? 40;
-      double height = (style['height'] as num?)?.toDouble() ?? 40;
-      EdgeInsetsGeometry margin = StyleUtils.parsePadding(style['margin']);
-
-      if (isSelected) {
-        borderWidth += 2;
-      }
-
-      if (!isEditable) {
-        bgColor = StyleUtils.parseColor('#e0e0e0');
-        borderColor = StyleUtils.parseColor('#e0e0e0');
-        iconColor = StyleUtils.parseColor('#bdbdbd');
-      }
-
-      Widget? iconWidget;
-      if (iconName != null) {
-        final iconData = mapIconNameToIconData(iconName);
-        if (iconData != null) {
-          iconWidget = Icon(iconData, color: iconColor, size: width * 0.6);
-        }
-      }
-
-      return InkWell(
-        borderRadius: BorderRadius.circular(borderRadius),
-        onTap: isEditable
-            ? () {
-                context.read<DynamicFormBloc>().add(
-                  UpdateFormFieldEvent(componentId: item.id, value: true),
-                );
-              }
-            : null,
-        child: Container(
-          margin: margin,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: width,
-                height: height,
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  border: Border.all(color: borderColor, width: borderWidth),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child:
-                      iconWidget ??
-                      (isSelected
-                          ? Container(
-                              width: width * 0.5,
-                              height: height * 0.5,
-                              decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle),
-                            )
-                          : null),
-                ),
-              ),
-              if (label != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: isEditable ? Colors.white : Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              if (hint != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    hint,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    }).toList();
-
-    return Container(
-      margin: StyleUtils.parsePadding(groupStyle['margin']),
-      padding: StyleUtils.parsePadding(groupStyle['padding']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (component.config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 28,
-                    color: const Color(0xFF6979F8),
-                    margin: const EdgeInsets.only(right: 8),
-                  ),
-                  Text(
-                    component.config['label'],
-                    style: const TextStyle(
-                      color: Color(0xFF6979F8),
-                      fontSize: 24,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (component.config['hint'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 12, bottom: 8),
-              child: Text(
-                component.config['hint'],
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-          layout == 'row'
-              ? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: widgets),
-                )
-              : Column(children: widgets),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCheckboxGroup(DynamicFormModel component) {
-    component.config['layout']?.toString().toLowerCase() ?? 'row';
-    final groupStyle = Map<String, dynamic>.from(component.style);
-
-    return Container(
-      margin: StyleUtils.parsePadding(groupStyle['margin']),
-      padding: StyleUtils.parsePadding(groupStyle['padding']),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (component.config['label'] != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 28,
-                    color: const Color(0xFF6979F8),
-                    margin: const EdgeInsets.only(right: 8),
-                  ),
-                  Text(
-                    component.config['label'],
-                    style: const TextStyle(
-                      color: Color(0xFF6979F8),
-                      fontSize: 24,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
   }
 }

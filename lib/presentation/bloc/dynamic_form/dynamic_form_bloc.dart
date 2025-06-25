@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   final RemoteConfigService _remoteConfigService;
@@ -40,8 +38,13 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     }
   }
 
-  void _onUpdateFormField(UpdateFormFieldEvent event, Emitter<DynamicFormState> emit) {
-    debugPrint('UpdateFormFieldEvent: Component ${event.componentId}, Value: ${event.value}');
+  void _onUpdateFormField(
+    UpdateFormFieldEvent event,
+    Emitter<DynamicFormState> emit,
+  ) {
+    debugPrint(
+      'UpdateFormFieldEvent: Component ${event.componentId}, Value: ${event.value}',
+    );
 
     if (state.page != null) {
       final updatedComponents = state.page!.components.map((component) {
