@@ -1,6 +1,7 @@
 ﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
@@ -58,14 +59,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return DynamicDateTimeRangePicker(component: component);
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
-      case FormTypeEnum.checkboxGroupFormType:
-        return const SizedBox.shrink();
       case FormTypeEnum.checkboxFormType:
         return DynamicCheckbox(component: component);
       case FormTypeEnum.radioFormType:
         return DynamicRadio(component: component);
-      case FormTypeEnum.radioGroupFormType:
-        return const SizedBox.shrink();
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorFormType:
@@ -77,7 +74,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-        return const SizedBox.shrink();
+      return DynamicButton(component: component);
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }

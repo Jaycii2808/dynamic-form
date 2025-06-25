@@ -5,10 +5,9 @@ enum FormTypeEnum {
   dateTimePickerFormType,
   dateTimeRangePickerFormType,
   dropdownFormType,
-  checkboxGroupFormType,
   checkboxFormType,
   radioFormType,
-  radioGroupFormType,
+
   sliderFormType,
   selectorFormType,
   switchFormType,
