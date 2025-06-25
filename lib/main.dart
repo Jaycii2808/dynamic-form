@@ -31,8 +31,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              DynamicFormBloc(remoteConfigService: RemoteConfigService(), formTemplateService: FormTemplateService()),
+          create: (context) => DynamicFormBloc(
+            remoteConfigService: RemoteConfigService(),
+            formTemplateService: FormTemplateService(),
+          ),
         ),
       ],
       child: MaterialApp(
@@ -87,31 +89,44 @@ class HomeScreen extends StatelessWidget {
             itemCount: configKeys.length,
             itemBuilder: (context, index) {
               final configKey = configKeys[index];
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DynamicFormScreen(
-                        configKey: configKey,
-                        title: configKey,
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  color: Colors.blueGrey,
-                  margin: const EdgeInsets.all(10),
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    configKey,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
+              debugPrint(
+                'CONFIG_KEY: $configKey',
               );
+              return buildItem(context, configKey);
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildItem(BuildContext context, String configKey) {
+    return GestureDetector(
+      onTap: () => onTapOpenForm(context, configKey),
+      child: buildItemContainer(configKey),
+    );
+  }
+
+  void onTapOpenForm(BuildContext context, String configKey) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DynamicFormScreen(
+          configKey: configKey,
+          title: configKey,
+        ),
+      ),
+    );
+  }
+
+  Widget buildItemContainer(String configKey) {
+    return Container(
+      color: Colors.blueGrey,
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
+      child: Text(
+        configKey,
+        style: const TextStyle(color: Colors.white),
       ),
     );
   }
