@@ -9,13 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextField extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic value) onComplete;
 
-  const DynamicTextField({
-    super.key,
-    required this.component,
-    required this.onComplete,
-  });
+  const DynamicTextField({super.key, required this.component});
 
   @override
   State<DynamicTextField> createState() => _DynamicTextFieldState();
@@ -44,10 +39,9 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     if (!_focusNode.hasFocus) {
       final newValue = _controller.text;
       context.read<DynamicFormBloc>().add(
-        UpdateFormField(componentId: widget.component.id, value: newValue),
+        UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
       );
       debugPrint('[TextField] ${widget.component.id} value updated: $newValue');
-      widget.onComplete(newValue);
     }
   }
 
@@ -56,8 +50,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
         // Lấy component mới nhất từ BLoC state
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -70,15 +63,12 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
         if ((component.config['icon'] != null || style['icon'] != null) &&
             component.variants != null &&
             component.variants!.containsKey('withIcon')) {
-          final variantStyle =
-              component.variants!['withIcon']['style'] as Map<String, dynamic>?;
+          final variantStyle = component.variants!['withIcon']['style'] as Map<String, dynamic>?;
           if (variantStyle != null) style.addAll(variantStyle);
         }
         // Apply state style nếu có
-        if (component.states != null &&
-            component.states!.containsKey(currentState)) {
-          final stateStyle =
-              component.states![currentState]['style'] as Map<String, dynamic>?;
+        if (component.states != null && component.states!.containsKey(currentState)) {
+          final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
           if (stateStyle != null) style.addAll(stateStyle);
         }
         final value = component.config['value']?.toString() ?? '';
@@ -129,60 +119,43 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                 controller: _controller,
                 focusNode: _focusNode,
                 enabled: component.config['editable'] ?? true,
-                obscureText:
-                    component.inputTypes?.containsKey('password') ?? false,
+                obscureText: component.inputTypes?.containsKey('password') ?? false,
                 keyboardType: _getKeyboardType(component),
                 onChanged: (value) {
                   context.read<DynamicFormBloc>().add(
-                    UpdateFormField(componentId: component.id, value: value),
+                    UpdateFormFieldEvent(componentId: component.id, value: value),
                   );
-                  debugPrint(
-                    '[TextField] ${component.id} value updated: $value',
-                  );
-                  widget.onComplete(value);
+                  debugPrint('[TextField] ${component.id} value updated: $value');
                 },
                 onSubmitted: (value) {
                   context.read<DynamicFormBloc>().add(
-                    UpdateFormField(componentId: component.id, value: value),
+                    UpdateFormFieldEvent(componentId: component.id, value: value),
                   );
-                  debugPrint(
-                    '[TextField] ${component.id} value updated: $value',
-                  );
-                  widget.onComplete(value);
+                  debugPrint('[TextField] ${component.id} value updated: $value');
                 },
                 decoration: InputDecoration(
                   isDense: true,
                   prefixIcon: prefixIcon,
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   hintText: component.config['placeholder'] ?? '',
                   border: _buildBorder(style, currentState),
                   enabledBorder: _buildBorder(style, 'enabled'),
                   focusedBorder: _buildBorder(style, 'focused'),
                   errorBorder: _buildBorder(style, 'error'),
                   errorText: errorText,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                   filled: style['backgroundColor'] != null,
                   fillColor: StyleUtils.parseColor(style['backgroundColor']),
                   helperText: helperText,
                   helperStyle: TextStyle(
                     color: helperTextColor,
-                    fontStyle: style['fontStyle'] == 'italic'
-                        ? FontStyle.italic
-                        : FontStyle.normal,
+                    fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
                   ),
                 ),
                 style: TextStyle(
                   fontSize: style['fontSize']?.toDouble() ?? 16,
                   color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic'
-                      ? FontStyle.italic
-                      : FontStyle.normal,
+                  fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
                 ),
               ),
             ],

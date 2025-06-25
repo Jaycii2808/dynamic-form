@@ -9,13 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicDateTimePicker extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic value) onComplete;
 
-  const DynamicDateTimePicker({
-    super.key,
-    required this.component,
-    required this.onComplete,
-  });
+  const DynamicDateTimePicker({super.key, required this.component});
 
   @override
   State<DynamicDateTimePicker> createState() => _DynamicDateTimePickerState();
@@ -33,13 +28,19 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     final config = widget.component.config;
     _selectedFormat = _determineDefaultFormat(config);
     final value = config['value'] ?? '';
-    debugPrint('initState: componentId=${widget.component.id}, initialValue=$value, selectedFormat=$_selectedFormat');
+    debugPrint(
+      'initState: componentId=${widget.component.id}, initialValue=$value, selectedFormat=$_selectedFormat',
+    );
     if (value is String && value.isNotEmpty) {
       try {
-        final normalizedValue = value.contains('YYYY') ? value.replaceAll('YYYY', DateTime.now().year.toString()) : value;
+        final normalizedValue = value.contains('YYYY')
+            ? value.replaceAll('YYYY', DateTime.now().year.toString())
+            : value;
         DateFormat(_selectedFormat).parseStrict(normalizedValue);
         _controller.text = normalizedValue;
-        debugPrint('initState: normalizedValue=$normalizedValue, controllerText=${_controller.text}');
+        debugPrint(
+          'initState: normalizedValue=$normalizedValue, controllerText=${_controller.text}',
+        );
       } catch (e) {
         debugPrint('initState: Error parsing initial value: $e');
         _controller.text = '';
@@ -47,7 +48,6 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     }
     _focusNode.addListener(_handleFocusChange);
   }
-
 
   String _determineDefaultFormat(Map<String, dynamic> config) {
     final pickerMode = config['pickerMode'] ?? 'fullDateTime';
@@ -83,11 +83,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       debugPrint('handleFocusChange: componentId=${widget.component.id}, newValue=$newValue');
       if (newValue != widget.component.config['value']) {
         widget.component.config['value'] = newValue;
-        context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
-          componentId: widget.component.id,
-          value: newValue,
-        ));
-        widget.onComplete(newValue);
+        context.read<DynamicFormBloc>().add(
+          UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
+        );
       }
       setState(() {
         _errorText = _validate(newValue);
@@ -111,7 +109,6 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     return _validate(value) != null ? 'error' : 'success';
   }
 
-
   String? _validate(String value) {
     final validationConfig = widget.component.validation;
     if (validationConfig == null) return null;
@@ -130,7 +127,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             .replaceAll('s ', '\$')
             .replaceAll('h ', '#')
             .replaceAll('m ', '@');
-        normalizedValue = normalizedValue.contains('YYYY') ? normalizedValue.replaceAll('YYYY', DateTime.now().year.toString()) : normalizedValue;
+        normalizedValue = normalizedValue.contains('YYYY')
+            ? normalizedValue.replaceAll('YYYY', DateTime.now().year.toString())
+            : normalizedValue;
         final parseFormat = _selectedFormat
             .replaceAll('\'h\':', '#')
             .replaceAll('\'m\':', '@')
@@ -138,9 +137,13 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             .replaceAll('\'h\' ', '#')
             .replaceAll('\'m\' ', '@');
         DateFormat(parseFormat).parseStrict(normalizedValue);
-        debugPrint('validate: componentId=${widget.component.id}, value=$value, normalizedValue=$normalizedValue, validation=success');
+        debugPrint(
+          'validate: componentId=${widget.component.id}, value=$value, normalizedValue=$normalizedValue, validation=success',
+        );
       } catch (e) {
-        debugPrint('validate: componentId=${widget.component.id}, value=$value, error=Invalid date format: $e');
+        debugPrint(
+          'validate: componentId=${widget.component.id}, value=$value, error=Invalid date format: $e',
+        );
         return 'Invalid date format';
       }
     }
@@ -151,7 +154,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     final style = _resolveStyles();
     final config = widget.component.config;
     final pickerMode = config['pickerMode'] ?? 'fullDateTime';
-    debugPrint('pickDateTime: componentId=${widget.component.id}, pickerMode=$pickerMode, selectedFormat=$_selectedFormat');
+    debugPrint(
+      'pickDateTime: componentId=${widget.component.id}, pickerMode=$pickerMode, selectedFormat=$_selectedFormat',
+    );
 
     DateTime? pickedDate;
     TimeOfDay? pickedTime;
@@ -214,22 +219,22 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
         pickerMode == 'dateOnly' || pickerMode == 'hourDate' ? 0 : pickedTime!.minute,
       );
       final formattedDateTime = DateFormat(_selectedFormat).format(dateTime);
-      debugPrint('pickDateTime: componentId=${widget.component.id}, formattedDateTime=$formattedDateTime');
+      debugPrint(
+        'pickDateTime: componentId=${widget.component.id}, formattedDateTime=$formattedDateTime',
+      );
       setState(() {
         _controller.text = formattedDateTime;
         _errorText = _validate(formattedDateTime);
       });
       widget.component.config['value'] = formattedDateTime;
-      widget.onComplete(formattedDateTime);
-      context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
-        componentId: widget.component.id,
-        value: formattedDateTime,
-      ));
+
+      context.read<DynamicFormBloc>().add(
+        UpdateFormFieldEvent(componentId: widget.component.id, value: formattedDateTime),
+      );
     } else {
       debugPrint('pickDateTime: componentId=${widget.component.id}, no valid selection');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +284,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
                 borderSide: BorderSide(
-                  color: StyleUtils.parseColor(style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8'),
+                  color: StyleUtils.parseColor(
+                    style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8',
+                  ),
                   width: style['borderWidth']?.toDouble() ?? 2,
                 ),
               ),

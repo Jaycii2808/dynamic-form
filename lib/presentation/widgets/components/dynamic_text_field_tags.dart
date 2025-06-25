@@ -8,9 +8,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class DynamicTextFieldTags extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic value) onComplete;
 
-  const DynamicTextFieldTags({super.key, required this.component, required this.onComplete});
+  const DynamicTextFieldTags({super.key, required this.component});
 
   @override
   State<DynamicTextFieldTags> createState() => _DynamicTextFieldTagsState();
@@ -24,7 +23,8 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
   @override
   void initState() {
     super.initState();
-    final initialTags = (widget.component.config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
+    final initialTags =
+        (widget.component.config['initialTags'] as List<dynamic>?)?.cast<String>() ?? [];
     _selectedTags.addAll(initialTags);
   }
 
@@ -49,12 +49,8 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
         _selectedTags.add(tag);
         _errorText = null;
         context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(
-            componentId: widget.component.id,
-            value: _selectedTags.toList(),
-          ),
+          UpdateFormFieldEvent(componentId: widget.component.id, value: _selectedTags.toList()),
         );
-        widget.onComplete(_selectedTags.toList());
       });
     }
   }
@@ -63,12 +59,9 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
     setState(() {
       _selectedTags.remove(tag);
       context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(
-          componentId: widget.component.id,
-          value: _selectedTags.toList(),
-        ),
+        UpdateFormFieldEvent(componentId: widget.component.id, value: _selectedTags.toList()),
       );
-      widget.onComplete(_selectedTags.toList());
+      // widget.onComplete(_selectedTags.toList());
     });
   }
 
@@ -105,10 +98,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
                 'assets/svg/Close.svg',
                 width: 16,
                 height: 16,
-                colorFilter: const ColorFilter.mode(
-                  Colors.redAccent,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: const ColorFilter.mode(Colors.redAccent, BlendMode.srcIn),
               ),
             ),
           ],
@@ -117,7 +107,11 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
     );
   }
 
-  Widget _buildTagsInputView(Map<String, dynamic> style, List<String> initialTags, String placeholder) {
+  Widget _buildTagsInputView(
+    Map<String, dynamic> style,
+    List<String> initialTags,
+    String placeholder,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -135,7 +129,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
             final availableTags = initialTags.where((tag) => !_selectedTags.contains(tag)).toList();
             if (textEditingValue.text.isEmpty) return availableTags;
             return availableTags.where(
-                  (tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+              (tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()),
             );
           },
           onSelected: (String selection) {
@@ -147,7 +141,9 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
               focusNode: focusNode,
               onSubmitted: (value) {
                 final trimmedValue = value.trim();
-                if (trimmedValue.isNotEmpty && initialTags.contains(trimmedValue) && !_selectedTags.contains(trimmedValue)) {
+                if (trimmedValue.isNotEmpty &&
+                    initialTags.contains(trimmedValue) &&
+                    !_selectedTags.contains(trimmedValue)) {
                   textEditingController.clear();
                   _addTag(trimmedValue);
                 } else if (_selectedTags.contains(trimmedValue)) {
@@ -246,16 +242,15 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
       },
       child: _selectedTags.isEmpty
           ? const Center(
-        child: Text(
-          'Click to add tags',
-          style: TextStyle(color: Colors.grey, fontSize: 14),
-        ),
-      )
+              child: Text('Click to add tags', style: TextStyle(color: Colors.grey, fontSize: 14)),
+            )
           : Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: _selectedTags.map((tag) => _buildTagChip(tag, style, allowRemoval: true)).toList(),
-      ),
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: _selectedTags
+                  .map((tag) => _buildTagChip(tag, style, allowRemoval: true))
+                  .toList(),
+            ),
     );
   }
 

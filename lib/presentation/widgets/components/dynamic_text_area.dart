@@ -8,13 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextArea extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic value) onComplete;
 
-  const DynamicTextArea({
-    super.key,
-    required this.component,
-    required this.onComplete,
-  });
+  const DynamicTextArea({super.key, required this.component});
 
   @override
   State<DynamicTextArea> createState() => _DynamicTextAreaState();
@@ -69,7 +64,6 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       context.read<DynamicFormBloc>().add(
         UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
       );
-      widget.onComplete(newValue);
     }
     setState(() {
       _errorText = validateForm(widget.component, newValue);
@@ -83,23 +77,27 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     if (widget.component.variants != null) {
       if (widget.component.config['placeholder'] != null &&
           widget.component.variants!.containsKey('placeholders')) {
-        final variantStyle = widget.component.variants!['placeholders']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            widget.component.variants!['placeholders']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.variants!.containsKey('withLabel')) {
-        final variantStyle = widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withLabelValue')) {
-        final variantStyle = widget.component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            widget.component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withValue')) {
-        final variantStyle = widget.component.variants!['withValue']['style'] as Map<String, dynamic>?;
+        final variantStyle =
+            widget.component.variants!['withValue']['style'] as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -138,10 +136,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       case 'error':
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide:  BorderSide(
-            color: StyleUtils.parseColor('#ff4d4f'),
-            width: 2,
-          ),
+          borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
         );
       default:
         return OutlineInputBorder(
@@ -237,10 +232,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       margin: StyleUtils.parsePadding(_resolvedStyle['margin']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildLabel(),
-          _buildTextField(),
-        ],
+        children: [_buildLabel(), _buildTextField()],
       ),
     );
   }

@@ -57,19 +57,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     final component = widget.component;
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
-        return DynamicTextField(
-          component: component,
-          onComplete: (value) {
-          },
-        );
+        return DynamicTextField(component: component);
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
-        return DynamicTextArea(component: component, onComplete: (value) {});
+        return DynamicTextArea(component: component);
       case FormTypeEnum.dateTimePickerFormType:
-        return DynamicDateTimePicker(component: component, onComplete: (value) {});
+        return DynamicDateTimePicker(component: component);
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return DynamicDateTimeRangePicker(component: component, onComplete: (value) {});
+        return DynamicDateTimeRangePicker(component: component);
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
       case FormTypeEnum.checkboxGroupFormType:
@@ -83,11 +79,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorFormType:
-        return DynamicSelector(component: component, onComplete: (value) {});
+        return DynamicSelector(component: component);
       case FormTypeEnum.switchFormType:
-        return DynamicSwitch(component: component, onComplete: (value) {});
+        return DynamicSwitch(component: component);
       case FormTypeEnum.textFieldTagsFormType:
-        return DynamicTextFieldTags(component: component, onComplete: (value) {});
+        return DynamicTextFieldTags(component: component);
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
