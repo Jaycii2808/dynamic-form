@@ -62,7 +62,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       final newValue = _controller.text;
       if (newValue != widget.component.config['value']) {
         widget.component.config['value'] = newValue;
-        context.read<DynamicFormBloc>().add(UpdateFormField(
+        context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
           componentId: widget.component.id,
           value: newValue,
         ));
@@ -240,7 +240,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
                   });
                   widget.component.config['value'] = formattedDateTime;
                   widget.onComplete(formattedDateTime);
-                  context.read<DynamicFormBloc>().add(UpdateFormField(
+                  context.read<DynamicFormBloc>().add(UpdateFormFieldEvent(
                     componentId: widget.component.id,
                     value: formattedDateTime,
                   ));

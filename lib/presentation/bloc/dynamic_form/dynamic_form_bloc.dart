@@ -14,7 +14,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     : _remoteConfigService = remoteConfigService,
       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
-   on<UpdateFormField>(_onUpdateFormField);
+   on<UpdateFormFieldEvent>(_onUpdateFormField);
     on<RefreshDynamicFormEvent>(_onRefreshDynamicForm);
   }
 
@@ -40,7 +40,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     }
   }
 
-  void _onUpdateFormField(UpdateFormField event, Emitter<DynamicFormState> emit) {
+  void _onUpdateFormField(UpdateFormFieldEvent event, Emitter<DynamicFormState> emit) {
     debugPrint('UpdateFormField: Component ${event.componentId}, Value: ${event.value}');
     if (state.page != null) {
       final updatedComponents = state.page!.components.map((component) {

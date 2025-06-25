@@ -77,7 +77,7 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
         newValue['end'] != widget.component.config['value']?['end']) {
       widget.component.config['value'] = newValue;
       context.read<DynamicFormBloc>().add(
-        UpdateFormField(componentId: widget.component.id, value: newValue),
+        UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
       );
       widget.onComplete(newValue);
     }

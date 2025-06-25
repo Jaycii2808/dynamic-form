@@ -47,10 +47,10 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     if (newValue != widget.component.config['value']) {
       widget.component.config['value'] = newValue;
       context.read<DynamicFormBloc>().add(
-        UpdateFormField(componentId: widget.component.id, value: newValue),
+        UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
       );
       widget.onComplete(newValue);
-    }
+        }
     setState(() {
       _errorText = validateForm(widget.component, newValue);
     });
@@ -110,7 +110,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         return OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: borderColor.withAlpha(borderOpacity),
+            color: borderColor.withValues(alpha: borderOpacity),
             width: borderWidth + 1,
           ),
         );
@@ -126,7 +126,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         return OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: borderColor.withAlpha(borderOpacity),
+            color: borderColor.withValues(alpha: borderOpacity),
             width: borderWidth,
           ),
         );

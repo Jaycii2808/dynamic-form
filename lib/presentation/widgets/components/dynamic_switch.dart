@@ -62,7 +62,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
               setState(() {
                 config['selected'] = value;
                 context.read<DynamicFormBloc>().add(
-                  UpdateFormField(
+                  UpdateFormFieldEvent(
                     componentId: widget.component.id,
                     value: value,
                   ),

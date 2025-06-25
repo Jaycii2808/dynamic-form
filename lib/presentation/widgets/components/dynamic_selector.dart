@@ -54,7 +54,7 @@ class _DynamicSelectorState extends State<DynamicSelector> {
           setState(() {
             config['selected'] = !selected;
             context.read<DynamicFormBloc>().add(
-              UpdateFormField(
+              UpdateFormFieldEvent(
                 componentId: widget.component.id,
                 value: !selected,
               ),

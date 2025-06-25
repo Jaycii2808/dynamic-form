@@ -94,7 +94,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
                               setState(() {
                                 _selectedTags.remove(tag);
                                 context.read<DynamicFormBloc>().add(
-                                  UpdateFormField(
+                                  UpdateFormFieldEvent(
                                     componentId: widget.component.id,
                                     value: _selectedTags.toList(),
                                   ),
@@ -132,7 +132,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
                     _selectedTags.add(selection);
                     _errorText = null;
                     context.read<DynamicFormBloc>().add(
-                      UpdateFormField(
+                      UpdateFormFieldEvent(
                         componentId: widget.component.id,
                         value: _selectedTags.toList(),
                       ),
@@ -152,7 +152,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
                         _selectedTags.add(value.trim());
                         _errorText = null;
                         context.read<DynamicFormBloc>().add(
-                          UpdateFormField(
+                          UpdateFormFieldEvent(
                             componentId: widget.component.id,
                             value: _selectedTags.toList(),
                           ),
@@ -296,7 +296,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
                         setState(() {
                           _selectedTags.remove(tag);
                           context.read<DynamicFormBloc>().add(
-                            UpdateFormField(
+                            UpdateFormFieldEvent(
                               componentId: widget.component.id,
                               value: _selectedTags.toList(),
                             ),
