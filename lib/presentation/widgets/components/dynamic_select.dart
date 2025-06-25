@@ -247,8 +247,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
       listener: (context, state) {},
       builder: (context, state) {
         // Lấy component mới nhất từ state (theo id)
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -305,7 +304,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         String currentState = 'base';
         final List<String> currentValues = isMultiple
             ? selectedValues
-            : (selectedValue != null ? [selectedValue!] : []);
+            : (selectedValue != null ? [selectedValue] : []);
 
         final validationError = _validateSelect(component, currentValues);
 
@@ -390,12 +389,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
           }
           displayContent = Text(displayText, style: textStyle);
         } else {
-          if (selectedValue != null && selectedValue!.isNotEmpty) {
+          if (selectedValue != null && selectedValue.isNotEmpty) {
             final option = options.firstWhere(
               (opt) => opt['value'] == selectedValue,
               orElse: () => {'label': selectedValue},
             );
-            final displayText = option['label'] ?? selectedValue!;
+            final displayText = option['label'] ?? selectedValue;
             final avatarUrl = option['avatar']?.toString();
 
             if (avatarUrl != null) {
@@ -557,8 +556,7 @@ class MultiSelectDialogBloc extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == componentId,
                 orElse: () => DynamicFormModel(
@@ -576,8 +574,9 @@ class MultiSelectDialogBloc extends StatelessWidget {
                 config: {},
                 style: {},
               );
-        if (component.type == FormTypeEnum.unknown)
+        if (component.type == FormTypeEnum.unknown) {
           return const SizedBox.shrink();
+        }
         final value = component.config['value'];
         List<String> selectedValues = [];
         if (component.config['multiple'] == true) {
@@ -612,17 +611,19 @@ class MultiSelectDialogBloc extends StatelessWidget {
                       onChanged: (value) {
                         Navigator.of(context).pop();
                         Future.delayed(const Duration(milliseconds: 10), () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => MultiSelectDialogBloc(
-                              componentId: componentId,
-                              options: options,
-                              label: label,
-                              style: style,
-                              searchable: searchable,
-                              searchQuery: value,
-                            ),
-                          );
+                          if (context.mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => MultiSelectDialogBloc(
+                                componentId: componentId,
+                                options: options,
+                                label: label,
+                                style: style,
+                                searchable: searchable,
+                                searchQuery: value,
+                              ),
+                            );
+                          }
                         });
                       },
                     ),
@@ -748,8 +749,7 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.componentId,
                 orElse: () => DynamicFormModel(
@@ -767,8 +767,9 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
                 config: {},
                 style: {},
               );
-        if (component.type == FormTypeEnum.unknown)
+        if (component.type == FormTypeEnum.unknown) {
           return const SizedBox.shrink();
+        }
         final value = component.config['value'];
         String? selectedValue;
         if (value is List) {
@@ -835,7 +836,7 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
                           );
                         },
                         trailing: isSelected
-                            ? Icon(Icons.check, color: Colors.blue)
+                            ? const Icon(Icons.check, color: Colors.blue)
                             : null,
                       );
                     },

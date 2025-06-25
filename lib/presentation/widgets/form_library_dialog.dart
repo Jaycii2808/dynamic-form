@@ -219,21 +219,25 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                 );
                                 if (success) {
                                   setState(_loadTemplates);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Template "${template.name}" đã được xóa',
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Template "${template.name}" đã được xóa',
+                                        ),
+                                        backgroundColor: Colors.orange,
                                       ),
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
+                                    );
+                                  }
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Lỗi khi xóa template'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Lỗi khi xóa template'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
                                 }
                               }
                             }

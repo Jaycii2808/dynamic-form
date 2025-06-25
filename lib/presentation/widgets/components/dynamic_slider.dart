@@ -87,8 +87,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -97,8 +96,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
         _syncWithBloc(component);
       },
       builder: (context, state) {
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -149,7 +147,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
           thumbColor: StyleUtils.parseColor(style['thumbColor']),
           overlayColor: StyleUtils.parseColor(
             style['activeColor'],
-          ).withOpacity(0.2),
+          ).withValues(alpha: 0.2),
           trackHeight: 6.0,
         );
 
@@ -258,7 +256,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   padding: const EdgeInsets.only(top: 4.0, left: 4.0),
                   child: Text(
                     errorText,
-                    style: TextStyle(color: Colors.red, fontSize: 12),
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
             ],

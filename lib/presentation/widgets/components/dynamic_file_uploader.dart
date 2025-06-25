@@ -134,18 +134,20 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         _handleFiles(files, component);
       }
     } catch (e) {
-      context.read<DynamicFormBloc>().add(
-        UpdateFormField(
-          componentId: component.id,
-          value: {
-            'state': 'error',
-            'files': [],
-            'progress': 0,
-            'errorText': 'Error picking files',
-            'isProcessing': false,
-          },
-        ),
-      );
+      if (mounted) {
+        context.read<DynamicFormBloc>().add(
+          UpdateFormField(
+            componentId: widget.component.id,
+            value: {
+              'state': 'error',
+              'files': [],
+              'progress': 0,
+              'errorText': 'Error picking files',
+              'isProcessing': false,
+            },
+          ),
+        );
+      }
     }
   }
 
@@ -216,8 +218,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {},
       builder: (context, state) {
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -317,7 +318,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                               Text(snapshot.data ?? ''),
                         ),
                         trailing: IconButton(
-                          icon: Icon(Icons.close),
+                          icon: const Icon(Icons.close),
                           onPressed: () => _removeFile(
                             files.indexOf(f),
                             component,
@@ -351,7 +352,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                   const SizedBox(height: 16),
                   Text(
                     errorText ?? 'Error',
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
