@@ -448,7 +448,7 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.shade100.withOpacity(0.3),
+                    color: Colors.blue.shade100.withValues(alpha:0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
