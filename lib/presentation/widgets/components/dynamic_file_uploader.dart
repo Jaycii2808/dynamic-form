@@ -462,13 +462,15 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
               key: Key(component.id),
               margin: StyleUtils.parsePadding(style['margin']),
               child: DottedBorder(
-                color: StyleUtils.parseColor(style['borderColor']),
-                strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-                radius: Radius.circular(
-                  (style['borderRadius'] as num?)?.toDouble() ?? 0,
+                options: RoundedRectDottedBorderOptions(
+                  color: StyleUtils.parseColor(style['borderColor']),
+                  strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
+                  radius: Radius.circular(
+                    (style['borderRadius'] as num?)?.toDouble() ?? 0,
+                  ),
+                  dashPattern: const [6, 6],
+                  padding: const EdgeInsets.all(0),
                 ),
-                dashPattern: const [6, 6],
-                borderType: BorderType.RRect,
                 child: Container(
                   width: (style['width'] as num?)?.toDouble() ?? 300,
                   height: (style['height'] as num?)?.toDouble() ?? 200,
