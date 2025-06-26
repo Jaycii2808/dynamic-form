@@ -473,7 +473,8 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                   child: DottedBorder(
                     options: RoundedRectDottedBorderOptions(
                       color: StyleUtils.parseColor(style['borderColor']),
-                      strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
+                      strokeWidth:
+                          (style['borderWidth'] as num?)?.toDouble() ?? 1,
                       radius: Radius.circular(
                         (style['borderRadius'] as num?)?.toDouble() ?? 0,
                       ),
@@ -500,70 +501,70 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
               );
             },
           ),
-        // return DragTarget<List<XFile>>(
-        //   onWillAcceptWithDetails: (data) {
-        //     if (isProcessing) return false;
-        //     // Send event to BLoC to set isDragging=true
-        //     context.read<DynamicFormBloc>().add(
-        //       UpdateFormFieldEvent(
-        //         componentId: component.id,
-        //         value: {...value, 'isDragging': true},
-        //       ),
-        //     );
-        //     return true;
-        //   },
-        //   onAcceptWithDetails: (details) {
-        //     // Send event to BLoC to set isDragging=false
-        //     context.read<DynamicFormBloc>().add(
-        //       UpdateFormFieldEvent(
-        //         componentId: component.id,
-        //         value: {...value, 'isDragging': false},
-        //       ),
-        //     );
-        //     _handleFiles(details.data, component);
-        //   },
-        //   onLeave: (data) {
-        //     // Send event to BLoC to set isDragging=false
-        //     context.read<DynamicFormBloc>().add(
-        //       UpdateFormFieldEvent(
-        //         componentId: component.id,
-        //         value: {...value, 'isDragging': false},
-        //       ),
-        //     );
-        //   },
-        //   builder: (context, candidateData, rejectedData) {
-        //     return Container(
-        //       key: Key(component.id),
-        //       margin: StyleUtils.parsePadding(style['margin']),
-        //       child: DottedBorder(
-        //         options: RoundedRectDottedBorderOptions(
-        //           color: StyleUtils.parseColor(style['borderColor']),
-        //           strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-        //           radius: Radius.circular(
-        //             (style['borderRadius'] as num?)?.toDouble() ?? 0,
-        //           ),
-        //           dashPattern: const [6, 6],
-        //           padding: const EdgeInsets.all(0),
-        //         ),
-        //         child: Container(
-        //           width: (style['width'] as num?)?.toDouble() ?? 300,
-        //           height: (style['height'] as num?)?.toDouble() ?? 200,
-        //           padding: const EdgeInsets.symmetric(
-        //             horizontal: 16.0,
-        //             vertical: 8.0,
-        //           ),
-        //           decoration: BoxDecoration(
-        //             color: StyleUtils.parseColor(style['backgroundColor']),
-        //             borderRadius: BorderRadius.circular(
-        //               (style['borderRadius'] as num?)?.toDouble() ?? 0,
-        //             ),
-        //           ),
-        //           child: child,
-        //         ),
-        //       ),
-        //     );
-        //   },
-        // );
+          // return DragTarget<List<XFile>>(
+          //   onWillAcceptWithDetails: (data) {
+          //     if (isProcessing) return false;
+          //     // Send event to BLoC to set isDragging=true
+          //     context.read<DynamicFormBloc>().add(
+          //       UpdateFormFieldEvent(
+          //         componentId: component.id,
+          //         value: {...value, 'isDragging': true},
+          //       ),
+          //     );
+          //     return true;
+          //   },
+          //   onAcceptWithDetails: (details) {
+          //     // Send event to BLoC to set isDragging=false
+          //     context.read<DynamicFormBloc>().add(
+          //       UpdateFormFieldEvent(
+          //         componentId: component.id,
+          //         value: {...value, 'isDragging': false},
+          //       ),
+          //     );
+          //     _handleFiles(details.data, component);
+          //   },
+          //   onLeave: (data) {
+          //     // Send event to BLoC to set isDragging=false
+          //     context.read<DynamicFormBloc>().add(
+          //       UpdateFormFieldEvent(
+          //         componentId: component.id,
+          //         value: {...value, 'isDragging': false},
+          //       ),
+          //     );
+          //   },
+          //   builder: (context, candidateData, rejectedData) {
+          //     return Container(
+          //       key: Key(component.id),
+          //       margin: StyleUtils.parsePadding(style['margin']),
+          //       child: DottedBorder(
+          //         options: RoundedRectDottedBorderOptions(
+          //           color: StyleUtils.parseColor(style['borderColor']),
+          //           strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
+          //           radius: Radius.circular(
+          //             (style['borderRadius'] as num?)?.toDouble() ?? 0,
+          //           ),
+          //           dashPattern: const [6, 6],
+          //           padding: const EdgeInsets.all(0),
+          //         ),
+          //         child: Container(
+          //           width: (style['width'] as num?)?.toDouble() ?? 300,
+          //           height: (style['height'] as num?)?.toDouble() ?? 200,
+          //           padding: const EdgeInsets.symmetric(
+          //             horizontal: 16.0,
+          //             vertical: 8.0,
+          //           ),
+          //           decoration: BoxDecoration(
+          //             color: StyleUtils.parseColor(style['backgroundColor']),
+          //             borderRadius: BorderRadius.circular(
+          //               (style['borderRadius'] as num?)?.toDouble() ?? 0,
+          //             ),
+          //           ),
+          //           child: child,
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // );
         );
       },
     );

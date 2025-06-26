@@ -188,8 +188,9 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   ),
                 ),
               ],
-            )
-        ));
+            ),
+          ),
+        );
       },
     );
   }

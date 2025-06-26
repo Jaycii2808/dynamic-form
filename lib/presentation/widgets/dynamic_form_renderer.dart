@@ -31,7 +31,6 @@ class FormContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('DEBUG: Form tap detected, unfocusing...');
         FocusScope.of(context).unfocus();
       },
       behavior: HitTestBehavior.opaque,
@@ -49,7 +48,6 @@ class FormWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('DEBUG: Form tap detected, unfocusing...');
         FocusScope.of(context).unfocus();
       },
       behavior: HitTestBehavior.opaque,
@@ -67,14 +65,12 @@ class UnfocusOnTapOutside extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('DEBUG: Tap detected, unfocusing...');
         FocusScope.of(context).unfocus();
       },
       behavior: HitTestBehavior.opaque,
       child: Focus(
         onFocusChange: (hasFocus) {
           if (!hasFocus) {
-            print('DEBUG: Focus lost, unfocusing...');
             FocusScope.of(context).unfocus();
           }
         },
@@ -103,7 +99,6 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
-    print('DEBUG: DynamicFormRenderer build called');
     return buildForm();
   }
 
