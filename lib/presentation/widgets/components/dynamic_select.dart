@@ -20,7 +20,6 @@ class DynamicSelect extends StatefulWidget {
 
 class _DynamicSelectState extends State<DynamicSelect> {
   bool _isDropdownOpen = false;
-  String? _errorText;
 
   final GlobalKey _selectKey = GlobalKey();
   OverlayEntry? _overlayEntry;
@@ -366,8 +365,6 @@ class _DynamicSelectState extends State<DynamicSelect> {
         }
 
         // Helper text
-        final helperText = style['helperText']?.toString();
-        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
         // Get display text
         final textStyle = TextStyle(
@@ -424,8 +421,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
           }
         }
 
-        final hasLabel =
-            component.config['label'] != null &&
+        component.config['label'] != null &&
             component.config['label'].isNotEmpty;
 
         return Focus(

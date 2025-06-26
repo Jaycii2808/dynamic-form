@@ -268,7 +268,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         final isSearchable = config['searchable'] as bool? ?? false;
         final placeholder = config['placeholder'] as String? ?? 'Search';
         final value = config['value']?.toString();
-        final errorText = config['errorText'] as String?;
         final currentState = config['currentState'] ?? 'base';
 
         // Always apply variant withIcon if icon exists
@@ -366,9 +365,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             ],
           );
         }
-
-        final helperText = errorText ?? style['helperText'] as String?;
-        final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
         return Focus(
           focusNode: _focusNode,

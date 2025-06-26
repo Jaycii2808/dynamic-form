@@ -45,6 +45,31 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     }
   }
 
+  String? _validate(String value) {
+    final inputTypes = widget.component.inputTypes;
+    final validation =
+        inputTypes?['text']?['validation'] as Map<String, dynamic>?;
+    if (validation == null) return null;
+    // Min length
+    if (validation['min_length'] != null &&
+        value.length < validation['min_length']) {
+      return validation['error_message'] ?? 'Quá ngắn';
+    }
+    // Max length
+    if (validation['max_length'] != null &&
+        value.length > validation['max_length']) {
+      return validation['error_message'] ?? 'Quá dài';
+    }
+    // Regex
+    if (validation['regex'] != null && value.isNotEmpty) {
+      final regex = RegExp(validation['regex']);
+      if (!regex.hasMatch(value)) {
+        return validation['error_message'] ?? 'Sai định dạng';
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
@@ -131,25 +156,24 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                       component.inputTypes?.containsKey('password') ?? false,
                   keyboardType: _getKeyboardType(component),
                   onChanged: (value) {
+                    final error = _validate(value);
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: value,
+                        value: {'value': value, 'errorText': error},
                       ),
                     );
                     debugPrint(
-                      '[TextField] ${component.id} value updated: $value',
+                      '[TextField] ${component.id} value updated: $value, error: $error',
                     );
                   },
                   onSubmitted: (value) {
+                    final error = _validate(value);
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: value,
+                        value: {'value': value, 'errorText': error},
                       ),
-                    );
-                    debugPrint(
-                      '[TextField] ${component.id} value updated: $value',
                     );
                   },
                   decoration: InputDecoration(
