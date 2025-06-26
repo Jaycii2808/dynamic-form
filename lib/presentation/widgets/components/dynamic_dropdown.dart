@@ -120,7 +120,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               ),
                               child: TextField(
                                 controller: searchController,
-                                focusNode: _focusNode,
                                 decoration: InputDecoration(
                                   hintText: component.config['placeholder'],
                                   isDense: true,
@@ -371,7 +370,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           child: MouseRegion(
             child: InkWell(
               key: _dropdownKey,
-              focusNode: _focusNode,
               onTap: () {
                 FocusScope.of(context).requestFocus(_focusNode);
                 final renderBox =
