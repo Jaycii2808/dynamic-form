@@ -264,6 +264,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             controller: _controller,
             focusNode: _focusNode,
             readOnly: true,
+            onTapOutside: (pointer) {
+              _focusNode.unfocus();
+            },
             decoration: InputDecoration(
               isDense: true,
               //hintText: _selectedFormat,

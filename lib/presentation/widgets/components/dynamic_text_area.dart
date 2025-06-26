@@ -177,6 +177,9 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       enabled: widget.component.config['editable'] ?? true,
       obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
       keyboardType: _getKeyboardType(widget.component),
+      onTapOutside: (pointer) {
+        _focusNode.unfocus();
+      },
       maxLines: (_resolvedStyle['maxLines'] as num?)?.toInt() ?? 10,
       minLines: (_resolvedStyle['minLines'] as num?)?.toInt() ?? 6,
       decoration: InputDecoration(
