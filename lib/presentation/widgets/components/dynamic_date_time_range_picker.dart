@@ -193,6 +193,9 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     return TextField(
       controller: controller,
       focusNode: focusNode,
+      onTapOutside: (pointer) {
+        _focusNode.unfocus();
+      },
       readOnly: true,
       decoration: InputDecoration(
         isDense: true,
