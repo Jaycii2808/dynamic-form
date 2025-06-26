@@ -16,6 +16,10 @@ class DynamicSwitch extends StatefulWidget {
 
 class _DynamicSwitchState extends State<DynamicSwitch> {
   @override
+  void dispose() {
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     final style = Map<String, dynamic>.from(widget.component.style);
     final config = widget.component.config;

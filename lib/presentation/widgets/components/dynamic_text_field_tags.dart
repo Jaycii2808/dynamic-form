@@ -36,7 +36,10 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
     }
     return style;
   }
-
+  @override
+  void dispose() {
+    super.dispose();
+  }
   String _determineState() {
     if (_selectedTags.isNotEmpty) return 'success';
     if (_errorText != null) return 'error';

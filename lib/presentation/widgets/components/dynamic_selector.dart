@@ -17,6 +17,10 @@ class DynamicSelector extends StatefulWidget {
 
 class _DynamicSelectorState extends State<DynamicSelector> {
   @override
+  void dispose() {
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     final style = Map<String, dynamic>.from(widget.component.style);
     final config = widget.component.config;
@@ -49,7 +53,7 @@ class _DynamicSelectorState extends State<DynamicSelector> {
     return _buildBody(style, config, selected, context, hasLabel);
   }
 
-  Container _buildBody(
+  Widget _buildBody(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
     selected,
