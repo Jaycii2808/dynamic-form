@@ -10,12 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   final RemoteConfigService _remoteConfigService;
   final FormTemplateService _formTemplateService;
-  DynamicFormBloc({required RemoteConfigService remoteConfigService, required FormTemplateService formTemplateService})
-    : _remoteConfigService = remoteConfigService,
-        _formTemplateService=formTemplateService,
+  DynamicFormBloc({
+    required RemoteConfigService remoteConfigService,
+    required FormTemplateService formTemplateService,
+  }) : _remoteConfigService = remoteConfigService,
+       _formTemplateService = formTemplateService,
 
-
-      super(const DynamicFormInitial()) {
+       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
     on<UpdateFormFieldEvent>(_onUpdateFormField);
     on<RefreshDynamicFormEvent>(_onRefreshDynamicForm);
@@ -71,7 +72,28 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       final updatedComponents = state.page!.components.map((component) {
         if (component.id == event.componentId) {
           final updatedConfig = Map<String, dynamic>.from(component.config);
-          updatedConfig['value'] = event.value;
+
+          if (event.value is Map && (event.value as Map).containsKey('value')) {
+            final mapValue = event.value as Map;
+            updatedConfig['value'] = mapValue['value'];
+            updatedConfig['errorText'] = mapValue['errorText'];
+            if (mapValue['errorText'] != null &&
+                mapValue['errorText'].toString().isNotEmpty) {
+              updatedConfig['currentState'] = 'error';
+            } else if (mapValue['value'] != null &&
+                mapValue['value'].toString().isNotEmpty) {
+              updatedConfig['currentState'] = 'success';
+            } else {
+              updatedConfig['currentState'] = 'base';
+            }
+          } else {
+            updatedConfig['value'] = event.value;
+            updatedConfig['currentState'] =
+                (event.value != null && event.value.toString().isNotEmpty)
+                ? 'success'
+                : 'base';
+          }
+
           return DynamicFormModel(
             id: component.id,
             type: component.type,
