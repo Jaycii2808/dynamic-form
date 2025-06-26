@@ -56,9 +56,9 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
   void initState() {
     super.initState();
 
-    context
-        .read<DynamicFormBloc>()
-        .add(LoadDynamicFormPageEvent(configKey: widget.configKey));
+    context.read<DynamicFormBloc>().add(
+      LoadDynamicFormPageEvent(configKey: widget.configKey),
+    );
   }
 
   @override
@@ -67,10 +67,9 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
       listener: (context, state) {
         if (state is DynamicFormError) {
           debugPrint('Error occurred: ${state.errorMessage}');
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(
-              content: Text(state.errorMessage ?? 'An error occurred')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage ?? 'An error occurred')),
+          );
         }
       },
       builder: (context, state) {
@@ -99,7 +98,10 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
             ],
           ),
           child: AppBar(
@@ -117,8 +119,8 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                 icon: const Icon(Icons.refresh),
                 onPressed: () async {
                   context.read<DynamicFormBloc>().add(
-                        RefreshDynamicFormEvent(configKey: widget.configKey),
-                      );
+                    RefreshDynamicFormEvent(configKey: widget.configKey),
+                  );
                 },
               ),
               IconButton(
@@ -129,91 +131,100 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
           ),
         ),
       ),
-      body: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              color: Colors.grey[900],
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: [
-                          for (var component in page.components)
-                            DynamicFormRenderer(component: component),
-                          const SizedBox(height: 32),
-                        ],
+      body: FormWrapper(
+        child: Container(
+          color: Colors.black,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                color: Colors.grey[900],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            for (var component in page.components)
+                              DynamicFormRenderer(component: component),
+                            const SizedBox(height: 32),
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.save),
-                              label: const Text(
-                                'Lưu form template',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              onPressed: () => _showSaveTemplateDialog(page),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.save),
+                                label: const Text(
+                                  'Lưu form template',
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                elevation: 4,
-                                shadowColor: Colors.black45,
-                                textStyle: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                onPressed: () => _showSaveTemplateDialog(page),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                  elevation: 4,
+                                  shadowColor: Colors.black45,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.library_books),
-                              label: const Text('Form Library',
-                                  overflow: TextOverflow.ellipsis),
-                              onPressed: _showFormLibrary,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.library_books),
+                                label: const Text(
+                                  'Form Library',
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                elevation: 4,
-                                shadowColor: Colors.black45,
-                                textStyle: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                onPressed: _showFormLibrary,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                  elevation: 4,
+                                  shadowColor: Colors.black45,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -255,20 +266,23 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Hủy')),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
             ElevatedButton(
               onPressed: () {
                 final name = nameController.text.trim();
                 if (name.isEmpty) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(
-                      content: Text('Vui lòng nhập tên template')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Vui lòng nhập tên template')),
+                  );
                   return;
                 }
                 _saveFormTemplate(
-                    page, name, descriptionController.text.trim());
+                  page,
+                  name,
+                  descriptionController.text.trim(),
+                );
                 Navigator.of(context).pop();
               },
               child: const Text('Lưu'),
@@ -280,7 +294,10 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
   }
 
   void _saveFormTemplate(
-      DynamicFormPageModel page, String name, String description) {
+    DynamicFormPageModel page,
+    String name,
+    String description,
+  ) {
     final formTemplateService = FormTemplateService();
 
     final success = formTemplateService.saveFormTemplate(
@@ -291,8 +308,10 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
       metadata: {
         'componentsCount': page.components.length,
         'hasValidation': page.components.any((c) => c.validation != null),
-        'componentTypes':
-            page.components.map((c) => c.type.toJson()).toSet().toList(),
+        'componentTypes': page.components
+            .map((c) => c.type.toJson())
+            .toSet()
+            .toList(),
         'formLayoutFormat': true,
       },
     );
@@ -302,15 +321,18 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
         SnackBar(
           content: Text('Template "$name" đã được lưu thành công!'),
           backgroundColor: Colors.green,
-          action:
-              SnackBarAction(label: 'Xem', onPressed: () => _showFormLibrary()),
+          action: SnackBarAction(
+            label: 'Xem',
+            onPressed: () => _showFormLibrary(),
+          ),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Lỗi khi lưu template!'),
-            backgroundColor: Colors.red),
+          content: Text('Lỗi khi lưu template!'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -367,8 +389,10 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                   const SizedBox(height: 8),
                   Text('Updated: ${_formatDate(template.updatedAt)}'),
                   const SizedBox(height: 16),
-                  const Text('Components:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Components:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   ...template.formData.components.map(
                     (component) => Padding(
@@ -384,8 +408,9 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Đóng')),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Đóng'),
+            ),
           ],
         );
       },
@@ -423,8 +448,9 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                     height: 40,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.blue.shade600,
+                      ),
                       backgroundColor: Colors.blue.shade50,
                     ),
                   ),
@@ -460,8 +486,11 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.info_outline,
-                      size: 16, color: Colors.blue.shade600),
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.blue.shade600,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Fetching from Remote Config',
@@ -493,8 +522,10 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
           children: [
             const Icon(Icons.dashboard_outlined, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text('No UI Components Found',
-                style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              'No UI Components Found',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 8),
             Text(
               'Add JSON configuration to Firebase Remote Config\nwith key "${widget.configKey}" to render UI components',
@@ -505,18 +536,22 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
             GestureDetector(
               onTap: () {
                 context.read<DynamicFormBloc>().add(
-                      LoadDynamicFormPageEvent(configKey: widget.configKey),
-                    );
+                  LoadDynamicFormPageEvent(configKey: widget.configKey),
+                );
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('Refresh',
-                    style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Refresh',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -549,18 +584,22 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
             GestureDetector(
               onTap: () {
                 context.read<DynamicFormBloc>().add(
-                      LoadDynamicFormPageEvent(configKey: widget.configKey),
-                    );
+                  LoadDynamicFormPageEvent(configKey: widget.configKey),
+                );
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child:
-                    const Text('Retry', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],

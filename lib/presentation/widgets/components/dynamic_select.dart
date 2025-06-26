@@ -24,6 +24,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
   final GlobalKey _selectKey = GlobalKey();
   OverlayEntry? _overlayEntry;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
   @override
   void dispose() {
     _closeDropdown();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -426,110 +428,66 @@ class _DynamicSelectState extends State<DynamicSelect> {
             component.config['label'] != null &&
             component.config['label'].isNotEmpty;
 
-        return Container(
-          key: Key(component.id),
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-          margin: StyleUtils.parsePadding(style['margin']),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (hasLabel)
-                Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 7),
-                  child: Text(
-                    component.config['label'],
-                    style: TextStyle(
-                      fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                      color: StyleUtils.parseColor(style['labelColor']),
-                      fontWeight: FontWeight.bold,
-                    ),
+        return Focus(
+          focusNode: _focusNode,
+          child: InkWell(
+            key: _selectKey,
+            onTap: () {
+              FocusScope.of(context).requestFocus(_focusNode);
+              if (isMultiple) {
+                _showMultiSelectDialog(
+                  context,
+                  component,
+                  options,
+                  isMultiple,
+                  searchable,
+                );
+              } else if (searchable) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => CitySearchDialogBloc(
+                    componentId: component.id,
+                    options: options,
+                    label: component.config['label'] ?? 'Chọn tùy chọn',
+                    style: style,
+                    initialSearchQuery: '',
                   ),
+                );
+              } else {
+                _toggleDropdown();
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: StyleUtils.parseColor(style['borderColor']),
                 ),
-              InkWell(
-                key: _selectKey,
-                onTap: () {
-                  if (isMultiple) {
-                    _showMultiSelectDialog(
-                      context,
-                      component,
-                      options,
-                      isMultiple,
-                      searchable,
-                    );
-                  } else if (searchable) {
-                    // Single-select + searchable: city dialog
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => CitySearchDialogBloc(
-                        componentId: component.id,
-                        options: options,
-                        label: component.config['label'] ?? 'Chọn tùy chọn',
-                        style: style,
-                        initialSearchQuery: '',
-                      ),
-                    );
-                  } else {
-                    _toggleDropdown();
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                    ),
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
-                    color: StyleUtils.parseColor(style['backgroundColor']),
-                  ),
-                  child: Row(
-                    children: [
-                      if (prefixIcon != null) ...[
-                        prefixIcon,
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(child: displayContent),
-                      if (suffixIcon != null) ...[
-                        const SizedBox(width: 8),
-                        suffixIcon,
-                      ],
-                      Icon(
-                        _isDropdownOpen
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: StyleUtils.parseColor(style['color']),
-                      ),
-                    ],
-                  ),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
                 ),
+                color: StyleUtils.parseColor(style['backgroundColor']),
               ),
-              if (_errorText != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 12),
-                  child: Text(
-                    _errorText!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+              child: Row(
+                children: [
+                  if (prefixIcon != null) ...[
+                    prefixIcon,
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(child: displayContent),
+                  if (suffixIcon != null) ...[
+                    const SizedBox(width: 8),
+                    suffixIcon,
+                  ],
+                  Icon(
+                    _isDropdownOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: StyleUtils.parseColor(style['color']),
                   ),
-                ),
-              if (helperText != null && _errorText == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 12),
-                  child: Text(
-                    helperText,
-                    style: TextStyle(
-                      color: helperTextColor,
-                      fontSize: 12,
-                      fontStyle: style['fontStyle'] == 'italic'
-                          ? FontStyle.italic
-                          : FontStyle.normal,
-                    ),
-                  ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         );
       },

@@ -370,58 +370,48 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         final helperText = errorText ?? style['helperText'] as String?;
         final helperTextColor = StyleUtils.parseColor(style['helperTextColor']);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            MouseRegion(
-              child: InkWell(
-                key: _dropdownKey,
-                focusNode: _focusNode,
-                onTap: () {
-                  final renderBox =
-                      _dropdownKey.currentContext!.findRenderObject()
-                          as RenderBox;
-                  final size = renderBox.size;
-                  final offset = renderBox.localToGlobal(Offset.zero);
-
-                  _showDropdownPanel(
-                    context,
-                    component,
-                    Rect.fromLTWH(
-                      offset.dx,
-                      offset.dy + size.height,
-                      size.width,
-                      0,
-                    ),
-                    value,
-                  );
-                },
-                child: Container(
-                  padding: StyleUtils.parsePadding(style['padding']),
-                  margin: StyleUtils.parsePadding(style['margin']),
-                  decoration: BoxDecoration(
-                    color: StyleUtils.parseColor(style['backgroundColor']),
-                    border: Border.all(
-                      color: StyleUtils.parseColor(style['borderColor']),
-                      width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
-                    ),
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
-                    ),
+        return Focus(
+          focusNode: _focusNode,
+          child: MouseRegion(
+            child: InkWell(
+              key: _dropdownKey,
+              focusNode: _focusNode,
+              onTap: () {
+                FocusScope.of(context).requestFocus(_focusNode);
+                final renderBox =
+                    _dropdownKey.currentContext!.findRenderObject()
+                        as RenderBox;
+                final size = renderBox.size;
+                final offset = renderBox.localToGlobal(Offset.zero);
+                _showDropdownPanel(
+                  context,
+                  component,
+                  Rect.fromLTWH(
+                    offset.dx,
+                    offset.dy + size.height,
+                    size.width,
+                    0,
                   ),
-                  child: triggerContent,
+                  value,
+                );
+              },
+              child: Container(
+                padding: StyleUtils.parsePadding(style['padding']),
+                margin: StyleUtils.parsePadding(style['margin']),
+                decoration: BoxDecoration(
+                  color: StyleUtils.parseColor(style['backgroundColor']),
+                  border: Border.all(
+                    color: StyleUtils.parseColor(style['borderColor']),
+                    width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
+                  ),
+                  borderRadius: StyleUtils.parseBorderRadius(
+                    style['borderRadius'],
+                  ),
                 ),
+                child: triggerContent,
               ),
             ),
-            if (helperText != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4, left: 16),
-                child: Text(
-                  helperText,
-                  style: TextStyle(color: helperTextColor, fontSize: 12),
-                ),
-              ),
-          ],
+          ),
         );
       },
     );

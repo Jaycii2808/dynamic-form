@@ -18,6 +18,8 @@ class DynamicCheckbox extends StatefulWidget {
 }
 
 class _DynamicCheckboxState extends State<DynamicCheckbox> {
+  final FocusNode _focusNode = FocusNode();
+
   // Common utility function for mapping icon names to IconData
   IconData? _mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
@@ -29,8 +31,7 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
       listener: (context, state) {},
       builder: (context, state) {
         // Lấy component mới nhất từ state (theo id)
-        final component =
-            (state.page?.components != null)
+        final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
@@ -126,12 +127,12 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
         }
 
         void handleTap() {
+          FocusScope.of(context).requestFocus(_focusNode);
           if (!isEditable) return;
           debugPrint(
             '[Checkbox][tap] id=${component.id} value_before=$isSelected',
           );
           final newValue = !isSelected;
-          // Không update trực tiếp component.config nữa
           context.read<DynamicFormBloc>().add(
             UpdateFormFieldEvent(componentId: component.id, value: newValue),
           );
@@ -141,30 +142,39 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
           debugPrint('[Checkbox] Save value: ${component.id} = $newValue');
         }
 
-        return GestureDetector(
-          onTap: handleTap,
-          child: Container(
-            margin: StyleUtils.parsePadding(style['margin']),
-            padding: StyleUtils.parsePadding(style['padding']),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                toggleControl,
-                const SizedBox(width: 12),
-                if (leadingIconData != null) ...[
-                  Icon(
-                    leadingIconData,
-                    size: 20,
-                    color: StyleUtils.parseColor(style['iconColor']),
-                  ),
-                  const SizedBox(width: 8),
+        return Focus(
+          focusNode: _focusNode,
+          child: GestureDetector(
+            onTap: handleTap,
+            child: Container(
+              margin: StyleUtils.parsePadding(style['margin']),
+              padding: StyleUtils.parsePadding(style['padding']),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  toggleControl,
+                  const SizedBox(width: 12),
+                  if (leadingIconData != null) ...[
+                    Icon(
+                      leadingIconData,
+                      size: 20,
+                      color: StyleUtils.parseColor(style['iconColor']),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (labelAndHint != null) labelAndHint,
                 ],
-                if (labelAndHint != null) labelAndHint,
-              ],
+              ),
             ),
           ),
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 }

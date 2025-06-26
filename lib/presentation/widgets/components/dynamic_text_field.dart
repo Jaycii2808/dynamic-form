@@ -103,86 +103,92 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
           key: Key(component.id),
           padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
           margin: StyleUtils.parsePadding(style['margin']),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (component.config['label'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 7),
-                  child: Text(
-                    component.config['label'],
-                    style: TextStyle(
-                      fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                      color: StyleUtils.parseColor(style['labelColor']),
-                      fontWeight: FontWeight.bold,
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(_focusNode);
+            },
+            behavior: HitTestBehavior.translucent,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (component.config['label'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 2, bottom: 7),
+                    child: Text(
+                      component.config['label'],
+                      style: TextStyle(
+                        fontSize: style['labelTextSize']?.toDouble() ?? 16,
+                        color: StyleUtils.parseColor(style['labelColor']),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: component.config['editable'] ?? true,
-                obscureText:
-                    component.inputTypes?.containsKey('password') ?? false,
-                keyboardType: _getKeyboardType(component),
-                onChanged: (value) {
-                  context.read<DynamicFormBloc>().add(
-                    UpdateFormFieldEvent(
-                      componentId: component.id,
-                      value: value,
+                TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  enabled: component.config['editable'] ?? true,
+                  obscureText:
+                      component.inputTypes?.containsKey('password') ?? false,
+                  keyboardType: _getKeyboardType(component),
+                  onChanged: (value) {
+                    context.read<DynamicFormBloc>().add(
+                      UpdateFormFieldEvent(
+                        componentId: component.id,
+                        value: value,
+                      ),
+                    );
+                    debugPrint(
+                      '[TextField] ${component.id} value updated: $value',
+                    );
+                  },
+                  onSubmitted: (value) {
+                    context.read<DynamicFormBloc>().add(
+                      UpdateFormFieldEvent(
+                        componentId: component.id,
+                        value: value,
+                      ),
+                    );
+                    debugPrint(
+                      '[TextField] ${component.id} value updated: $value',
+                    );
+                  },
+                  decoration: InputDecoration(
+                    isDense: true,
+                    prefixIcon: prefixIcon,
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
                     ),
-                  );
-                  debugPrint(
-                    '[TextField] ${component.id} value updated: $value',
-                  );
-                },
-                onSubmitted: (value) {
-                  context.read<DynamicFormBloc>().add(
-                    UpdateFormFieldEvent(
-                      componentId: component.id,
-                      value: value,
+                    hintText: component.config['placeholder'] ?? '',
+                    border: _buildBorder(style, currentState),
+                    enabledBorder: _buildBorder(style, 'enabled'),
+                    focusedBorder: _buildBorder(style, 'focused'),
+                    errorBorder: _buildBorder(style, 'error'),
+                    errorText: errorText,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 12,
                     ),
-                  );
-                  debugPrint(
-                    '[TextField] ${component.id} value updated: $value',
-                  );
-                },
-                decoration: InputDecoration(
-                  isDense: true,
-                  prefixIcon: prefixIcon,
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
+                    filled: style['backgroundColor'] != null,
+                    fillColor: StyleUtils.parseColor(style['backgroundColor']),
+                    helperText: helperText,
+                    helperStyle: TextStyle(
+                      color: helperTextColor,
+                      fontStyle: style['fontStyle'] == 'italic'
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                    ),
                   ),
-                  hintText: component.config['placeholder'] ?? '',
-                  border: _buildBorder(style, currentState),
-                  enabledBorder: _buildBorder(style, 'enabled'),
-                  focusedBorder: _buildBorder(style, 'focused'),
-                  errorBorder: _buildBorder(style, 'error'),
-                  errorText: errorText,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 12,
-                  ),
-                  filled: style['backgroundColor'] != null,
-                  fillColor: StyleUtils.parseColor(style['backgroundColor']),
-                  helperText: helperText,
-                  helperStyle: TextStyle(
-                    color: helperTextColor,
+                  style: TextStyle(
+                    fontSize: style['fontSize']?.toDouble() ?? 16,
+                    color: StyleUtils.parseColor(style['color']),
                     fontStyle: style['fontStyle'] == 'italic'
                         ? FontStyle.italic
                         : FontStyle.normal,
                   ),
                 ),
-                style: TextStyle(
-                  fontSize: style['fontSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['color']),
-                  fontStyle: style['fontStyle'] == 'italic'
-                      ? FontStyle.italic
-                      : FontStyle.normal,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

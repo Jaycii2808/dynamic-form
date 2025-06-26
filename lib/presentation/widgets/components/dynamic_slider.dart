@@ -19,6 +19,7 @@ class DynamicSlider extends StatefulWidget {
 class _DynamicSliderState extends State<DynamicSlider> {
   double? _sliderValue;
   RangeValues? _sliderRangeValues;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -30,6 +31,12 @@ class _DynamicSliderState extends State<DynamicSlider> {
   void didUpdateWidget(covariant DynamicSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     _initLocalState(widget.component);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   void _initLocalState(DynamicFormModel component) {
@@ -207,7 +214,10 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   },
                   onChangeEnd: (value) {
                     context.read<DynamicFormBloc>().add(
-                      UpdateFormFieldEvent(componentId: component.id, value: value),
+                      UpdateFormFieldEvent(
+                        componentId: component.id,
+                        value: value,
+                      ),
                     );
                   },
                 ),
@@ -225,41 +235,49 @@ class _DynamicSliderState extends State<DynamicSlider> {
           }
         }
 
-        return Container(
-          key: Key(component.id),
-          margin: StyleUtils.parsePadding(style['margin']),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        return Focus(
+          focusNode: _focusNode,
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(_focusNode);
+            },
+            child: Container(
+              key: Key(component.id),
+              margin: StyleUtils.parsePadding(style['margin']),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (iconWidget != null) ...[
-                    iconWidget,
-                    const SizedBox(width: 8),
-                  ],
-                  Expanded(child: sliderWidget),
+                  Row(
+                    children: [
+                      if (iconWidget != null) ...[
+                        iconWidget,
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(child: sliderWidget),
+                    ],
+                  ),
+                  if (hint != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                      child: Text(
+                        hint,
+                        style: TextStyle(
+                          color: StyleUtils.parseColor(style['hintColor']),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  if (errorText != null && errorText.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                      child: Text(
+                        errorText,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
                 ],
               ),
-              if (hint != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-                  child: Text(
-                    hint,
-                    style: TextStyle(
-                      color: StyleUtils.parseColor(style['hintColor']),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              if (errorText != null && errorText.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                  child: Text(
-                    errorText,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-            ],
+            ),
           ),
         );
       },

@@ -22,6 +22,68 @@ IconData? mapIconNameToIconData(String name) {
   return IconTypeEnum.fromString(name).toIconData();
 }
 
+class FormContainer extends StatelessWidget {
+  final List<Widget> children;
+
+  const FormContainer({super.key, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        print('DEBUG: Form tap detected, unfocusing...');
+        FocusScope.of(context).unfocus();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: FocusScope(autofocus: false, child: Column(children: children)),
+    );
+  }
+}
+
+class FormWrapper extends StatelessWidget {
+  final Widget child;
+
+  const FormWrapper({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        print('DEBUG: Form tap detected, unfocusing...');
+        FocusScope.of(context).unfocus();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: FocusScope(autofocus: false, child: child),
+    );
+  }
+}
+
+class UnfocusOnTapOutside extends StatelessWidget {
+  final Widget child;
+
+  const UnfocusOnTapOutside({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        print('DEBUG: Tap detected, unfocusing...');
+        FocusScope.of(context).unfocus();
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            print('DEBUG: Focus lost, unfocusing...');
+            FocusScope.of(context).unfocus();
+          }
+        },
+        child: child,
+      ),
+    );
+  }
+}
+
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
 
@@ -41,6 +103,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   @override
   Widget build(BuildContext context) {
+    print('DEBUG: DynamicFormRenderer build called');
     return buildForm();
   }
 
@@ -74,7 +137,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-      return DynamicButton(component: component);
+        return DynamicButton(component: component);
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }

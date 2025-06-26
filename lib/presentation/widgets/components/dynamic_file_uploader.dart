@@ -24,6 +24,7 @@ class DynamicFileUploader extends StatefulWidget {
 class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   bool _isMultipleFiles = false;
   Timer? _timer;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
   @override
   void dispose() {
     _timer?.cancel();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -426,67 +428,77 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             );
         }
 
-        return DragTarget<List<XFile>>(
-          onWillAcceptWithDetails: (data) {
-            if (isProcessing) return false;
-            // Send event to BLoC to set isDragging=true
-            context.read<DynamicFormBloc>().add(
-              UpdateFormFieldEvent(
-                componentId: component.id,
-                value: {...value, 'isDragging': true},
-              ),
-            );
-            return true;
-          },
-          onAcceptWithDetails: (details) {
-            // Send event to BLoC to set isDragging=false
-            context.read<DynamicFormBloc>().add(
-              UpdateFormFieldEvent(
-                componentId: component.id,
-                value: {...value, 'isDragging': false},
-              ),
-            );
-            _handleFiles(details.data, component);
-          },
-          onLeave: (data) {
-            // Send event to BLoC to set isDragging=false
-            context.read<DynamicFormBloc>().add(
-              UpdateFormFieldEvent(
-                componentId: component.id,
-                value: {...value, 'isDragging': false},
-              ),
-            );
-          },
-          builder: (context, candidateData, rejectedData) {
-            return Container(
-              key: Key(component.id),
-              margin: StyleUtils.parsePadding(style['margin']),
-              child: DottedBorder(
-                color: StyleUtils.parseColor(style['borderColor']),
-                strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-                radius: Radius.circular(
-                  (style['borderRadius'] as num?)?.toDouble() ?? 0,
+        return Focus(
+          focusNode: _focusNode,
+          child: DragTarget<List<XFile>>(
+            onWillAcceptWithDetails: (data) {
+              if (isProcessing) return false;
+              FocusScope.of(context).requestFocus(_focusNode);
+              // Send event to BLoC to set isDragging=true
+              context.read<DynamicFormBloc>().add(
+                UpdateFormFieldEvent(
+                  componentId: component.id,
+                  value: {...value, 'isDragging': true},
                 ),
-                dashPattern: const [6, 6],
-                borderType: BorderType.RRect,
+              );
+              return true;
+            },
+            onAcceptWithDetails: (details) {
+              // Send event to BLoC to set isDragging=false
+              context.read<DynamicFormBloc>().add(
+                UpdateFormFieldEvent(
+                  componentId: component.id,
+                  value: {...value, 'isDragging': false},
+                ),
+              );
+              _handleFiles(details.data, component);
+            },
+            onLeave: (data) {
+              // Send event to BLoC to set isDragging=false
+              context.read<DynamicFormBloc>().add(
+                UpdateFormFieldEvent(
+                  componentId: component.id,
+                  value: {...value, 'isDragging': false},
+                ),
+              );
+            },
+            builder: (context, candidateData, rejectedData) {
+              return GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).requestFocus(_focusNode);
+                },
                 child: Container(
-                  width: (style['width'] as num?)?.toDouble() ?? 300,
-                  height: (style['height'] as num?)?.toDouble() ?? 200,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: StyleUtils.parseColor(style['backgroundColor']),
-                    borderRadius: BorderRadius.circular(
+                  key: Key(component.id),
+                  margin: StyleUtils.parsePadding(style['margin']),
+                  child: DottedBorder(
+                    color: StyleUtils.parseColor(style['borderColor']),
+                    strokeWidth:
+                        (style['borderWidth'] as num?)?.toDouble() ?? 1,
+                    radius: Radius.circular(
                       (style['borderRadius'] as num?)?.toDouble() ?? 0,
                     ),
+                    dashPattern: const [6, 6],
+                    borderType: BorderType.RRect,
+                    child: Container(
+                      width: (style['width'] as num?)?.toDouble() ?? 300,
+                      height: (style['height'] as num?)?.toDouble() ?? 200,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: StyleUtils.parseColor(style['backgroundColor']),
+                        borderRadius: BorderRadius.circular(
+                          (style['borderRadius'] as num?)?.toDouble() ?? 0,
+                        ),
+                      ),
+                      child: child,
+                    ),
                   ),
-                  child: child,
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
