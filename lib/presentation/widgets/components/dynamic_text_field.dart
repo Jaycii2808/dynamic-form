@@ -119,6 +119,9 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   ),
                 ),
               TextField(
+                onTapOutside: (pointer) {
+                  _focusNode.unfocus();
+                },
                 controller: _controller,
                 focusNode: _focusNode,
                 enabled: component.config['editable'] ?? true,
