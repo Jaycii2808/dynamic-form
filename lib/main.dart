@@ -75,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       configKeys = RemoteConfigService().getAll().keys.toList();
     });
   }
+
   @override
   Widget build(BuildContext context) {
     // list parameters on remote configs Firebase
@@ -104,19 +105,21 @@ class _HomeScreenState extends State<HomeScreen> {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                builder: (context) =>
+                    const Center(child: CircularProgressIndicator()),
               );
 
               await RemoteConfigService().initialize();
 
               await Future.delayed(const Duration(milliseconds: 50));
-              Navigator.of(context).pop();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+
               loadConfigKeys();
             },
 
-            icon: const Icon(Icons.restart_alt ),
+            icon: const Icon(Icons.restart_alt),
             tooltip: 'Reload  Online',
           ),
         ],

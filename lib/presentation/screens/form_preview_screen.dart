@@ -476,7 +476,9 @@ class FormPreviewScreen extends StatelessWidget {
                 const SizedBox(width: 8),
               ],
               Text(
-                canSave ? (config['label'] ?? 'Save') : 'Need Complete all fields',
+                canSave
+                    ? (config['label'] ?? 'Save')
+                    : 'Need Complete all fields',
                 style: TextStyle(
                   color: canSave ? null : Colors.red.withValues(alpha: 0.4),
                 ),

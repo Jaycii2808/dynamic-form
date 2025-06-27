@@ -20,14 +20,16 @@ class DynamicFormInitial extends DynamicFormState {
 class DynamicFormLoading extends DynamicFormState {
   const DynamicFormLoading({super.page});
 
-  DynamicFormLoading.fromState({required DynamicFormState state}) : super(page: state.page);
+  DynamicFormLoading.fromState({required DynamicFormState state})
+    : super(page: state.page);
 
   @override
   List<Object?> get props => [page];
 }
 
 class DynamicFormSuccess extends DynamicFormState {
-  const DynamicFormSuccess({required DynamicFormPageModel page}) : super(page: page);
+  const DynamicFormSuccess({required DynamicFormPageModel page})
+    : super(page: page);
 
   const DynamicFormSuccess.fromState({
     required DynamicFormState state,
