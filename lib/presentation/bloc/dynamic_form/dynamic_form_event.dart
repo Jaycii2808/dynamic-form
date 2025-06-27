@@ -15,6 +15,7 @@ class LoadDynamicFormPageEvent extends DynamicFormEvent {
   @override
   List<Object?> get props => [configKey];
 }
+
 class UpdateFormFieldEvent extends DynamicFormEvent {
   final String componentId;
   final dynamic value;
@@ -23,7 +24,6 @@ class UpdateFormFieldEvent extends DynamicFormEvent {
   //props
   @override
   List<Object?> get props => [componentId, value];
-
 }
 
 // class UpdateFormField extends DynamicFormEvent {
@@ -44,4 +44,22 @@ class RefreshDynamicFormEvent extends DynamicFormEvent {
 
   @override
   List<Object?> get props => [configKey];
+}
+
+class ValidateButtonConditionsEvent extends DynamicFormEvent {
+  final String buttonId;
+
+  const ValidateButtonConditionsEvent({required this.buttonId});
+
+  @override
+  List<Object?> get props => [buttonId];
+}
+
+class MarkPreviewValidatedEvent extends DynamicFormEvent {
+  final String saveButtonId;
+
+  const MarkPreviewValidatedEvent({required this.saveButtonId});
+
+  @override
+  List<Object?> get props => [saveButtonId];
 }

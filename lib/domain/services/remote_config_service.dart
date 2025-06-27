@@ -27,9 +27,11 @@ class RemoteConfigService {
       debugPrint('Error initializing Remote Config: $e');
     }
   }
+
   Map<String, RemoteConfigValue> getAll() {
     return _remoteConfig.getAll();
   }
+
   DynamicFormPageModel? getConfigKey(String configKey) {
     try {
       final String jsonString = _remoteConfig.getString(configKey);
