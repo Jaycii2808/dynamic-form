@@ -82,14 +82,20 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
               final mapValue = event.value as Map;
               updatedConfig['value'] = mapValue['value'];
               updatedConfig['errorText'] = mapValue['errorText'];
-              if (mapValue['errorText'] != null &&
-                  mapValue['errorText'].toString().isNotEmpty) {
-                updatedConfig['currentState'] = 'error';
-              } else if (mapValue['value'] != null &&
-                  mapValue['value'].toString().isNotEmpty) {
-                updatedConfig['currentState'] = 'success';
+
+              // Use currentState from event if provided, otherwise determine automatically
+              if (mapValue.containsKey('currentState')) {
+                updatedConfig['currentState'] = mapValue['currentState'];
               } else {
-                updatedConfig['currentState'] = 'base';
+                if (mapValue['errorText'] != null &&
+                    mapValue['errorText'].toString().isNotEmpty) {
+                  updatedConfig['currentState'] = 'error';
+                } else if (mapValue['value'] != null &&
+                    mapValue['value'].toString().isNotEmpty) {
+                  updatedConfig['currentState'] = 'success';
+                } else {
+                  updatedConfig['currentState'] = 'base';
+                }
               }
             } else {
               updatedConfig['value'] = event.value;
