@@ -35,7 +35,8 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   @override
   void didUpdateWidget(covariant DynamicTextArea oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.component.config['value'] != widget.component.config['value'] &&
+    if (oldWidget.component.config['value'] !=
+            widget.component.config['value'] &&
         _controller.text != widget.component.config['value']) {
       _controller.text = widget.component.config['value'] ?? '';
     }
@@ -78,33 +79,40 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       if (widget.component.config['placeholder'] != null &&
           widget.component.variants!.containsKey('placeholders')) {
         final variantStyle =
-            widget.component.variants!['placeholders']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['placeholders']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.variants!.containsKey('withLabel')) {
         final variantStyle =
-            widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['withLabel']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['label'] != null &&
           widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withLabelValue')) {
         final variantStyle =
-            widget.component.variants!['withLabelValue']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['withLabelValue']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (widget.component.config['value'] != null &&
           widget.component.variants!.containsKey('withValue')) {
         final variantStyle =
-            widget.component.variants!['withValue']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['withValue']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
 
     final currentState = _determineState();
-    if (widget.component.states != null && widget.component.states!.containsKey(currentState)) {
-      final stateStyle = widget.component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (widget.component.states != null &&
+        widget.component.states!.containsKey(currentState)) {
+      final stateStyle =
+          widget.component.states![currentState]['style']
+              as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
@@ -119,7 +127,9 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   }
 
   OutlineInputBorder _buildBorder(String state) {
-    final borderRadius = StyleUtils.parseBorderRadius(_resolvedStyle['borderRadius']);
+    final borderRadius = StyleUtils.parseBorderRadius(
+      _resolvedStyle['borderRadius'],
+    );
     final borderColor = StyleUtils.parseColor(_resolvedStyle['borderColor']);
     final borderWidth = _resolvedStyle['borderWidth']?.toDouble() ?? 1.0;
     final borderOpacity = _resolvedStyle['borderOpacity']?.toDouble() ?? 1.0;
@@ -136,7 +146,10 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       case 'error':
         return OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
+          borderSide: BorderSide(
+            color: StyleUtils.parseColor('#ff4d4f'),
+            width: 2,
+          ),
         );
       default:
         return OutlineInputBorder(
@@ -174,8 +187,12 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     return TextField(
       controller: _controller,
       focusNode: _focusNode,
-      enabled: widget.component.config['editable'] ?? true,
-      obscureText: widget.component.inputTypes?.containsKey('password') ?? false,
+      enabled:
+          (widget.component.config['editable'] ?? true) &&
+          (widget.component.config['disabled'] != true),
+      readOnly: widget.component.config['readOnly'] == true,
+      obscureText:
+          widget.component.inputTypes?.containsKey('password') ?? false,
       keyboardType: _getKeyboardType(widget.component),
       onTapOutside: (pointer) {
         _focusNode.unfocus();
@@ -190,17 +207,23 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         focusedBorder: _buildBorder('focused'),
         errorBorder: _buildBorder('error'),
         errorText: _errorText,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 12,
+        ),
         filled: _resolvedStyle['backgroundColor'] != null,
         fillColor: StyleUtils.parseColor(_resolvedStyle['backgroundColor']),
         helperText: _resolvedStyle['helperText']?.toString(),
         helperStyle: TextStyle(
           color: StyleUtils.parseColor(
-            _currentState == 'error' && _resolvedStyle['helperTextColor'] != null
+            _currentState == 'error' &&
+                    _resolvedStyle['helperTextColor'] != null
                 ? _resolvedStyle['helperTextColor']
                 : _resolvedStyle['helperTextColor'] ?? '#000000',
           ),
-          fontStyle: _resolvedStyle['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+          fontStyle: _resolvedStyle['fontStyle'] == 'italic'
+              ? FontStyle.italic
+              : FontStyle.normal,
         ),
       ),
       style: TextStyle(
@@ -210,7 +233,9 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
               ? _resolvedStyle['color']
               : _resolvedStyle['color'] ?? '#000000',
         ),
-        fontStyle: _resolvedStyle['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+        fontStyle: _resolvedStyle['fontStyle'] == 'italic'
+            ? FontStyle.italic
+            : FontStyle.normal,
       ),
       onChanged: (value) {
         setState(() {

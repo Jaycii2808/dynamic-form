@@ -13,10 +13,12 @@ class DynamicDateTimeRangePicker extends StatefulWidget {
   const DynamicDateTimeRangePicker({super.key, required this.component});
 
   @override
-  State<DynamicDateTimeRangePicker> createState() => _DynamicDateTimeRangePickerState();
+  State<DynamicDateTimeRangePicker> createState() =>
+      _DynamicDateTimeRangePickerState();
 }
 
-class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker> {
+class _DynamicDateTimeRangePickerState
+    extends State<DynamicDateTimeRangePicker> {
   final TextEditingController _controller = TextEditingController();
   String? _errorText;
   late FocusNode _focusNode;
@@ -29,7 +31,9 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     _focusNode.addListener(_handleFocusChange);
 
     final value = widget.component.config['value'];
-    if (value is Map<String, dynamic> && value.containsKey('start') && value.containsKey('end')) {
+    if (value is Map<String, dynamic> &&
+        value.containsKey('start') &&
+        value.containsKey('end')) {
       try {
         final startDate = DateFormat('MMM d,yyyy').parse(value['start']);
         final endDate = DateFormat('MMM d,yyyy').parse(value['end']);
@@ -85,9 +89,12 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     final validationConfig = widget.component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true && _selectedDateRange == null) {
-      return requiredValidation?['error_message'] as String? ?? 'Please select a date range';
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
+    if (requiredValidation?['isRequired'] == true &&
+        _selectedDateRange == null) {
+      return requiredValidation?['error_message'] as String? ??
+          'Please select a date range';
     }
 
     return null;
@@ -117,11 +124,15 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> combinedStyle = Map<String, dynamic>.from(widget.component.style);
+    final Map<String, dynamic> combinedStyle = Map<String, dynamic>.from(
+      widget.component.style,
+    );
     final config = widget.component.config;
+    final isDisabled = config['disabled'] == true;
 
     if (widget.component.variants?.containsKey('range') == true) {
-      final variantStyle = widget.component.variants!['range']['style'] as Map<String, dynamic>?;
+      final variantStyle =
+          widget.component.variants!['range']['style'] as Map<String, dynamic>?;
       if (variantStyle != null) combinedStyle.addAll(variantStyle);
     }
 
@@ -131,17 +142,20 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     }
 
     if (widget.component.states?.containsKey(currentState) == true) {
-      final stateStyle = widget.component.states![currentState]['style'] as Map<String, dynamic>?;
+      final stateStyle =
+          widget.component.states![currentState]['style']
+              as Map<String, dynamic>?;
       if (stateStyle != null) combinedStyle.addAll(stateStyle);
     }
 
-    return _buildBody(combinedStyle, config, context);
+    return _buildBody(combinedStyle, config, context, isDisabled);
   }
 
   Container _buildBody(
     Map<String, dynamic> combinedStyle,
     Map<String, dynamic> config,
     BuildContext context,
+    bool isDisabled,
   ) {
     return Container(
       padding: StyleUtils.parsePadding(combinedStyle['padding']),
@@ -158,7 +172,7 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
             errorText: _errorText,
             hintText: config['placeholder'] ?? 'MMM d,yyyy - MMM d,yyyy',
             style: combinedStyle,
-            onTap: _showDateRangePickerDialog,
+            onTap: isDisabled ? () {} : _showDateRangePickerDialog,
           ),
         ],
       ),
@@ -166,7 +180,10 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
   }
 
   // Helper function for the label text widget
-  Widget _buildLabelText({required String label, required Map<String, dynamic> style}) {
+  Widget _buildLabelText({
+    required String label,
+    required Map<String, dynamic> style,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
@@ -240,14 +257,19 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         errorText: errorText,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
+        ),
         filled: style['backgroundColor'] != null,
         fillColor: StyleUtils.parseColor(style['backgroundColor']),
       ),
       style: TextStyle(
         fontSize: 14,
         color: StyleUtils.parseColor(style['color'] ?? '#333333'),
-        fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+        fontStyle: style['fontStyle'] == 'italic'
+            ? FontStyle.italic
+            : FontStyle.normal,
       ),
       onTap: onTap,
     );
@@ -271,8 +293,12 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
       required Function(DateTime?) onDatePicked,
       required bool Function(DateTime) selectableDayPredicate,
     }) async {
-      final primaryColor = StyleUtils.parseColor(style['iconColor'] ?? '#6979F8');
-      final surfaceColor = StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
+      final primaryColor = StyleUtils.parseColor(
+        style['iconColor'] ?? '#6979F8',
+      );
+      final surfaceColor = StyleUtils.parseColor(
+        style['backgroundColor'] ?? '#FFFFFF',
+      );
       final onSurfaceColor = StyleUtils.parseColor(style['color'] ?? '#333333');
 
       final pickedDate = await showDatePicker(
@@ -311,23 +337,36 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
 
     return StatefulBuilder(
       builder: (context, setDialogState) {
-        final primaryColor = StyleUtils.parseColor(style['iconColor'] ?? '#6979F8');
-        final surfaceColor = StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
+        final primaryColor = StyleUtils.parseColor(
+          style['iconColor'] ?? '#6979F8',
+        );
+        final surfaceColor = StyleUtils.parseColor(
+          style['backgroundColor'] ?? '#FFFFFF',
+        );
         final textColor = StyleUtils.parseColor(style['color'] ?? '#333333');
 
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Container(
             width: 360,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: surfaceColor, borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Select Date Range',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -341,8 +380,12 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
                           pickDate(
                             context: context,
                             initialDate: startDate,
-                            firstDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
-                            lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+                            firstDate: DateTime.now().subtract(
+                              const Duration(days: 365 * 10),
+                            ),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365 * 10),
+                            ),
                             onDatePicked: (pickedDate) {
                               if (pickedDate != null) {
                                 setDialogState(() {
@@ -351,7 +394,8 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
                                     pickedDate.month,
                                     pickedDate.day,
                                   );
-                                  if (endDate != null && endDate!.isBefore(startDate!)) {
+                                  if (endDate != null &&
+                                      endDate!.isBefore(startDate!)) {
                                     endDate = null;
                                   }
                                 });
@@ -378,8 +422,12 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
                                   initialDate: endDate,
                                   firstDate:
                                       startDate ??
-                                      DateTime.now().subtract(const Duration(days: 365 * 10)),
-                                  lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+                                      DateTime.now().subtract(
+                                        const Duration(days: 365 * 10),
+                                      ),
+                                  lastDate: DateTime.now().add(
+                                    const Duration(days: 365 * 10),
+                                  ),
                                   onDatePicked: (pickedDate) {
                                     if (pickedDate != null) {
                                       setDialogState(() {
@@ -391,8 +439,8 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
                                       });
                                     }
                                   },
-                                  selectableDayPredicate: (day) =>
-                                      !day.isBefore(startDate ?? DateTime.now()),
+                                  selectableDayPredicate: (day) => !day
+                                      .isBefore(startDate ?? DateTime.now()),
                                 );
                               }
                             : null,
@@ -421,7 +469,9 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
                       text: 'Confirm',
                       onPressed: startDate != null && endDate != null
                           ? () {
-                              onConfirm(DateTimeRange(start: startDate!, end: endDate!));
+                              onConfirm(
+                                DateTimeRange(start: startDate!, end: endDate!),
+                              );
                               Navigator.pop(context);
                             }
                           : null,

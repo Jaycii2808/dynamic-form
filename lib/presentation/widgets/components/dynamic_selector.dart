@@ -20,23 +20,27 @@ class _DynamicSelectorState extends State<DynamicSelector> {
   void dispose() {
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final style = Map<String, dynamic>.from(widget.component.style);
     final config = widget.component.config;
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
     final selected = config['selected'] ?? false;
+    final isDisabled = config['disabled'] == true;
 
     // Apply variant styles
     if (widget.component.variants != null) {
       if (hasLabel && widget.component.variants!.containsKey('withLabel')) {
         final variantStyle =
-            widget.component.variants!['withLabel']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['withLabel']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
       if (!hasLabel && widget.component.variants!.containsKey('withoutLabel')) {
         final variantStyle =
-            widget.component.variants!['withoutLabel']['style'] as Map<String, dynamic>?;
+            widget.component.variants!['withoutLabel']['style']
+                as Map<String, dynamic>?;
         if (variantStyle != null) style.addAll(variantStyle);
       }
     }
@@ -45,12 +49,15 @@ class _DynamicSelectorState extends State<DynamicSelector> {
     String currentState = 'base';
     if (selected) currentState = 'success';
 
-    if (widget.component.states != null && widget.component.states!.containsKey(currentState)) {
-      final stateStyle = widget.component.states![currentState]['style'] as Map<String, dynamic>?;
+    if (widget.component.states != null &&
+        widget.component.states!.containsKey(currentState)) {
+      final stateStyle =
+          widget.component.states![currentState]['style']
+              as Map<String, dynamic>?;
       if (stateStyle != null) style.addAll(stateStyle);
     }
 
-    return _buildBody(style, config, selected, context, hasLabel);
+    return _buildBody(style, config, selected, context, hasLabel, isDisabled);
   }
 
   Widget _buildBody(
@@ -59,20 +66,26 @@ class _DynamicSelectorState extends State<DynamicSelector> {
     selected,
     BuildContext context,
     bool hasLabel,
+    bool isDisabled,
   ) {
     return Container(
       key: Key(widget.component.id),
       padding: StyleUtils.parsePadding(style['padding']),
       margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            config['selected'] = !selected;
-            context.read<DynamicFormBloc>().add(
-              UpdateFormFieldEvent(componentId: widget.component.id, value: !selected),
-            );
-          });
-        },
+        onTap: isDisabled
+            ? null
+            : () {
+                setState(() {
+                  config['selected'] = !selected;
+                  context.read<DynamicFormBloc>().add(
+                    UpdateFormFieldEvent(
+                      componentId: widget.component.id,
+                      value: !selected,
+                    ),
+                  );
+                });
+              },
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

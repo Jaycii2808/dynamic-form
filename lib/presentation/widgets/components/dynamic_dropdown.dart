@@ -120,6 +120,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               ),
                               child: TextField(
                                 controller: searchController,
+                                focusNode: _focusNode,
                                 decoration: InputDecoration(
                                   hintText: component.config['placeholder'],
                                   isDense: true,
@@ -268,6 +269,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         final placeholder = config['placeholder'] as String? ?? 'Search';
         final value = config['value']?.toString();
         final currentState = config['currentState'] ?? 'base';
+        final isDisabled = config['disabled'] == true;
 
         // Always apply variant withIcon if icon exists
         if ((triggerIcon != null || style['icon'] != null) &&
@@ -370,25 +372,28 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           child: MouseRegion(
             child: InkWell(
               key: _dropdownKey,
-              onTap: () {
-                FocusScope.of(context).requestFocus(_focusNode);
-                final renderBox =
-                    _dropdownKey.currentContext!.findRenderObject()
-                        as RenderBox;
-                final size = renderBox.size;
-                final offset = renderBox.localToGlobal(Offset.zero);
-                _showDropdownPanel(
-                  context,
-                  component,
-                  Rect.fromLTWH(
-                    offset.dx,
-                    offset.dy + size.height,
-                    size.width,
-                    0,
-                  ),
-                  value,
-                );
-              },
+              focusNode: _focusNode,
+              onTap: isDisabled
+                  ? null
+                  : () {
+                      FocusScope.of(context).requestFocus(_focusNode);
+                      final renderBox =
+                          _dropdownKey.currentContext!.findRenderObject()
+                              as RenderBox;
+                      final size = renderBox.size;
+                      final offset = renderBox.localToGlobal(Offset.zero);
+                      _showDropdownPanel(
+                        context,
+                        component,
+                        Rect.fromLTWH(
+                          offset.dx,
+                          offset.dy + size.height,
+                          size.width,
+                          0,
+                        ),
+                        value,
+                      );
+                    },
               child: Container(
                 padding: StyleUtils.parsePadding(style['padding']),
                 margin: StyleUtils.parsePadding(style['margin']),

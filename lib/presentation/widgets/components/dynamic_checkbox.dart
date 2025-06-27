@@ -39,7 +39,9 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
             : widget.component;
 
         final bool isSelected = component.config['value'] == true;
-        final bool isEditable = component.config['editable'] != false;
+        final bool isEditable =
+            (component.config['editable'] != false) &&
+            (component.config['disabled'] != true);
         Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
         String currentState = isSelected ? 'selected' : 'base';
         if (component.states != null &&

@@ -273,6 +273,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         final options = component.config['options'] as List<dynamic>? ?? [];
         final isMultiple = component.config['multiple'] ?? false;
         final searchable = component.config['searchable'] ?? false;
+        final isDisabled = component.config['disabled'] == true;
 
         // Apply variant styles
         if (component.variants != null) {
@@ -428,31 +429,33 @@ class _DynamicSelectState extends State<DynamicSelect> {
           focusNode: _focusNode,
           child: InkWell(
             key: _selectKey,
-            onTap: () {
-              FocusScope.of(context).requestFocus(_focusNode);
-              if (isMultiple) {
-                _showMultiSelectDialog(
-                  context,
-                  component,
-                  options,
-                  isMultiple,
-                  searchable,
-                );
-              } else if (searchable) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => CitySearchDialogBloc(
-                    componentId: component.id,
-                    options: options,
-                    label: component.config['label'] ?? 'Chọn tùy chọn',
-                    style: style,
-                    initialSearchQuery: '',
-                  ),
-                );
-              } else {
-                _toggleDropdown();
-              }
-            },
+            onTap: isDisabled
+                ? null
+                : () {
+                    FocusScope.of(context).requestFocus(_focusNode);
+                    if (isMultiple) {
+                      _showMultiSelectDialog(
+                        context,
+                        component,
+                        options,
+                        isMultiple,
+                        searchable,
+                      );
+                    } else if (searchable) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => CitySearchDialogBloc(
+                          componentId: component.id,
+                          options: options,
+                          label: component.config['label'] ?? 'Chọn tùy chọn',
+                          style: style,
+                          initialSearchQuery: '',
+                        ),
+                      );
+                    } else {
+                      _toggleDropdown();
+                    }
+                  },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               decoration: BoxDecoration(

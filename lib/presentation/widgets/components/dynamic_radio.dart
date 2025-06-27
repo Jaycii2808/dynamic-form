@@ -40,7 +40,9 @@ class _DynamicRadioState extends State<DynamicRadio> {
         // 1. Resolve styles from component's style and states
         Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
         final bool isSelected = component.config['value'] == true;
-        final bool isEditable = component.config['editable'] != false;
+        final bool isEditable =
+            (component.config['editable'] != false) &&
+            (component.config['disabled'] != true);
 
         // Apply state-specific styles
         String currentState = isSelected ? 'selected' : 'base';

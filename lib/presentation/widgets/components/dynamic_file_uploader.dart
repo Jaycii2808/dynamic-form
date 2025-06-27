@@ -237,6 +237,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         final String? errorText = value['errorText'] as String?;
         final bool isProcessing = value['isProcessing'] == true;
         final bool isDragging = value['isDragging'] == true;
+        final bool isDisabled = component.config['disabled'] == true;
 
         final Map<String, dynamic> baseStyle = Map.from(component.style);
         final Map<String, dynamic> variantStyle = isDragging
@@ -399,7 +400,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                       config['buttonText'].isNotEmpty) ...[
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: isProcessing
+                      onPressed: (isProcessing || isDisabled)
                           ? null
                           : () => _browseFiles(component, isProcessing),
                       style: ElevatedButton.styleFrom(
@@ -432,7 +433,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
           focusNode: _focusNode,
           child: DragTarget<List<XFile>>(
             onWillAcceptWithDetails: (data) {
-              if (isProcessing) return false;
+              if (isProcessing || isDisabled) return false;
               FocusScope.of(context).requestFocus(_focusNode);
               // Send event to BLoC to set isDragging=true
               context.read<DynamicFormBloc>().add(
@@ -464,9 +465,11 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
             },
             builder: (context, candidateData, rejectedData) {
               return GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).requestFocus(_focusNode);
-                },
+                onTap: isDisabled
+                    ? null
+                    : () {
+                        FocusScope.of(context).requestFocus(_focusNode);
+                      },
                 child: Container(
                   key: Key(component.id),
                   margin: StyleUtils.parsePadding(style['margin']),
@@ -501,70 +504,6 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
               );
             },
           ),
-          // return DragTarget<List<XFile>>(
-          //   onWillAcceptWithDetails: (data) {
-          //     if (isProcessing) return false;
-          //     // Send event to BLoC to set isDragging=true
-          //     context.read<DynamicFormBloc>().add(
-          //       UpdateFormFieldEvent(
-          //         componentId: component.id,
-          //         value: {...value, 'isDragging': true},
-          //       ),
-          //     );
-          //     return true;
-          //   },
-          //   onAcceptWithDetails: (details) {
-          //     // Send event to BLoC to set isDragging=false
-          //     context.read<DynamicFormBloc>().add(
-          //       UpdateFormFieldEvent(
-          //         componentId: component.id,
-          //         value: {...value, 'isDragging': false},
-          //       ),
-          //     );
-          //     _handleFiles(details.data, component);
-          //   },
-          //   onLeave: (data) {
-          //     // Send event to BLoC to set isDragging=false
-          //     context.read<DynamicFormBloc>().add(
-          //       UpdateFormFieldEvent(
-          //         componentId: component.id,
-          //         value: {...value, 'isDragging': false},
-          //       ),
-          //     );
-          //   },
-          //   builder: (context, candidateData, rejectedData) {
-          //     return Container(
-          //       key: Key(component.id),
-          //       margin: StyleUtils.parsePadding(style['margin']),
-          //       child: DottedBorder(
-          //         options: RoundedRectDottedBorderOptions(
-          //           color: StyleUtils.parseColor(style['borderColor']),
-          //           strokeWidth: (style['borderWidth'] as num?)?.toDouble() ?? 1,
-          //           radius: Radius.circular(
-          //             (style['borderRadius'] as num?)?.toDouble() ?? 0,
-          //           ),
-          //           dashPattern: const [6, 6],
-          //           padding: const EdgeInsets.all(0),
-          //         ),
-          //         child: Container(
-          //           width: (style['width'] as num?)?.toDouble() ?? 300,
-          //           height: (style['height'] as num?)?.toDouble() ?? 200,
-          //           padding: const EdgeInsets.symmetric(
-          //             horizontal: 16.0,
-          //             vertical: 8.0,
-          //           ),
-          //           decoration: BoxDecoration(
-          //             color: StyleUtils.parseColor(style['backgroundColor']),
-          //             borderRadius: BorderRadius.circular(
-          //               (style['borderRadius'] as num?)?.toDouble() ?? 0,
-          //             ),
-          //           ),
-          //           child: child,
-          //         ),
-          //       ),
-          //     );
-          //   },
-          // );
         );
       },
     );

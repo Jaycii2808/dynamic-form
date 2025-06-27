@@ -1,7 +1,10 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicButton extends StatefulWidget {
   final DynamicFormModel component;
@@ -18,81 +21,139 @@ class _DynamicButtonState extends State<DynamicButton> {
 
   @override
   Widget build(BuildContext context) {
-    final component = widget.component;
-    final config = component.config;
-    final style = Map<String, dynamic>.from(component.style);
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
+      builder: (context, state) {
+        // Get the latest component from BLoC state to see visibility changes
+        final component = (state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
 
-    // Get button text and action
-    final buttonText = config['text'] ?? 'Button';
-    final action = config['action'] ?? 'custom';
-    final isDisabled = config['disabled'] == true || _isLoading;
+        final config = component.config;
+        final style = Map<String, dynamic>.from(component.style);
 
-    // Apply variant styles
-    if (component.variants != null) {
-      final variant = config['variant'] ?? 'primary';
-      if (component.variants!.containsKey(variant)) {
-        final variantStyle =
-            component.variants![variant]['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
+        // Get button properties safely first
+        final buttonText =
+            config['label']?.toString() ??
+            config['text']?.toString() ??
+            'Button';
+        final action = config['action']?.toString() ?? 'custom';
 
-    // Determine current state
-    String currentState = 'default';
-    if (isDisabled) currentState = 'disabled';
-    if (_isLoading) currentState = 'loading';
+        // Check visibility first - hide button if validation fails
+        final isVisible = config['isVisible'] ?? true;
 
-    // Apply state styles
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
+        // Debug log for Save button visibility
+        if (action == 'submit_form') {
+          debugPrint(
+            '🔘 Save Button (${component.id}): isVisible=$isVisible, canSave=${config['canSave']}',
+          );
+        }
 
-    // Parse style properties
-    final backgroundColor = StyleUtils.parseColor(
-      style['backgroundColor'] ?? '#2196f3',
-    );
-    final textColor = StyleUtils.parseColor(style['color'] ?? '#ffffff');
-    final borderColor = StyleUtils.parseColor(
-      style['borderColor'] ?? 'transparent',
-    );
-    final borderWidth = style['borderWidth']?.toDouble() ?? 0.0;
-    final borderRadius = StyleUtils.parseBorderRadius(
-      style['borderRadius'] ?? 8,
-    );
-    final fontSize = style['fontSize']?.toDouble() ?? 16.0;
-    final fontWeight = _parseFontWeight(style['fontWeight'] ?? 'normal');
-    final padding = StyleUtils.parsePadding(style['padding'] ?? '12 24');
-    final margin = StyleUtils.parsePadding(style['margin'] ?? '16 0');
+        if (!isVisible) {
+          debugPrint(
+            '🚫 Hiding button ${component.id} due to validation failure',
+          );
+          return const SizedBox.shrink(); // Hide button completely
+        }
+        final isSaveButton = action == 'submit_form';
+        final isPreviewButton = action == 'preview_form';
 
-    // Get icon if specified
-    IconData? iconData;
-    if (config['icon'] != null) {
-      iconData = IconTypeEnum.fromString(config['icon']).toIconData();
-    }
+        // Check if button should be disabled
+        final canSave = component.config['canSave'] ?? true;
+        final isDisabled = config['disabled'] == true || _isLoading;
 
-    return Container(
-      key: Key(component.id),
-      margin: margin,
-      child: ElevatedButton(
-        onPressed: isDisabled ? null : () => _handleButtonPress(action),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: textColor,
-          disabledBackgroundColor: Colors.grey.shade300,
-          disabledForegroundColor: Colors.grey.shade600,
-          side: borderWidth > 0
-              ? BorderSide(color: borderColor, width: borderWidth)
-              : null,
-          shape: RoundedRectangleBorder(borderRadius: borderRadius),
-          padding: padding,
-          elevation: style['elevation']?.toDouble() ?? 2.0,
-          shadowColor: StyleUtils.parseColor(style['shadowColor'] ?? '#000000'),
-        ),
-        child: _buildButtonContent(buttonText, iconData, fontSize, fontWeight),
-      ),
+        // Apply variant styles
+        if (component.variants != null) {
+          final variant = config['variant']?.toString() ?? 'primary';
+          if (component.variants!.containsKey(variant)) {
+            final variantStyle =
+                component.variants![variant]['style'] as Map<String, dynamic>?;
+            if (variantStyle != null) style.addAll(variantStyle);
+          }
+        }
+
+        // Determine current state
+        String currentState = 'base';
+        if (isDisabled) currentState = 'disabled';
+        if (_isLoading) currentState = 'loading';
+
+        // Apply state styles
+        if (component.states != null &&
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
+        }
+
+        // Parse style properties safely
+        final backgroundColor = StyleUtils.parseColor(
+          style['backgroundColor']?.toString() ?? '#2196f3',
+        );
+        final textColor = StyleUtils.parseColor(
+          style['color']?.toString() ?? '#ffffff',
+        );
+        final borderColor = StyleUtils.parseColor(
+          style['borderColor']?.toString() ?? 'transparent',
+        );
+        final borderWidth = _parseDouble(style['borderWidth']) ?? 1.0;
+        final borderRadius = StyleUtils.parseBorderRadius(
+          _parseInt(style['borderRadius']) ?? 8,
+        );
+        final fontSize = _parseDouble(style['fontSize']) ?? 16.0;
+        final fontWeight = _parseFontWeight(
+          style['fontWeight']?.toString() ?? 'normal',
+        );
+        final padding = StyleUtils.parsePadding(
+          style['padding']?.toString() ?? '12px 24px',
+        );
+        final margin = StyleUtils.parsePadding(
+          style['margin']?.toString() ?? '8px 4px',
+        );
+        final elevation = _parseDouble(style['elevation']) ?? 2.0;
+
+        // Get icon if specified
+        IconData? iconData;
+        final iconName =
+            config['icon']?.toString() ?? style['icon']?.toString();
+        if (iconName != null && iconName.isNotEmpty) {
+          iconData = IconTypeEnum.fromString(iconName).toIconData();
+        }
+
+        return Container(
+          key: Key(component.id),
+          margin: margin,
+          child: SizedBox(
+            width: _parseDouble(style['width']),
+            height: _parseDouble(style['height']) ?? 48.0,
+            child: ElevatedButton(
+              onPressed: isDisabled ? null : () => _handleButtonPress(action),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: backgroundColor,
+                foregroundColor: textColor,
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
+                side: borderWidth > 0
+                    ? BorderSide(color: borderColor, width: borderWidth)
+                    : null,
+                shape: RoundedRectangleBorder(borderRadius: borderRadius),
+                padding: padding,
+                elevation: elevation,
+                shadowColor: StyleUtils.parseColor(
+                  style['shadowColor']?.toString() ?? '#000000',
+                ),
+              ),
+              child: _buildButtonContent(
+                buttonText,
+                iconData,
+                fontSize,
+                fontWeight,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -113,7 +174,7 @@ class _DynamicButtonState extends State<DynamicButton> {
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
                 StyleUtils.parseColor(
-                  widget.component.style['color'] ?? '#ffffff',
+                  widget.component.style['color']?.toString() ?? '#ffffff',
                 ),
               ),
             ),
@@ -131,7 +192,7 @@ class _DynamicButtonState extends State<DynamicButton> {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: fontSize),
+          Icon(icon, size: fontSize + 4),
           const SizedBox(width: 8),
           Text(
             text,
@@ -154,38 +215,12 @@ class _DynamicButtonState extends State<DynamicButton> {
 
     try {
       // Prepare data based on action
-      Map<String, dynamic>? data;
-
-      switch (action) {
-        case 'submit':
-          data = {
-            'action': 'submit',
-            'timestamp': DateTime.now().toIso8601String(),
-            'formId': widget.component.id,
-          };
-          break;
-        case 'save':
-          data = {
-            'action': 'save',
-            'timestamp': DateTime.now().toIso8601String(),
-            'formId': widget.component.id,
-          };
-          break;
-        case 'reset':
-          data = {
-            'action': 'reset',
-            'timestamp': DateTime.now().toIso8601String(),
-            'formId': widget.component.id,
-          };
-          break;
-        default:
-          data = {
-            'action': action,
-            'timestamp': DateTime.now().toIso8601String(),
-            'formId': widget.component.id,
-            'customData': widget.component.config['customData'],
-          };
-      }
+      final data = {
+        'action': action,
+        'timestamp': DateTime.now().toIso8601String(),
+        'formId': widget.component.id,
+        'customData': widget.component.config['customData'],
+      };
 
       // Call the onAction callback
       widget.onAction?.call(action, data);
@@ -199,6 +234,30 @@ class _DynamicButtonState extends State<DynamicButton> {
         });
       }
     }
+  }
+
+  double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      // Remove 'px' suffix if present
+      final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
+      return double.tryParse(cleanValue);
+    }
+    return null;
+  }
+
+  int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) {
+      // Remove any non-numeric characters
+      final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
+      return int.tryParse(cleanValue);
+    }
+    return null;
   }
 
   FontWeight _parseFontWeight(String weight) {

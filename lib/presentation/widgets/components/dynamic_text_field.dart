@@ -151,7 +151,10 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                 TextField(
                   controller: _controller,
                   focusNode: _focusNode,
-                  enabled: component.config['editable'] ?? true,
+                  enabled:
+                      (component.config['editable'] ?? true) &&
+                      (component.config['disabled'] != true),
+                  readOnly: component.config['readOnly'] == true,
                   obscureText:
                       component.inputTypes?.containsKey('password') ?? false,
                   keyboardType: _getKeyboardType(component),

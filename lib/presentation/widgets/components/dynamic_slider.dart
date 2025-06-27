@@ -121,6 +121,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
         final String? iconName = config['icon'] as String?;
         final String? thumbIconName = config['thumbIcon'] as String?;
         final String? errorText = config['errorText'] as String?;
+        final bool isDisabled = config['disabled'] == true;
 
         if (component.variants != null) {
           if (hint != null && component.variants!.containsKey('withHint')) {
@@ -187,19 +188,23 @@ class _DynamicSliderState extends State<DynamicSlider> {
                     '$prefix${(_sliderRangeValues?.start ?? min).round()}',
                     '$prefix${(_sliderRangeValues?.end ?? max).round()}',
                   ),
-                  onChanged: (values) {
-                    setState(() {
-                      _sliderRangeValues = values;
-                    });
-                  },
-                  onChangeEnd: (values) {
-                    context.read<DynamicFormBloc>().add(
-                      UpdateFormFieldEvent(
-                        componentId: component.id,
-                        value: [values.start, values.end],
-                      ),
-                    );
-                  },
+                  onChanged: isDisabled
+                      ? null
+                      : (values) {
+                          setState(() {
+                            _sliderRangeValues = values;
+                          });
+                        },
+                  onChangeEnd: isDisabled
+                      ? null
+                      : (values) {
+                          context.read<DynamicFormBloc>().add(
+                            UpdateFormFieldEvent(
+                              componentId: component.id,
+                              value: [values.start, values.end],
+                            ),
+                          );
+                        },
                 )
               : Slider(
                   value: _sliderValue ?? min,
@@ -207,19 +212,23 @@ class _DynamicSliderState extends State<DynamicSlider> {
                   max: max,
                   divisions: divisions,
                   label: '$prefix${_sliderValue?.round()}',
-                  onChanged: (value) {
-                    setState(() {
-                      _sliderValue = value;
-                    });
-                  },
-                  onChangeEnd: (value) {
-                    context.read<DynamicFormBloc>().add(
-                      UpdateFormFieldEvent(
-                        componentId: component.id,
-                        value: value,
-                      ),
-                    );
-                  },
+                  onChanged: isDisabled
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _sliderValue = value;
+                          });
+                        },
+                  onChangeEnd: isDisabled
+                      ? null
+                      : (value) {
+                          context.read<DynamicFormBloc>().add(
+                            UpdateFormFieldEvent(
+                              componentId: component.id,
+                              value: value,
+                            ),
+                          );
+                        },
                 ),
         );
 

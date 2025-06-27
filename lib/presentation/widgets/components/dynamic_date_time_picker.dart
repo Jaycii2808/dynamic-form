@@ -80,11 +80,16 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
   void _handleFocusChange() {
     if (!_focusNode.hasFocus) {
       final newValue = _controller.text;
-      debugPrint('handleFocusChange: componentId=${widget.component.id}, newValue=$newValue');
+      debugPrint(
+        'handleFocusChange: componentId=${widget.component.id}, newValue=$newValue',
+      );
       if (newValue != widget.component.config['value']) {
         widget.component.config['value'] = newValue;
         context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
+          UpdateFormFieldEvent(
+            componentId: widget.component.id,
+            value: newValue,
+          ),
         );
       }
       setState(() {
@@ -95,10 +100,13 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
 
   Map<String, dynamic> _resolveStyles() {
     final style = Map<String, dynamic>.from(widget.component.style);
-    final variantStyle = widget.component.variants?['single']?['style'] as Map<String, dynamic>?;
+    final variantStyle =
+        widget.component.variants?['single']?['style'] as Map<String, dynamic>?;
     if (variantStyle != null) style.addAll(variantStyle);
     final currentState = _determineState();
-    final stateStyle = widget.component.states?[currentState]?['style'] as Map<String, dynamic>?;
+    final stateStyle =
+        widget.component.states?[currentState]?['style']
+            as Map<String, dynamic>?;
     if (stateStyle != null) style.addAll(stateStyle);
     return style;
   }
@@ -113,10 +121,14 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     final validationConfig = widget.component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
     if (requiredValidation?['isRequired'] == true && value.isEmpty) {
-      debugPrint('validate: componentId=${widget.component.id}, error=Required field empty');
-      return requiredValidation?['error_message'] as String? ?? 'Please select a date';
+      debugPrint(
+        'validate: componentId=${widget.component.id}, error=Required field empty',
+      );
+      return requiredValidation?['error_message'] as String? ??
+          'Please select a date';
     }
 
     if (value.isNotEmpty) {
@@ -171,12 +183,16 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
           colorScheme: ColorScheme.light(
             primary: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
             onPrimary: Colors.white,
-            surface: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF'),
+            surface: StyleUtils.parseColor(
+              style['backgroundColor'] ?? '#FFFFFF',
+            ),
             onSurface: StyleUtils.parseColor(style['color'] ?? '#333333'),
           ),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              foregroundColor: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
+              foregroundColor: StyleUtils.parseColor(
+                style['iconColor'] ?? '#6979F8',
+              ),
             ),
           ),
         ),
@@ -184,7 +200,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       ),
     );
 
-    debugPrint('pickDateTime: componentId=${widget.component.id}, pickedDate=$pickedDate');
+    debugPrint(
+      'pickDateTime: componentId=${widget.component.id}, pickedDate=$pickedDate',
+    );
 
     if (pickerMode != 'dateOnly' && pickedDate != null && context.mounted) {
       pickedTime = await showTimePicker(
@@ -195,28 +213,38 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             colorScheme: ColorScheme.light(
               primary: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
               onPrimary: Colors.white,
-              surface: StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF'),
+              surface: StyleUtils.parseColor(
+                style['backgroundColor'] ?? '#FFFFFF',
+              ),
               onSurface: StyleUtils.parseColor(style['color'] ?? '#333333'),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: StyleUtils.parseColor(style['iconColor'] ?? '#6979F8'),
+                foregroundColor: StyleUtils.parseColor(
+                  style['iconColor'] ?? '#6979F8',
+                ),
               ),
             ),
           ),
           child: child!,
         ),
       );
-      debugPrint('pickDateTime: componentId=${widget.component.id}, pickedTime=$pickedTime');
+      debugPrint(
+        'pickDateTime: componentId=${widget.component.id}, pickedTime=$pickedTime',
+      );
     }
 
-    if (pickedDate != null && (pickerMode == 'dateOnly' || pickedTime != null) && context.mounted) {
+    if (pickedDate != null &&
+        (pickerMode == 'dateOnly' || pickedTime != null) &&
+        context.mounted) {
       final dateTime = DateTime(
         pickedDate.year,
         pickedDate.month,
         pickedDate.day,
         pickerMode == 'dateOnly' ? 0 : pickedTime!.hour,
-        pickerMode == 'dateOnly' || pickerMode == 'hourDate' ? 0 : pickedTime!.minute,
+        pickerMode == 'dateOnly' || pickerMode == 'hourDate'
+            ? 0
+            : pickedTime!.minute,
       );
       final formattedDateTime = DateFormat(_selectedFormat).format(dateTime);
       debugPrint(
@@ -229,10 +257,15 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       widget.component.config['value'] = formattedDateTime;
 
       context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(componentId: widget.component.id, value: formattedDateTime),
+        UpdateFormFieldEvent(
+          componentId: widget.component.id,
+          value: formattedDateTime,
+        ),
       );
     } else {
-      debugPrint('pickDateTime: componentId=${widget.component.id}, no valid selection');
+      debugPrint(
+        'pickDateTime: componentId=${widget.component.id}, no valid selection',
+      );
     }
   }
 
@@ -240,6 +273,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
   Widget build(BuildContext context) {
     final style = _resolveStyles();
     final config = widget.component.config;
+    final isDisabled = config['disabled'] == true;
 
     return Container(
       key: Key(widget.component.id),
@@ -255,7 +289,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
                 config['label'],
                 style: TextStyle(
                   fontSize: style['labelTextSize']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(style['labelColor'] ?? '#333333'),
+                  color: StyleUtils.parseColor(
+                    style['labelColor'] ?? '#333333',
+                  ),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -271,34 +307,47 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
               isDense: true,
               //hintText: _selectedFormat,
               border: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: BorderSide(
                   color: StyleUtils.parseColor(style['borderColor']),
                   width: style['borderWidth']?.toDouble() ?? 1,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: BorderSide(
                   color: StyleUtils.parseColor(style['borderColor']),
                   width: style['borderWidth']?.toDouble() ?? 1,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: BorderSide(
                   color: StyleUtils.parseColor(
-                    style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8',
+                    style['focusedBorderColor'] ??
+                        style['iconColor'] ??
+                        '#6979F8',
                   ),
                   width: style['borderWidth']?.toDouble() ?? 2,
                 ),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: StyleUtils.parseBorderRadius(style['borderRadius']),
+                borderRadius: StyleUtils.parseBorderRadius(
+                  style['borderRadius'],
+                ),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
               errorText: _errorText,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
+              ),
               filled: style['backgroundColor'] != null,
               fillColor: StyleUtils.parseColor(style['backgroundColor']),
               prefixIcon: Padding(
@@ -317,9 +366,11 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             style: TextStyle(
               fontSize: style['fontSize']?.toDouble() ?? 14,
               color: StyleUtils.parseColor(style['color'] ?? '#333333'),
-              fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+              fontStyle: style['fontStyle'] == 'italic'
+                  ? FontStyle.italic
+                  : FontStyle.normal,
             ),
-            onTap: () => _pickDateTime(context),
+            onTap: isDisabled ? null : () => _pickDateTime(context),
           ),
         ],
       ),
