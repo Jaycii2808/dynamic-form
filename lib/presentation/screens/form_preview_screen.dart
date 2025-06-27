@@ -167,17 +167,28 @@ class FormPreviewScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade300,
+                            backgroundColor: Colors.white,
                             foregroundColor: Colors.grey.shade700,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          child: const Text('Cancel'),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       // Save button from Remote Config
                       Expanded(child: _buildPreviewSaveButton(saveButton)),
                     ],
@@ -329,155 +340,177 @@ class FormPreviewScreen extends StatelessWidget {
         debugPrint('🔧 Button icon: ${config['icon']}');
 
         // Apply disabled state if can't save
+        Color backgroundColor;
+        Color foregroundColor;
+        double opacity = 1.0;
+
         if (!canSave) {
           final disabledStyle =
               saveButton.states?['disabled']?['style'] as Map<String, dynamic>?;
           if (disabledStyle != null) {
-            style.addAll(disabledStyle);
+            backgroundColor = StyleUtils.parseColor(
+              disabledStyle['backgroundColor'] ?? '#E5E7EB',
+            );
+            foregroundColor = StyleUtils.parseColor(
+              disabledStyle['color'] ?? '#6B7280',
+            );
           } else {
-            // Fallback disabled style
-            style['backgroundColor'] = '#F3F4F6';
-            style['color'] = '#9CA3AF';
+            // Custom beautiful disabled style
+            backgroundColor = Colors.grey.shade200;
+            foregroundColor = Colors.grey.shade600;
+            opacity = 0.8;
           }
+        } else {
+          backgroundColor = StyleUtils.parseColor(
+            style['backgroundColor'] ?? '#059669',
+          );
+          foregroundColor = StyleUtils.parseColor(style['color'] ?? '#FFFFFF');
         }
 
-        return ElevatedButton(
-          onPressed: canSave
-              ? () async {
-                  // Save form directly without dialog
-                  try {
-                    final savedFormsService = SavedFormsService();
-                    final timestamp = DateTime.now();
-                    final formId = 'form_${timestamp.millisecondsSinceEpoch}';
-                    final defaultName =
-                        'Form ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
+        return Opacity(
+          opacity: opacity,
+          child: ElevatedButton(
+            onPressed: canSave
+                ? () async {
+                    // Save form directly without dialog
+                    try {
+                      final savedFormsService = SavedFormsService();
+                      final timestamp = DateTime.now();
+                      final formId = 'form_${timestamp.millisecondsSinceEpoch}';
+                      final defaultName =
+                          'Form ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
 
-                    // Create the save format you requested
-                    final formToSave = {
-                      'form_id': formId,
-                      'components': page.components
-                          .map((component) => component.toJson())
-                          .toList(),
-                      'page_id': page.pageId,
-                      'title': defaultName,
-                    };
+                      // Create the save format you requested
+                      final formToSave = {
+                        'form_id': formId,
+                        'components': page.components
+                            .map((component) => component.toJson())
+                            .toList(),
+                        'page_id': page.pageId,
+                        'title': defaultName,
+                      };
 
-                    debugPrint('💾 Starting to save form...');
-                    debugPrint('📝 Form name: $defaultName');
-                    debugPrint('🆔 Form ID: $formId');
-                    debugPrint('📄 Page ID: ${page.pageId}');
-                    debugPrint('🔢 Components: ${page.components.length}');
+                      debugPrint('💾 Starting to save form...');
+                      debugPrint('📝 Form name: $defaultName');
+                      debugPrint('🆔 Form ID: $formId');
+                      debugPrint('📄 Page ID: ${page.pageId}');
+                      debugPrint('🔢 Components: ${page.components.length}');
 
-                    await savedFormsService.saveFormWithCustomFormat(
-                      formId: formId,
-                      name: defaultName,
-                      description: 'Auto-saved form',
-                      formData: formToSave,
-                      originalConfigKey: page.pageId,
-                    );
+                      await savedFormsService.saveFormWithCustomFormat(
+                        formId: formId,
+                        name: defaultName,
+                        description: 'Auto-saved form',
+                        formData: formToSave,
+                        originalConfigKey: page.pageId,
+                      );
 
-                    debugPrint('✅ Form saved successfully!');
+                      debugPrint('✅ Form saved successfully!');
 
-                    if (context.mounted) {
-                      // Show success dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (dialogContext) => AlertDialog(
-                          title: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Form Saved'),
-                            ],
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Form saved successfully as:'),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  defaultName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                      if (context.mounted) {
+                        // Show success dialog
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text('Form Saved'),
+                              ],
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Form saved successfully as:'),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    defaultName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'You can access saved forms from the main screen.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                const SizedBox(height: 8),
+                                Text(
+                                  'You can access saved forms from the main screen.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
                                 ),
+                              ],
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(
+                                    dialogContext,
+                                  ).pop(); // Close dialog
+                                  Navigator.of(context).popUntil(
+                                    (route) => route.isFirst,
+                                  ); // Go to main screen
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('OK'),
                               ),
                             ],
                           ),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(
-                                  dialogContext,
-                                ).pop(); // Close dialog
-                                Navigator.of(context).popUntil(
-                                  (route) => route.isFirst,
-                                ); // Go to main screen
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint('❌ Error saving form: $e');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error saving form: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('❌ Error saving form: $e');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error saving form: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   }
-                }
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: StyleUtils.parseColor(style['backgroundColor']),
-            foregroundColor: StyleUtils.parseColor(style['color']),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                style['borderRadius']?.toDouble() ?? 8,
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: backgroundColor,
+              foregroundColor: foregroundColor,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
+              elevation: canSave ? 2 : 0,
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (config['icon'] != null) ...[
-                Icon(
-                  _mapIconNameToIconData(config['icon']) ??
-                      (canSave ? Icons.save : Icons.lock),
-                  size: style['iconSize']?.toDouble() ?? 18,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (config['icon'] != null) ...[
+                  Icon(
+                    _mapIconNameToIconData(config['icon']) ??
+                        (canSave ? Icons.save : Icons.lock),
+                    size: style['iconSize']?.toDouble() ?? 20,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  canSave ? (config['label'] ?? 'Save') : 'Complete all fields',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: foregroundColor,
+                  ),
                 ),
-                const SizedBox(width: 8),
               ],
-              Text(
-                canSave ? (config['label'] ?? 'Save') : 'Complete all fields',
-              ),
-            ],
+            ),
           ),
         );
       },
