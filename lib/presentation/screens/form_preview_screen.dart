@@ -299,8 +299,10 @@ class FormPreviewScreen extends StatelessWidget {
             style.addAll(disabledStyle);
           } else {
             // Fallback disabled style
-            style['backgroundColor'] = '#F3F4F6';
-            style['color'] = '#9CA3AF';
+            // style['backgroundColor'] = '#F3F4F6';
+            // style['color'] = '#9CA3AF';
+            style['backgroundColor'] = '#000000';
+            style['color'] = '#000000';
           }
         }
 
@@ -434,11 +436,15 @@ class FormPreviewScreen extends StatelessWidget {
                   _mapIconNameToIconData(config['icon']) ??
                       (canSave ? Icons.save : Icons.lock),
                   size: style['iconSize']?.toDouble() ?? 18,
+                  color: canSave ? null : Colors.red.withValues(alpha: 0.4),
                 ),
                 const SizedBox(width: 8),
               ],
               Text(
-                canSave ? (config['label'] ?? 'Save') : 'Complete all fields',
+                canSave ? (config['label'] ?? 'Save') : 'Need Complete all fields',
+                style: TextStyle(
+                  color: canSave ? null : Colors.red.withValues(alpha: 0.4),
+              ),
               ),
             ],
           ),

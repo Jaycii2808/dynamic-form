@@ -138,20 +138,20 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () async {
-                  context.read<DynamicFormBloc>().add(
-                    RefreshDynamicFormEvent(configKey: widget.configKey),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.save),
-                onPressed: () => _showSaveTemplateDialog(page),
-              ),
-            ],
+            // actions: [
+            //   IconButton(
+            //     icon: const Icon(Icons.refresh),
+            //     onPressed: () async {
+            //       context.read<DynamicFormBloc>().add(
+            //         RefreshDynamicFormEvent(configKey: widget.configKey),
+            //       );
+            //     },
+            //   ),
+            //   IconButton(
+            //     icon: const Icon(Icons.save),
+            //     onPressed: () => _showSaveTemplateDialog(page),
+            //   ),
+            // ],
           ),
         ),
       ),

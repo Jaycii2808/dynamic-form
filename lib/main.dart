@@ -54,13 +54,31 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<String> configKeys = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadConfigKeys();
+  }
+
+  void loadConfigKeys() {
+    setState(() {
+      configKeys = RemoteConfigService().getAll().keys.toList();
+    });
+  }
+  @override
   Widget build(BuildContext context) {
     // list parameters on remote configs Firebase
-    final configKeys = RemoteConfigService().getAll().keys.toList();
+   // final configKeys = RemoteConfigService().getAll().keys.toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -79,6 +97,27 @@ class HomeScreen extends StatelessWidget {
             },
             icon: const Icon(Icons.archive_outlined),
             tooltip: 'Saved Forms',
+          ),
+          //icon button   await RemoteConfigService().initialize();
+          IconButton(
+            onPressed: () async {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              await RemoteConfigService().initialize();
+
+              await Future.delayed(const Duration(milliseconds: 50));
+              Navigator.of(context).pop();
+              loadConfigKeys();
+            },
+
+            icon: const Icon(Icons.restart_alt ),
+            tooltip: 'Reload  Online',
           ),
         ],
       ),
