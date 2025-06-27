@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class LoadingUtils {
@@ -26,11 +25,9 @@ class LoadingUtils {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-               // buildSpinKitSpinningLines(),
+                // buildSpinKitSpinningLines(),
                 //center circular
-                CircularProgressIndicator(
-                  color: Colors.red,
-                ),
+                CircularProgressIndicator(color: Colors.red),
                 SizedBox(height: 15),
               ],
             ),

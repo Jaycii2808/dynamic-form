@@ -21,7 +21,8 @@ String? validateForm(DynamicFormModel component, String value) {
     if (selectedType == null) {
       if (inputTypes.containsKey('email') && value.contains('@')) {
         selectedType = 'email';
-      } else if (inputTypes.containsKey('tel') && RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
+      } else if (inputTypes.containsKey('tel') &&
+          RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
         selectedType = 'tel';
       } else if (inputTypes.containsKey('password')) {
         selectedType = 'password';
