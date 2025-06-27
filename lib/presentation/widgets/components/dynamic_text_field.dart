@@ -38,10 +38,29 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   void _handleFocusChange() {
     if (!_focusNode.hasFocus) {
       final newValue = _controller.text;
+      final error = _validate(newValue);
+
+      // Determine new state based on validation
+      String newState = 'base';
+      if (error != null) {
+        newState = 'error';
+      } else if (newValue.isNotEmpty) {
+        newState = 'success';
+      }
+
       context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(componentId: widget.component.id, value: newValue),
+        UpdateFormFieldEvent(
+          componentId: widget.component.id,
+          value: {
+            'value': newValue,
+            'errorText': error,
+            'currentState': newState,
+          },
+        ),
       );
-      debugPrint('[TextField] ${widget.component.id} value updated: $newValue');
+      debugPrint(
+        '[TextField] ${widget.component.id} value updated: $newValue, error: $error, state: $newState',
+      );
     }
   }
 
@@ -160,22 +179,48 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   keyboardType: _getKeyboardType(component),
                   onChanged: (value) {
                     final error = _validate(value);
+
+                    // Determine new state based on validation
+                    String newState = 'base';
+                    if (error != null) {
+                      newState = 'error';
+                    } else if (value.isNotEmpty) {
+                      newState = 'success';
+                    }
+
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: {'value': value, 'errorText': error},
+                        value: {
+                          'value': value,
+                          'errorText': error,
+                          'currentState': newState,
+                        },
                       ),
                     );
                     debugPrint(
-                      '[TextField] ${component.id} value updated: $value, error: $error',
+                      '[TextField] ${component.id} value updated: $value, error: $error, state: $newState',
                     );
                   },
                   onSubmitted: (value) {
                     final error = _validate(value);
+
+                    // Determine new state based on validation
+                    String newState = 'base';
+                    if (error != null) {
+                      newState = 'error';
+                    } else if (value.isNotEmpty) {
+                      newState = 'success';
+                    }
+
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: {'value': value, 'errorText': error},
+                        value: {
+                          'value': value,
+                          'errorText': error,
+                          'currentState': newState,
+                        },
                       ),
                     );
                   },

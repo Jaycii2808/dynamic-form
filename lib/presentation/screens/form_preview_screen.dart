@@ -219,19 +219,45 @@ class FormPreviewScreen extends StatelessWidget {
   Widget _buildPreviewSaveButton(DynamicFormModel saveButton) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        // Check if all validations pass for this button
-        bool canSave = false;
+        // First check if there are any validation errors in the current state
+        bool hasValidationErrors = false;
+        if (state.page != null) {
+          for (final component in state.page!.components) {
+            final errorText = component.config['errorText'];
+            if (errorText != null && errorText.toString().isNotEmpty) {
+              hasValidationErrors = true;
+              debugPrint('❌ Validation error in ${component.id}: $errorText');
+              break;
+            }
+          }
+        }
+
+        // Check if all conditions pass for this button
+        bool conditionsPass = false;
 
         final conditions = saveButton.config['conditions'] as List<dynamic>?;
 
         if (conditions != null && conditions.isNotEmpty) {
-          canSave = true;
+          conditionsPass = true;
 
           for (final conditionData in conditions) {
             final condition = ButtonCondition.fromJson(
               conditionData as Map<String, dynamic>,
             );
-            final targetComponent = page.components
+
+            // Get the latest component from BLoC state if available
+            DynamicFormModel? targetComponent;
+            if (state.page != null) {
+              targetComponent = state.page!.components
+                  .cast<DynamicFormModel?>()
+                  .firstWhere(
+                    (comp) => comp?.id == condition.componentId,
+                    orElse: () => null,
+                  );
+            }
+
+            // Fallback to original page components if not found in state
+            targetComponent ??= page.components
                 .cast<DynamicFormModel?>()
                 .firstWhere(
                   (comp) => comp?.id == condition.componentId,
@@ -271,17 +297,28 @@ class FormPreviewScreen extends StatelessWidget {
               }
 
               if (!isValid) {
-                canSave = false;
+                conditionsPass = false;
+                debugPrint(
+                  '❌ Condition failed for ${condition.componentId}: ${condition.rule} = $value',
+                );
                 break;
               }
             } else {
-              canSave = false;
+              conditionsPass = false;
+              debugPrint('❌ Component not found: ${condition.componentId}');
               break;
             }
           }
         } else {
-          canSave = true; // No conditions means always can save
+          conditionsPass = true; // No conditions means always pass
         }
+
+        // Can only save if both conditions pass AND no validation errors
+        final canSave = conditionsPass && !hasValidationErrors;
+
+        debugPrint(
+          '💾 Save button state: conditionsPass=$conditionsPass, hasValidationErrors=$hasValidationErrors, canSave=$canSave',
+        );
 
         // Get button styles from Remote Config
         final style = Map<String, dynamic>.from(saveButton.style);
