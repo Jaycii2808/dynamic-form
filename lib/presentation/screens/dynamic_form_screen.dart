@@ -139,18 +139,18 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
             ),
             foregroundColor: Colors.white,
             actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () async {
-                  context.read<DynamicFormBloc>().add(
-                    RefreshDynamicFormEvent(configKey: widget.configKey),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.save),
-                onPressed: () => _showSaveTemplateDialog(page),
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.refresh),
+              //   onPressed: () async {
+              //     context.read<DynamicFormBloc>().add(
+              //       RefreshDynamicFormEvent(configKey: widget.configKey),
+              //     );
+              //   },
+              // ),
+              // IconButton(
+              //   icon: const Icon(Icons.save),
+              //   onPressed: () => _showSaveTemplateDialog(page),
+              // ),
             ],
           ),
         ),

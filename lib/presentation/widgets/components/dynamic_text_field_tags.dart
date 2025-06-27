@@ -326,7 +326,7 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.blueAccent, width: 1.5),
         borderRadius: BorderRadius.circular(14.0),
-        color: Colors.white,
+        color: StyleUtils.parseColor(style['backgroundColor']),
       ),
       child: _showSuggestions
           ? _buildTagsInputView(style, initialTags, placeholder, isDisabled)

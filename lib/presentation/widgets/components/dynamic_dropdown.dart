@@ -372,7 +372,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           child: MouseRegion(
             child: InkWell(
               key: _dropdownKey,
-              focusNode: _focusNode,
+              //focusNode: _focusNode,
               onTap: isDisabled
                   ? null
                   : () {
