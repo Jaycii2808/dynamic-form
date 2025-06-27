@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:dynamic_form_bi/presentation/widgets/form_library_dialog.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,6 +53,29 @@ class _DynamicFormContent extends StatefulWidget {
 }
 
 class _DynamicFormContentState extends State<_DynamicFormContent> {
+  /// Filter out Save buttons from main form
+  /// Save buttons should only appear in preview page
+  List<DynamicFormModel> _getMainFormComponents(DynamicFormPageModel page) {
+    final mainComponents = page.components.where((component) {
+      final action = component.config['action'];
+      final isSubmitButton = action == 'submit_form';
+
+      if (isSubmitButton) {
+        debugPrint(
+          '🚫 Filtering out Save button from main form: ${component.id}',
+        );
+      }
+
+      // Exclude Save buttons (action: 'submit_form') from main form
+      return !isSubmitButton;
+    }).toList();
+
+    debugPrint(
+      '📋 Main form components: ${mainComponents.length} (filtered out Save buttons)',
+    );
+    return mainComponents;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -156,70 +180,12 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                         child: ListView(
                           shrinkWrap: true,
                           children: [
-                            for (var component in page.components)
-                              DynamicFormRenderer(component: component),
+                            for (var component in _getMainFormComponents(page))
+                              DynamicFormRenderer(
+                                component: component,
+                                page: page,
+                              ),
                             const SizedBox(height: 32),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.save),
-                                label: const Text(
-                                  'Lưu form template',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onPressed: () => _showSaveTemplateDialog(page),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(28),
-                                  ),
-                                  elevation: 4,
-                                  shadowColor: Colors.black45,
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.library_books),
-                                label: const Text(
-                                  'Form Library',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onPressed: _showFormLibrary,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(28),
-                                  ),
-                                  elevation: 4,
-                                  shadowColor: Colors.black45,
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),

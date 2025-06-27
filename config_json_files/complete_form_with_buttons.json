@@ -1,0 +1,742 @@
+[
+   {
+      "id": "textfield_tags",
+      "type": "textFieldTagsFormType",
+      "config": {
+         "value": "",
+         "initialTags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+         "textSeparators": [",", " "],
+         "placeholder": "Enter tags..."
+      },
+      "style": {
+         "padding": "10px",
+         "borderColor": "#6979F8",
+         "borderRadius": 8,
+         "backgroundColor": "#F5F5F5",
+         "borderWidth": 1,
+         "fontSize": 16
+      },
+      "variants": {
+         "withTags": {
+            "style": {
+               "borderColor": "#4CAF50"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#6979F8"
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#4CAF50"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#F44336"
+            }
+         }
+      }
+   },
+   {
+      "id": "textarea_no_label",
+      "type": "textAreaFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "isRequired": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "borderColor": "#E4E4E4",
+         "borderRadius": 6,
+         "fontSize": 13,
+         "color": "#e0e0e0",
+         "backgroundColor": "#000000",
+         "fontStyle": "italic",
+         "borderWidth": 1,
+         "borderOpacity": 0.6,
+         "maxLines": 10,
+         "minLines": 6
+      },
+      "variants": {
+         "placeholders": {
+            "style": {}
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#E4E4E4"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#ff4d4f",
+               "color": "#ff4d4f",
+               "helperText": "Exceeds limit",
+               "helperTextColor": "#ff4d4f"
+            }
+         }
+      },
+      "inputTypes": {
+         "text": {
+            "validation": {
+               "min_length": 1,
+               "max_length": 100,
+               "error_message": "Exceeds 100 characters"
+            }
+         }
+      }
+   },
+   {
+      "id": "switch_with_label",
+      "type": "switchFormType",
+      "config": {
+         "label": "Toggle",
+         "value": "",
+         "selected": false
+      },
+      "style": {
+         "padding": "10px",
+         "borderColor": "#6979F8",
+         "borderRadius": 20,
+         "backgroundColor": "#000000",
+         "borderWidth": 2,
+         "iconSize": 20
+      },
+      "variants": {
+         "withLabel": {
+            "style": {
+               "labelTextSize": 16,
+               "labelColor": "#FFFFFF"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#6979F8",
+               "backgroundColor": "transparent"
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#6979F8",
+               "backgroundColor": "#6979F8",
+               "labelColor": "#FFFFFF"
+            }
+         }
+      }
+   },
+   {
+      "id": "selector_with_label",
+      "type": "selectorFormType",
+      "config": {
+         "label": "Label Test",
+         "value": "",
+         "selected": false
+      },
+      "style": {
+         "padding": "10px",
+         "borderColor": "#6979F8",
+         "borderRadius": 20,
+         "backgroundColor": "#000000",
+         "borderWidth": 2,
+         "iconSize": 20
+      },
+      "variants": {
+         "withLabel": {
+            "style": {
+               "labelTextSize": 16,
+               "labelColor": "#FFFFFF"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#6979F8",
+               "backgroundColor": "transparent"
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#6979F8",
+               "backgroundColor": "#6979F8",
+               "labelColor": "#FFFFFF"
+            }
+         }
+      }
+   },
+   {
+      "id": "datetime_picker_range",
+      "type": "dateTimeRangePickerFormType",
+      "config": {
+         "label": "Select date range",
+         "value": null,
+         "isRequired": false,
+         "placeholder": "MMM d, yyyy - MMM d, yyyy",
+         "defaultFormat": "MMM d, yyyy"
+      },
+      "style": {
+         "padding": "10px 12px",
+         "borderColor": "#4A4A4A",
+         "borderRadius": 4,
+         "fontSize": 13,
+         "color": "#FFFFFF",
+         "backgroundColor": "#000000",
+         "fontStyle": "italic",
+         "borderWidth": 1,
+         "borderOpacity": 0.6,
+         "iconColor": "#FFFFFF",
+         "iconSize": 20,
+         "labelColor": "#FFFFFF"
+      },
+      "validation": {
+         "required": {
+            "isRequired": false,
+            "error_message": "Please select a date range"
+         }
+      },
+      "variants": {
+         "range": {
+            "style": {
+               "backgroundColor": "#000000",
+               "borderColor": "#4A4A4A"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#4A4A4A",
+               "color": "#FFFFFF"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#FF3333",
+               "borderWidth": 2
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#00CC00"
+            }
+         },
+         "focused": {
+            "style": {
+               "borderColor": "#800080",
+               "borderWidth": 2
+            }
+         }
+      }
+   },
+   {
+      "id": "datetime_picker_date_only",
+      "type": "dateTimePickerFormType",
+      "config": {
+         "label": "Select date only",
+         "value": "",
+         "isRequired": false,
+         "placeholder": "dd/MM/YYYY",
+         "pickerMode": "dateOnly",
+         "defaultFormat": "dd/MM/YYYY"
+      },
+      "style": {
+         "padding": "10px 12px",
+         "borderColor": "#E4E4E4",
+         "borderRadius": 8,
+         "fontSize": 13,
+         "color": "#e0e0e0",
+         "backgroundColor": "#000000",
+         "fontStyle": "italic",
+         "borderWidth": 1,
+         "borderOpacity": 0.6,
+         "iconColor": "#6979F8",
+         "iconSize": 20,
+         "labelColor": "#e0e0e0",
+         "labelTextSize": 16
+      },
+      "validation": {
+         "required": {
+            "isRequired": false,
+            "error_message": "Please select a date"
+         }
+      },
+      "variants": {
+         "single": {
+            "style": {
+               "backgroundColor": "#000000",
+               "borderColor": "#E4E4E4"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#E4E4E4",
+               "color": "#e0e0e0"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#FF0000",
+               "borderWidth": 2
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#00FF00"
+            }
+         },
+         "focused": {
+            "style": {
+               "borderColor": "#6979F8",
+               "borderWidth": 2
+            }
+         }
+      }
+   },
+   {
+      "id": "price_range_slider_with_icon",
+      "type": "sliderFormType",
+      "config": {
+         "range": true,
+         "min": 0,
+         "max": 2000,
+         "values": [150, 1250],
+         "prefix": "$",
+         "icon": "shopping"
+      },
+      "variants": {
+         "withIcon": {
+            "style": {}
+         }
+      },
+      "style": {
+         "activeColor": "#1ABC9C",
+         "inactiveColor": "#BDBDBD",
+         "thumbColor": "#1ABC9C",
+         "thumbIconColor": "#6979F8",
+         "valueLabelColor": "#FFFFFF",
+         "iconColor": "#6979F8",
+         "margin": "16 0 48 0"
+      }
+   },
+   {
+      "id": "price_single_slider_with_thumb_icon",
+      "type": "sliderFormType",
+      "config": {
+         "range": false,
+         "min": 0,
+         "max": 2000,
+         "value": 1500,
+         "prefix": "$",
+         "thumbIcon": "plane"
+      },
+      "variants": {
+         "withThumbIcon": {
+            "style": {}
+         }
+      },
+      "style": {
+         "activeColor": "#1ABC9C",
+         "inactiveColor": "#BDBDBD",
+         "thumbColor": "#FFFFFF",
+         "thumbIconColor": "#1ABC9C",
+         "valueLabelColor": "#FFFFFF",
+         "margin": "16 0 48 0"
+      }
+   },
+   {
+      "id": "file_uploader_with_preview",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop an image to preview",
+         "buttonText": "Upload Image",
+         "allowedExtensions": ["jpg", "png", "gif", "jpeg", "webp"]
+      },
+      "style": {
+         "width": 320,
+         "height": 200,
+         "backgroundColor": "#000000",
+         "borderColor": "#4A4A4A",
+         "borderRadius": 12,
+         "borderWidth": 1.5,
+         "borderStyle": "dashed",
+         "textColor": "#FFFFFF",
+         "buttonBackgroundColor": "#6979F8",
+         "buttonTextColor": "#FFFFFF",
+         "buttonBorderRadius": 8,
+         "margin": "16"
+      },
+      "variants": {
+         "withPreview": {},
+         "dragging": {
+            "config": {
+               "title": "Drop image here"
+            },
+            "style": {
+               "backgroundColor": "#1A1A1A",
+               "borderColor": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "success": {
+            "config": {
+               "buttonText": "Change Image"
+            },
+            "style": {}
+         },
+         "error": {
+            "config": {
+               "statusText": "Upload failed. Not an image?",
+               "buttonText": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "iconColor": "#E74C3C",
+               "borderColor": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_male",
+      "type": "radioFormType",
+      "config": {
+         "label": "Male",
+         "hint": "Select if you identify as male.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "borderColor": "#6979F8",
+               "iconColor": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "select_with_icon_label",
+      "type": "selectFormType",
+      "config": {
+         "label": "Chọn quốc gia",
+         "placeholder": "Chọn quốc gia của bạn",
+         "icon": "globe",
+         "isRequired": false,
+         "height": "auto",
+         "options": [
+            {
+               "value": "vn",
+               "label": "Việt Nam"
+            },
+            {
+               "value": "us",
+               "label": "Hoa Kỳ"
+            },
+            {
+               "value": "jp",
+               "label": "Nhật Bản"
+            },
+            {
+               "value": "kr",
+               "label": "Hàn Quốc"
+            },
+            {
+               "value": "cn",
+               "label": "Trung Quốc"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "borderColor": "#888888",
+         "borderRadius": 6,
+         "fontSize": 15,
+         "color": "#e0e0e0",
+         "backgroundColor": "#000000",
+         "labelColor": "#3b82f6",
+         "labelTextSize": 14,
+         "iconPosition": "left",
+         "iconSize": 18,
+         "iconColor": "#ffffff"
+      },
+      "variants": {},
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "iconColor": "#ff4d4f",
+               "labelColor": "#ff4d4f",
+               "fontStyle": "italic",
+               "helperText": "Vui lòng chọn quốc gia",
+               "helperTextColor": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "iconColor": "#00b96b",
+               "labelColor": "#00b96b",
+               "fontStyle": "italic",
+               "helperText": "Quốc gia đã được chọn",
+               "helperTextColor": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "isRequired": true,
+            "error_message": "Vui lòng chọn quốc gia"
+         }
+      }
+   },
+   {
+      "id": "input_normal",
+      "type": "textFieldFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "isRequired": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "borderColor": "#888888",
+         "borderRadius": 6,
+         "fontSize": 15,
+         "color": "#e0e0e0",
+         "backgroundColor": "#000000"
+      },
+      "variants": {
+         "normal": {
+            "style": {}
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "borderColor": "#ff4d4f",
+               "color": "#ff4d4f",
+               "fontStyle": "italic",
+               "helperText": "Errors",
+               "helperTextColor": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "borderColor": "#00b96b",
+               "color": "#00b96b",
+               "fontStyle": "italic",
+               "helperText": "Placeholders",
+               "helperTextColor": "#00b96b"
+            }
+         }
+      },
+      "inputTypes": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_base",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Base Checkbox",
+         "hint": "Simple border style.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "borderRadius": 8,
+         "borderWidth": 2,
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "borderColor": "#9E9E9E",
+               "backgroundColor": "transparent"
+            }
+         },
+         "selected": {
+            "style": {
+               "borderColor": "#6979F8",
+               "backgroundColor": "transparent",
+               "iconColor": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "form_preview_button",
+      "type": "buttonFormType",
+      "config": {
+         "label": "Preview",
+         "action": "preview_form",
+         "icon": "visibility"
+      },
+      "style": {
+         "width": "120px",
+         "height": "40px",
+         "backgroundColor": "#3B82F6",
+         "color": "#FFFFFF",
+         "borderColor": "transparent",
+         "borderWidth": 0,
+         "borderRadius": 8,
+         "fontSize": 13,
+         "fontWeight": "600",
+         "margin": "8px 6px",
+         "padding": "8px 12px",
+         "iconSize": 14,
+         "elevation": 4,
+         "shadowColor": "#3B82F6"
+      },
+      "states": {
+         "disabled": {
+            "style": {
+               "backgroundColor": "#F3F4F6",
+               "color": "#9CA3AF",
+               "borderColor": "transparent",
+               "elevation": 0,
+               "shadowColor": "transparent"
+            }
+         },
+         "base": {
+            "style": {
+               "backgroundColor": "#3B82F6",
+               "color": "#FFFFFF",
+               "borderColor": "transparent",
+               "elevation": 4,
+               "shadowColor": "#3B82F6"
+            }
+         },
+         "loading": {
+            "style": {
+               "backgroundColor": "#2563EB",
+               "elevation": 2
+            }
+         }
+      }
+   },
+   {
+      "id": "form_save_button",
+      "type": "buttonFormType",
+      "config": {
+         "label": "Save",
+         "action": "submit_form",
+         "icon": "check_circle",
+         "conditions": [
+            {
+               "component_id": "select_with_icon_label",
+               "type": "input",
+               "rule": "not_null",
+               "error_message": "Vui lòng chọn quốc gia"
+            },
+            {
+               "component_id": "input_normal",
+               "type": "input",
+               "rule": "not_null",
+               "error_message": "Vui lòng nhập thông tin"
+            },
+            {
+               "component_id": "textarea_no_label",
+               "type": "input",
+               "rule": "not_null",
+               "error_message": "Vui lòng nhập mô tả"
+            },
+            {
+               "component_id": "switch_with_label",
+               "type": "toggle",
+               "rule": "equals",
+               "expected_value": true,
+               "error_message": "Vui lòng bật toggle"
+            },
+            {
+               "component_id": "cb_base",
+               "type": "toggle",
+               "rule": "equals",
+               "expected_value": true,
+               "error_message": "Vui lòng tick checkbox"
+            }
+         ]
+      },
+      "style": {
+         "width": "120px",
+         "height": "40px",
+         "backgroundColor": "#059669",
+         "color": "#FFFFFF",
+         "borderColor": "transparent",
+         "borderWidth": 0,
+         "borderRadius": 8,
+         "fontSize": 13,
+         "fontWeight": "600",
+         "margin": "8px 6px",
+         "padding": "8px 12px",
+         "iconSize": 14,
+         "elevation": 4,
+         "shadowColor": "#059669"
+      },
+      "states": {
+         "disabled": {
+            "style": {
+               "backgroundColor": "#F3F4F6",
+               "color": "#9CA3AF",
+               "borderColor": "transparent",
+               "elevation": 0,
+               "shadowColor": "transparent"
+            }
+         },
+         "base": {
+            "style": {
+               "backgroundColor": "#059669",
+               "color": "#FFFFFF",
+               "borderColor": "transparent",
+               "elevation": 4,
+               "shadowColor": "#059669"
+            }
+         },
+         "loading": {
+            "style": {
+               "backgroundColor": "#047857",
+               "elevation": 2
+            }
+         }
+      }
+   }
+]

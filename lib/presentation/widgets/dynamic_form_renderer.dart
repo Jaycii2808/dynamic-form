@@ -15,7 +15,10 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.d
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
 IconData? mapIconNameToIconData(String name) {
@@ -82,8 +85,9 @@ class UnfocusOnTapOutside extends StatelessWidget {
 
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
+  final DynamicFormPageModel? page;
 
-  const DynamicFormRenderer({super.key, required this.component});
+  const DynamicFormRenderer({super.key, required this.component, this.page});
 
   @override
   State<DynamicFormRenderer> createState() => _DynamicFormRendererState();
@@ -95,6 +99,26 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void _handleButtonAction(String action, Map<String, dynamic>? data) {
+    if (action == 'preview_form' && widget.page != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider.value(
+            value: context.read<DynamicFormBloc>(),
+            child: FormPreviewScreen(
+              page: widget.page!,
+              title: widget.page!.title.isNotEmpty
+                  ? widget.page!.title
+                  : 'Form Preview',
+            ),
+          ),
+        ),
+      );
+    }
+    // Handle other actions as needed
   }
 
   @override
@@ -132,7 +156,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-        return DynamicButton(component: component);
+        return DynamicButton(
+          component: component,
+          onAction: _handleButtonAction,
+        );
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
