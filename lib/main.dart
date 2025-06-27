@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,6 +67,20 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Dynamic Forms'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SavedFormsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.archive_outlined),
+            tooltip: 'Saved Forms',
+          ),
+        ],
       ),
       body: ListView(
         children: [
@@ -75,9 +90,7 @@ class HomeScreen extends StatelessWidget {
             itemCount: configKeys.length,
             itemBuilder: (context, index) {
               final configKey = configKeys[index];
-              debugPrint(
-                'CONFIG_KEY: $configKey',
-              );
+              debugPrint('CONFIG_KEY: $configKey');
               return buildItem(context, configKey);
             },
           ),
@@ -97,10 +110,8 @@ class HomeScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DynamicFormScreen(
-          configKey: configKey,
-          title: configKey,
-        ),
+        builder: (context) =>
+            DynamicFormScreen(configKey: configKey, title: configKey),
       ),
     );
   }
@@ -110,10 +121,7 @@ class HomeScreen extends StatelessWidget {
       color: Colors.blueGrey,
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(10),
-      child: Text(
-        configKey,
-        style: const TextStyle(color: Colors.white),
-      ),
+      child: Text(configKey, style: const TextStyle(color: Colors.white)),
     );
   }
 }
