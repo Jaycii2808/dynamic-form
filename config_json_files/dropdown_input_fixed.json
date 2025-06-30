@@ -1,0 +1,180 @@
+[
+   {
+      "id": "user_menu_with_states",
+      "type": "dropdownFormType",
+      "config": {
+         "label": "Jocelyn Botos",
+         "avatar": "https://randomuser.me/api/portraits/women/68.jpg",
+         "value": "settings",
+         "items": [
+            {
+               "id": "account",
+               "label": "Your Account",
+               "icon": "user"
+            },
+            {
+               "type": "divider"
+            },
+            {
+               "id": "settings",
+               "label": "Settings",
+               "icon": "settings"
+            },
+            {
+               "id": "logout",
+               "label": "Log Out",
+               "icon": "logout"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#555555",
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "dropdown_background_color": "#0d0d0d",
+         "dropdown_width": 280,
+         "divider_color": "#444444"
+      },
+      "variants": {
+         "with_avatar": {
+            "style": {
+               "padding": "8px 12px"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#555555"
+            }
+         },
+         "hover": {
+            "style": {
+               "border_color": "#A0A5F5",
+               "background_color": "#2c2c2e"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "helper_text": "An error occurred with your account.",
+               "helper_text_color": "#ff4d4f"
+            }
+         }
+      },
+      "validation": {
+         "demo_error": true
+      }
+   },
+   {
+      "id": "search_dropdown",
+      "type": "dropdownFormType",
+      "config": {
+         "searchable": true,
+         "placeholder": "Search actions...",
+         "value": "item2",
+         "items": [
+            {
+               "id": "item1",
+               "label": "First Action"
+            },
+            {
+               "id": "item2",
+               "label": "Second Action"
+            },
+            {
+               "id": "item3",
+               "label": "Third Action"
+            },
+            {
+               "id": "item4",
+               "label": "Fourth Action"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#6979F8",
+         "border_width": 1.5,
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "rgba(105, 121, 248, 0.4)",
+         "dropdown_background_color": "#1c1c1e",
+         "icon_color": "#e0e0e0"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "background_color": "rgba(105, 121, 248, 0.4)"
+            }
+         },
+         "hover": {
+            "style": {
+               "background_color": "rgba(105, 121, 248, 0.6)"
+            }
+         }
+      }
+   },
+   {
+      "id": "language_selector",
+      "type": "dropdownFormType",
+      "config": {
+         "label": "English",
+         "icon": "globe",
+         "value": "lang_en",
+         "items": [
+            {
+               "id": "lang_en",
+               "label": "English"
+            },
+            {
+               "id": "lang_es",
+               "label": "Español"
+            },
+            {
+               "id": "lang_fr",
+               "label": "Français"
+            },
+            {
+               "id": "lang_de",
+               "label": "Deutsch"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#555555",
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "icon_color": "#e0e0e0",
+         "dropdown_background_color": "#0d0d0d",
+         "dropdown_width": 200
+      },
+      "variants": {
+         "with_icon": {
+            "style": {
+               "padding": "12px"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#555555"
+            }
+         },
+         "hover": {
+            "style": {
+               "border_color": "#A0A5F5",
+               "background_color": "#2c2c2e"
+            }
+         }
+      }
+   }
+]

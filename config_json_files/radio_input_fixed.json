@@ -1,0 +1,178 @@
+[
+   {
+      "id": "radio_male",
+      "type": "radioFormType",
+      "config": {
+         "label": "Male",
+         "hint": "Select if you identify as male.",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "icon_color": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_female",
+      "type": "radioFormType",
+      "config": {
+         "label": "Female",
+         "hint": "Select if you identify as female.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#E040FB",
+               "icon_color": "#E040FB"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_label_only",
+      "type": "radioFormType",
+      "config": {
+         "label": "Label Only",
+         "hint": "This is a label-only variant.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#00BCD4",
+               "icon_color": "#00BCD4"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_anonymous",
+      "type": "radioFormType",
+      "config": {
+         "label": "Anonymous",
+         "hint": "With a leading icon.",
+         "icon": "user",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#8D6E63",
+         "label_color": "#8D6E63",
+         "hint_color": "#BCAAA4"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#8D6E63"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#5D4037",
+               "icon_color": "#5D4037"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_standard",
+      "type": "radioFormType",
+      "config": {
+         "label": "Standard Shipping",
+         "hint": "5-7 business days",
+         "icon": "local_shipping",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#FF7043"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#FF7043",
+               "icon_color": "#FF7043"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_express",
+      "type": "radioFormType",
+      "config": {
+         "label": "Express Shipping",
+         "hint": "1-2 business days",
+         "icon": "flight_takeoff",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#29B6F6"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#29B6F6",
+               "icon_color": "#29B6F6"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_disabled",
+      "type": "radioFormType",
+      "config": {
+         "label": "Overnight (Disabled)",
+         "hint": "Currently unavailable",
+         "icon": "moon",
+         "value": false,
+         "is_editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "border_color": "#616161",
+         "label_color": "#9E9E9E",
+         "hint_color": "#757575",
+         "icon_color": "#757575"
+      }
+   }
+]

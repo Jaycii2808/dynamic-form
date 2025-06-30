@@ -1,0 +1,211 @@
+[
+   {
+      "id": "file_uploader_1",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop files or click to upload",
+         "button_text": "Browse",
+         "allowed_extensions": ["jpg", "png", "pdf"]
+      },
+      "style": {
+         "width": 320,
+         "height": 200,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "margin": "16"
+      },
+      "variants": {
+         "dragging": {
+            "config": {
+               "title": "Drop files here",
+               "subtitle": "or"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "loading": {
+            "config": {
+               "status_text_format": "Uploading {fileName} {progress}/{total}%",
+               "subtitle": "very soon it's over",
+               "button_text": "Loading"
+            },
+            "style": {
+               "icon": "file",
+               "icon_color": "#FFFFFF",
+               "progress_color": "#6979F8"
+            }
+         },
+         "success": {
+            "config": {
+               "status_text_format": "{fileName} uploaded!",
+               "button_text": "Remove"
+            },
+            "style": {
+               "icon": "check",
+               "icon_color": "#27AE60"
+            }
+         },
+         "error": {
+            "config": {
+               "status_text": "Upload failed. Please try again.",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "file_uploader_multiple",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop multiple files or click to upload",
+         "subtitle": "You can select multiple files at once",
+         "button_text": "Browse Files",
+         "multiple_files": true,
+         "allowed_extensions": [
+            "jpg",
+            "png",
+            "pdf",
+            "doc",
+            "docx",
+            "txt",
+            "jpeg",
+            "webp"
+         ]
+      },
+      "style": {
+         "width": 400,
+         "height": 300,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "file_item_background_color": "#2A2A2A",
+         "remove_all_button_color": "#E74C3C",
+         "margin": "16"
+      },
+      "variants": {
+         "multiple_files": {},
+         "dragging": {
+            "config": {
+               "title": "Drop multiple files here",
+               "subtitle": "or click to browse"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "loading": {
+            "config": {
+               "status_text_format": "Uploading {fileName} {progress}/{total}%",
+               "subtitle": "Processing multiple files...",
+               "button_text": "Loading"
+            },
+            "style": {
+               "icon": "file",
+               "icon_color": "#FFFFFF",
+               "progress_color": "#6979F8"
+            }
+         },
+         "success": {
+            "config": {
+               "status_text_format": "{fileName} uploaded successfully!",
+               "add_more_button_text": "Add More Files",
+               "remove_all_button_text": "Remove All"
+            },
+            "style": {
+               "icon": "check",
+               "icon_color": "#27AE60"
+            }
+         },
+         "error": {
+            "config": {
+               "status_text": "Some files failed to upload. Please try again.",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "file_uploader_with_preview",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop an image to preview",
+         "button_text": "Upload Image",
+         "allowed_extensions": ["jpg", "png", "gif", "jpeg", "webp"]
+      },
+      "style": {
+         "width": 320,
+         "height": 200,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "margin": "16"
+      },
+      "variants": {
+         "with_preview": {},
+         "dragging": {
+            "config": {
+               "title": "Drop image here"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "success": {
+            "config": {
+               "button_text": "Change Image"
+            },
+            "style": {}
+         },
+         "error": {
+            "config": {
+               "status_text": "Upload failed. Not an image?",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   }
+]

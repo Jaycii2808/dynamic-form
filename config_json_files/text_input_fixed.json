@@ -1,0 +1,259 @@
+[
+   {
+      "id": "input_normal",
+      "type": "textFieldFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "normal": {
+            "style": {}
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Errors",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Placeholders",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_icon",
+      "type": "textFieldFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "icon": "mail",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Errors",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Success",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_label",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Label",
+         "placeholder": "Placeholders",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Error Notification",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Positive Message",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_icon_label",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Label",
+         "placeholder": "Placeholders",
+         "icon": "mail",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         },
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Wrong Value",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Correct Value",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   }
+]

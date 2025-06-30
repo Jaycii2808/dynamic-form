@@ -1,0 +1,131 @@
+[
+   {
+      "id": "price_filter_container",
+      "type": "container",
+      "config": {
+         "label": "Price filter"
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "children": [
+         {
+            "id": "price_range_slider",
+            "type": "sliderFormType",
+            "config": {
+               "range": true,
+               "min": 0,
+               "max": 2000,
+               "divisions": 100,
+               "values": [262, 1043],
+               "prefix": "$"
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "margin": "16 0 48 0"
+            }
+         },
+         {
+            "id": "price_single_slider",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "divisions": 100,
+               "value": 980,
+               "prefix": "$"
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF"
+            }
+         },
+         {
+            "id": "price_single_slider_with_hint",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "value": 500,
+               "prefix": "$",
+               "hint": "Adjust the slider to set your maximum price."
+            },
+            "variants": {
+               "with_hint": {
+                  "style": {
+                     "margin": "16 0 0 0"
+                  }
+               }
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "hint_color": "#9E9E9E"
+            }
+         },
+         {
+            "id": "price_range_slider_with_icon",
+            "type": "sliderFormType",
+            "config": {
+               "range": true,
+               "min": 0,
+               "max": 2000,
+               "values": [150, 1250],
+               "prefix": "$",
+               "icon": "shopping"
+            },
+            "variants": {
+               "with_icon": {
+                  "style": {}
+               }
+            },
+            "style": {
+               "active_color": "#1ABC9C",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#1ABC9C",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "icon_color": "#6979F8",
+               "margin": "16 0 48 0"
+            }
+         },
+         {
+            "id": "price_single_slider_with_thumb_icon",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "value": 1500,
+               "prefix": "$",
+               "thumb_icon": "plane"
+            },
+            "variants": {
+               "with_thumb_icon": {
+                  "style": {}
+               }
+            },
+            "style": {
+               "active_color": "#1ABC9C",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#1ABC9C",
+               "value_label_color": "#FFFFFF",
+               "margin": "16 0 48 0"
+            }
+         }
+      ]
+   }
+]

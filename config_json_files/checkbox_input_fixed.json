@@ -1,0 +1,148 @@
+[
+   {
+      "id": "cb_base",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Base Checkbox",
+         "hint": "Simple border style.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E",
+               "background_color": "transparent"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "background_color": "transparent",
+               "icon_color": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_filled",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Filled Checkbox",
+         "hint": "Fills with color when selected.",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#BDBDBD",
+               "background_color": "#424242"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "background_color": "#6979F8",
+               "icon_color": "#FFFFFF"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_icon_hint",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "With Leading Icon",
+         "hint": "Displays an icon next to the checkbox.",
+         "icon": "book",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "icon_color": "#8D6E63",
+         "label_color": "#8D6E63",
+         "label_text_size": 16,
+         "hint_color": "#BCAAA4",
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#8D6E63",
+               "background_color": "transparent"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#8D6E63",
+               "background_color": "#D7CCC8",
+               "icon_color": "#5D4037"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_disabled_selected",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Disabled (Selected)",
+         "hint": "This checkbox is not interactive.",
+         "value": true,
+         "editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "background_color": "#424242",
+         "border_color": "#616161",
+         "icon_color": "#757575",
+         "label_color": "#9E9E9E",
+         "label_text_size": 16,
+         "hint_color": "#757575",
+         "width": 40,
+         "height": 40
+      }
+   },
+   {
+      "id": "cb_disabled_unselected",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Disabled (Unselected)",
+         "hint": "This one is also not interactive.",
+         "value": false,
+         "editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "background_color": "#424242",
+         "border_color": "#616161",
+         "label_color": "#9E9E9E",
+         "label_text_size": 16,
+         "hint_color": "#757575",
+         "width": 40,
+         "height": 40
+      }
+   }
+]
