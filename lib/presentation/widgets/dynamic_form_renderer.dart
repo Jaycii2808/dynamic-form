@@ -1,5 +1,6 @@
 ﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
@@ -87,8 +88,16 @@ class UnfocusOnTapOutside extends StatelessWidget {
 class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormModel component;
   final DynamicFormPageModel? page;
+  final VoidCallback? onCompleted;
+  final Function(String componentId, dynamic value)? onFieldChanged;
 
-  const DynamicFormRenderer({super.key, required this.component, this.page});
+  const DynamicFormRenderer({
+    super.key,
+    required this.component,
+    this.page,
+    this.onCompleted,
+    this.onFieldChanged,
+  });
 
   @override
   State<DynamicFormRenderer> createState() => _DynamicFormRendererState();
@@ -97,29 +106,106 @@ class DynamicFormRenderer extends StatefulWidget {
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   late StringTagController<String> tagController;
 
+  // Cache component properties to avoid recalculation in build
+  late final String _componentId;
+  late final Map<String, dynamic> _componentConfig;
+  late final bool _isRequired;
+  late final bool _isDisabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeComponentProps();
+  }
+
+  void _initializeComponentProps() {
+    _componentId = widget.component.id;
+    _componentConfig = widget.component.config;
+    _isRequired = ComponentUtils.isRequired(widget.component);
+    _isDisabled = ComponentUtils.isComponentDisabled(widget.component);
+  }
+
   @override
   void dispose() {
     super.dispose();
   }
 
   void _handleButtonAction(String action, Map<String, dynamic>? data) {
-    if (action == 'preview_form' && widget.page != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: context.read<DynamicFormBloc>(),
-            child: FormPreviewScreen(
-              page: widget.page!,
-              title: widget.page!.title.isNotEmpty
-                  ? widget.page!.title
-                  : 'Form Preview',
-            ),
+    try {
+      switch (action) {
+        case 'preview_form':
+          _handlePreviewAction();
+          break;
+        case 'submit_form':
+          _handleSubmitAction(data);
+          break;
+        case 'reset_form':
+          _handleResetAction();
+          break;
+        default:
+          debugPrint('Unknown action: $action');
+      }
+    } catch (e) {
+      debugPrint('Error handling button action $action: $e');
+    }
+  }
+
+  void _handlePreviewAction() {
+    final page = widget.page;
+    if (page == null) {
+      debugPrint('❌ No page available for preview');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: context.read<DynamicFormBloc>(),
+          child: FormPreviewScreen(
+            page: page,
+            title: page.title.isNotEmpty ? page.title : 'Form Preview',
           ),
         ),
-      );
+      ),
+    );
+  }
+
+  void _handleSubmitAction(Map<String, dynamic>? data) {
+    // Check if all required fields are completed
+    if (_checkFormCompletion()) {
+      widget.onCompleted?.call();
+      debugPrint('✅ Form completed successfully');
+    } else {
+      debugPrint('❌ Form incomplete - missing required fields');
     }
-    // Handle other actions as needed
+  }
+
+  void _handleResetAction() {
+    // Reset form fields logic would go here
+    debugPrint('🔄 Resetting form');
+  }
+
+  bool _checkFormCompletion() {
+    final page = widget.page;
+    if (page == null) return false;
+
+    // Check if all required components have values
+    for (final component in page.components) {
+      if (ComponentUtils.isRequired(component)) {
+        final value = component.config['value'];
+        if (value == null ||
+            (value is String && value.trim().isEmpty) ||
+            (value is List && value.isEmpty)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void _notifyFieldChanged(dynamic value) {
+    widget.onFieldChanged?.call(_componentId, value);
   }
 
   @override
@@ -128,7 +214,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   Widget buildForm() {
+    // Use cached component to avoid repeated property access
     final component = widget.component;
+
+    // Performance optimization: Build component based on type
+    // Using const enum for better performance
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
         return DynamicTextField(component: component);
@@ -162,53 +252,66 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           onAction: _handleButtonAction,
         );
       case FormTypeEnum.container:
-        return Container(
-          key: Key(component.id),
-          margin: StyleUtils.parsePadding(component.style['margin']),
-          padding: StyleUtils.parsePadding(component.style['padding']),
-          decoration: BoxDecoration(
-            color: StyleUtils.parseColor(component.style['background_color']),
-            border: component.style['border_color'] != null
-                ? Border.all(
-                    color: StyleUtils.parseColor(
-                      component.style['border_color'],
-                    ),
-                    width:
-                        (component.style['border_width'] as num?)?.toDouble() ??
-                        1.0,
-                  )
-                : null,
-            borderRadius: StyleUtils.parseBorderRadius(
-              component.style['border_radius'],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (component.config['label'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    component.config['label'],
-                    style: TextStyle(
-                      color: StyleUtils.parseColor(
-                        component.style['label_color'],
-                      ),
-                      fontSize: StyleUtils.parseFontSize(
-                        component.style['font_size'],
-                      ),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ...?component.children?.map(
-                (child) => DynamicFormRenderer(component: child),
-              ),
-            ],
-          ),
-        );
+        return _buildContainer(component);
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
+  }
+
+  /// Build container with performance optimization and null safety
+  Widget _buildContainer(DynamicFormModel component) {
+    // Cache style properties to avoid repeated map lookups
+    final style = component.style;
+    final config = component.config;
+
+    // Get label with null safety
+    final label = ComponentUtils.getLabel(component);
+
+    return Container(
+      key: Key(_componentId),
+      margin: StyleUtils.parsePadding(style['margin']),
+      padding: StyleUtils.parsePadding(style['padding']),
+      decoration: BoxDecoration(
+        color: StyleUtils.parseColor(style['background_color']),
+        border: style['border_color'] != null
+            ? Border.all(
+                color: StyleUtils.parseColor(style['border_color']),
+                width: ComponentUtils.getStyleValue<num>(
+                  style,
+                  'border_width',
+                  1.0,
+                ).toDouble(),
+              )
+            : null,
+        borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (label.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: StyleUtils.parseColor(style['label_color']),
+                  fontSize: StyleUtils.parseFontSize(style['font_size']),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          // Build children with null safety
+          if (component.children != null)
+            ...component.children!.map(
+              (child) => DynamicFormRenderer(
+                component: child,
+                page: widget.page,
+                onCompleted: widget.onCompleted,
+                onFieldChanged: widget.onFieldChanged,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

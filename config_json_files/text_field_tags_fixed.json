@@ -1,0 +1,47 @@
+{
+   "title": "TextField Tags Demo",
+   "components": [
+      {
+         "id": "textfield_tags",
+         "type": "textFieldTagsFormType",
+         "config": {
+            "value": "",
+            "initial_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+            "text_separators": [",", " "],
+            "placeholder": "Enter tags..."
+         },
+         "style": {
+            "padding": "10px",
+            "border_color": "#6979F8",
+            "border_radius": 8,
+            "background_color": "#000000",
+            "border_width": 1,
+            "font_size": 16
+         },
+         "variants": {
+            "with_tags": {
+               "style": {
+                  "border_color": "#4CAF50"
+               }
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#6979F8"
+               }
+            },
+            "success": {
+               "style": {
+                  "border_color": "#4CAF50"
+               }
+            },
+            "error": {
+               "style": {
+                  "border_color": "#F44336"
+               }
+            }
+         }
+      }
+   ]
+}

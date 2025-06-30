@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
@@ -71,71 +73,37 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     debugPrint(
       'UpdateFormFieldEvent: Component ${event.componentId}, Value: ${event.value}',
     );
+
     try {
-      if (state.page != null) {
-        final updatedComponents = state.page!.components.map((component) {
-          if (component.id == event.componentId) {
-            final updatedConfig = Map<String, dynamic>.from(component.config);
-
-            if (event.value is Map &&
-                (event.value as Map).containsKey('value')) {
-              final mapValue = event.value as Map;
-              updatedConfig['value'] = mapValue['value'];
-              updatedConfig['error_text'] = mapValue['error_text'];
-
-              // Use current_state from event if provided, otherwise determine automatically
-              if (mapValue.containsKey('current_state')) {
-                updatedConfig['current_state'] = mapValue['current_state'];
-              } else {
-                if (mapValue['error_text'] != null &&
-                    mapValue['error_text'].toString().isNotEmpty) {
-                  updatedConfig['current_state'] = 'error';
-                } else if (mapValue['value'] != null &&
-                    mapValue['value'].toString().isNotEmpty) {
-                  updatedConfig['current_state'] = 'success';
-                } else {
-                  updatedConfig['current_state'] = 'base';
-                }
-              }
-            } else {
-              updatedConfig['value'] = event.value;
-              updatedConfig['current_state'] =
-                  (event.value != null && event.value.toString().isNotEmpty)
-                  ? 'success'
-                  : 'base';
-            }
-
-            return DynamicFormModel(
-              id: component.id,
-              type: component.type,
-              order: component.order,
-              config: updatedConfig,
-              style: component.style,
-              inputTypes: component.inputTypes,
-              variants: component.variants,
-              states: component.states,
-              validation: component.validation,
-              children: component.children,
-            );
-          }
-          return component;
-        }).toList();
-
-        final updatedPage = DynamicFormPageModel(
-          pageId: state.page!.pageId,
-          title: state.page!.title,
-          order: state.page!.order,
-          components: updatedComponents,
-        );
-
-        // Update button states based on conditions
-        final finalPage = _updateButtonStates(updatedPage);
-        debugPrint(
-          '📝 Form field updated: ${event.componentId} = ${event.value}',
-        );
-
-        emit(DynamicFormSuccess(page: finalPage));
+      final currentPage = state.page;
+      if (currentPage == null) {
+        debugPrint('❌ No page found in state');
+        emit(DynamicFormError(errorMessage: 'Form page not found'));
+        return;
       }
+
+      final updatedComponents = currentPage.components.map((component) {
+        if (component.id == event.componentId) {
+          return _updateComponentWithValue(component, event.value);
+        } else {
+          return component;
+        }
+      }).toList();
+
+      final updatedPage = DynamicFormPageModel(
+        pageId: currentPage.pageId,
+        title: currentPage.title,
+        order: currentPage.order,
+        components: updatedComponents,
+      );
+
+      // Update button states based on conditions
+      final finalPage = _updateButtonStates(updatedPage);
+      debugPrint(
+        '📝 Form field updated: ${event.componentId} = ${event.value}',
+      );
+
+      emit(DynamicFormSuccess(page: finalPage));
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to update form field: $e';
       debugPrint('Error in _onUpdateFormField: $e, StackTrace: $stackTrace');
@@ -194,6 +162,56 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       // Re-validate button states with the new preview status
       final finalPage = _updateButtonStates(updatedPage);
       emit(DynamicFormSuccess(page: finalPage));
+    }
+  }
+
+  /// Update component with new value - clean and safe
+  DynamicFormModel _updateComponentWithValue(
+    DynamicFormModel component,
+    dynamic value,
+  ) {
+    try {
+      final updatedConfig = Map<String, dynamic>.from(component.config);
+
+      if (value is Map && (value as Map).containsKey('value')) {
+        final mapValue = value as Map<String, dynamic>;
+
+        // Update value with null safety
+        updatedConfig['value'] = mapValue['value'];
+
+        // Update error text
+        if (mapValue.containsKey('error_text')) {
+          updatedConfig['error_text'] = mapValue['error_text'];
+        }
+
+        // Update selected field if it exists
+        if (mapValue.containsKey('selected')) {
+          updatedConfig['selected'] = mapValue['selected'];
+        }
+
+        // Use current_state from event if provided, otherwise determine automatically
+        if (mapValue.containsKey('current_state')) {
+          updatedConfig['current_state'] = mapValue['current_state'];
+        } else {
+          // Use ValidationUtils for consistent state determination
+          updatedConfig['current_state'] =
+              ValidationUtils.determineComponentState(
+                mapValue['value']?.toString(),
+                mapValue['error_text']?.toString(),
+              );
+        }
+      } else {
+        // Simple value update
+        updatedConfig['value'] = value;
+        updatedConfig['current_state'] =
+            ValidationUtils.determineComponentState(value?.toString(), null);
+      }
+
+      return ComponentUtils.updateComponentConfig(component, updatedConfig);
+    } catch (e) {
+      debugPrint('Error updating component ${component.id}: $e');
+      // Return original component if update fails
+      return component;
     }
   }
 

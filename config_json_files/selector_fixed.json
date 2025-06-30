@@ -1,0 +1,80 @@
+{
+   "title": "Selector Variants & States Demo",
+   "components": [
+      {
+         "id": "selector_no_label",
+         "type": "selectorFormType",
+         "config": {
+            "value": "",
+            "selected": false
+         },
+         "style": {
+            "padding": "10px",
+            "border_color": "#6979F8",
+            "border_radius": 20,
+            "background_color": "#000000",
+            "border_width": 2,
+            "icon_size": 20
+         },
+         "variants": {
+            "without_label": {
+               "style": {}
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#6979F8",
+                  "background_color": "transparent"
+               }
+            },
+            "success": {
+               "style": {
+                  "border_color": "#6979F8",
+                  "background_color": "#6979F8"
+               }
+            }
+         }
+      },
+      {
+         "id": "selector_with_label",
+         "type": "selectorFormType",
+         "config": {
+            "label": "Label Test",
+            "value": "",
+            "selected": false
+         },
+         "style": {
+            "padding": "10px",
+            "border_color": "#6979F8",
+            "border_radius": 20,
+            "background_color": "#000000",
+            "border_width": 2,
+            "icon_size": 20
+         },
+         "variants": {
+            "with_label": {
+               "style": {
+                  "label_text_size": 16,
+                  "label_color": "#FFFFFF"
+               }
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#6979F8",
+                  "background_color": "transparent"
+               }
+            },
+            "success": {
+               "style": {
+                  "border_color": "#6979F8",
+                  "background_color": "#6979F8",
+                  "label_color": "#FFFFFF"
+               }
+            }
+         }
+      }
+   ]
+}

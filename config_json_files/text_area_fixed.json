@@ -1,0 +1,215 @@
+{
+   "title": "Text Area Variants",
+   "components": [
+      {
+         "id": "textarea_no_label",
+         "type": "textAreaFormType",
+         "config": {
+            "placeholder": "Placeholders",
+            "is_required": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "border_color": "#E4E4E4",
+            "border_radius": 6,
+            "font_size": 13,
+            "color": "#e0e0e0",
+            "background_color": "#000000",
+            "font_style": "italic",
+            "border_width": 1,
+            "border_opacity": 0.6,
+            "max_lines": 10,
+            "min_lines": 6
+         },
+         "variants": {
+            "placeholders": {
+               "style": {}
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#E4E4E4"
+               }
+            },
+            "error": {
+               "style": {
+                  "border_color": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "helper_text": "Exceeds limit",
+                  "helper_text_color": "#ff4d4f"
+               }
+            }
+         },
+         "input_types": {
+            "text": {
+               "validation": {
+                  "min_length": 1,
+                  "max_length": 100,
+                  "error_message": "Exceeds 100 characters"
+               }
+            }
+         }
+      },
+      {
+         "id": "textarea_with_label",
+         "type": "textAreaFormType",
+         "config": {
+            "label": "Label",
+            "placeholder": "Placeholders",
+            "is_required": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "border_color": "#E4E4E4",
+            "border_radius": 6,
+            "font_size": 13,
+            "color": "#e0e0e0",
+            "background_color": "#000000",
+            "font_style": "italic",
+            "border_width": 1,
+            "border_opacity": 0.6,
+            "max_lines": 10,
+            "min_lines": 6
+         },
+         "variants": {
+            "with_label": {
+               "style": {
+                  "label_text_size": 14,
+                  "label_color": "#3b82f6"
+               }
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#E4E4E4"
+               }
+            },
+            "error": {
+               "style": {
+                  "border_color": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "label_color": "#ff4d4f",
+                  "helper_text": "Exceeds limit",
+                  "helper_text_color": "#ff4d4f"
+               }
+            }
+         },
+         "input_types": {
+            "text": {
+               "validation": {
+                  "min_length": 1,
+                  "max_length": 100,
+                  "error_message": "Exceeds 100 characters"
+               }
+            }
+         }
+      },
+      {
+         "id": "textarea_with_label_value",
+         "type": "textAreaFormType",
+         "config": {
+            "label": "Label",
+            "value": "Value Testtttttt 1",
+            "is_required": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "border_color": "#E4E4E4",
+            "border_radius": 6,
+            "font_size": 13,
+            "color": "#e0e0e0",
+            "background_color": "#000000",
+            "font_style": "italic",
+            "border_width": 1,
+            "border_opacity": 0.6,
+            "max_lines": 10,
+            "min_lines": 6
+         },
+         "variants": {
+            "with_label_value": {
+               "style": {
+                  "label_text_size": 14,
+                  "label_color": "#3b82f6"
+               }
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#E4E4E4"
+               }
+            },
+            "error": {
+               "style": {
+                  "border_color": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "label_color": "#ff4d4f",
+                  "helper_text": "Exceeds limit",
+                  "helper_text_color": "#ff4d4f"
+               }
+            }
+         },
+         "input_types": {
+            "text": {
+               "validation": {
+                  "min_length": 1,
+                  "max_length": 100,
+                  "error_message": "Exceeds 100 characters"
+               }
+            }
+         }
+      },
+      {
+         "id": "textarea_value",
+         "type": "textAreaFormType",
+         "config": {
+            "value": "Value Testtttttt",
+            "is_required": false
+         },
+         "style": {
+            "padding": "10px 12px",
+            "border_color": "#E4E4E4",
+            "border_radius": 6,
+            "font_size": 13,
+            "color": "#e0e0e0",
+            "background_color": "#000000",
+            "font_style": "italic",
+            "border_width": 1,
+            "border_opacity": 0.6,
+            "max_lines": 10,
+            "min_lines": 6
+         },
+         "variants": {
+            "with_value": {
+               "style": {}
+            }
+         },
+         "states": {
+            "base": {
+               "style": {
+                  "border_color": "#E4E4E4"
+               }
+            },
+            "error": {
+               "style": {
+                  "border_color": "#ff4d4f",
+                  "color": "#ff4d4f",
+                  "helper_text": "Exceeds limit",
+                  "helper_text_color": "#ff4d4f"
+               }
+            }
+         },
+         "input_types": {
+            "text": {
+               "validation": {
+                  "min_length": 1,
+                  "max_length": 100,
+                  "error_message": "Exceeds 100 characters"
+               }
+            }
+         }
+      }
+   ]
+}
