@@ -57,11 +57,8 @@ class _DynamicButtonState extends State<DynamicButton> {
           );
           return const SizedBox.shrink(); // Hide button completely
         }
-        final isSaveButton = action == 'submit_form';
-        final isPreviewButton = action == 'preview_form';
 
         // Check if button should be disabled
-        final canSave = component.config['canSave'] ?? true;
         final isDisabled = config['disabled'] == true || _isLoading;
 
         // Apply variant styles

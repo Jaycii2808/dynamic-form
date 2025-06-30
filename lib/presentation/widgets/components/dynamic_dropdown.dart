@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
@@ -17,47 +19,47 @@ class DynamicDropdown extends StatefulWidget {
 }
 
 class _DynamicDropdownState extends State<DynamicDropdown> {
-  //bool _isHovering = false;
-  final FocusNode _focusNode = FocusNode();
-  final GlobalKey _dropdownKey = GlobalKey();
-  OverlayEntry? _overlayEntry;
+  //bool _is_hovering = false;
+  final FocusNode _focus_node = FocusNode();
+  final GlobalKey _dropdown_key = GlobalKey();
+  OverlayEntry? _overlay_entry;
 
   @override
   void dispose() {
-    _overlayEntry?.remove();
-    _focusNode.dispose();
+    _overlay_entry?.remove();
+    _focus_node.dispose();
     super.dispose();
   }
 
-  IconData? _mapIconNameToIconData(String name) {
+  IconData? _map_icon_name_to_icon_data(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
-  void _showDropdownPanel(
+  void _show_dropdown_panel(
     BuildContext context,
     DynamicFormModel component,
     Rect rect,
-    String? selectedValue,
+    String? selected_value,
   ) {
     final items = component.config['items'] as List<dynamic>? ?? [];
     final style = component.style;
-    final isSearchable = component.config['searchable'] as bool? ?? false;
-    final dropdownWidth =
-        (style['dropdownWidth'] as num?)?.toDouble() ?? rect.width;
+    final is_searchable = component.config['searchable'] as bool? ?? false;
+    final dropdown_width =
+        (style['dropdown_width'] as num?)?.toDouble() ?? rect.width;
 
-    _overlayEntry = OverlayEntry(
+    _overlay_entry = OverlayEntry(
       builder: (context) {
-        List<dynamic> filteredItems = List.from(items);
-        String searchQuery = '';
-        final searchController = TextEditingController();
+        List<dynamic> filtered_items = List.from(items);
+        String search_query = '';
+        final search_controller = TextEditingController();
 
         return StatefulBuilder(
-          builder: (context, setPanelState) {
-            if (isSearchable) {
-              filteredItems = items.where((item) {
+          builder: (context, set_panel_state) {
+            if (is_searchable) {
+              filtered_items = items.where((item) {
                 final label = item['label']?.toString().toLowerCase() ?? '';
                 if (item['type'] == 'divider') return true;
-                return label.contains(searchQuery.toLowerCase());
+                return label.contains(search_query.toLowerCase());
               }).toList();
             }
 
@@ -66,8 +68,8 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 Positioned.fill(
                   child: GestureDetector(
                     onTap: () {
-                      _overlayEntry?.remove();
-                      _overlayEntry = null;
+                      _overlay_entry?.remove();
+                      _overlay_entry = null;
                     },
                     child: Container(color: Colors.transparent),
                   ),
@@ -75,14 +77,14 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 Positioned(
                   top: rect.top,
                   left: rect.left,
-                  width: dropdownWidth,
+                  width: dropdown_width,
                   child: Material(
                     elevation: 4.0,
                     color: StyleUtils.parseColor(
-                      style['dropdownBackgroundColor'],
+                      style['dropdown_background_color'],
                     ),
                     borderRadius: StyleUtils.parseBorderRadius(
-                      style['borderRadius'],
+                      style['border_radius'],
                     ),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 300),
@@ -90,62 +92,64 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shrinkWrap: true,
                         itemCount:
-                            filteredItems.length + (isSearchable ? 1 : 0),
+                            filtered_items.length + (is_searchable ? 1 : 0),
                         separatorBuilder: (context, index) {
-                          final itemIndex = isSearchable ? index - 1 : index;
-                          if (itemIndex < 0 ||
-                              itemIndex >= filteredItems.length) {
+                          final item_index = is_searchable ? index - 1 : index;
+                          if (item_index < 0 ||
+                              item_index >= filtered_items.length) {
                             return const SizedBox.shrink();
                           }
-                          final item = filteredItems[itemIndex];
-                          final nextItem =
-                              (itemIndex + 1 < filteredItems.length)
-                              ? filteredItems[itemIndex + 1]
+                          final item = filtered_items[item_index];
+                          final next_item =
+                              (item_index + 1 < filtered_items.length)
+                              ? filtered_items[item_index + 1]
                               : null;
                           if (item['type'] == 'divider' ||
-                              nextItem?['type'] == 'divider') {
+                              next_item?['type'] == 'divider') {
                             return const SizedBox.shrink();
                           }
                           return Divider(
-                            color: StyleUtils.parseColor(style['dividerColor']),
+                            color: StyleUtils.parseColor(
+                              style['divider_color'],
+                            ),
                             height: 1,
                           );
                         },
                         itemBuilder: (context, index) {
-                          if (isSearchable && index == 0) {
+                          if (is_searchable && index == 0) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0,
                                 vertical: 8.0,
                               ),
                               child: TextField(
-                                controller: searchController,
-                                focusNode: _focusNode,
+                                controller: search_controller,
+                                focusNode: _focus_node,
                                 decoration: InputDecoration(
                                   hintText: component.config['placeholder'],
                                   isDense: true,
                                   suffixIcon: const Icon(Icons.search),
                                 ),
                                 onChanged: (value) {
-                                  setPanelState(() {
-                                    searchQuery = value;
+                                  set_panel_state(() {
+                                    search_query = value;
                                   });
                                   // Do not send event here because this is just temporary search
                                 },
                                 onSubmitted: (value) {
-                                  if (filteredItems.isNotEmpty &&
-                                      filteredItems.first['type'] !=
+                                  if (filtered_items.isNotEmpty &&
+                                      filtered_items.first['type'] !=
                                           'divider') {
-                                    final firstItem = filteredItems.first;
-                                    final newValue = firstItem['id'];
+                                    final first_item = filtered_items.first;
+                                    final new_value = first_item['id'];
                                     context.read<DynamicFormBloc>().add(
                                       UpdateFormFieldEvent(
                                         componentId: component.id,
-                                        value: newValue,
+                                        value: new_value,
                                       ),
                                     );
                                     debugPrint(
-                                      '[Dropdown] ${component.id} value updated: $newValue',
+                                      '[Dropdown] ${component.id} value updated: $new_value',
                                     );
                                   } else if (value.isNotEmpty) {
                                     context.read<DynamicFormBloc>().add(
@@ -158,21 +162,21 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                       '[Dropdown] ${component.id} value updated: $value',
                                     );
                                   }
-                                  _overlayEntry?.remove();
-                                  _overlayEntry = null;
+                                  _overlay_entry?.remove();
+                                  _overlay_entry = null;
                                 },
                               ),
                             );
                           }
 
                           final item =
-                              filteredItems[isSearchable ? index - 1 : index];
-                          final itemType = item['type'] as String? ?? 'item';
+                              filtered_items[is_searchable ? index - 1 : index];
+                          final item_type = item['type'] as String? ?? 'item';
 
-                          if (itemType == 'divider') {
+                          if (item_type == 'divider') {
                             return Divider(
                               color: StyleUtils.parseColor(
-                                style['dividerColor'],
+                                style['divider_color'],
                               ),
                               height: 1,
                             );
@@ -180,9 +184,9 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
                           final label = item['label'] as String? ?? '';
                           final value = item['id'] as String? ?? '';
-                          final iconName = item['icon'] as String?;
-                          final avatarUrl = item['avatar'] as String?;
-                          final itemStyle =
+                          final icon_name = item['icon'] as String?;
+                          final avatar_url = item['avatar'] as String?;
+                          final item_style =
                               item['style'] as Map<String, dynamic>? ?? {};
 
                           return InkWell(
@@ -196,8 +200,8 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               debugPrint(
                                 '[Dropdown] ${component.id} value updated: $value',
                               );
-                              _overlayEntry?.remove();
-                              _overlayEntry = null;
+                              _overlay_entry?.remove();
+                              _overlay_entry = null;
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -206,17 +210,17 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               ),
                               child: Row(
                                 children: [
-                                  if (avatarUrl != null) ...[
+                                  if (avatar_url != null) ...[
                                     CircleAvatar(
-                                      backgroundImage: NetworkImage(avatarUrl),
+                                      backgroundImage: NetworkImage(avatar_url),
                                       radius: 16,
                                     ),
                                     const SizedBox(width: 12),
-                                  ] else if (iconName != null) ...[
+                                  ] else if (icon_name != null) ...[
                                     Icon(
-                                      _mapIconNameToIconData(iconName),
+                                      _map_icon_name_to_icon_data(icon_name),
                                       color: StyleUtils.parseColor(
-                                        itemStyle['color'] ?? style['color'],
+                                        item_style['color'] ?? style['color'],
                                       ),
                                       size: 18,
                                     ),
@@ -227,7 +231,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                       label,
                                       style: TextStyle(
                                         color: StyleUtils.parseColor(
-                                          itemStyle['color'] ?? style['color'],
+                                          item_style['color'] ?? style['color'],
                                         ),
                                       ),
                                     ),
@@ -247,7 +251,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         );
       },
     );
-    Overlay.of(context).insert(_overlayEntry!);
+    Overlay.of(context).insert(_overlay_entry!);
   }
 
   @override
@@ -263,55 +267,67 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             : widget.component;
         final config = component.config;
         final style = Map<String, dynamic>.from(component.style);
-        final triggerAvatar = config['avatar'] as String?;
-        final triggerIcon = config['icon'] as String?;
-        final isSearchable = config['searchable'] as bool? ?? false;
+        final trigger_avatar = config['avatar'] as String?;
+        final trigger_icon = config['icon'] as String?;
+        final is_searchable = config['searchable'] as bool? ?? false;
         final placeholder = config['placeholder'] as String? ?? 'Search';
         final value = config['value']?.toString();
-        final currentState = config['currentState'] ?? 'base';
-        final isDisabled = config['disabled'] == true;
+        final current_state = config['current_state'] ?? 'base';
+        final is_disabled = config['disabled'] == true;
 
-        // Always apply variant withIcon if icon exists
-        if ((triggerIcon != null || style['icon'] != null) &&
+        // Always apply variant with_icon if icon exists
+        if ((trigger_icon != null || style['icon'] != null) &&
             component.variants != null &&
-            component.variants!.containsKey('withIcon')) {
-          final variantStyle =
-              component.variants!['withIcon']['style'] as Map<String, dynamic>?;
-          if (variantStyle != null) style.addAll(variantStyle);
+            component.variants!.containsKey('with_icon')) {
+          final variant_style =
+              component.variants!['with_icon']['style']
+                  as Map<String, dynamic>?;
+          if (variant_style != null) style.addAll(variant_style);
+        }
+
+        // Apply variant with_avatar if avatar exists
+        if (trigger_avatar != null &&
+            component.variants != null &&
+            component.variants!.containsKey('with_avatar')) {
+          final variant_style =
+              component.variants!['with_avatar']['style']
+                  as Map<String, dynamic>?;
+          if (variant_style != null) style.addAll(variant_style);
         }
         // Apply state style if available
         if (component.states != null &&
-            component.states!.containsKey(currentState)) {
-          final stateStyle =
-              component.states![currentState]['style'] as Map<String, dynamic>?;
-          if (stateStyle != null) style.addAll(stateStyle);
+            component.states!.containsKey(current_state)) {
+          final state_style =
+              component.states![current_state]['style']
+                  as Map<String, dynamic>?;
+          if (state_style != null) style.addAll(state_style);
         }
 
         // Calculate display label
-        String? displayLabel;
+        String? display_label;
         if (value == null || value.isEmpty) {
-          displayLabel =
+          display_label =
               config['label'] ?? config['placeholder'] ?? 'Select an option';
         } else {
           final items = config['items'] as List<dynamic>? ?? [];
-          final selectedItem = items.firstWhere(
+          final selected_item = items.firstWhere(
             (item) => item['id'] == value && item['type'] != 'divider',
             orElse: () => null,
           );
-          if (selectedItem != null) {
-            displayLabel = selectedItem['label'] as String? ?? value;
+          if (selected_item != null) {
+            display_label = selected_item['label'] as String? ?? value;
           } else {
-            displayLabel = value;
+            display_label = value;
           }
         }
 
-        Widget triggerContent;
-        if (isSearchable) {
-          triggerContent = Row(
+        Widget trigger_content;
+        if (is_searchable) {
+          trigger_content = Row(
             children: [
               Expanded(
                 child: Text(
-                  displayLabel ?? placeholder,
+                  display_label ?? placeholder,
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
@@ -319,46 +335,48 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
               ),
               Icon(
                 Icons.search,
-                color: StyleUtils.parseColor(style['iconColor'] ?? '#000000'),
+                color: StyleUtils.parseColor(style['icon_color'] ?? '#000000'),
               ),
             ],
           );
-        } else if (triggerIcon != null &&
-            (displayLabel == null || displayLabel.isEmpty)) {
+        } else if (trigger_icon != null &&
+            (display_label == null || display_label.isEmpty)) {
           // Icon-only trigger
-          triggerContent = Icon(
-            _mapIconNameToIconData(triggerIcon),
-            color: StyleUtils.parseColor(style['iconColor'] ?? '#000000'),
-            size: (style['iconSize'] as num?)?.toDouble() ?? 24.0,
+          trigger_content = Icon(
+            _map_icon_name_to_icon_data(trigger_icon),
+            color: StyleUtils.parseColor(style['icon_color'] ?? '#000000'),
+            size: (style['icon_size'] as num?)?.toDouble() ?? 24.0,
           );
         } else {
-          triggerContent = Row(
+          trigger_content = Row(
             children: [
-              if (triggerIcon != null) ...[
+              if (trigger_icon != null) ...[
                 Icon(
-                  _mapIconNameToIconData(triggerIcon),
-                  color: StyleUtils.parseColor(style['iconColor'] ?? '#000000'),
-                  size: (style['iconSize'] as num?)?.toDouble() ?? 18.0,
+                  _map_icon_name_to_icon_data(trigger_icon),
+                  color: StyleUtils.parseColor(
+                    style['icon_color'] ?? '#000000',
+                  ),
+                  size: (style['icon_size'] as num?)?.toDouble() ?? 18.0,
                 ),
                 const SizedBox(width: 8),
               ],
-              if (triggerAvatar != null) ...[
+              if (trigger_avatar != null) ...[
                 CircleAvatar(
-                  backgroundImage: NetworkImage(triggerAvatar),
+                  backgroundImage: NetworkImage(trigger_avatar),
                   radius: 16,
                 ),
                 const SizedBox(width: 8),
               ],
               Expanded(
                 child: Text(
-                  displayLabel ?? config['placeholder'] ?? 'Select an option',
+                  display_label ?? config['placeholder'] ?? 'Select an option',
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
                 ),
               ),
               Icon(
-                _overlayEntry != null && _overlayEntry!.mounted
+                _overlay_entry != null && _overlay_entry!.mounted
                     ? Icons.keyboard_arrow_up
                     : Icons.keyboard_arrow_down,
                 color: StyleUtils.parseColor(style['color'] ?? '#000000'),
@@ -368,21 +386,21 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         }
 
         return Focus(
-          focusNode: _focusNode,
+          focusNode: _focus_node,
           child: MouseRegion(
             child: InkWell(
-              key: _dropdownKey,
-              //focusNode: _focusNode,
-              onTap: isDisabled
+              key: _dropdown_key,
+              //focusNode: _focus_node,
+              onTap: is_disabled
                   ? null
                   : () {
-                      FocusScope.of(context).requestFocus(_focusNode);
-                      final renderBox =
-                          _dropdownKey.currentContext!.findRenderObject()
+                      FocusScope.of(context).requestFocus(_focus_node);
+                      final render_box =
+                          _dropdown_key.currentContext!.findRenderObject()
                               as RenderBox;
-                      final size = renderBox.size;
-                      final offset = renderBox.localToGlobal(Offset.zero);
-                      _showDropdownPanel(
+                      final size = render_box.size;
+                      final offset = render_box.localToGlobal(Offset.zero);
+                      _show_dropdown_panel(
                         context,
                         component,
                         Rect.fromLTWH(
@@ -398,16 +416,16 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 padding: StyleUtils.parsePadding(style['padding']),
                 margin: StyleUtils.parsePadding(style['margin']),
                 decoration: BoxDecoration(
-                  color: StyleUtils.parseColor(style['backgroundColor']),
+                  color: StyleUtils.parseColor(style['background_color']),
                   border: Border.all(
-                    color: StyleUtils.parseColor(style['borderColor']),
-                    width: (style['borderWidth'] as num?)?.toDouble() ?? 1.0,
+                    color: StyleUtils.parseColor(style['border_color']),
+                    width: (style['border_width'] as num?)?.toDouble() ?? 1.0,
                   ),
                   borderRadius: StyleUtils.parseBorderRadius(
-                    style['borderRadius'],
+                    style['border_radius'],
                   ),
                 ),
-                child: triggerContent,
+                child: trigger_content,
               ),
             ),
           ),

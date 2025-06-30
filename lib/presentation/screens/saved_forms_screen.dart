@@ -1,5 +1,4 @@
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';
@@ -214,17 +213,18 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                   );
 
                   if (confirmed == true) {
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
                     try {
                       await _savedFormsService.clearAllSavedForms();
                       await _loadSavedForms();
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        scaffoldMessenger.showSnackBar(
                           const SnackBar(content: Text('All forms cleared')),
                         );
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(content: Text('Error clearing forms: $e')),
                         );
                       }

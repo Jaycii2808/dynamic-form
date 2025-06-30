@@ -1,5 +1,6 @@
 ﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
@@ -159,6 +160,52 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return DynamicButton(
           component: component,
           onAction: _handleButtonAction,
+        );
+      case FormTypeEnum.container:
+        return Container(
+          key: Key(component.id),
+          margin: StyleUtils.parsePadding(component.style['margin']),
+          padding: StyleUtils.parsePadding(component.style['padding']),
+          decoration: BoxDecoration(
+            color: StyleUtils.parseColor(component.style['background_color']),
+            border: component.style['border_color'] != null
+                ? Border.all(
+                    color: StyleUtils.parseColor(
+                      component.style['border_color'],
+                    ),
+                    width:
+                        (component.style['border_width'] as num?)?.toDouble() ??
+                        1.0,
+                  )
+                : null,
+            borderRadius: StyleUtils.parseBorderRadius(
+              component.style['border_radius'],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (component.config['label'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    component.config['label'],
+                    style: TextStyle(
+                      color: StyleUtils.parseColor(
+                        component.style['label_color'],
+                      ),
+                      fontSize: StyleUtils.parseFontSize(
+                        component.style['font_size'],
+                      ),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ...?component.children?.map(
+                (child) => DynamicFormRenderer(component: child),
+              ),
+            ],
+          ),
         );
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();

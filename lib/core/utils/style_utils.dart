@@ -41,6 +41,39 @@ class StyleUtils {
       }
     }
 
+    // RGBA color: rgba(r, g, b, a)
+    if (colorString.toLowerCase().startsWith('rgba(')) {
+      final rgba = colorString
+          .toLowerCase()
+          .replaceAll('rgba(', '')
+          .replaceAll(')', '')
+          .replaceAll(' ', '');
+      final values = rgba.split(',');
+      if (values.length == 4) {
+        final r = int.tryParse(values[0]) ?? 0;
+        final g = int.tryParse(values[1]) ?? 0;
+        final b = int.tryParse(values[2]) ?? 0;
+        final a = double.tryParse(values[3]) ?? 1.0;
+        return Color.fromRGBO(r, g, b, a);
+      }
+    }
+
+    // RGB color: rgb(r, g, b)
+    if (colorString.toLowerCase().startsWith('rgb(')) {
+      final rgb = colorString
+          .toLowerCase()
+          .replaceAll('rgb(', '')
+          .replaceAll(')', '')
+          .replaceAll(' ', '');
+      final values = rgb.split(',');
+      if (values.length == 3) {
+        final r = int.tryParse(values[0]) ?? 0;
+        final g = int.tryParse(values[1]) ?? 0;
+        final b = int.tryParse(values[2]) ?? 0;
+        return Color.fromRGBO(r, g, b, 1.0);
+      }
+    }
+
     // Named colors
     switch (colorString.toLowerCase()) {
       case 'red':

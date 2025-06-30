@@ -33,7 +33,7 @@ class DynamicFormModel extends Equatable {
       order: json['order'] ?? 0,
       config: json['config'] ?? {},
       style: json['style'] ?? {},
-      inputTypes: json['inputTypes'],
+      inputTypes: json['input_types'] ?? json['inputTypes'],
       variants: json['variants'],
       states: json['states'],
       validation: json['validation'],
@@ -75,7 +75,7 @@ class DynamicFormModel extends Equatable {
         }
       });
       return result;
-    }
+    } // rewrite
 
     return {
       'id': id,

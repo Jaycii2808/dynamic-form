@@ -14,6 +14,7 @@ enum FormTypeEnum {
   textFieldTagsFormType,
   fileUploaderFormType,
   buttonFormType,
+  container,
   unknown;
 
   factory FormTypeEnum.fromJson(String? json) {
