@@ -1,5 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
-
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -19,58 +18,69 @@ class DynamicTextArea extends StatefulWidget {
 }
 
 class _DynamicTextAreaState extends State<DynamicTextArea> {
-  final TextEditingController _controller = TextEditingController();
-  final FocusNode _focus_node = FocusNode();
-  String? _error_text;
+  final TextEditingController _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  String? _errorText;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controller with initial value from component
-    _controller.text = widget.component.config['value'] ?? '';
-    _focus_node.addListener(_handle_focus_change);
+    _textController.text = widget.component.config['value'] ?? '';
+    _focusNode.addListener(_handleFocusChange);
   }
 
   @override
   void didUpdateWidget(covariant DynamicTextArea oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update controller if the component's initial value changed
     final newValue = widget.component.config['value'] ?? '';
-    if (oldWidget.component.config['value'] != newValue &&
-        !_focus_node.hasFocus) {
-      _controller.text = newValue;
+    if (oldWidget.component.config['value'] != newValue && !_focusNode.hasFocus) {
+      _textController.text = newValue;
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _focus_node.removeListener(_handle_focus_change);
-    _focus_node.dispose();
+    _textController.dispose();
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _handle_focus_change() {
-    if (!_focus_node.hasFocus) {
-      _save_and_validate();
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _saveAndValidate();
     }
   }
 
-  void _save_and_validate() {
-    // This method is called on blur - but since we now update immediately in onChanged,
-    // we just need to ensure the final state is consistent
-    final new_value = _controller.text;
-    debugPrint(
-      '📝 [${widget.component.id}] Text area blur - final value: "$new_value"',
+  void _saveAndValidate() {
+    final newValue = _textController.text;
+    debugPrint('📝 [${widget.component.id}] Text area blur/submit - final value: "$newValue"');
+
+    final validationError = validateForm(widget.component, newValue);
+    String newState = 'base';
+
+    if (validationError != null) {
+      newState = 'error';
+    } else if (newValue.isNotEmpty) {
+      newState = 'success';
+    }
+
+    context.read<DynamicFormBloc>().add(
+      UpdateFormFieldEvent(
+        componentId: widget.component.id,
+        value: {'value': newValue, 'current_state': newState, 'error_text': validationError},
+      ),
     );
-    // No need to dispatch event again since onChanged already did it
+
+    setState(() {
+      _errorText = validationError;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        // Get the latest component from BLoC state
         final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
@@ -78,134 +88,87 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
               )
             : widget.component;
 
-        // Get dynamic state
-        final current_state = component.config['current_state'] ?? 'base';
-        final component_value = component.config['value'] ?? '';
-        final component_error = component.config['error_text'];
+        final currentState = component.config['current_state'] ?? 'base';
+        final componentValue = component.config['value'] ?? '';
+        final componentError = component.config['error_text'];
 
-        // Update error text from BLoC state
-        _error_text = component_error;
+        _errorText = componentError;
 
-        // Sync controller with BLoC updates (but only when not focused to avoid conflicts)
-        if (!_focus_node.hasFocus && _controller.text != component_value) {
-          // Use post-frame callback to avoid setState during build
+        if (!_focusNode.hasFocus && _textController.text != componentValue) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_focus_node.hasFocus) {
-              _controller.text = component_value;
+            if (mounted && !_focusNode.hasFocus) {
+              _textController.text = componentValue;
             }
           });
         }
 
         Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-
         final config = component.config;
-        final has_label = config['label'] != null && config['label'].isNotEmpty;
-        final has_placeholder =
-            config['placeholder'] != null && config['placeholder'].isNotEmpty;
-        final has_value =
-            config['value'] != null && config['value'].toString().isNotEmpty;
+
+        final hasLabel = config['label'] != null && config['label'].isNotEmpty;
+        final hasPlaceholder = config['placeholder'] != null && config['placeholder'].isNotEmpty;
+        final hasValue = config['value'] != null && config['value'].toString().isNotEmpty;
 
         debugPrint(
-          '🔍 [${component.id}] value: "${component_value}", current_state: $current_state, error: ${component_error ?? "none"}, controller: "${_controller.text}"',
+          '🔍 [${component.id}] value: "$componentValue", currentState: $currentState, error: ${componentError ?? "none"}, controller: "${_textController.text}"',
         );
 
-        // Apply variant styles
         if (component.variants != null) {
-          if (has_placeholder &&
-              component.variants!.containsKey('placeholders')) {
-            final variant_style =
-                component.variants!['placeholders']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) {
-              debugPrint(
-                '🎨 [${component.id}] Applying placeholders variant: $variant_style',
-              );
-              style.addAll(variant_style);
-            }
-          }
-          if (has_label && component.variants!.containsKey('with_label')) {
-            final variant_style =
-                component.variants!['with_label']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) {
-              debugPrint(
-                '🎨 [${component.id}] Applying with_label variant: $variant_style',
-              );
-              style.addAll(variant_style);
-            }
-          }
-          if (has_label &&
-              has_value &&
-              component.variants!.containsKey('with_label_value')) {
-            final variant_style =
-                component.variants!['with_label_value']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) {
-              debugPrint(
-                '🎨 [${component.id}] Applying with_label_value variant: $variant_style',
-              );
-              style.addAll(variant_style);
-            }
-          }
-          if (has_value && component.variants!.containsKey('with_value')) {
-            final variant_style =
-                component.variants!['with_value']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) {
-              debugPrint(
-                '🎨 [${component.id}] Applying with_value variant: $variant_style',
-              );
-              style.addAll(variant_style);
+          if (hasPlaceholder && component.variants!.containsKey('placeholders')) {
+            final variantStyle =
+                component.variants!['placeholders']['style'] as Map<String, dynamic>?;
+            if (variantStyle != null) {
+              debugPrint('🎨 [${component.id}] Applying placeholders variant: $variantStyle');
+              style.addAll(variantStyle);
             }
           }
 
-          // Backward compatibility with camelCase variants
-          if (has_label && component.variants!.containsKey('withLabel')) {
-            final variant_style =
-                component.variants!['withLabel']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+          if (hasLabel) {
+            final variantStyle =
+                component.variants!['with_label']?['style'] as Map<String, dynamic>?;
+            if (variantStyle != null) {
+              debugPrint('🎨 [${component.id}] Applying with_label variant: $variantStyle');
+              style.addAll(variantStyle);
+            }
           }
-          if (has_label &&
-              has_value &&
-              component.variants!.containsKey('withLabelValue')) {
-            final variant_style =
-                component.variants!['withLabelValue']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+
+          if (hasLabel && hasValue) {
+            final variantStyle =
+                component.variants!['with_label_value']?['style'] as Map<String, dynamic>?;
+            if (variantStyle != null) {
+              debugPrint('🎨 [${component.id}] Applying with_label_value variant: $variantStyle');
+              style.addAll(variantStyle);
+            }
           }
-          if (has_value && component.variants!.containsKey('withValue')) {
-            final variant_style =
-                component.variants!['withValue']['style']
-                    as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+
+          if (hasValue) {
+            final variantStyle =
+                component.variants!['with_value']?['style'] as Map<String, dynamic>?;
+            if (variantStyle != null) {
+              debugPrint('🎨 [${component.id}] Applying with_value variant: $variantStyle');
+              style.addAll(variantStyle);
+            }
           }
         }
 
-        // Apply state style if available
-        if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) {
-            debugPrint(
-              '🎨 [${component.id}] Applying $current_state state: $state_style',
-            );
-            style.addAll(state_style);
+        if (component.states != null && component.states!.containsKey(currentState)) {
+          final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) {
+            debugPrint('🎨 [${component.id}] Applying $currentState state: $stateStyle');
+            style.addAll(stateStyle);
           }
         }
 
-        return _build_body(style, config, component, current_state);
+        return _buildBody(style, config, component, currentState);
       },
     );
   }
 
-  Widget _build_body(
+  Widget _buildBody(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
     DynamicFormModel component,
-    String current_state,
+    String currentState,
   ) {
     return Container(
       key: Key(component.id),
@@ -214,34 +177,27 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _build_label(style, config, current_state),
-          _build_text_field(style, config, component, current_state),
+          _buildLabel(style, config, currentState),
+          _buildTextField(style, config, component, currentState),
         ],
       ),
     );
   }
 
-  Widget _build_label(
-    Map<String, dynamic> style,
-    Map<String, dynamic> config,
-    String current_state,
-  ) {
+  Widget _buildLabel(Map<String, dynamic> style, Map<String, dynamic> config, String currentState) {
     if (config['label'] == null) {
       return const SizedBox.shrink();
     }
-    return Padding(
+    return Container(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
       child: Text(
         config['label'],
         style: TextStyle(
-          fontSize:
-              (style['label_text_size'] ?? style['labelTextSize'])
-                  ?.toDouble() ??
-              16,
+          fontSize: style['label_text_size']?.toDouble() ?? 16,
           color: StyleUtils.parseColor(
-            current_state == 'error' && style['label_color'] != null
+            currentState == 'error' && style['label_color'] != null
                 ? style['label_color']
-                : style['label_color'] ?? style['labelColor'] ?? '#000000',
+                : style['label_color'] ?? '#000000',
           ),
           fontWeight: FontWeight.bold,
         ),
@@ -249,149 +205,145 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     );
   }
 
-  Widget _build_text_field(
+  Widget _buildTextField(
     Map<String, dynamic> style,
     Map<String, dynamic> config,
     DynamicFormModel component,
-    String current_state,
+    String currentState,
   ) {
+    final double fontSize = style['font_size']?.toDouble() ?? 16;
+    final Color textColor = StyleUtils.parseColor(
+      currentState == 'error' && style['color'] != null
+          ? style['color']
+          : style['color'] ?? '#000000',
+    );
+    final FontStyle fontStyle = (style['font_style'] == 'italic')
+        ? FontStyle.italic
+        : FontStyle.normal;
+    final double contentVerticalPadding = style['content_vertical_padding']?.toDouble() ?? 12;
+    final double contentHorizontalPadding = style['content_horizontal_padding']?.toDouble() ?? 12;
+    final Color fillColor = StyleUtils.parseColor(style['background_color']);
+    final String? helperText = style['helper_text']?.toString();
+    final Color helperTextColor = StyleUtils.parseColor(
+      currentState == 'error' && style['helper_text_color'] != null
+          ? style['helper_text_color']
+          : style['helper_text_color'] ?? '#000000',
+    );
+
     return TextField(
-      controller: _controller,
-      focusNode: _focus_node,
+      controller: _textController,
+      focusNode: _focusNode,
+
       enabled: (config['editable'] ?? true) && (config['disabled'] != true),
+
       readOnly: config['readOnly'] == true,
       obscureText: component.inputTypes?.containsKey('password') ?? false,
-      keyboardType: _get_keyboard_type(component),
+      keyboardType: _getKeyboardType(component),
       onTapOutside: (pointer) {
-        _focus_node.unfocus();
+        _focusNode.unfocus();
       },
-      maxLines:
-          (style['max_lines'] ?? style['maxLines'] as num?)?.toInt() ?? 10,
-      minLines: (style['min_lines'] ?? style['minLines'] as num?)?.toInt() ?? 6,
+      maxLines: (style['max_lines'] as num?)?.toInt() ?? 10,
+      minLines: (style['min_lines'] as num?)?.toInt() ?? 6,
       decoration: InputDecoration(
         isDense: true,
         hintText: config['placeholder'] ?? '',
-        border: _build_border(style, current_state),
-        enabledBorder: _build_border(style, 'enabled'),
-        focusedBorder: _build_border(style, 'focused'),
-        errorBorder: _build_border(style, 'error'),
-        errorText: _error_text,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 12,
+        border: _buildBorder(style, currentState),
+        enabledBorder: _buildBorder(style, 'enabled'),
+        focusedBorder: _buildBorder(style, 'focused'),
+        errorBorder: _buildBorder(style, 'error'),
+        errorText: _errorText,
+        contentPadding: EdgeInsets.symmetric(
+          vertical: contentVerticalPadding,
+          horizontal: contentHorizontalPadding,
         ),
-        filled:
-            style['background_color'] != null ||
-            style['backgroundColor'] != null,
-        fillColor: StyleUtils.parseColor(
-          style['background_color'] ?? style['backgroundColor'],
-        ),
-        helperText: (style['helper_text'] ?? style['helperText'])?.toString(),
-        helperStyle: TextStyle(
-          color: StyleUtils.parseColor(
-            current_state == 'error' &&
-                    (style['helper_text_color'] ?? style['helperTextColor']) !=
-                        null
-                ? (style['helper_text_color'] ?? style['helperTextColor'])
-                : (style['helper_text_color'] ?? style['helperTextColor']) ??
-                      '#000000',
-          ),
-          fontStyle: (style['font_style'] ?? style['fontStyle']) == 'italic'
-              ? FontStyle.italic
-              : FontStyle.normal,
-        ),
+        filled: style['background_color'] != null,
+        fillColor: fillColor,
+        helperText: helperText,
+        helperStyle: TextStyle(color: helperTextColor, fontStyle: fontStyle),
       ),
-      style: TextStyle(
-        fontSize: (style['font_size'] ?? style['fontSize'])?.toDouble() ?? 16,
-        color: StyleUtils.parseColor(
-          current_state == 'error' && style['color'] != null
-              ? style['color']
-              : style['color'] ?? '#000000',
-        ),
-        fontStyle: (style['font_style'] ?? style['fontStyle']) == 'italic'
-            ? FontStyle.italic
-            : FontStyle.normal,
-      ),
+      style: TextStyle(fontSize: fontSize, color: textColor, fontStyle: fontStyle),
       onChanged: (value) {
-        // Live validation and immediate update
-        final validation_error = validateForm(component, value);
-        String new_state = 'base';
-
-        if (validation_error != null) {
-          new_state = 'error';
-        } else if (value.isNotEmpty) {
-          new_state = 'success';
-        }
-
-        debugPrint(
-          '⌨️ [${component.id}] Text changing: "${_controller.text}" → "$value"',
-        );
-
-        // Update BLoC immediately while typing
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(
-            componentId: component.id,
-            value: {
-              'value': value,
-              'current_state': new_state,
-              'error_text': validation_error,
-            },
-          ),
-        );
-
-        // Also update local state for immediate UI feedback
-        setState(() {
-          _error_text = validation_error;
-        });
+        debugPrint('⌨️ [${component.id}] Text changing: "${_textController.text}" → "$value"');
       },
       onSubmitted: (value) {
-        _save_and_validate();
+        _saveAndValidate();
       },
     );
   }
 
-  OutlineInputBorder _build_border(Map<String, dynamic> style, String state) {
-    final border_radius = StyleUtils.parseBorderRadius(
-      style['border_radius'] ?? style['borderRadius'],
-    );
-    final border_color = StyleUtils.parseColor(
-      style['border_color'] ?? style['borderColor'],
-    );
-    final border_width =
-        (style['border_width'] ?? style['borderWidth'])?.toDouble() ?? 1.0;
-    final border_opacity =
-        (style['border_opacity'] ?? style['borderOpacity'])?.toDouble() ?? 1.0;
+  // OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
+  //   final borderRadiusValue = StyleUtils.parseBorderRadius(style['border_radius']);
+  //   final borderColorValue = StyleUtils.parseColor(style['border_color']);
+  //   final borderWidthValue = style['border_width']?.toDouble() ?? 1.0;
+  //   final borderOpacityValue = style['border_opacity']?.toDouble() ?? 1.0;
+  //   //
+  //   // switch (ComponentStateEnum.fromString(state)) {
+  //   //   case ComponentStateEnum.focused:
+  //   //     return OutlineInputBorder(
+  //   //       borderRadius: borderRadiusValue,
+  //   //       borderSide: BorderSide(
+  //   //         color: borderColorValue.withOpacity(borderOpacityValue),
+  //   //         width: borderWidthValue + 1,
+  //   //       ),
+  //   //     );
+  //   //   case ComponentStateEnum.error:
+  //   //     return OutlineInputBorder(
+  //   //       borderRadius: borderRadiusValue,
+  //   //       borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
+  //   //     );
+  //   //   default:
+  //   //     return OutlineInputBorder(
+  //   //       borderRadius: borderRadiusValue,
+  //   //       borderSide: BorderSide(
+  //   //         color: borderColorValue.withOpacity(borderOpacityValue),
+  //   //         width: borderWidthValue,
+  //   //       ),
+  //   //     );
+  //   // }
+  // }
+  OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
+    final borderRadiusValue = StyleUtils.parseBorderRadius(style['border_radius']);
+
+    final borderColorValue = StyleUtils.parseColor(style['border_color']);
+
+    final borderWidthValue = style['border_width']?.toDouble() ?? 1.0;
+
+    final borderOpacityValue = style['border_opacity']?.toDouble() ?? 1.0;
 
     switch (state) {
       case 'focused':
         return OutlineInputBorder(
-          borderRadius: border_radius,
+          borderRadius: borderRadiusValue,
+
           borderSide: BorderSide(
-            color: border_color.withValues(alpha: border_opacity),
-            width: border_width + 1,
+            color: borderColorValue.withOpacity(borderOpacityValue),
+
+            width: borderWidthValue + 1,
           ),
         );
+
       case 'error':
         return OutlineInputBorder(
-          borderRadius: border_radius,
-          borderSide: BorderSide(
-            color: StyleUtils.parseColor('#ff4d4f'),
-            width: 2,
-          ),
+          borderRadius: borderRadiusValue,
+
+          borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
         );
+
       default:
         return OutlineInputBorder(
-          borderRadius: border_radius,
+          borderRadius: borderRadiusValue,
+
           borderSide: BorderSide(
-            color: border_color.withValues(alpha: border_opacity),
-            width: border_width,
+            color: borderColorValue.withOpacity(borderOpacityValue),
+
+            width: borderWidthValue,
           ),
         );
     }
   }
 }
 
-TextInputType _get_keyboard_type(DynamicFormModel component) {
+TextInputType _getKeyboardType(DynamicFormModel component) {
   if (component.inputTypes != null) {
     if (component.inputTypes!.containsKey('email')) {
       return TextInputType.emailAddress;
