@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -37,10 +38,7 @@ class FormContainer extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
-      child: FocusScope(
-          autofocus: false, 
-          child: Column(children: children),
-      ),
+      child: FocusScope(autofocus: false, child: Column(children: children)),
     );
   }
 }
@@ -64,6 +62,21 @@ class DynamicFormRenderer extends StatefulWidget {
 }
 
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
+  void handleFormFieldUpdate(
+    BuildContext context,
+    DynamicFormModel component,
+    dynamic value,
+  ) {
+    if (value != null) {
+      component.config['value'] = value['value'];
+      context.read<DynamicFormBloc>().add(
+        UpdateFormFieldEvent(componentId: component.id, value: value),
+      );
+    } else {
+      debugPrint("Error: No value received");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _buildComponents(widget.component);
@@ -76,11 +89,23 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
-        return DynamicTextArea(component: component);
+        return DynamicTextArea(
+          component: component,
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
+        );
       case FormTypeEnum.dateTimePickerFormType:
-        return DynamicDateTimePicker(component: component);
+        return DynamicDateTimePicker(
+          component: component,
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
+        );
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return DynamicDateTimeRangePicker(component: component);
+        return DynamicDateTimeRangePicker(
+          component: component,
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
+        );
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
       case FormTypeEnum.checkboxFormType:
@@ -98,7 +123,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-        return DynamicButton(component: component, onAction: _handleButtonAction);
+        return DynamicButton(
+          component: component,
+          onAction: _handleButtonAction,
+        );
       case FormTypeEnum.container:
         return _buildContainerComponent(component);
       case FormTypeEnum.unknown:
@@ -119,7 +147,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         border: style['border_color'] != null
             ? Border.all(
                 color: StyleUtils.parseColor(style['border_color']),
-                width: ComponentUtils.getStyleValue<num>(style, 'border_width', 1.0).toDouble(),
+                width: ComponentUtils.getStyleValue<num>(
+                  style,
+                  'border_width',
+                  1.0,
+                ).toDouble(),
               )
             : null,
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),

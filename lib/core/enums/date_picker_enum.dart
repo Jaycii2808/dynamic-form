@@ -20,7 +20,6 @@ enum DatePickerType {
       case 'date':
         return DatePickerType.dateOnly;
       case 'time_only':
-      case 'timeonly':
       case 'time':
         return DatePickerType.timeOnly;
       case 'date_time':
@@ -131,4 +130,44 @@ enum DateValidationRule {
     }
     return null;
   }
+}
+
+/// Picker mode for dynamic date/time picker
+/// Provides mapping to format string and parsing from string
+enum PickerModeEnum {
+  dateOnly('dateOnly', 'dd/MM/yyyy'),
+  hourDate('hourDate', "h'h' dd/MM/yyyy"),
+  hourMinuteDate('hourMinuteDate', "h'h':mm'm' dd/MM/yyyy"),
+  fullDateTime('fullDateTime', "h'h':mm'm':ss's' dd/MM/yyyy");
+
+  const PickerModeEnum(this.value, this.format);
+  final String value;
+  final String format;
+
+  static PickerModeEnum fromString(String? value) {
+    switch (value) {
+      case 'dateOnly':
+        return PickerModeEnum.dateOnly;
+      case 'hourDate':
+        return PickerModeEnum.hourDate;
+      case 'hourMinuteDate':
+        return PickerModeEnum.hourMinuteDate;
+      case 'fullDateTime':
+      default:
+        return PickerModeEnum.fullDateTime;
+    }
+  }
+
+  /// Get format string for this mode
+  String get dateFormat => format;
+}
+
+/// Custom date format patterns for app-specific needs
+/// Add new patterns here as needed
+enum DateFormatCustomPattern {
+  mmmDyyyy('MMM d,yyyy'),
+  mmmDdYyyyHhMm('MMM dd, yyyy - HH:mm');
+
+  const DateFormatCustomPattern(this.pattern);
+  final String pattern;
 }

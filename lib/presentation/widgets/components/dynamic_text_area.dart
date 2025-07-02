@@ -1,17 +1,33 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
+import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
+import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/enums/input_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+String? _validateForm(DynamicFormModel component, String? value) {
+  try {
+    return ValidationUtils.validateForm(component, value);
+  } catch (e) {
+    debugPrint('Validation error for ${component.id}: $e');
+    return 'Validation error occurred';
+  }
+}
 
 class DynamicTextArea extends StatefulWidget {
   final DynamicFormModel component;
+  final Function(dynamic) onComplete;
 
-  const DynamicTextArea({super.key, required this.component});
+  const DynamicTextArea({
+    super.key,
+    required this.component,
+    required this.onComplete,
+  });
 
   @override
   State<DynamicTextArea> createState() => _DynamicTextAreaState();
@@ -25,15 +41,17 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   @override
   void initState() {
     super.initState();
-    _textController.text = widget.component.config['value'] ?? '';
+    _textController.text =
+        widget.component.config[ValueKeyEnum.value.key] ?? '';
     _focusNode.addListener(_handleFocusChange);
   }
 
   @override
   void didUpdateWidget(covariant DynamicTextArea oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final newValue = widget.component.config['value'] ?? '';
-    if (oldWidget.component.config['value'] != newValue && !_focusNode.hasFocus) {
+    final newValue = widget.component.config[ValueKeyEnum.value.key] ?? '';
+    if (oldWidget.component.config[ValueKeyEnum.value.key] != newValue &&
+        !_focusNode.hasFocus) {
       _textController.text = newValue;
     }
   }
@@ -54,27 +72,27 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
 
   void _saveAndValidate() {
     final newValue = _textController.text;
-    debugPrint('📝 [${widget.component.id}] Text area blur/submit - final value: "$newValue"');
 
-    final validationError = validateForm(widget.component, newValue);
-    String newState = 'base';
+    final validationError = _validateForm(widget.component, newValue);
+    FormStateEnum newState = FormStateEnum.base;
 
     if (validationError != null) {
-      newState = 'error';
+      newState = FormStateEnum.error;
     } else if (newValue.isNotEmpty) {
-      newState = 'success';
+      newState = FormStateEnum.success;
     }
 
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: widget.component.id,
-        value: {'value': newValue, 'current_state': newState, 'error_text': validationError},
-      ),
-    );
+    final valueMap = {
+      'value': newValue,
+      'currentState': newState.value,
+      'errorText': validationError,
+    };
 
     setState(() {
       _errorText = validationError;
     });
+
+    widget.onComplete(valueMap);
   }
 
   @override
@@ -88,9 +106,12 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
               )
             : widget.component;
 
-        final currentState = component.config['current_state'] ?? 'base';
-        final componentValue = component.config['value'] ?? '';
-        final componentError = component.config['error_text'];
+        final inputConfig = InputConfig.fromMap(component.config);
+        final currentState =
+            FormStateEnum.fromString(inputConfig.currentState) ??
+            FormStateEnum.base;
+        final componentValue = inputConfig.value;
+        final componentError = inputConfig.errorText;
 
         _errorText = componentError;
 
@@ -102,103 +123,48 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
           });
         }
 
-        Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-        final config = component.config;
+        final styleConfig = StyleConfig.fromMap(component.style);
 
-        final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-        final hasPlaceholder = config['placeholder'] != null && config['placeholder'].isNotEmpty;
-        final hasValue = config['value'] != null && config['value'].toString().isNotEmpty;
-
-        debugPrint(
-          '🔍 [${component.id}] value: "$componentValue", currentState: $currentState, error: ${componentError ?? "none"}, controller: "${_textController.text}"',
-        );
-
-        if (component.variants != null) {
-          if (hasPlaceholder && component.variants!.containsKey('placeholders')) {
-            final variantStyle =
-                component.variants!['placeholders']['style'] as Map<String, dynamic>?;
-            if (variantStyle != null) {
-              debugPrint('🎨 [${component.id}] Applying placeholders variant: $variantStyle');
-              style.addAll(variantStyle);
-            }
-          }
-
-          if (hasLabel) {
-            final variantStyle =
-                component.variants!['with_label']?['style'] as Map<String, dynamic>?;
-            if (variantStyle != null) {
-              debugPrint('🎨 [${component.id}] Applying with_label variant: $variantStyle');
-              style.addAll(variantStyle);
-            }
-          }
-
-          if (hasLabel && hasValue) {
-            final variantStyle =
-                component.variants!['with_label_value']?['style'] as Map<String, dynamic>?;
-            if (variantStyle != null) {
-              debugPrint('🎨 [${component.id}] Applying with_label_value variant: $variantStyle');
-              style.addAll(variantStyle);
-            }
-          }
-
-          if (hasValue) {
-            final variantStyle =
-                component.variants!['with_value']?['style'] as Map<String, dynamic>?;
-            if (variantStyle != null) {
-              debugPrint('🎨 [${component.id}] Applying with_value variant: $variantStyle');
-              style.addAll(variantStyle);
-            }
-          }
-        }
-
-        if (component.states != null && component.states!.containsKey(currentState)) {
-          final stateStyle = component.states![currentState]['style'] as Map<String, dynamic>?;
-          if (stateStyle != null) {
-            debugPrint('🎨 [${component.id}] Applying $currentState state: $stateStyle');
-            style.addAll(stateStyle);
-          }
-        }
-
-        return _buildBody(style, config, component, currentState);
+        return _buildBody(styleConfig, inputConfig, component, currentState);
       },
     );
   }
 
   Widget _buildBody(
-    Map<String, dynamic> style,
-    Map<String, dynamic> config,
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+    FormStateEnum currentState,
   ) {
     return Container(
       key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+      padding: styleConfig.padding,
+      margin: styleConfig.margin,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(style, config, currentState),
-          _buildTextField(style, config, component, currentState),
+          _buildLabel(styleConfig, inputConfig, currentState),
+          _buildTextField(styleConfig, inputConfig, component, currentState),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(Map<String, dynamic> style, Map<String, dynamic> config, String currentState) {
-    if (config['label'] == null) {
+  Widget _buildLabel(
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
+    FormStateEnum currentState,
+  ) {
+    if (inputConfig.label == null) {
       return const SizedBox.shrink();
     }
     return Container(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
       child: Text(
-        config['label'],
+        inputConfig.label!,
         style: TextStyle(
-          fontSize: style['label_text_size']?.toDouble() ?? 16,
-          color: StyleUtils.parseColor(
-            currentState == 'error' && style['label_color'] != null
-                ? style['label_color']
-                : style['label_color'] ?? '#000000',
-          ),
+          fontSize: styleConfig.labelTextSize,
+          color: styleConfig.labelColor,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -206,152 +172,100 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   }
 
   Widget _buildTextField(
-    Map<String, dynamic> style,
-    Map<String, dynamic> config,
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+    FormStateEnum currentState,
   ) {
-    final double fontSize = style['font_size']?.toDouble() ?? 16;
-    final Color textColor = StyleUtils.parseColor(
-      currentState == 'error' && style['color'] != null
-          ? style['color']
-          : style['color'] ?? '#000000',
-    );
-    final FontStyle fontStyle = (style['font_style'] == 'italic')
-        ? FontStyle.italic
-        : FontStyle.normal;
-    final double contentVerticalPadding = style['content_vertical_padding']?.toDouble() ?? 12;
-    final double contentHorizontalPadding = style['content_horizontal_padding']?.toDouble() ?? 12;
-    final Color fillColor = StyleUtils.parseColor(style['background_color']);
-    final String? helperText = style['helper_text']?.toString();
-    final Color helperTextColor = StyleUtils.parseColor(
-      currentState == 'error' && style['helper_text_color'] != null
-          ? style['helper_text_color']
-          : style['helper_text_color'] ?? '#000000',
-    );
-
     return TextField(
       controller: _textController,
       focusNode: _focusNode,
-
-      enabled: (config['editable'] ?? true) && (config['disabled'] != true),
-
-      readOnly: config['readOnly'] == true,
+      enabled: inputConfig.editable && !inputConfig.disabled,
+      readOnly: inputConfig.readOnly,
       obscureText: component.inputTypes?.containsKey('password') ?? false,
       keyboardType: _getKeyboardType(component),
       onTapOutside: (pointer) {
         _focusNode.unfocus();
       },
-      maxLines: (style['max_lines'] as num?)?.toInt() ?? 10,
-      minLines: (style['min_lines'] as num?)?.toInt() ?? 6,
+      maxLines: styleConfig.maxLines,
+      minLines: styleConfig.minLines,
       decoration: InputDecoration(
         isDense: true,
-        hintText: config['placeholder'] ?? '',
-        border: _buildBorder(style, currentState),
-        enabledBorder: _buildBorder(style, 'enabled'),
-        focusedBorder: _buildBorder(style, 'focused'),
-        errorBorder: _buildBorder(style, 'error'),
+        hintText: inputConfig.placeholder ?? '',
+        border: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
+        enabledBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.base,
+        ),
+        focusedBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.focused,
+        ),
+        errorBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.error,
+        ),
         errorText: _errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: contentVerticalPadding,
-          horizontal: contentHorizontalPadding,
+          vertical: styleConfig.contentVerticalPadding,
+          horizontal: styleConfig.contentHorizontalPadding,
         ),
-        filled: style['background_color'] != null,
-        fillColor: fillColor,
-        helperText: helperText,
-        helperStyle: TextStyle(color: helperTextColor, fontStyle: fontStyle),
+        filled: styleConfig.fillColor != Colors.transparent,
+        fillColor: styleConfig.fillColor,
+        helperText: styleConfig.helperText,
+        helperStyle: TextStyle(
+          color: styleConfig.helperTextColor,
+          fontStyle: styleConfig.fontStyle,
+        ),
       ),
-      style: TextStyle(fontSize: fontSize, color: textColor, fontStyle: fontStyle),
-      onChanged: (value) {
-        debugPrint('⌨️ [${component.id}] Text changing: "${_textController.text}" → "$value"');
-      },
+      style: TextStyle(
+        fontSize: styleConfig.fontSize,
+        color: styleConfig.textColor,
+        fontStyle: styleConfig.fontStyle,
+      ),
       onSubmitted: (value) {
         _saveAndValidate();
       },
     );
   }
 
-  // OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
-  //   final borderRadiusValue = StyleUtils.parseBorderRadius(style['border_radius']);
-  //   final borderColorValue = StyleUtils.parseColor(style['border_color']);
-  //   final borderWidthValue = style['border_width']?.toDouble() ?? 1.0;
-  //   final borderOpacityValue = style['border_opacity']?.toDouble() ?? 1.0;
-  //   //
-  //   // switch (ComponentStateEnum.fromString(state)) {
-  //   //   case ComponentStateEnum.focused:
-  //   //     return OutlineInputBorder(
-  //   //       borderRadius: borderRadiusValue,
-  //   //       borderSide: BorderSide(
-  //   //         color: borderColorValue.withOpacity(borderOpacityValue),
-  //   //         width: borderWidthValue + 1,
-  //   //       ),
-  //   //     );
-  //   //   case ComponentStateEnum.error:
-  //   //     return OutlineInputBorder(
-  //   //       borderRadius: borderRadiusValue,
-  //   //       borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
-  //   //     );
-  //   //   default:
-  //   //     return OutlineInputBorder(
-  //   //       borderRadius: borderRadiusValue,
-  //   //       borderSide: BorderSide(
-  //   //         color: borderColorValue.withOpacity(borderOpacityValue),
-  //   //         width: borderWidthValue,
-  //   //       ),
-  //   //     );
-  //   // }
-  // }
-  OutlineInputBorder _buildBorder(Map<String, dynamic> style, String state) {
-    final borderRadiusValue = StyleUtils.parseBorderRadius(style['border_radius']);
-
-    final borderColorValue = StyleUtils.parseColor(style['border_color']);
-
-    final borderWidthValue = style['border_width']?.toDouble() ?? 1.0;
-
-    final borderOpacityValue = style['border_opacity']?.toDouble() ?? 1.0;
-
-    switch (state) {
-      case 'focused':
-        return OutlineInputBorder(
-          borderRadius: borderRadiusValue,
-
-          borderSide: BorderSide(
-            color: borderColorValue.withOpacity(borderOpacityValue),
-
-            width: borderWidthValue + 1,
-          ),
-        );
-
-      case 'error':
-        return OutlineInputBorder(
-          borderRadius: borderRadiusValue,
-
-          borderSide: BorderSide(color: StyleUtils.parseColor('#ff4d4f'), width: 2),
-        );
-
-      default:
-        return OutlineInputBorder(
-          borderRadius: borderRadiusValue,
-
-          borderSide: BorderSide(
-            color: borderColorValue.withOpacity(borderOpacityValue),
-
-            width: borderWidthValue,
-          ),
-        );
+  OutlineInputBorder _buildBorder(
+    BorderConfig borderConfig,
+    FormStateEnum? state,
+  ) {
+    double width = borderConfig.borderWidth;
+    Color color = borderConfig.borderColor.withValues(
+      alpha: borderConfig.borderOpacity,
+    );
+    if (state == FormStateEnum.focused) {
+      width += 1;
     }
-  }
-}
-
-TextInputType _getKeyboardType(DynamicFormModel component) {
-  if (component.inputTypes != null) {
-    if (component.inputTypes!.containsKey('email')) {
-      return TextInputType.emailAddress;
-    } else if (component.inputTypes!.containsKey('tel')) {
-      return TextInputType.phone;
-    } else if (component.inputTypes!.containsKey('password')) {
-      return TextInputType.visiblePassword;
+    if (state == FormStateEnum.error) {
+      color = const Color(0xFFFF4D4F);
+      width = 2;
     }
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(borderConfig.borderRadius),
+      borderSide: BorderSide(color: color, width: width),
+    );
   }
-  return TextInputType.multiline;
+
+  TextInputType _getKeyboardType(DynamicFormModel component) {
+    if (component.inputTypes != null) {
+      for (final key in component.inputTypes!.keys) {
+        final inputType = InputTypeEnum.fromString(key);
+        switch (inputType) {
+          case InputTypeEnum.email:
+            return TextInputType.emailAddress;
+          case InputTypeEnum.tel:
+            return TextInputType.phone;
+          case InputTypeEnum.password:
+            return TextInputType.visiblePassword;
+          case InputTypeEnum.multiline:
+            return TextInputType.multiline;
+        }
+      }
+    }
+    return TextInputType.multiline;
+  }
 }

@@ -63,7 +63,6 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
           '🚫 Filtering out Save button from main form: ${component.id}',
         );
       }
-
       // Exclude Save buttons (action: 'submit_form') from main form
       return !isSubmitButton;
     }).toList();
