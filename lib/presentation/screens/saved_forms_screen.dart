@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 
 class SavedFormsScreen extends StatefulWidget {
   const SavedFormsScreen({super.key});
@@ -285,7 +286,9 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
   }
 
   Widget _buildFormCard(SavedFormModel form) {
-    final dateFormat = DateFormat('MMM dd, yyyy - HH:mm');
+    final dateFormat = DateFormat(
+      DateFormatCustomPattern.mmmDdYyyyHhMm.pattern,
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

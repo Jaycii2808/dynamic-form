@@ -101,7 +101,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
               handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return DynamicDateTimeRangePicker(component: component);
+        return DynamicDateTimeRangePicker(
+          component: component,
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
+        );
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
       case FormTypeEnum.checkboxFormType:

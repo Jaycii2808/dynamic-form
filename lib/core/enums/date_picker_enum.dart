@@ -161,3 +161,13 @@ enum PickerModeEnum {
   /// Get format string for this mode
   String get dateFormat => format;
 }
+
+/// Custom date format patterns for app-specific needs
+/// Add new patterns here as needed
+enum DateFormatCustomPattern {
+  mmmDyyyy('MMM d,yyyy'),
+  mmmDdYyyyHhMm('MMM dd, yyyy - HH:mm');
+
+  const DateFormatCustomPattern(this.pattern);
+  final String pattern;
+}

@@ -1,15 +1,23 @@
 import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/input_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+String? _validateForm(DynamicFormModel component, String? value) {
+  try {
+    return ValidationUtils.validateForm(component, value);
+  } catch (e) {
+    debugPrint('Validation error for ${component.id}: $e');
+    return 'Validation error occurred';
+  }
+}
 
 class DynamicTextArea extends StatefulWidget {
   final DynamicFormModel component;
@@ -65,7 +73,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   void _saveAndValidate() {
     final newValue = _textController.text;
 
-    final validationError = validateForm(widget.component, newValue);
+    final validationError = _validateForm(widget.component, newValue);
     FormStateEnum newState = FormStateEnum.base;
 
     if (validationError != null) {

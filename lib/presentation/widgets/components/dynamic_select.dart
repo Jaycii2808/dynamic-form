@@ -1,15 +1,24 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+
+String? _validateForm(DynamicFormModel component, String? value) {
+  try {
+    return ValidationUtils.validateForm(component, value);
+  } catch (e) {
+    debugPrint('Validation error for ${component.id}: $e');
+    return 'Validation error occurred';
+  }
+}
 
 class DynamicSelect extends StatefulWidget {
   final DynamicFormModel component;
@@ -48,12 +57,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
   String? _validate_select(DynamicFormModel component, List<String> values) {
     // Use validateForm for basic validation (required field, etc.)
     if (values.isEmpty) {
-      return validateForm(component, '');
+      return _validateForm(component, '');
     }
 
     // For multiple values, validate each one
     for (String value in values) {
-      final validation_error = validateForm(component, value);
+      final validation_error = _validateForm(component, value);
       if (validation_error != null) {
         return validation_error;
       }
