@@ -1,4 +1,5 @@
-﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+﻿import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
@@ -21,7 +22,6 @@ import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:textfield_tags/textfield_tags.dart';
 
 IconData? mapIconNameToIconData(String name) {
   return IconTypeEnum.fromString(name).toIconData();
@@ -35,51 +35,11 @@ class FormContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
-      child: FocusScope(autofocus: false, child: Column(children: children)),
-    );
-  }
-}
-
-class FormWrapper extends StatelessWidget {
-  final Widget child;
-
-  const FormWrapper({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: FocusScope(autofocus: false, child: child),
-    );
-  }
-}
-
-class UnfocusOnTapOutside extends StatelessWidget {
-  final Widget child;
-
-  const UnfocusOnTapOutside({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Focus(
-        onFocusChange: (hasFocus) {
-          if (!hasFocus) {
-            FocusScope.of(context).unfocus();
-          }
-        },
-        child: child,
+      child: FocusScope(
+          autofocus: false, 
+          child: Column(children: children),
       ),
     );
   }
@@ -104,121 +64,12 @@ class DynamicFormRenderer extends StatefulWidget {
 }
 
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
-  late StringTagController<String> tagController;
-
-  // Cache component properties to avoid recalculation in build
-  late final String _componentId;
-  late final Map<String, dynamic> _componentConfig;
-  late final bool _isRequired;
-  late final bool _isDisabled;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeComponentProps();
-  }
-
-  void _initializeComponentProps() {
-    _componentId = widget.component.id;
-    _componentConfig = widget.component.config;
-    _isRequired = ComponentUtils.isRequired(widget.component);
-    _isDisabled = ComponentUtils.isComponentDisabled(widget.component);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void _handleButtonAction(String action, Map<String, dynamic>? data) {
-    try {
-      switch (action) {
-        case 'preview_form':
-          _handlePreviewAction();
-          break;
-        case 'submit_form':
-          _handleSubmitAction(data);
-          break;
-        case 'reset_form':
-          _handleResetAction();
-          break;
-        default:
-          debugPrint('Unknown action: $action');
-      }
-    } catch (e) {
-      debugPrint('Error handling button action $action: $e');
-    }
-  }
-
-  void _handlePreviewAction() {
-    final page = widget.page;
-    if (page == null) {
-      debugPrint('❌ No page available for preview');
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: context.read<DynamicFormBloc>(),
-          child: FormPreviewScreen(
-            page: page,
-            title: page.title.isNotEmpty ? page.title : 'Form Preview',
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleSubmitAction(Map<String, dynamic>? data) {
-    // Check if all required fields are completed
-    if (_checkFormCompletion()) {
-      widget.onCompleted?.call();
-      debugPrint('✅ Form completed successfully');
-    } else {
-      debugPrint('❌ Form incomplete - missing required fields');
-    }
-  }
-
-  void _handleResetAction() {
-    // Reset form fields logic would go here
-    debugPrint('🔄 Resetting form');
-  }
-
-  bool _checkFormCompletion() {
-    final page = widget.page;
-    if (page == null) return false;
-
-    // Check if all required components have values
-    for (final component in page.components) {
-      if (ComponentUtils.isRequired(component)) {
-        final value = component.config['value'];
-        if (value == null ||
-            (value is String && value.trim().isEmpty) ||
-            (value is List && value.isEmpty)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  void _notifyFieldChanged(dynamic value) {
-    widget.onFieldChanged?.call(_componentId, value);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return buildForm();
+    return _buildComponents(widget.component);
   }
 
-  Widget buildForm() {
-    // Use cached component to avoid repeated property access
-    final component = widget.component;
-
-    // Performance optimization: Build component based on type
-    // Using const enum for better performance
+  Widget _buildComponents(DynamicFormModel component) {
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
         return DynamicTextField(component: component);
@@ -247,28 +98,20 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-        return DynamicButton(
-          component: component,
-          onAction: _handleButtonAction,
-        );
+        return DynamicButton(component: component, onAction: _handleButtonAction);
       case FormTypeEnum.container:
-        return _buildContainer(component);
+        return _buildContainerComponent(component);
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
   }
 
-  /// Build container with performance optimization and null safety
-  Widget _buildContainer(DynamicFormModel component) {
-    // Cache style properties to avoid repeated map lookups
+  Widget _buildContainerComponent(DynamicFormModel component) {
     final style = component.style;
-    final config = component.config;
-
-    // Get label with null safety
     final label = ComponentUtils.getLabel(component);
 
-    return Container(
-      key: Key(_componentId),
+    final containerContent = Container(
+      key: Key(component.id),
       margin: StyleUtils.parsePadding(style['margin']),
       padding: StyleUtils.parsePadding(style['padding']),
       decoration: BoxDecoration(
@@ -276,11 +119,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         border: style['border_color'] != null
             ? Border.all(
                 color: StyleUtils.parseColor(style['border_color']),
-                width: ComponentUtils.getStyleValue<num>(
-                  style,
-                  'border_width',
-                  1.0,
-                ).toDouble(),
+                width: ComponentUtils.getStyleValue<num>(style, 'border_width', 1.0).toDouble(),
               )
             : null,
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
@@ -288,19 +127,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (label.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: StyleUtils.parseColor(style['label_color']),
-                  fontSize: StyleUtils.parseFontSize(style['font_size']),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          // Build children with null safety
+          if (label.isNotEmpty) _buildLabel(label, style),
+
           if (component.children != null)
             ...component.children!.map(
               (child) => DynamicFormRenderer(
@@ -313,5 +141,101 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         ],
       ),
     );
+
+    final action = component.config['onTapAction'];
+    if (action is String && action.isNotEmpty) {
+      return GestureDetector(
+        onTap: () => _handleButtonAction(action, component.config['data']),
+        behavior: HitTestBehavior.opaque,
+        child: containerContent,
+      );
+    }
+
+    return containerContent;
+  }
+
+  Widget _buildLabel(String label, Map<String, dynamic> style) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: StyleUtils.parseColor(style['label_color']),
+          fontSize: StyleUtils.parseFontSize(style['font_size']),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  void _handleButtonAction(String action, Map<String, dynamic>? data) {
+    try {
+      switch (ButtonAction.fromString(action)) {
+        case ButtonAction.previewForm:
+          _handlePreviewAction();
+          break;
+        case ButtonAction.submitForm:
+          _handleSubmitAction(data);
+          break;
+        case ButtonAction.resetForm:
+          _handleResetAction();
+          break;
+      }
+    } catch (e) {
+      debugPrint('Error handling button action $action: $e');
+    }
+  }
+
+  void _handlePreviewAction() {
+    final page = widget.page;
+    if (page == null) {
+      debugPrint('❌ No page available for preview');
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: context.read<DynamicFormBloc>(),
+          child: FormPreviewScreen(
+            page: page,
+            title: page.title.isNotEmpty ? page.title : 'Form Preview',
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleSubmitAction(Map<String, dynamic>? data) {
+    if (_isFormComplete()) {
+      widget.onCompleted?.call();
+      debugPrint('✅ Form completed successfully');
+    } else {
+      debugPrint('❌ Form incomplete - missing required fields');
+    }
+  }
+
+  void _handleResetAction() {
+    debugPrint('🔄 Resetting form');
+  }
+
+  bool _isFormComplete() {
+    final page = widget.page;
+    if (page == null) return false;
+
+    for (final component in page.components) {
+      if (ComponentUtils.isRequired(component)) {
+        final value = component.config['value'];
+
+        if (value == null ||
+            (value is String && value.trim().isEmpty) ||
+            (value is List && value.isEmpty)) {
+          debugPrint('Component ${component.id} is required but has no value.');
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

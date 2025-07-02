@@ -6,5 +6,6 @@ linter:
     prefer_const_constructors: true
     #prefer_single_quotes: true
     require_trailing_commas: true
+    trailing_commas: preserve
 
 formatter:

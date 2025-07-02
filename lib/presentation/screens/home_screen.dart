@@ -51,8 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: _buildFormListView(configKeys: configKeys, onTapForm: _navigateToForm),
     );
+
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -67,12 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBody() {
-    return _buildFormListView(
-      configKeys: configKeys,
-      onTapForm: _navigateToForm,
-    );
-  }
 
   Widget _buildSavedFormsButton() {
     return Builder(
@@ -105,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return ListView.builder(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       itemCount: configKeys.length,
       itemBuilder: (context, index) => _buildFormItem(
         configKey: configKeys[index],
@@ -120,14 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         margin: const EdgeInsets.all(10),
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.blueGrey,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          configKey,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ),
+        decoration: BoxDecoration(color: Colors.blueGrey, borderRadius: BorderRadius.circular(8)),
+        child: Text(configKey, style: const TextStyle(color: Colors.white, fontSize: 16)),
       ),
     );
   }
