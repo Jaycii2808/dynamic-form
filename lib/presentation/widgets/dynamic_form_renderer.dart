@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -37,10 +38,7 @@ class FormContainer extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
-      child: FocusScope(
-          autofocus: false, 
-          child: Column(children: children),
-      ),
+      child: FocusScope(autofocus: false, child: Column(children: children)),
     );
   }
 }
@@ -76,7 +74,19 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
-        return DynamicTextArea(component: component);
+        return DynamicTextArea(
+          component: component,
+          onComplete: (value) {
+            if (value != null) {
+              component.config['value'] = value['value'];
+              context.read<DynamicFormBloc>().add(
+                UpdateFormFieldEvent(componentId: component.id, value: value),
+              );
+            } else {
+              debugPrint("Error: No value received");
+            }
+          },
+        );
       case FormTypeEnum.dateTimePickerFormType:
         return DynamicDateTimePicker(component: component);
       case FormTypeEnum.dateTimeRangePickerFormType:
