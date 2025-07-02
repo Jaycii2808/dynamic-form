@@ -20,7 +20,6 @@ enum DatePickerType {
       case 'date':
         return DatePickerType.dateOnly;
       case 'time_only':
-      case 'timeonly':
       case 'time':
         return DatePickerType.timeOnly;
       case 'date_time':
