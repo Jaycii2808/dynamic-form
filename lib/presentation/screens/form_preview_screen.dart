@@ -192,20 +192,60 @@ class FormPreviewScreen extends StatelessWidget {
   }
 
   Widget _buildPreviewComponent(DynamicFormModel component) {
-    // Create a copy of the component with interactions disabled for preview
+    // Create a comprehensive disabled config for all component types
+    final disabledConfig = Map<String, dynamic>.from(component.config);
+
+    // Universal disable flags
+    disabledConfig.addAll({
+      'disabled': true, // For buttons, inputs
+      'readOnly': true, // For text fields, text areas
+      'editable': false, // For general editing
+      'interactive': false, // For custom components
+      'clickable': false, // For buttons, selectors
+      'selectable': false, // For dropdowns, selects
+      'draggable': false, // For file uploaders
+      'uploadable': false, // For file uploaders
+      'checkable': false, // For checkboxes, radios
+      'switchable': false, // For switches
+      'slidable': false, // For sliders
+      'expandable': false, // For expandable components
+      'focusable': false, // Prevent focus
+      'onTap': null, // Remove tap handlers
+      'onChanged': null, // Remove change handlers
+      'onPressed': null, // Remove press handlers
+      'onSubmitted': null, // Remove submit handlers
+      'onUpload': null, // Remove upload handlers
+    });
+
+    // Enhanced preview styles with visual indicators
+    final previewStyle = Map<String, dynamic>.from(component.style);
+    previewStyle.addAll({
+      'opacity': 0.7, // Fade to indicate disabled
+      'pointer_events': 'none', // Block all pointer events
+      'user_select': 'none', // Prevent text selection
+      'cursor': 'default', // Default cursor (not pointer)
+    });
+
+    // For input components, add visual disabled state
+    if ([
+      'textFieldFormType',
+      'textAreaFormType',
+      'selectFormType',
+    ].contains(component.type.toString().split('.').last)) {
+      previewStyle.addAll({
+        'background_color': previewStyle['background_color'] ?? '#f5f5f5',
+        'border_color': '#d1d5db', // Gray border for disabled look
+        'color': '#6b7280', // Gray text for disabled look
+      });
+    }
+
+    // Create preview component with same ID (for BLoC sync) but disabled
     final previewComponent = DynamicFormModel(
-      id: '${component.id}_preview',
+      id: component.id, // Keep same ID for BLoC state sync
       type: component.type,
       order: component.order,
-      config: {
-        ...component.config,
-        'disabled': true, // Disable all interactions
-        'readOnly': true,
-      },
-      style: {
-        ...component.style,
-        'opacity': 0.8, // Slightly fade to indicate preview mode
-      },
+      config: disabledConfig,
+      style: previewStyle,
       inputTypes: component.inputTypes,
       variants: component.variants,
       states: component.states,
@@ -213,8 +253,14 @@ class FormPreviewScreen extends StatelessWidget {
       children: component.children,
     );
 
-    // Return the rendered component
-    return DynamicFormRenderer(component: previewComponent, page: page);
+    // Wrap in IgnorePointer to completely block interactions
+    return IgnorePointer(
+      ignoring: true, // Block ALL touch interactions
+      child: AbsorbPointer(
+        absorbing: true, // Absorb pointer events
+        child: DynamicFormRenderer(component: previewComponent, page: page),
+      ),
+    );
   }
 
   Widget _buildPreviewSaveButton(DynamicFormModel saveButton) {

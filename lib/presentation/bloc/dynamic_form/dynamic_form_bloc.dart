@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
@@ -82,13 +83,93 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         return;
       }
 
-      final updatedComponents = currentPage.components.map((component) {
-        if (component.id == event.componentId) {
-          return _updateComponentWithValue(component, event.value);
-        } else {
-          return component;
-        }
-      }).toList();
+      // Find the target component (recursive search including children)
+      DynamicFormModel? targetComponent;
+      int targetIndex = -1;
+
+      // First search at root level
+      targetIndex = currentPage.components.indexWhere(
+        (component) => component.id == event.componentId,
+      );
+
+      if (targetIndex != -1) {
+        targetComponent = currentPage.components[targetIndex];
+      } else {
+        // Search in nested children
+        targetComponent = _findComponentRecursive(
+          currentPage.components,
+          event.componentId,
+        );
+      }
+
+      List<DynamicFormModel> updatedComponents;
+
+      if (targetComponent != null) {
+        // Component exists - update it (handle both root and nested)
+        updatedComponents = _updateComponentsRecursive(
+          currentPage.components,
+          event.componentId,
+          event.value,
+        );
+
+        debugPrint('✅ Updated existing component: ${event.componentId}');
+      } else {
+        // Component doesn't exist - create a minimal one and add it
+        debugPrint(
+          '⚠️ Component ${event.componentId} not found in current page, creating minimal component',
+        );
+
+        final newComponent = DynamicFormModel(
+          id: event.componentId,
+          type: FormTypeEnum
+              .textFieldFormType, // Default type for missing components
+          order: currentPage.components.length,
+          config: {
+            'placeholder': 'Dynamic component',
+            'isRequired': false,
+            'value': event.value is Map
+                ? (event.value as Map)['value']
+                : event.value,
+            'current_state': event.value is Map
+                ? (event.value as Map)['current_state'] ?? 'base'
+                : 'base',
+            'error_text': event.value is Map
+                ? (event.value as Map)['error_text']
+                : null,
+          },
+          style: {
+            'padding': '10px 12px',
+            'border_color': '#888888',
+            'border_radius': 6,
+            'font_size': 15,
+            'color': '#e0e0e0',
+            'background_color': '#000000',
+          },
+          inputTypes: {
+            'text': {
+              'validation': {'min_length': 1, 'max_length': 100},
+            },
+          },
+          variants: {},
+          states: {
+            'base': {
+              'style': {'border_color': '#888888'},
+            },
+            'error': {
+              'style': {'border_color': '#ff4d4f'},
+            },
+            'success': {
+              'style': {'border_color': '#00b96b'},
+            },
+          },
+          validation: null,
+          children: null,
+        );
+
+        // Add the new component to the list
+        updatedComponents = [...currentPage.components, newComponent];
+        debugPrint('✅ Added new component: ${event.componentId}');
+      }
 
       final updatedPage = DynamicFormPageModel(
         pageId: currentPage.pageId,
@@ -308,5 +389,62 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       debugPrint('Error: $e, StackTrace: $stackTrace');
       emit(DynamicFormError(errorMessage: errorMessage));
     }
+  }
+
+  /// Recursively find a component by ID in nested children
+  DynamicFormModel? _findComponentRecursive(
+    List<DynamicFormModel> components,
+    String targetId,
+  ) {
+    for (final component in components) {
+      if (component.id == targetId) {
+        return component;
+      }
+
+      // Search in children if they exist
+      if (component.children != null && component.children!.isNotEmpty) {
+        final found = _findComponentRecursive(component.children!, targetId);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  /// Recursively update components in nested structure
+  List<DynamicFormModel> _updateComponentsRecursive(
+    List<DynamicFormModel> components,
+    String targetId,
+    dynamic value,
+  ) {
+    return components.map((component) {
+      if (component.id == targetId) {
+        // Found target - update it
+        return _updateComponentWithValue(component, value);
+      } else if (component.children != null && component.children!.isNotEmpty) {
+        // Search and update in children
+        final updatedChildren = _updateComponentsRecursive(
+          component.children!,
+          targetId,
+          value,
+        );
+
+        // Return component with updated children
+        return DynamicFormModel(
+          id: component.id,
+          type: component.type,
+          order: component.order,
+          config: component.config,
+          style: component.style,
+          inputTypes: component.inputTypes,
+          variants: component.variants,
+          states: component.states,
+          validation: component.validation,
+          children: updatedChildren,
+        );
+      } else {
+        // No match and no children - return as is
+        return component;
+      }
+    }).toList();
   }
 }
