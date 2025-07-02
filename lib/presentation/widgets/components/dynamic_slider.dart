@@ -19,35 +19,35 @@ class DynamicSlider extends StatefulWidget {
 }
 
 class _DynamicSliderState extends State<DynamicSlider> {
-  double? _slider_value;
-  RangeValues? _slider_range_values;
-  final FocusNode _focus_node = FocusNode();
+  double? sliderValue;
+  RangeValues? sliderRangeValues;
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _init_local_state(widget.component);
+    initLocalState(widget.component);
   }
 
   @override
   void didUpdateWidget(covariant DynamicSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _init_local_state(widget.component);
+    initLocalState(widget.component);
   }
 
   @override
   void dispose() {
-    _focus_node.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
-  void _init_local_state(DynamicFormModel component) {
+  void initLocalState(DynamicFormModel component) {
     final config = component.config;
-    final is_range = config['range'] == true;
-    if (is_range) {
+    final isRange = config['range'] == true;
+    if (isRange) {
       final values = config['values'];
       if (values is List && values.length == 2) {
-        _slider_range_values = RangeValues(
+        sliderRangeValues = RangeValues(
           (values[0] as num).toDouble(),
           (values[1] as num).toDouble(),
         );
@@ -55,40 +55,40 @@ class _DynamicSliderState extends State<DynamicSlider> {
     } else {
       final value = config['value'];
       if (value is num) {
-        _slider_value = value.toDouble();
+        sliderValue = value.toDouble();
       }
     }
   }
 
-  void _sync_with_bloc(DynamicFormModel component) {
+  void syncWithBloc(DynamicFormModel component) {
     final config = component.config;
-    final is_range = config['range'] == true;
-    if (is_range) {
+    final isRange = config['range'] == true;
+    if (isRange) {
       final values = config['values'];
       if (values is List && values.length == 2) {
         final range = RangeValues(
           (values[0] as num).toDouble(),
           (values[1] as num).toDouble(),
         );
-        if (_slider_range_values == null ||
-            _slider_range_values!.start != range.start ||
-            _slider_range_values!.end != range.end) {
+        if (sliderRangeValues == null ||
+            sliderRangeValues!.start != range.start ||
+            sliderRangeValues!.end != range.end) {
           setState(() {
-            _slider_range_values = range;
+            sliderRangeValues = range;
           });
         }
       }
     } else {
       final value = config['value'];
-      if (value is num && _slider_value != value.toDouble()) {
+      if (value is num && sliderValue != value.toDouble()) {
         setState(() {
-          _slider_value = value.toDouble();
+          sliderValue = value.toDouble();
         });
       }
     }
   }
 
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
@@ -102,7 +102,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
                 orElse: () => widget.component,
               )
             : widget.component;
-        _sync_with_bloc(component);
+        syncWithBloc(component);
       },
       builder: (context, state) {
         final component = (state.page?.components != null)
@@ -114,45 +114,45 @@ class _DynamicSliderState extends State<DynamicSlider> {
 
         final style = Map<String, dynamic>.from(component.style);
         final config = component.config;
-        final bool is_range = config['range'] == true;
+        final bool isRange = config['range'] == true;
         final double min = (config['min'] as num?)?.toDouble() ?? 0;
         final double max = (config['max'] as num?)?.toDouble() ?? 100;
         final int? divisions = (config['divisions'] as num?)?.toInt();
         final String prefix = config['prefix']?.toString() ?? '';
         final String? hint = config['hint'] as String?;
-        final String? icon_name = config['icon'] as String?;
-        final String? thumb_icon_name = config['thumb_icon'] as String?;
-        final String? error_text = config['error_text'] as String?;
-        final bool is_disabled = config['disabled'] == true;
+        final String? iconName = config['icon'] as String?;
+        final String? thumbIconName = config['thumb_icon'] as String?;
+        final String? errorText = config['error_text'] as String?;
+        final bool isDisabled = config['disabled'] == true;
 
         if (component.variants != null) {
           if (hint != null && component.variants!.containsKey('with_hint')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['with_hint']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
-          if (icon_name != null &&
+          if (iconName != null &&
               component.variants!.containsKey('with_icon')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['with_icon']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
-          if (thumb_icon_name != null &&
+          if (thumbIconName != null &&
               component.variants!.containsKey('with_thumb_icon')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['with_thumb_icon']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
         }
 
-        final IconData? thumb_icon = thumb_icon_name != null
-            ? _map_icon_name_to_icon_data(thumb_icon_name)
+        final IconData? thumbIcon = thumbIconName != null
+            ? mapIconNameToIconData(thumbIconName)
             : null;
 
-        final slider_theme = SliderTheme.of(context).copyWith(
+        final sliderTheme = SliderTheme.of(context).copyWith(
           activeTrackColor: StyleUtils.parseColor(style['active_color']),
           inactiveTrackColor: StyleUtils.parseColor(style['inactive_color']),
           thumbColor: StyleUtils.parseColor(style['thumb_color']),
@@ -162,43 +162,43 @@ class _DynamicSliderState extends State<DynamicSlider> {
           trackHeight: 6.0,
         );
 
-        final slider_widget = SliderTheme(
-          data: slider_theme.copyWith(
-            rangeThumbShape: _CustomRangeSliderThumbShape(
+        final sliderWidget = SliderTheme(
+          data: sliderTheme.copyWith(
+            rangeThumbShape: CustomRangeSliderThumbShape(
               thumbRadius: 14,
               valuePrefix: prefix,
-              values: _slider_range_values ?? RangeValues(min, max),
+              values: sliderRangeValues ?? RangeValues(min, max),
               iconColor: StyleUtils.parseColor(style['thumb_icon_color']),
               labelColor: StyleUtils.parseColor(style['value_label_color']),
-              thumbIcon: thumb_icon,
+              thumbIcon: thumbIcon,
             ),
-            thumbShape: _CustomSliderThumbShape(
+            thumbShape: CustomSliderThumbShape(
               thumbRadius: 14,
               valuePrefix: prefix,
-              displayValue: _slider_value ?? min,
+              displayValue: sliderValue ?? min,
               iconColor: StyleUtils.parseColor(style['thumb_icon_color']),
               labelColor: StyleUtils.parseColor(style['value_label_color']),
-              thumbIcon: thumb_icon,
+              thumbIcon: thumbIcon,
             ),
           ),
-          child: is_range
+          child: isRange
               ? RangeSlider(
-                  values: _slider_range_values ?? RangeValues(min, max),
+                  values: sliderRangeValues ?? RangeValues(min, max),
                   min: min,
                   max: max,
                   divisions: divisions,
                   labels: RangeLabels(
-                    '$prefix${(_slider_range_values?.start ?? min).round()}',
-                    '$prefix${(_slider_range_values?.end ?? max).round()}',
+                    '$prefix${(sliderRangeValues?.start ?? min).round()}',
+                    '$prefix${(sliderRangeValues?.end ?? max).round()}',
                   ),
-                  onChanged: is_disabled
+                  onChanged: isDisabled
                       ? null
                       : (values) {
                           setState(() {
-                            _slider_range_values = values;
+                            sliderRangeValues = values;
                           });
                         },
-                  onChangeEnd: is_disabled
+                  onChangeEnd: isDisabled
                       ? null
                       : (values) {
                           context.read<DynamicFormBloc>().add(
@@ -210,19 +210,19 @@ class _DynamicSliderState extends State<DynamicSlider> {
                         },
                 )
               : Slider(
-                  value: _slider_value ?? min,
+                  value: sliderValue ?? min,
                   min: min,
                   max: max,
                   divisions: divisions,
-                  label: '$prefix${_slider_value?.round()}',
-                  onChanged: is_disabled
+                  label: '$prefix${sliderValue?.round()}',
+                  onChanged: isDisabled
                       ? null
                       : (value) {
                           setState(() {
-                            _slider_value = value;
+                            sliderValue = value;
                           });
                         },
-                  onChangeEnd: is_disabled
+                  onChangeEnd: isDisabled
                       ? null
                       : (value) {
                           context.read<DynamicFormBloc>().add(
@@ -235,12 +235,12 @@ class _DynamicSliderState extends State<DynamicSlider> {
                 ),
         );
 
-        Widget? icon_widget;
-        if (icon_name != null) {
-          final icon_data = _map_icon_name_to_icon_data(icon_name);
-          if (icon_data != null) {
-            icon_widget = Icon(
-              icon_data,
+        Widget? iconWidget;
+        if (iconName != null) {
+          final iconData = mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            iconWidget = Icon(
+              iconData,
               color: StyleUtils.parseColor(style['icon_color']),
               size: (style['icon_size'] as num?)?.toDouble() ?? 24.0,
             );
@@ -248,10 +248,10 @@ class _DynamicSliderState extends State<DynamicSlider> {
         }
 
         return Focus(
-          focusNode: _focus_node,
+          focusNode: focusNode,
           child: GestureDetector(
             onTap: () {
-              FocusScope.of(context).requestFocus(_focus_node);
+              FocusScope.of(context).requestFocus(focusNode);
             },
             child: Container(
               key: Key(component.id),
@@ -261,11 +261,11 @@ class _DynamicSliderState extends State<DynamicSlider> {
                 children: [
                   Row(
                     children: [
-                      if (icon_widget != null) ...[
-                        icon_widget,
+                      if (iconWidget != null) ...[
+                        iconWidget,
                         const SizedBox(width: 8),
                       ],
-                      Expanded(child: slider_widget),
+                      Expanded(child: sliderWidget),
                     ],
                   ),
                   if (hint != null)
@@ -279,11 +279,11 @@ class _DynamicSliderState extends State<DynamicSlider> {
                         ),
                       ),
                     ),
-                  if (error_text != null && error_text.isNotEmpty)
+                  if (errorText != null && errorText.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0, left: 4.0),
                       child: Text(
-                        error_text,
+                        errorText,
                         style: const TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
@@ -297,7 +297,7 @@ class _DynamicSliderState extends State<DynamicSlider> {
   }
 }
 
-class _CustomSliderThumbShape extends SliderComponentShape {
+class CustomSliderThumbShape extends SliderComponentShape {
   final double thumbRadius;
   final String valuePrefix;
   final double displayValue;
@@ -305,7 +305,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
   final Color? labelColor;
   final IconData? thumbIcon;
 
-  _CustomSliderThumbShape({
+  CustomSliderThumbShape({
     this.thumbRadius = 14.0,
     this.valuePrefix = '',
     required this.displayValue,
@@ -379,7 +379,7 @@ class _CustomSliderThumbShape extends SliderComponentShape {
   }
 }
 
-class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
+class CustomRangeSliderThumbShape extends RangeSliderThumbShape {
   final double thumbRadius;
   final String valuePrefix;
   final RangeValues values;
@@ -387,7 +387,7 @@ class _CustomRangeSliderThumbShape extends RangeSliderThumbShape {
   final Color? labelColor;
   final IconData? thumbIcon;
 
-  _CustomRangeSliderThumbShape({
+  CustomRangeSliderThumbShape({
     this.thumbRadius = 14.0,
     this.valuePrefix = '',
     required this.values,

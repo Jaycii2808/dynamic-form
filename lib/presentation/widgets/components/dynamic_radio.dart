@@ -19,10 +19,10 @@ class DynamicRadio extends StatefulWidget {
 }
 
 class _DynamicRadioState extends State<DynamicRadio> {
-  final FocusNode _focus_node = FocusNode();
+  final FocusNode focusNode = FocusNode();
 
   // Common utility function for mapping icon names to IconData
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
@@ -41,73 +41,72 @@ class _DynamicRadioState extends State<DynamicRadio> {
 
         // 1. Resolve styles from component's style and states
         Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-        final bool is_selected = component.config['value'] == true;
-        final bool is_editable =
+        final bool isSelected = component.config['value'] == true;
+        final bool isEditable =
             (component.config['is_editable'] != false) &&
             (component.config['disabled'] != true);
 
         // Apply state-specific styles
-        String current_state = is_selected ? 'selected' : 'base';
-        if (!is_editable) {
+        String currentState = isSelected ? 'selected' : 'base';
+        if (!isEditable) {
           // For disabled items, we don't use states, we just use the styles defined directly on the component.
         } else if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) {
-            style.addAll(state_style);
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) {
+            style.addAll(stateStyle);
           }
         }
 
         // 2. Extract configuration
         final String? label = component.config['label'];
         final String? hint = component.config['hint'];
-        final String? icon_name = component.config['icon'];
-        final IconData? leading_icon_data = icon_name != null
-            ? _map_icon_name_to_icon_data(icon_name)
+        final String? iconName = component.config['icon'];
+        final IconData? leadingIconData = iconName != null
+            ? mapIconNameToIconData(iconName)
             : null;
         final String? group = component.config['group'];
 
         // 3. Define visual properties based on style
-        final Color background_color = StyleUtils.parseColor(
+        final Color backgroundColor = StyleUtils.parseColor(
           style['background_color'],
         );
-        final Color border_color = StyleUtils.parseColor(style['border_color']);
-        final double border_width =
+        final Color borderColor = StyleUtils.parseColor(style['border_color']);
+        final double borderWidth =
             (style['border_width'] as num?)?.toDouble() ?? 1.0;
-        final Color icon_color = StyleUtils.parseColor(style['icon_color']);
-        final double control_width = (style['width'] as num?)?.toDouble() ?? 28;
-        final double control_height =
+        final Color iconColor = StyleUtils.parseColor(style['icon_color']);
+        final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
+        final double controlHeight =
             (style['height'] as num?)?.toDouble() ?? 28;
 
-        final control_border_radius =
-            control_width / 2; // Always circular for radio
+        final controlBorderRadius =
+            controlWidth / 2; // Always circular for radio
 
         debugPrint(
-          '[Radio][build] id=${component.id} value=$is_selected state=$current_state',
+          '[Radio][build] id=${component.id} value=$isSelected state=$currentState',
         );
         debugPrint('[Radio][build] style=${style.toString()}');
         debugPrint(
-          '[Radio][build] icon_color=$icon_color, background_color=$background_color, border_color=$border_color',
+          '[Radio][build] iconColor=$iconColor, backgroundColor=$backgroundColor, borderColor=$borderColor',
         );
 
         // 4. Build the toggle control (the radio button itself)
-        Widget toggle_control = Container(
-          width: control_width,
-          height: control_height,
+        Widget toggleControl = Container(
+          width: controlWidth,
+          height: controlHeight,
           decoration: BoxDecoration(
-            color: background_color,
-            border: Border.all(color: border_color, width: border_width),
-            borderRadius: BorderRadius.circular(control_border_radius),
+            color: backgroundColor,
+            border: Border.all(color: borderColor, width: borderWidth),
+            borderRadius: BorderRadius.circular(controlBorderRadius),
           ),
-          child: is_selected
+          child: isSelected
               ? Center(
                   child: Container(
-                    width: control_width * 0.5,
-                    height: control_height * 0.5,
+                    width: controlWidth * 0.5,
+                    height: controlHeight * 0.5,
                     decoration: BoxDecoration(
-                      color: icon_color,
+                      color: iconColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -116,9 +115,9 @@ class _DynamicRadioState extends State<DynamicRadio> {
         );
 
         // 5. Build the label and hint text column
-        Widget? label_and_hint;
+        Widget? labelAndHint;
         if (label != null) {
-          label_and_hint = Expanded(
+          labelAndHint = Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -152,14 +151,12 @@ class _DynamicRadioState extends State<DynamicRadio> {
         }
 
         // 6. Handle tap gestures
-        void handle_tap() {
-          FocusScope.of(context).requestFocus(_focus_node);
-          if (!is_editable) return;
+        void handleTap() {
+          FocusScope.of(context).requestFocus(focusNode);
+          if (!isEditable) return;
 
-          debugPrint(
-            '[Radio][tap] id=${component.id} value_before=$is_selected',
-          );
-          //final newValue = !is_selected;
+          debugPrint('[Radio][tap] id=${component.id} valueBefore=$isSelected');
+          //final newValue = !isSelected;
 
           // Logic to unselect other radios in the same group
           if (group != null) {
@@ -167,23 +164,23 @@ class _DynamicRadioState extends State<DynamicRadio> {
             context.read<DynamicFormBloc>().add(
               UpdateFormFieldEvent(componentId: component.id, value: true),
             );
-            debugPrint('[Radio][tap] id=${component.id} value_after=true');
+            debugPrint('[Radio][tap] id=${component.id} valueAfter=true');
             debugPrint('[Radio] Save value: ${component.id} = true');
           } else {
             // If no explicit group, treat it as a single radio button (not common)
             context.read<DynamicFormBloc>().add(
               UpdateFormFieldEvent(componentId: component.id, value: true),
             );
-            debugPrint('[Radio][tap] id=${component.id} value_after=true');
+            debugPrint('[Radio][tap] id=${component.id} valueAfter=true');
             debugPrint('[Radio] Save value: ${component.id} = true');
           }
         }
 
         // 7. Assemble the final widget
         return Focus(
-          focusNode: _focus_node,
+          focusNode: focusNode,
           child: GestureDetector(
-            onTap: handle_tap,
+            onTap: handleTap,
             child: Container(
               key: Key(component.id),
               margin: StyleUtils.parsePadding(style['margin']),
@@ -191,17 +188,17 @@ class _DynamicRadioState extends State<DynamicRadio> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  toggle_control,
+                  toggleControl,
                   const SizedBox(width: 12),
-                  if (leading_icon_data != null) ...[
+                  if (leadingIconData != null) ...[
                     Icon(
-                      leading_icon_data,
+                      leadingIconData,
                       size: 20,
                       color: StyleUtils.parseColor(style['icon_color']),
                     ),
                     const SizedBox(width: 8),
                   ],
-                  if (label_and_hint != null) label_and_hint,
+                  if (labelAndHint != null) labelAndHint,
                 ],
               ),
             ),
@@ -213,7 +210,7 @@ class _DynamicRadioState extends State<DynamicRadio> {
 
   @override
   void dispose() {
-    _focus_node.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 }

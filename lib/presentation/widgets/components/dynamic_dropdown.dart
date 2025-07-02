@@ -20,46 +20,46 @@ class DynamicDropdown extends StatefulWidget {
 
 class _DynamicDropdownState extends State<DynamicDropdown> {
   //bool _is_hovering = false;
-  final FocusNode _focus_node = FocusNode();
-  final GlobalKey _dropdown_key = GlobalKey();
-  OverlayEntry? _overlay_entry;
+  final FocusNode focusNode = FocusNode();
+  final GlobalKey dropdownKey = GlobalKey();
+  OverlayEntry? overlayEntry;
 
   @override
   void dispose() {
-    _overlay_entry?.remove();
-    _focus_node.dispose();
+    overlayEntry?.remove();
+    focusNode.dispose();
     super.dispose();
   }
 
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
-  void _show_dropdown_panel(
+  void showDropdownPanel(
     BuildContext context,
     DynamicFormModel component,
     Rect rect,
-    String? selected_value,
+    String? selectedValue,
   ) {
     final items = component.config['items'] as List<dynamic>? ?? [];
     final style = component.style;
-    final is_searchable = component.config['searchable'] as bool? ?? false;
-    final dropdown_width =
+    final isSearchable = component.config['searchable'] as bool? ?? false;
+    final dropdownWidth =
         (style['dropdown_width'] as num?)?.toDouble() ?? rect.width;
 
-    _overlay_entry = OverlayEntry(
+    overlayEntry = OverlayEntry(
       builder: (context) {
-        List<dynamic> filtered_items = List.from(items);
-        String search_query = '';
-        final search_controller = TextEditingController();
+        List<dynamic> filteredItems = List.from(items);
+        String searchQuery = '';
+        final searchController = TextEditingController();
 
         return StatefulBuilder(
-          builder: (context, set_panel_state) {
-            if (is_searchable) {
-              filtered_items = items.where((item) {
+          builder: (context, setPanelState) {
+            if (isSearchable) {
+              filteredItems = items.where((item) {
                 final label = item['label']?.toString().toLowerCase() ?? '';
                 if (item['type'] == 'divider') return true;
-                return label.contains(search_query.toLowerCase());
+                return label.contains(searchQuery.toLowerCase());
               }).toList();
             }
 
@@ -68,16 +68,16 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 Positioned.fill(
                   child: GestureDetector(
                     onTap: () {
-                      _overlay_entry?.remove();
-                      _overlay_entry = null;
+                      overlayEntry?.remove();
+                      overlayEntry = null;
                     },
                     child: Container(color: Colors.transparent),
                   ),
                 ),
                 Positioned(
-                  top: rect.top,
+                  top: rect.bottom + 4,
                   left: rect.left,
-                  width: dropdown_width,
+                  width: dropdownWidth,
                   child: Material(
                     elevation: 4.0,
                     color: StyleUtils.parseColor(
@@ -92,20 +92,20 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shrinkWrap: true,
                         itemCount:
-                            filtered_items.length + (is_searchable ? 1 : 0),
+                            filteredItems.length + (isSearchable ? 1 : 0),
                         separatorBuilder: (context, index) {
-                          final item_index = is_searchable ? index - 1 : index;
-                          if (item_index < 0 ||
-                              item_index >= filtered_items.length) {
+                          final itemIndex = isSearchable ? index - 1 : index;
+                          if (itemIndex < 0 ||
+                              itemIndex >= filteredItems.length) {
                             return const SizedBox.shrink();
                           }
-                          final item = filtered_items[item_index];
-                          final next_item =
-                              (item_index + 1 < filtered_items.length)
-                              ? filtered_items[item_index + 1]
+                          final item = filteredItems[itemIndex];
+                          final nextItem =
+                              (itemIndex + 1 < filteredItems.length)
+                              ? filteredItems[itemIndex + 1]
                               : null;
                           if (item['type'] == 'divider' ||
-                              next_item?['type'] == 'divider') {
+                              nextItem?['type'] == 'divider') {
                             return const SizedBox.shrink();
                           }
                           return Divider(
@@ -116,40 +116,39 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                           );
                         },
                         itemBuilder: (context, index) {
-                          if (is_searchable && index == 0) {
+                          if (isSearchable && index == 0) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0,
                                 vertical: 8.0,
                               ),
                               child: TextField(
-                                controller: search_controller,
-                                focusNode: _focus_node,
+                                controller: searchController,
+                                focusNode: focusNode,
                                 decoration: InputDecoration(
                                   hintText: component.config['placeholder'],
                                   isDense: true,
                                   suffixIcon: const Icon(Icons.search),
                                 ),
                                 onChanged: (value) {
-                                  set_panel_state(() {
-                                    search_query = value;
+                                  setPanelState(() {
+                                    searchQuery = value;
                                   });
-                                  // Do not send event here because this is just temporary search
                                 },
                                 onSubmitted: (value) {
-                                  if (filtered_items.isNotEmpty &&
-                                      filtered_items.first['type'] !=
+                                  if (filteredItems.isNotEmpty &&
+                                      filteredItems.first['type'] !=
                                           'divider') {
-                                    final first_item = filtered_items.first;
-                                    final new_value = first_item['id'];
+                                    final firstItem = filteredItems.first;
+                                    final newValue = firstItem['id'];
                                     context.read<DynamicFormBloc>().add(
                                       UpdateFormFieldEvent(
                                         componentId: component.id,
-                                        value: new_value,
+                                        value: newValue,
                                       ),
                                     );
                                     debugPrint(
-                                      '[Dropdown] ${component.id} value updated: $new_value',
+                                      '[Dropdown] ${component.id} value updated: $newValue',
                                     );
                                   } else if (value.isNotEmpty) {
                                     context.read<DynamicFormBloc>().add(
@@ -162,18 +161,18 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                       '[Dropdown] ${component.id} value updated: $value',
                                     );
                                   }
-                                  _overlay_entry?.remove();
-                                  _overlay_entry = null;
+                                  overlayEntry?.remove();
+                                  overlayEntry = null;
                                 },
                               ),
                             );
                           }
 
                           final item =
-                              filtered_items[is_searchable ? index - 1 : index];
-                          final item_type = item['type'] as String? ?? 'item';
+                              filteredItems[isSearchable ? index - 1 : index];
+                          final itemType = item['type'] as String? ?? 'item';
 
-                          if (item_type == 'divider') {
+                          if (itemType == 'divider') {
                             return Divider(
                               color: StyleUtils.parseColor(
                                 style['divider_color'],
@@ -184,9 +183,9 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
 
                           final label = item['label'] as String? ?? '';
                           final value = item['id'] as String? ?? '';
-                          final icon_name = item['icon'] as String?;
-                          final avatar_url = item['avatar'] as String?;
-                          final item_style =
+                          final iconName = item['icon'] as String?;
+                          final avatarUrl = item['avatar'] as String?;
+                          final itemStyle =
                               item['style'] as Map<String, dynamic>? ?? {};
 
                           return InkWell(
@@ -200,8 +199,8 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               debugPrint(
                                 '[Dropdown] ${component.id} value updated: $value',
                               );
-                              _overlay_entry?.remove();
-                              _overlay_entry = null;
+                              overlayEntry?.remove();
+                              overlayEntry = null;
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -210,17 +209,17 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                               ),
                               child: Row(
                                 children: [
-                                  if (avatar_url != null) ...[
+                                  if (avatarUrl != null) ...[
                                     CircleAvatar(
-                                      backgroundImage: NetworkImage(avatar_url),
+                                      backgroundImage: NetworkImage(avatarUrl),
                                       radius: 16,
                                     ),
                                     const SizedBox(width: 12),
-                                  ] else if (icon_name != null) ...[
+                                  ] else if (iconName != null) ...[
                                     Icon(
-                                      _map_icon_name_to_icon_data(icon_name),
+                                      mapIconNameToIconData(iconName),
                                       color: StyleUtils.parseColor(
-                                        item_style['color'] ?? style['color'],
+                                        itemStyle['color'] ?? style['color'],
                                       ),
                                       size: 18,
                                     ),
@@ -231,7 +230,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                                       label,
                                       style: TextStyle(
                                         color: StyleUtils.parseColor(
-                                          item_style['color'] ?? style['color'],
+                                          itemStyle['color'] ?? style['color'],
                                         ),
                                       ),
                                     ),
@@ -251,7 +250,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         );
       },
     );
-    Overlay.of(context).insert(_overlay_entry!);
+    Overlay.of(context).insert(overlayEntry!);
   }
 
   @override
@@ -267,67 +266,66 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             : widget.component;
         final config = component.config;
         final style = Map<String, dynamic>.from(component.style);
-        final trigger_avatar = config['avatar'] as String?;
-        final trigger_icon = config['icon'] as String?;
-        final is_searchable = config['searchable'] as bool? ?? false;
+        final triggerAvatar = config['avatar'] as String?;
+        final triggerIcon = config['icon'] as String?;
+        final isSearchable = config['searchable'] as bool? ?? false;
         final placeholder = config['placeholder'] as String? ?? 'Search';
         final value = config['value']?.toString();
-        final current_state = config['current_state'] ?? 'base';
-        final is_disabled = config['disabled'] == true;
+        final currentState = config['current_state'] ?? 'base';
+        final isDisabled = config['disabled'] == true;
 
         // Always apply variant with_icon if icon exists
-        if ((trigger_icon != null || style['icon'] != null) &&
+        if ((triggerIcon != null || style['icon'] != null) &&
             component.variants != null &&
             component.variants!.containsKey('with_icon')) {
-          final variant_style =
+          final variantStyle =
               component.variants!['with_icon']['style']
                   as Map<String, dynamic>?;
-          if (variant_style != null) style.addAll(variant_style);
+          if (variantStyle != null) style.addAll(variantStyle);
         }
 
         // Apply variant with_avatar if avatar exists
-        if (trigger_avatar != null &&
+        if (triggerAvatar != null &&
             component.variants != null &&
             component.variants!.containsKey('with_avatar')) {
-          final variant_style =
+          final variantStyle =
               component.variants!['with_avatar']['style']
                   as Map<String, dynamic>?;
-          if (variant_style != null) style.addAll(variant_style);
+          if (variantStyle != null) style.addAll(variantStyle);
         }
         // Apply state style if available
         if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) style.addAll(state_style);
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
         }
 
         // Calculate display label
-        String? display_label;
+        String? displayLabel;
         if (value == null || value.isEmpty) {
-          display_label =
+          displayLabel =
               config['label'] ?? config['placeholder'] ?? 'Select an option';
         } else {
           final items = config['items'] as List<dynamic>? ?? [];
-          final selected_item = items.firstWhere(
+          final selectedItem = items.firstWhere(
             (item) => item['id'] == value && item['type'] != 'divider',
             orElse: () => null,
           );
-          if (selected_item != null) {
-            display_label = selected_item['label'] as String? ?? value;
+          if (selectedItem != null) {
+            displayLabel = selectedItem['label'] as String? ?? value;
           } else {
-            display_label = value;
+            displayLabel = value;
           }
         }
 
-        Widget trigger_content;
-        if (is_searchable) {
-          trigger_content = Row(
+        Widget triggerContent;
+        if (isSearchable) {
+          triggerContent = Row(
             children: [
               Expanded(
                 child: Text(
-                  display_label ?? placeholder,
+                  displayLabel ?? placeholder,
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
@@ -339,20 +337,20 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
               ),
             ],
           );
-        } else if (trigger_icon != null &&
-            (display_label == null || display_label.isEmpty)) {
+        } else if (triggerIcon != null &&
+            (displayLabel == null || displayLabel.isEmpty)) {
           // Icon-only trigger
-          trigger_content = Icon(
-            _map_icon_name_to_icon_data(trigger_icon),
+          triggerContent = Icon(
+            mapIconNameToIconData(triggerIcon),
             color: StyleUtils.parseColor(style['icon_color'] ?? '#000000'),
             size: (style['icon_size'] as num?)?.toDouble() ?? 24.0,
           );
         } else {
-          trigger_content = Row(
+          triggerContent = Row(
             children: [
-              if (trigger_icon != null) ...[
+              if (triggerIcon != null) ...[
                 Icon(
-                  _map_icon_name_to_icon_data(trigger_icon),
+                  mapIconNameToIconData(triggerIcon),
                   color: StyleUtils.parseColor(
                     style['icon_color'] ?? '#000000',
                   ),
@@ -360,23 +358,23 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 ),
                 const SizedBox(width: 8),
               ],
-              if (trigger_avatar != null) ...[
+              if (triggerAvatar != null) ...[
                 CircleAvatar(
-                  backgroundImage: NetworkImage(trigger_avatar),
+                  backgroundImage: NetworkImage(triggerAvatar),
                   radius: 16,
                 ),
                 const SizedBox(width: 8),
               ],
               Expanded(
                 child: Text(
-                  display_label ?? config['placeholder'] ?? 'Select an option',
+                  displayLabel ?? config['placeholder'] ?? 'Select an option',
                   style: TextStyle(
                     color: StyleUtils.parseColor(style['color'] ?? '#000000'),
                   ),
                 ),
               ),
               Icon(
-                _overlay_entry != null && _overlay_entry!.mounted
+                overlayEntry != null && overlayEntry!.mounted
                     ? Icons.keyboard_arrow_up
                     : Icons.keyboard_arrow_down,
                 color: StyleUtils.parseColor(style['color'] ?? '#000000'),
@@ -386,28 +384,28 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         }
 
         return Focus(
-          focusNode: _focus_node,
+          focusNode: focusNode,
           child: MouseRegion(
             child: InkWell(
-              key: _dropdown_key,
+              key: dropdownKey,
               //focusNode: _focus_node,
-              onTap: is_disabled
+              onTap: isDisabled
                   ? null
                   : () {
-                      FocusScope.of(context).requestFocus(_focus_node);
-                      final render_box =
-                          _dropdown_key.currentContext!.findRenderObject()
+                      FocusScope.of(context).requestFocus(focusNode);
+                      final renderBox =
+                          dropdownKey.currentContext!.findRenderObject()
                               as RenderBox;
-                      final size = render_box.size;
-                      final offset = render_box.localToGlobal(Offset.zero);
-                      _show_dropdown_panel(
+                      final size = renderBox.size;
+                      final offset = renderBox.localToGlobal(Offset.zero);
+                      showDropdownPanel(
                         context,
                         component,
                         Rect.fromLTWH(
                           offset.dx,
-                          offset.dy + size.height,
+                          offset.dy,
                           size.width,
-                          0,
+                          size.height,
                         ),
                         value,
                       );
@@ -425,7 +423,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     style['border_radius'],
                   ),
                 ),
-                child: trigger_content,
+                child: triggerContent,
               ),
             ),
           ),

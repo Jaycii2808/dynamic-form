@@ -22,31 +22,30 @@ class DynamicTextField extends StatefulWidget {
 
 class _DynamicTextFieldState extends State<DynamicTextField> {
   final TextEditingController _controller = TextEditingController();
-  final FocusNode _focus_node = FocusNode();
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _focus_node.addListener(_handle_focus_change);
+    focusNode.addListener(handleFocusChange);
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _focus_node
-      ..removeListener(_handle_focus_change)
+    focusNode
+      ..removeListener(handleFocusChange)
       ..dispose();
     super.dispose();
   }
 
-  void _handle_focus_change() {
-    if (!_focus_node.hasFocus) {
-      final new_value = _controller.text;
-      final error = _validate(new_value, widget.component);
+  void handleFocusChange() {
+    if (!focusNode.hasFocus) {
+      final newValue = _controller.text;
+      final error = validate(newValue, widget.component);
 
-      // Use centralized field update data creation instead of manual if-else
       final updateData = ValidationUtils.createFieldUpdateData(
-        value: new_value,
+        value: newValue,
         errorText: error,
       );
 
@@ -57,15 +56,15 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
         ),
       );
       debugPrint(
-        '[TextField] ${widget.component.id} value updated: $new_value, error: $error, state: ${updateData['current_state']}',
+        '[TextField] ${widget.component.id} value updated: $newValue, error: $error, state: ${updateData['current_state']}',
       );
     }
   }
 
-  String? _validate(String value, DynamicFormModel component) {
-    final input_types = component.inputTypes;
+  String? validate(String value, DynamicFormModel component) {
+    final inputTypes = component.inputTypes;
     final validation =
-        input_types?['text']?['validation'] as Map<String, dynamic>?;
+        inputTypes?['text']?['validation'] as Map<String, dynamic>?;
     if (validation == null) return null;
     // Min length
     if (validation['min_length'] != null &&
@@ -91,46 +90,44 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   Widget build(BuildContext context) {
     return BlocBuilder<DynamicFormBloc, DynamicFormState>(
       builder: (context, state) {
-        // Get the latest component from BLoC state
         final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
               )
             : widget.component;
-        // Get dynamic state
-        final current_state = component.config['current_state'] ?? 'base';
 
-        // Use centralized style application instead of manual if-else chains
+        final currentState = component.config['current_state'] ?? 'base';
+
         final style = ComponentUtils.buildComponentStyles(
           component,
-          explicitState: current_state,
+          explicitState: currentState,
         );
         final value = component.config['value']?.toString() ?? '';
-        final error_text = component.config['error_text'] as String?;
-        // Sync controller if value changes from BLoC
+        final errorText = component.config['error_text'] as String?;
+
         if (_controller.text != value) {
           _controller.text = value;
           _controller.selection = TextSelection.fromPosition(
             TextPosition(offset: _controller.text.length),
           );
         }
-        Widget? prefix_icon;
-        final icon_name = style.containsKey('icon') && style['icon'] != null
+        Widget? prefixIcon;
+        final iconName = style.containsKey('icon') && style['icon'] != null
             ? style['icon'].toString()
             : (component.config['icon'] ?? '').toString();
-        if (icon_name.isNotEmpty) {
-          final icon_color = StyleUtils.parseColor(style['icon_color']);
-          final icon_size = (style['icon_size'] is num)
+        if (iconName.isNotEmpty) {
+          final iconColor = StyleUtils.parseColor(style['icon_color']);
+          final iconSize = (style['icon_size'] is num)
               ? (style['icon_size'] as num).toDouble()
               : 20.0;
-          final icon_data = _map_icon_name_to_icon_data(icon_name);
-          if (icon_data != null) {
-            prefix_icon = Icon(icon_data, color: icon_color, size: icon_size);
+          final iconData = mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
           }
         }
-        final helper_text = style['helper_text']?.toString();
-        final helper_text_color = StyleUtils.parseColor(
+        final helperText = style['helper_text']?.toString();
+        final helperTextColor = StyleUtils.parseColor(
           style['helper_text_color'],
         );
         return Container(
@@ -139,7 +136,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
           margin: StyleUtils.parsePadding(style['margin']),
           child: GestureDetector(
             onTap: () {
-              FocusScope.of(context).requestFocus(_focus_node);
+              FocusScope.of(context).requestFocus(focusNode);
             },
             behavior: HitTestBehavior.translucent,
             child: Column(
@@ -159,34 +156,26 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   ),
                 TextField(
                   controller: _controller,
-                  focusNode: _focus_node,
+                  focusNode: focusNode,
                   enabled:
                       (component.config['editable'] ?? true) &&
                       (component.config['disabled'] != true),
                   readOnly: component.config['readOnly'] == true,
                   obscureText:
                       component.inputTypes?.containsKey('password') ?? false,
-                  keyboardType: _get_keyboard_type(component),
+                  keyboardType: getKeyboardType(component),
                   onChanged: (value) {
-                    final error = _validate(value, component);
-
-                    // Use centralized field update data creation
-                    final updateData = ValidationUtils.createFieldUpdateData(
-                      value: value,
-                      errorText: error,
-                    );
-
+                    // Only update value on change, validation happens on focus lost
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: updateData,
+                        value: value, // Simple string value only
                       ),
                     );
                   },
                   onSubmitted: (value) {
-                    final error = _validate(value, component);
+                    final error = validate(value, component);
 
-                    // Use centralized field update data creation
                     final updateData = ValidationUtils.createFieldUpdateData(
                       value: value,
                       errorText: error,
@@ -201,7 +190,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   },
                   decoration: InputDecoration(
                     hintText: component.config['placeholder']?.toString(),
-                    prefixIcon: prefix_icon,
+                    prefixIcon: prefixIcon,
                     prefixIconConstraints: const BoxConstraints(
                       minWidth: 40,
                       minHeight: 0,
@@ -211,17 +200,17 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                         style['color'],
                       ).withOpacity(0.6),
                     ),
-                    border: _build_border(style, current_state),
-                    enabledBorder: _build_border(style, current_state),
-                    focusedBorder: _build_border(style, current_state),
-                    errorBorder: _build_border(style, current_state),
-                    errorText: error_text,
+                    border: buildBorder(style, currentState),
+                    enabledBorder: buildBorder(style, currentState),
+                    focusedBorder: buildBorder(style, currentState),
+                    errorBorder: buildBorder(style, currentState),
+                    errorText: errorText,
                     errorStyle: const TextStyle(fontSize: 12),
                     filled: style['background_color'] != null,
                     fillColor: StyleUtils.parseColor(style['background_color']),
-                    helperText: helper_text,
+                    helperText: helperText,
                     helperStyle: TextStyle(
-                      color: helper_text_color,
+                      color: helperTextColor,
                       fontStyle: style['font_style'] == 'italic'
                           ? FontStyle.italic
                           : FontStyle.normal,
@@ -244,7 +233,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     );
   }
 
-  TextInputType _get_keyboard_type(DynamicFormModel component) {
+  TextInputType getKeyboardType(DynamicFormModel component) {
     if (component.inputTypes != null) {
       if (component.inputTypes!.containsKey('email')) {
         return TextInputType.emailAddress;
@@ -257,21 +246,21 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     return TextInputType.text;
   }
 
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
-  OutlineInputBorder _build_border(
+  OutlineInputBorder buildBorder(
     Map<String, dynamic> style,
-    String current_state,
+    String currentState,
   ) {
-    final border_radius = StyleUtils.parseBorderRadius(style['border_radius']);
-    final border_color = StyleUtils.parseColor(style['border_color']);
-    final border_width = 1.0;
+    final borderRadius = StyleUtils.parseBorderRadius(style['border_radius']);
+    final borderColor = StyleUtils.parseColor(style['border_color']);
+    final borderWidth = 1.0;
 
     return OutlineInputBorder(
-      borderRadius: border_radius,
-      borderSide: BorderSide(color: border_color, width: border_width + 1),
+      borderRadius: borderRadius,
+      borderSide: BorderSide(color: borderColor, width: borderWidth + 1),
     );
   }
 }

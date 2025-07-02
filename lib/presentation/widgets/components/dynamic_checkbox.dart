@@ -1,6 +1,3 @@
-// ignore_for_file: non_constant_identifier_names
-
-//import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
@@ -20,10 +17,9 @@ class DynamicCheckbox extends StatefulWidget {
 }
 
 class _DynamicCheckboxState extends State<DynamicCheckbox> {
-  final FocusNode _focus_node = FocusNode();
+  final FocusNode focusNode = FocusNode();
 
-  // Common utility function for mapping icon names to IconData
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
@@ -32,7 +28,6 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {},
       builder: (context, state) {
-        // Lấy component mới nhất từ state (theo id)
         final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
@@ -40,65 +35,64 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
               )
             : widget.component;
 
-        final bool is_selected = component.config['value'] == true;
-        final bool is_editable =
+        final bool isSelected = component.config['value'] == true;
+        final bool isEditable =
             (component.config['editable'] != false) &&
             (component.config['disabled'] != true);
         Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-        String current_state = is_selected ? 'selected' : 'base';
+        String currentState = isSelected ? 'selected' : 'base';
         if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) style.addAll(state_style);
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
         }
 
         final String? label = component.config['label'];
         final String? hint = component.config['hint'];
-        final String? icon_name = component.config['icon'];
-        final IconData? leading_icon_data = icon_name != null
-            ? _map_icon_name_to_icon_data(icon_name)
+        final String? iconName = component.config['icon'];
+        final IconData? leadingIconData = iconName != null
+            ? mapIconNameToIconData(iconName)
             : null;
 
-        final Color background_color = StyleUtils.parseColor(
+        final Color backgroundColor = StyleUtils.parseColor(
           style['background_color'],
         );
-        final Color border_color = StyleUtils.parseColor(style['border_color']);
-        final double border_width =
+        final Color borderColor = StyleUtils.parseColor(style['border_color']);
+        final double borderWidth =
             (style['border_width'] as num?)?.toDouble() ?? 1.0;
-        final Color icon_color = StyleUtils.parseColor(style['icon_color']);
-        final double control_width = (style['width'] as num?)?.toDouble() ?? 28;
-        final double control_height =
+        final Color iconColor = StyleUtils.parseColor(style['icon_color']);
+        final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
+        final double controlHeight =
             (style['height'] as num?)?.toDouble() ?? 28;
-        final control_border_radius = (StyleUtils.parseBorderRadius(
+        final controlBorderRadius = (StyleUtils.parseBorderRadius(
           style['border_radius'],
         ).resolve(TextDirection.ltr).topLeft.x);
 
         debugPrint(
-          '[Checkbox][build] id=${component.id} value=$is_selected state=$current_state',
+          '[Checkbox][build] id=${component.id} value=$isSelected state=$currentState',
         );
         debugPrint('[Checkbox][build] style=${style.toString()}');
         debugPrint(
-          '[Checkbox][build] icon_color=$icon_color, background_color=$background_color, border_color=$border_color',
+          '[Checkbox][build] iconColor=$iconColor, backgroundColor=$backgroundColor, borderColor=$borderColor',
         );
 
-        Widget toggle_control = Container(
-          width: control_width,
-          height: control_height,
+        Widget toggleControl = Container(
+          width: controlWidth,
+          height: controlHeight,
           decoration: BoxDecoration(
-            color: background_color,
-            border: Border.all(color: border_color, width: border_width),
-            borderRadius: BorderRadius.circular(control_border_radius),
+            color: backgroundColor,
+            border: Border.all(color: borderColor, width: borderWidth),
+            borderRadius: BorderRadius.circular(controlBorderRadius),
           ),
-          child: is_selected
-              ? Icon(Icons.check, color: icon_color, size: control_width * 0.75)
+          child: isSelected
+              ? Icon(Icons.check, color: iconColor, size: controlWidth * 0.75)
               : null,
         );
 
-        Widget? label_and_hint;
+        Widget? labelAndHint;
         if (label != null) {
-          label_and_hint = Expanded(
+          labelAndHint = Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -131,43 +125,41 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
           );
         }
 
-        void handle_tap() {
-          FocusScope.of(context).requestFocus(_focus_node);
-          if (!is_editable) return;
+        void handleTap() {
+          FocusScope.of(context).requestFocus(focusNode);
+          if (!isEditable) return;
           debugPrint(
-            '[Checkbox][tap] id=${component.id} value_before=$is_selected',
+            '[Checkbox][tap] id=${component.id} valueBefore=$isSelected',
           );
-          final new_value = !is_selected;
+          final newValue = !isSelected;
           context.read<DynamicFormBloc>().add(
-            UpdateFormFieldEvent(componentId: component.id, value: new_value),
+            UpdateFormFieldEvent(componentId: component.id, value: newValue),
           );
-          debugPrint(
-            '[Checkbox][tap] id=${component.id} value_after=$new_value',
-          );
-          debugPrint('[Checkbox] Save value: ${component.id} = $new_value');
+          debugPrint('[Checkbox][tap] id=${component.id} valueAfter=$newValue');
+          debugPrint('[Checkbox] Save value: ${component.id} = $newValue');
         }
 
         return Focus(
-          focusNode: _focus_node,
+          focusNode: focusNode,
           child: GestureDetector(
-            onTap: handle_tap,
+            onTap: handleTap,
             child: Container(
               margin: StyleUtils.parsePadding(style['margin']),
               padding: StyleUtils.parsePadding(style['padding']),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  toggle_control,
+                  toggleControl,
                   const SizedBox(width: 12),
-                  if (leading_icon_data != null) ...[
+                  if (leadingIconData != null) ...[
                     Icon(
-                      leading_icon_data,
+                      leadingIconData,
                       size: 20,
                       color: StyleUtils.parseColor(style['icon_color']),
                     ),
                     const SizedBox(width: 8),
                   ],
-                  if (label_and_hint != null) label_and_hint,
+                  if (labelAndHint != null) labelAndHint,
                 ],
               ),
             ),
@@ -179,7 +171,7 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
 
   @override
   void dispose() {
-    _focus_node.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 }

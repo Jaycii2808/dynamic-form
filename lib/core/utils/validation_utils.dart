@@ -260,7 +260,8 @@ class ValidationUtils {
 
     final data = <String, dynamic>{'value': value, 'current_state': state};
 
-    if (errorText != null) data['error_text'] = errorText;
+    // Always set error_text, even when null to clear previous errors
+    data['error_text'] = errorText;
     if (selected != null) data['selected'] = selected;
     if (additionalData != null) data.addAll(additionalData);
 

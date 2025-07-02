@@ -11,7 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_stat
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-String? _validateForm(DynamicFormModel component, String? value) {
+String? validateForm(DynamicFormModel component, String? value) {
   try {
     return ValidationUtils.validateForm(component, value);
   } catch (e) {
@@ -30,11 +30,11 @@ class DynamicSelect extends StatefulWidget {
 }
 
 class _DynamicSelectState extends State<DynamicSelect> {
-  bool _is_dropdown_open = false;
+  bool isDropdownOpen = false;
 
-  final GlobalKey _select_key = GlobalKey();
-  OverlayEntry? _overlay_entry;
-  final FocusNode _focus_node = FocusNode();
+  final GlobalKey selectKey = GlobalKey();
+  OverlayEntry? overlayEntry;
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -44,40 +44,40 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
   @override
   void dispose() {
-    _close_dropdown();
-    _focus_node.dispose();
+    closeDropdown();
+    focusNode.dispose();
     super.dispose();
   }
 
   // Common utility function for mapping icon names to IconData
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
-  String? _validate_select(DynamicFormModel component, List<String> values) {
+  String? validateSelect(DynamicFormModel component, List<String> values) {
     // Use validateForm for basic validation (required field, etc.)
     if (values.isEmpty) {
-      return _validateForm(component, '');
+      return validateForm(component, '');
     }
 
     // For multiple values, validate each one
     for (String value in values) {
-      final validation_error = _validateForm(component, value);
-      if (validation_error != null) {
-        return validation_error;
+      final validationError = validateForm(component, value);
+      if (validationError != null) {
+        return validationError;
       }
     }
 
     // Check max selections for multiple select (specific to select widget)
     if (component.config['multiple'] == true) {
-      final validation_config = component.validation;
-      if (validation_config != null) {
-        final max_selections_validation =
-            validation_config['max_selections'] as Map<String, dynamic>?;
-        if (max_selections_validation != null) {
-          final max = max_selections_validation['max'];
+      final validationConfig = component.validation;
+      if (validationConfig != null) {
+        final maxSelectionsValidation =
+            validationConfig['max_selections'] as Map<String, dynamic>?;
+        if (maxSelectionsValidation != null) {
+          final max = maxSelectionsValidation['max'];
           if (max != null && values.length > max) {
-            return max_selections_validation['error_message'] as String? ??
+            return maxSelectionsValidation['error_message'] as String? ??
                 'Vượt quá số lượng cho phép';
           }
         }
@@ -87,15 +87,15 @@ class _DynamicSelectState extends State<DynamicSelect> {
     return null;
   }
 
-  void _toggle_dropdown() {
-    if (_is_dropdown_open) {
-      _close_dropdown();
+  void toggleDropdown() {
+    if (isDropdownOpen) {
+      closeDropdown();
     } else {
-      _open_dropdown();
+      openDropdown();
     }
   }
 
-  void _open_dropdown() {
+  void openDropdown() {
     // Get component from current state
     final component =
         context.read<DynamicFormBloc>().state.page?.components.firstWhere(
@@ -104,17 +104,17 @@ class _DynamicSelectState extends State<DynamicSelect> {
         ) ??
         widget.component;
 
-    final RenderBox render_box =
-        _select_key.currentContext!.findRenderObject() as RenderBox;
-    final size = render_box.size;
-    final offset = render_box.localToGlobal(Offset.zero);
+    final RenderBox renderBox =
+        selectKey.currentContext!.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
 
-    _overlay_entry = OverlayEntry(
+    overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
-              onTap: _close_dropdown,
+              onTap: closeDropdown,
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -130,13 +130,13 @@ class _DynamicSelectState extends State<DynamicSelect> {
               child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
                 builder: (context, state) {
                   // Get updated component from state
-                  final updated_component = (state.page?.components != null)
+                  final updatedComponent = (state.page?.components != null)
                       ? state.page!.components.firstWhere(
                           (c) => c.id == widget.component.id,
                           orElse: () => widget.component,
                         )
                       : widget.component;
-                  return _build_dropdown_list(updated_component);
+                  return buildDropdownList(updatedComponent);
                 },
               ),
             ),
@@ -144,98 +144,98 @@ class _DynamicSelectState extends State<DynamicSelect> {
         ],
       ),
     );
-    _is_dropdown_open = true;
-    Overlay.of(context).insert(_overlay_entry!);
+    isDropdownOpen = true;
+    Overlay.of(context).insert(overlayEntry!);
   }
 
-  void _close_dropdown() {
-    if (!_is_dropdown_open) return;
-    _overlay_entry?.remove();
-    _overlay_entry = null;
-    _is_dropdown_open = false;
+  void closeDropdown() {
+    if (!isDropdownOpen) return;
+    overlayEntry?.remove();
+    overlayEntry = null;
+    isDropdownOpen = false;
   }
 
-  Widget _build_dropdown_list(DynamicFormModel component) {
+  Widget buildDropdownList(DynamicFormModel component) {
     final options = component.config['options'] as List<dynamic>? ?? [];
     final dynamic height = component.config['height'];
     final style = component.style;
-    final is_multiple = component.config['multiple'] ?? false;
+    final isMultiple = component.config['multiple'] ?? false;
     // Get selected_values from BLoC state
-    final component_value = component.config['value'];
-    List<String> selected_values = [];
-    if (is_multiple) {
-      if (component_value is List) {
-        selected_values = component_value.cast<String>();
+    final componentValue = component.config['value'];
+    List<String> selectedValues = [];
+    if (isMultiple) {
+      if (componentValue is List) {
+        selectedValues = componentValue.cast<String>();
       } else {
-        selected_values = [];
+        selectedValues = [];
       }
     }
-    Widget list_view = ListView.builder(
+    Widget listView = ListView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: height == null || height == 'auto',
       itemCount: options.length,
       itemBuilder: (context, index) {
         final option = options[index];
-        final option_value = option['value']?.toString() ?? '';
+        final optionValue = option['value']?.toString() ?? '';
         final label = option['label']?.toString() ?? '';
-        final avatar_url = option['avatar']?.toString();
+        final avatarUrl = option['avatar']?.toString();
 
-        if (is_multiple) {
-          bool is_selected = selected_values.contains(option_value);
+        if (isMultiple) {
+          bool isSelected = selectedValues.contains(optionValue);
           return CheckboxListTile(
             title: Text(label),
-            value: is_selected,
-            onChanged: (bool? new_value) {
-              List<String> new_values = List.from(selected_values);
-              if (new_value == true) {
-                if (!new_values.contains(option_value)) {
-                  new_values.add(option_value);
+            value: isSelected,
+            onChanged: (bool? newValue) {
+              List<String> newValues = List.from(selectedValues);
+              if (newValue == true) {
+                if (!newValues.contains(optionValue)) {
+                  newValues.add(optionValue);
                 }
               } else {
-                new_values.remove(option_value);
+                newValues.remove(optionValue);
               }
               context.read<DynamicFormBloc>().add(
                 UpdateFormFieldEvent(
                   componentId: component.id,
-                  value: new_values,
+                  value: newValues,
                 ),
               );
               debugPrint(
-                '[Select] ${component.id} value updated: $new_values (multiple)',
+                '[Select] ${component.id} value updated: $newValues (multiple)',
               );
             },
-            secondary: avatar_url != null
-                ? CircleAvatar(backgroundImage: NetworkImage(avatar_url))
+            secondary: avatarUrl != null
+                ? CircleAvatar(backgroundImage: NetworkImage(avatarUrl))
                 : null,
           );
         } else {
           return ListTile(
-            leading: avatar_url != null
-                ? CircleAvatar(backgroundImage: NetworkImage(avatar_url))
+            leading: avatarUrl != null
+                ? CircleAvatar(backgroundImage: NetworkImage(avatarUrl))
                 : null,
             title: Text(label),
             onTap: () {
               context.read<DynamicFormBloc>().add(
                 UpdateFormFieldEvent(
                   componentId: component.id,
-                  value: option_value,
+                  value: optionValue,
                 ),
               );
               debugPrint(
-                '[Select] ${component.id} value updated: $option_value (single)',
+                '[Select] ${component.id} value updated: $optionValue (single)',
               );
-              _close_dropdown();
+              closeDropdown();
             },
           );
         }
       },
     );
 
-    Widget list_container;
+    Widget listContainer;
     if (height is num) {
-      list_container = SizedBox(height: height.toDouble(), child: list_view);
+      listContainer = SizedBox(height: height.toDouble(), child: listView);
     } else {
-      list_container = list_view;
+      listContainer = listView;
     }
 
     return Container(
@@ -244,17 +244,17 @@ class _DynamicSelectState extends State<DynamicSelect> {
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
         border: Border.all(color: StyleUtils.parseColor(style['border_color'])),
       ),
-      child: list_container,
+      child: listContainer,
     );
   }
 
-  void _show_multi_select_dialog(
+  void showMultiSelectDialog(
     BuildContext context,
     DynamicFormModel component,
     List<dynamic> options,
-    bool is_multiple,
+    bool isMultiple,
     bool searchable, {
-    String search_query = '',
+    String searchQuery = '',
   }) {
     final style = Map<String, dynamic>.from(component.style);
     showDialog(
@@ -265,7 +265,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         label: component.config['label'] ?? 'Chọn tùy chọn',
         style: style,
         searchable: searchable,
-        searchQuery: search_query,
+        searchQuery: searchQuery,
       ),
     );
   }
@@ -285,114 +285,113 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
         // Read value from BLoC state, do not use setState
         final value = component.config['value'];
-        List<String> selected_values = [];
-        String? selected_value;
+        List<String> selectedValues = [];
+        String? selectedValue;
         if (value is List) {
-          selected_values = value.cast<String>();
-          selected_value = value.isNotEmpty ? value.first.toString() : null;
+          selectedValues = value.cast<String>();
+          selectedValue = value.isNotEmpty ? value.first.toString() : null;
         } else {
-          selected_value = value?.toString();
+          selectedValue = value?.toString();
         }
 
         final style = Map<String, dynamic>.from(component.style);
         final options = component.config['options'] as List<dynamic>? ?? [];
-        final is_multiple = component.config['multiple'] ?? false;
+        final isMultiple = component.config['multiple'] ?? false;
         final searchable = component.config['searchable'] ?? false;
-        final is_disabled = component.config['disabled'] == true;
+        final isDisabled = component.config['disabled'] == true;
 
         // Apply variant styles
         if (component.variants != null) {
           if (component.config['label'] != null &&
               component.variants!.containsKey('with_label')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['with_label']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
           if (component.config['icon'] != null &&
               component.variants!.containsKey('with_icon')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['with_icon']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
-          if (is_multiple && component.variants!.containsKey('multiple')) {
-            final variant_style =
+          if (isMultiple && component.variants!.containsKey('multiple')) {
+            final variantStyle =
                 component.variants!['multiple']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
           if (searchable && component.variants!.containsKey('searchable')) {
-            final variant_style =
+            final variantStyle =
                 component.variants!['searchable']['style']
                     as Map<String, dynamic>?;
-            if (variant_style != null) style.addAll(variant_style);
+            if (variantStyle != null) style.addAll(variantStyle);
           }
         }
 
         // Determine current state
-        String current_state = 'base';
-        final List<String> current_values = is_multiple
-            ? selected_values
-            : (selected_value != null ? [selected_value] : []);
+        String currentState = 'base';
+        final List<String> currentValues = isMultiple
+            ? selectedValues
+            : (selectedValue != null ? [selectedValue] : []);
 
-        final validation_error = _validate_select(component, current_values);
+        final validationError = validateSelect(component, currentValues);
 
-        if (validation_error != null) {
-          current_state = 'error';
-        } else if (current_values.isNotEmpty && validation_error == null) {
-          current_state = 'success';
+        if (validationError != null) {
+          currentState = 'error';
+        } else if (currentValues.isNotEmpty && validationError == null) {
+          currentState = 'success';
         } else {
-          current_state = 'base';
+          currentState = 'base';
         }
 
         // Apply state styles
         if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) style.addAll(state_style);
+            component.states!.containsKey(currentState)) {
+          final stateStyle =
+              component.states![currentState]['style'] as Map<String, dynamic>?;
+          if (stateStyle != null) style.addAll(stateStyle);
         }
 
         debugPrint(
-          '[Select][build] id=${component.id} value=${is_multiple ? selected_values : selected_value} state=$current_state',
+          '[Select][build] id=${component.id} value=${isMultiple ? selectedValues : selectedValue} state=$currentState',
         );
         debugPrint('[Select][build] style=${style.toString()}');
 
         // Icon rendering
-        Widget? prefix_icon;
+        Widget? prefixIcon;
         if ((component.config['icon'] != null || style['icon'] != null) &&
             style['icon_position'] != 'right') {
-          final icon_name = (style['icon'] ?? component.config['icon'] ?? '')
+          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
               .toString();
-          final icon_color = StyleUtils.parseColor(style['icon_color']);
-          final icon_size = (style['icon_size'] is num)
+          final iconColor = StyleUtils.parseColor(style['icon_color']);
+          final iconSize = (style['icon_size'] is num)
               ? (style['icon_size'] as num).toDouble()
               : 20.0;
-          final icon_data = _map_icon_name_to_icon_data(icon_name);
-          if (icon_data != null) {
-            prefix_icon = Icon(icon_data, color: icon_color, size: icon_size);
+          final iconData = mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
           }
         }
 
-        Widget? suffix_icon;
+        Widget? suffixIcon;
         if ((component.config['icon'] != null || style['icon'] != null) &&
             style['icon_position'] == 'right') {
-          final icon_name = (style['icon'] ?? component.config['icon'] ?? '')
+          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
               .toString();
-          final icon_color = StyleUtils.parseColor(style['icon_color']);
-          final icon_size = (style['icon_size'] is num)
+          final iconColor = StyleUtils.parseColor(style['icon_color']);
+          final iconSize = (style['icon_size'] is num)
               ? (style['icon_size'] as num).toDouble()
               : 20.0;
-          final icon_data = _map_icon_name_to_icon_data(icon_name);
-          if (icon_data != null) {
-            suffix_icon = Icon(icon_data, color: icon_color, size: icon_size);
+          final iconData = mapIconNameToIconData(iconName);
+          if (iconData != null) {
+            suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
           }
         }
 
         // Get display text
-        final text_style = TextStyle(
+        final textStyle = TextStyle(
           fontSize: style['font_size']?.toDouble() ?? 16,
           color: StyleUtils.parseColor(style['color']),
           fontStyle: style['font_style'] == 'italic'
@@ -400,54 +399,54 @@ class _DynamicSelectState extends State<DynamicSelect> {
               : FontStyle.normal,
         );
 
-        Widget display_content;
+        Widget displayContent;
 
-        if (is_multiple) {
-          String display_text = 'Chọn các tùy chọn';
-          if (selected_values.isNotEmpty) {
-            final selected_labels = selected_values.map((value) {
+        if (isMultiple) {
+          String displayText = 'Chọn các tùy chọn';
+          if (selectedValues.isNotEmpty) {
+            final selectedLabels = selectedValues.map((value) {
               final option = options.firstWhere(
                 (opt) => opt['value'] == value,
                 orElse: () => {'label': value},
               );
               return option['label'] ?? value;
             }).toList();
-            display_text = selected_labels.join(', ');
+            displayText = selectedLabels.join(', ');
           }
-          display_content = Text(display_text, style: text_style);
+          displayContent = Text(displayText, style: textStyle);
         } else {
-          if (selected_value != null && selected_value.isNotEmpty) {
+          if (selectedValue != null && selectedValue.isNotEmpty) {
             final option = options.firstWhere(
-              (opt) => opt['value'] == selected_value,
-              orElse: () => {'label': selected_value},
+              (opt) => opt['value'] == selectedValue,
+              orElse: () => {'label': selectedValue},
             );
-            final display_text = option['label'] ?? selected_value;
+            final displayText = option['label'] ?? selectedValue;
 
             if (option['avatar'] != null) {
-              display_content = Row(
+              displayContent = Row(
                 children: [
                   CircleAvatar(
                     radius: 12,
                     backgroundImage: NetworkImage(option['avatar']),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(display_text, style: text_style)),
+                  Expanded(child: Text(displayText, style: textStyle)),
                 ],
               );
             } else {
-              display_content = Text(display_text, style: text_style);
+              displayContent = Text(displayText, style: textStyle);
             }
           } else {
-            display_content = Text(
+            displayContent = Text(
               component.config['placeholder'] ?? 'Chọn tùy chọn',
-              style: text_style.copyWith(
+              style: textStyle.copyWith(
                 color: StyleUtils.parseColor(style['color']).withOpacity(0.6),
               ),
             );
           }
         }
 
-        final helper_text = style['helper_text']?.toString();
+        final helperText = style['helper_text']?.toString();
 
         // Main widget structure
         return Container(
@@ -473,12 +472,12 @@ class _DynamicSelectState extends State<DynamicSelect> {
 
               // Select field
               GestureDetector(
-                key: _select_key,
-                onTap: is_disabled
+                key: selectKey,
+                onTap: isDisabled
                     ? null
                     : () {
-                        FocusScope.of(context).requestFocus(_focus_node);
-                        _toggle_dropdown();
+                        FocusScope.of(context).requestFocus(focusNode);
+                        toggleDropdown();
                       },
                 child: Container(
                   padding: StyleUtils.parsePadding(style['padding']),
@@ -494,14 +493,14 @@ class _DynamicSelectState extends State<DynamicSelect> {
                   ),
                   child: Row(
                     children: [
-                      if (prefix_icon != null) ...[
-                        prefix_icon,
+                      if (prefixIcon != null) ...[
+                        prefixIcon,
                         const SizedBox(width: 8),
                       ],
-                      Expanded(child: display_content),
-                      if (suffix_icon != null) ...[
+                      Expanded(child: displayContent),
+                      if (suffixIcon != null) ...[
                         const SizedBox(width: 8),
-                        suffix_icon,
+                        suffixIcon,
                       ],
                     ],
                   ),
@@ -509,11 +508,11 @@ class _DynamicSelectState extends State<DynamicSelect> {
               ),
 
               // Helper text
-              if (helper_text != null && helper_text.isNotEmpty) ...[
+              if (helperText != null && helperText.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(
-                    helper_text,
+                    helperText,
                     style: TextStyle(
                       fontSize: 12,
                       color: StyleUtils.parseColor(style['helper_text_color']),
@@ -601,7 +600,7 @@ class MultiSelectDialogBloc extends StatelessWidget {
                 if (searchable)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _SearchFieldBloc(
+                    child: SearchFieldBloc(
                       style: style,
                       searchQuery: searchQuery,
                       onChanged: (value) {
@@ -690,11 +689,12 @@ class MultiSelectDialogBloc extends StatelessWidget {
   }
 }
 
-class _SearchFieldBloc extends StatelessWidget {
+class SearchFieldBloc extends StatelessWidget {
   final Map<String, dynamic> style;
   final String searchQuery;
   final ValueChanged<String> onChanged;
-  const _SearchFieldBloc({
+  const SearchFieldBloc({
+    super.key,
     required this.style,
     required this.searchQuery,
     required this.onChanged,

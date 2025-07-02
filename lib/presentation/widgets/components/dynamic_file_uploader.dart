@@ -24,25 +24,24 @@ class DynamicFileUploader extends StatefulWidget {
 }
 
 class _DynamicFileUploaderState extends State<DynamicFileUploader> {
-  bool _is_multiple_files = false;
+  bool isMultipleFiles = false;
   Timer? _timer;
-  final FocusNode _focus_node = FocusNode();
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _is_multiple_files = widget.component.config['multiple_files'] == true;
+    isMultipleFiles = widget.component.config['multiple_files'] == true;
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _focus_node.dispose();
+    focusNode.dispose();
     super.dispose();
   }
 
-  void _start_upload(List<XFile> files, DynamicFormModel component) {
-    // Send event to BLoC: start upload (state=loading, progress=0, isProcessing=true)
+  void startUpload(List<XFile> files, DynamicFormModel component) {
     context.read<DynamicFormBloc>().add(
       UpdateFormFieldEvent(
         componentId: component.id,
@@ -54,7 +53,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         },
       ),
     );
-    // Simulate upload progress with timer, send progress event to BLoC
+
     _timer?.cancel();
     int progress = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
@@ -65,7 +64,6 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
       progress += 5;
       if (progress >= 100) {
         timer.cancel();
-        // Send success event to BLoC
         context.read<DynamicFormBloc>().add(
           UpdateFormFieldEvent(
             componentId: component.id,
@@ -78,7 +76,6 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
           ),
         );
       } else {
-        // Send progress event to BLoC
         context.read<DynamicFormBloc>().add(
           UpdateFormFieldEvent(
             componentId: component.id,
@@ -94,19 +91,18 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     });
   }
 
-  void _handle_files(List<XFile> files, DynamicFormModel component) {
+  void handleFiles(List<XFile> files, DynamicFormModel component) {
     if (files.isEmpty) return;
-    final allowed_extensions =
+    final allowedExtensions =
         (component.config['allowed_extensions'] as List<dynamic>?)
             ?.cast<String>() ??
         [];
-    if (allowed_extensions.isNotEmpty) {
+    if (allowedExtensions.isNotEmpty) {
       for (final file in files) {
-        final file_extension = file.name.split('.').last.toLowerCase();
-        if (!allowed_extensions.any(
-          (ext) => ext.toLowerCase() == file_extension,
+        final fileExtension = file.name.split('.').last.toLowerCase();
+        if (!allowedExtensions.any(
+          (ext) => ext.toLowerCase() == fileExtension,
         )) {
-          // Send error event to BLoC
           context.read<DynamicFormBloc>().add(
             UpdateFormFieldEvent(
               componentId: component.id,
@@ -123,19 +119,19 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         }
       }
     }
-    _start_upload(files, component);
+    startUpload(files, component);
   }
 
-  void _browse_files(DynamicFormModel component, bool is_processing) async {
-    if (is_processing) return;
+  void browseFiles(DynamicFormModel component, bool isProcessing) async {
+    if (isProcessing) return;
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.any,
-        allowMultiple: _is_multiple_files,
+        allowMultiple: isMultipleFiles,
       );
       if (result != null && result.files.isNotEmpty && mounted) {
         final files = result.files.map((f) => XFile(f.path!)).toList();
-        _handle_files(files, component);
+        handleFiles(files, component);
       }
     } catch (e) {
       if (mounted) {
@@ -155,7 +151,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     }
   }
 
-  void _reset_state(DynamicFormModel component) {
+  void resetState(DynamicFormModel component) {
     _timer?.cancel();
     context.read<DynamicFormBloc>().add(
       UpdateFormFieldEvent(
@@ -170,20 +166,20 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     );
   }
 
-  void _remove_file(
+  void removeFile(
     int index,
     DynamicFormModel component,
     List<String> files,
     int progress,
     String state,
   ) {
-    final new_files = List<String>.from(files)..removeAt(index);
+    final newFiles = List<String>.from(files)..removeAt(index);
     context.read<DynamicFormBloc>().add(
       UpdateFormFieldEvent(
         componentId: component.id,
         value: {
-          'state': new_files.isEmpty ? 'base' : state,
-          'files': new_files,
+          'state': newFiles.isEmpty ? 'base' : state,
+          'files': newFiles,
           'progress': progress,
           'is_processing': false,
         },
@@ -191,19 +187,19 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
     );
   }
 
-  IconData? _map_icon_name_to_icon_data(String name) {
+  IconData? mapIconNameToIconData(String name) {
     return IconTypeEnum.fromString(name).toIconData();
   }
 
-  bool _is_image_file(String file_path) {
-    final image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
-    final extension = file_path.split('.').last.toLowerCase();
-    return image_extensions.contains(extension);
+  bool isImageFile(String filePath) {
+    final imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+    final extension = filePath.split('.').last.toLowerCase();
+    return imageExtensions.contains(extension);
   }
 
-  Future<String> _get_file_size(String file_path) async {
+  Future<String> getFileSize(String filePath) async {
     try {
-      final file = File(file_path);
+      final file = File(filePath);
       final size = await file.length();
       if (size < 1024) {
         return '$size B';
@@ -228,39 +224,39 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 orElse: () => widget.component,
               )
             : widget.component;
-        dynamic raw_value = component.config['value'];
-        final Map<String, dynamic> value = raw_value is Map<String, dynamic>
-            ? raw_value
+        dynamic rawValue = component.config['value'];
+        final Map<String, dynamic> value = rawValue is Map<String, dynamic>
+            ? rawValue
             : {};
-        final String current_state = value['state'] as String? ?? 'base';
+        final String currentState = value['state'] as String? ?? 'base';
         final List<String> files =
             (value['files'] as List?)?.cast<String>() ?? [];
         final int progress = (value['progress'] as num?)?.toInt() ?? 0;
-        final String? error_text = value['error_text'] as String?;
-        final bool is_processing = value['is_processing'] == true;
-        final bool is_dragging = value['is_dragging'] == true;
-        final bool is_disabled = component.config['disabled'] == true;
+        final String? errorText = value['error_text'] as String?;
+        final bool isProcessing = value['is_processing'] == true;
+        final bool isDragging = value['is_dragging'] == true;
+        final bool isDisabled = component.config['disabled'] == true;
 
-        final Map<String, dynamic> base_style = Map.from(component.style);
-        final Map<String, dynamic> variant_style = is_dragging
+        final Map<String, dynamic> baseStyle = Map.from(component.style);
+        final Map<String, dynamic> variantStyle = isDragging
             ? Map.from(component.variants?['dragging']?['style'] ?? {})
             : {};
-        final Map<String, dynamic> state_style = Map.from(
-          component.states?[current_state]?['style'] ?? {},
+        final Map<String, dynamic> stateStyle = Map.from(
+          component.states?[currentState]?['style'] ?? {},
         );
-        final style = {...base_style, ...variant_style, ...state_style};
+        final style = {...baseStyle, ...variantStyle, ...stateStyle};
 
-        final Map<String, dynamic> base_config = Map.from(component.config);
-        final Map<String, dynamic> variant_config = is_dragging
+        final Map<String, dynamic> baseConfig = Map.from(component.config);
+        final Map<String, dynamic> variantConfig = isDragging
             ? Map.from(component.variants?['dragging']?['config'] ?? {})
             : {};
-        final Map<String, dynamic> state_config = Map.from(
-          component.states?[current_state]?['config'] ?? {},
+        final Map<String, dynamic> stateConfig = Map.from(
+          component.states?[currentState]?['config'] ?? {},
         );
-        final config = {...base_config, ...variant_config, ...state_config};
+        final config = {...baseConfig, ...variantConfig, ...stateConfig};
 
         Widget child;
-        switch (current_state) {
+        switch (currentState) {
           case 'loading':
             child = SingleChildScrollView(
               child: Column(
@@ -268,7 +264,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 children: [
                   if (style['icon'] != null)
                     Icon(
-                      _map_icon_name_to_icon_data(style['icon']),
+                      mapIconNameToIconData(style['icon']),
                       color: StyleUtils.parseColor(style['icon_color']),
                       size: 48,
                     ),
@@ -295,7 +291,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 children: [
                   if (style['icon'] != null)
                     Icon(
-                      _map_icon_name_to_icon_data(style['icon']),
+                      mapIconNameToIconData(style['icon']),
                       color: StyleUtils.parseColor(style['icon_color']),
                       size: 48,
                     ),
@@ -303,7 +299,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                   if (files.isNotEmpty)
                     ...files.map(
                       (f) => ListTile(
-                        leading: _is_image_file(f)
+                        leading: isImageFile(f)
                             ? Image.file(
                                 File(f),
                                 width: 40,
@@ -318,25 +314,25 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                               ),
                         title: Text(f.split('/').last),
                         subtitle: FutureBuilder<String>(
-                          future: _get_file_size(f),
+                          future: getFileSize(f),
                           builder: (context, snapshot) =>
                               Text(snapshot.data ?? ''),
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.close),
-                          onPressed: () => _remove_file(
+                          onPressed: () => removeFile(
                             files.indexOf(f),
                             component,
                             files,
                             progress,
-                            current_state,
+                            currentState,
                           ),
                         ),
                       ),
                     ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => _reset_state(component),
+                    onPressed: () => resetState(component),
                     child: Text(config['button_text'] ?? 'Remove All'),
                   ),
                 ],
@@ -350,18 +346,18 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 children: [
                   if (style['icon'] != null)
                     Icon(
-                      _map_icon_name_to_icon_data(style['icon']),
+                      mapIconNameToIconData(style['icon']),
                       color: StyleUtils.parseColor(style['icon_color']),
                       size: 48,
                     ),
                   const SizedBox(height: 16),
                   Text(
-                    error_text ?? 'Error',
+                    errorText ?? 'Error',
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => _reset_state(component),
+                    onPressed: () => resetState(component),
                     child: Text(config['button_text'] ?? 'Retry'),
                   ),
                 ],
@@ -375,7 +371,7 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 children: [
                   if (style['icon'] != null)
                     Icon(
-                      _map_icon_name_to_icon_data(style['icon']),
+                      mapIconNameToIconData(style['icon']),
                       color: StyleUtils.parseColor(style['icon_color']),
                       size: 48,
                     ),
@@ -402,9 +398,9 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                       config['button_text'].isNotEmpty) ...[
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: (is_processing || is_disabled)
+                      onPressed: (isProcessing || isDisabled)
                           ? null
-                          : () => _browse_files(component, is_processing),
+                          : () => browseFiles(component, isProcessing),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: StyleUtils.parseColor(
                           style['button_background_color'],
@@ -433,12 +429,11 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
         }
 
         return Focus(
-          focusNode: _focus_node,
+          focusNode: focusNode,
           child: DragTarget<List<XFile>>(
             onWillAcceptWithDetails: (data) {
-              if (is_processing || is_disabled) return false;
-              FocusScope.of(context).requestFocus(_focus_node);
-              // Send event to BLoC to set is_dragging=true
+              if (isProcessing || isDisabled) return false;
+              FocusScope.of(context).requestFocus(focusNode);
               context.read<DynamicFormBloc>().add(
                 UpdateFormFieldEvent(
                   componentId: component.id,
@@ -448,17 +443,15 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
               return true;
             },
             onAcceptWithDetails: (details) {
-              // Send event to BLoC to set is_dragging=false
               context.read<DynamicFormBloc>().add(
                 UpdateFormFieldEvent(
                   componentId: component.id,
                   value: {...value, 'is_dragging': false},
                 ),
               );
-              _handle_files(details.data, component);
+              handleFiles(details.data, component);
             },
             onLeave: (data) {
-              // Send event to BLoC to set is_dragging=false
               context.read<DynamicFormBloc>().add(
                 UpdateFormFieldEvent(
                   componentId: component.id,
@@ -466,12 +459,12 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                 ),
               );
             },
-            builder: (context, candidate_data, rejected_data) {
+            builder: (context, candidateData, rejectedData) {
               return GestureDetector(
-                onTap: is_disabled
+                onTap: isDisabled
                     ? null
                     : () {
-                        FocusScope.of(context).requestFocus(_focus_node);
+                        FocusScope.of(context).requestFocus(focusNode);
                       },
                 child: Container(
                   key: Key(component.id),
