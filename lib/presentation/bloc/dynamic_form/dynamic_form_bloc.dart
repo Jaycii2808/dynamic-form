@@ -229,45 +229,27 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
               .map((c) => ButtonCondition.fromJson(c as Map<String, dynamic>))
               .toList();
 
-          bool allConditionsValid = true;
-          String? errorMessage;
-
           debugPrint('=== Validating Save Button (${component.id}) ===');
           debugPrint('Total conditions: ${buttonConditions.length}');
 
-          for (final condition in buttonConditions) {
-            try {
-              final targetComponent = page.components.firstWhere(
-                (c) => c.id == condition.componentId,
-              );
+          // Use centralized validation instead of duplicated if-else logic
+          final validationResult = ValidationUtils.validateButtonConditions(
+            buttonConditions,
+            page.components,
+          );
 
-              final value = targetComponent.config['value'];
-              debugPrint(
-                'Checking ${condition.componentId}: rule=${condition.rule}, value=$value, expected=${condition.expectedValue}',
-              );
+          final allConditionsValid = validationResult.isValid;
+          final errorMessage = validationResult.errorMessage;
 
-              if (!_validateCondition(condition, value)) {
-                allConditionsValid = false;
-                errorMessage = condition.errorMessage;
-                debugPrint(
-                  '❌ FAILED: ${condition.componentId} - ${condition.errorMessage}',
-                );
-                break;
-              } else {
-                debugPrint('✅ PASSED: ${condition.componentId}');
-              }
-            } catch (e) {
-              debugPrint('❌ COMPONENT NOT FOUND: ${condition.componentId}');
-              allConditionsValid = false;
-              errorMessage = condition.errorMessage;
-              break;
-            }
+          if (validationResult.failedCondition != null) {
+            debugPrint(
+              '❌ FAILED: ${validationResult.failedCondition!.componentId} - $errorMessage',
+            );
+          } else {
+            debugPrint('✅ All conditions PASSED');
           }
 
-          // Save button logic:
-          // - Always visible
-          // - Disabled by default (until preview is clicked and validation passes)
-          // - Only enabled after preview validates successfully
+          // Save button logic: enabled only after preview validates successfully
           final hasPreviewedAndValid =
               component.config['hasPreviewedAndValid'] ?? false;
           final canSave = allConditionsValid && hasPreviewedAndValid;
@@ -276,43 +258,23 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             '=== Save Button Result: allValid=$allConditionsValid, hasPreviewedAndValid=$hasPreviewedAndValid, canSave=$canSave ===',
           );
 
+          // Use ComponentUtils for cleaner component creation
           final updatedConfig = Map<String, dynamic>.from(component.config);
-          updatedConfig['canSave'] = canSave;
-          updatedConfig['allConditionsValid'] = allConditionsValid;
-          updatedConfig['errorMessage'] = errorMessage;
-          updatedConfig['isVisible'] = true; // Always show Save button
-          updatedConfig['disabled'] = !canSave; // Disable if can't save
+          updatedConfig.addAll({
+            'canSave': canSave,
+            'allConditionsValid': allConditionsValid,
+            'errorMessage': errorMessage,
+            'isVisible': true, // Always show Save button
+            'disabled': !canSave, // Disable if can't save
+          });
 
-          return DynamicFormModel(
-            id: component.id,
-            type: component.type,
-            order: component.order,
-            config: updatedConfig,
-            style: component.style,
-            inputTypes: component.inputTypes,
-            variants: component.variants,
-            states: component.states,
-            validation: component.validation,
-            children: component.children,
-          );
+          return ComponentUtils.updateComponentConfig(component, updatedConfig);
         } else {
           // For non-Save buttons, ensure they're always visible and enabled
           final updatedConfig = Map<String, dynamic>.from(component.config);
-          updatedConfig['isVisible'] = true;
-          updatedConfig['disabled'] = false;
+          updatedConfig.addAll({'isVisible': true, 'disabled': false});
 
-          return DynamicFormModel(
-            id: component.id,
-            type: component.type,
-            order: component.order,
-            config: updatedConfig,
-            style: component.style,
-            inputTypes: component.inputTypes,
-            variants: component.variants,
-            states: component.states,
-            validation: component.validation,
-            children: component.children,
-          );
+          return ComponentUtils.updateComponentConfig(component, updatedConfig);
         }
       }
       return component;
@@ -324,78 +286,6 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       order: page.order,
       components: updatedComponents,
     );
-  }
-
-  bool _validateCondition(ButtonCondition condition, dynamic value) {
-    debugPrint(
-      '_validateCondition: componentId=${condition.componentId}, rule=${condition.rule}, value=$value, expected=${condition.expectedValue}',
-    );
-
-    switch (condition.rule) {
-      case 'not_null':
-        // For string values, check if not null and not empty
-        if (value is String) {
-          final result = value.trim().isNotEmpty;
-          debugPrint(
-            'String validation for ${condition.componentId}: "$value" -> $result',
-          );
-          return result;
-        }
-        // For other types, just check not null and not empty
-        if (value == null) {
-          debugPrint('null value for ${condition.componentId} -> false');
-          return false;
-        }
-        if (value.toString().isEmpty) {
-          debugPrint('empty value for ${condition.componentId} -> false');
-          return false;
-        }
-        debugPrint(
-          'not_null validation for ${condition.componentId}: $value -> true',
-        );
-        return true;
-
-      case 'equals':
-        final result = value == condition.expectedValue;
-        debugPrint(
-          'equals validation for ${condition.componentId}: $value == ${condition.expectedValue} -> $result',
-        );
-        return result;
-
-      case 'not_empty':
-        if (value is List) {
-          final result = value.isNotEmpty;
-          debugPrint(
-            'List validation for ${condition.componentId}: ${value.length} items -> $result',
-          );
-          return result;
-        }
-        if (value is String) {
-          final result = value.trim().isNotEmpty;
-          debugPrint(
-            'String validation for ${condition.componentId}: "$value" -> $result',
-          );
-          return result;
-        }
-        if (value is bool) {
-          final result = value == true;
-          debugPrint(
-            'Bool validation for ${condition.componentId}: $value -> $result',
-          );
-          return result;
-        }
-        final result = value != null;
-        debugPrint(
-          'General validation for ${condition.componentId}: $value -> $result',
-        );
-        return result;
-
-      default:
-        debugPrint(
-          'Unknown rule ${condition.rule} for ${condition.componentId} -> true',
-        );
-        return true;
-    }
   }
 
   Future<void> _onRefreshDynamicForm(

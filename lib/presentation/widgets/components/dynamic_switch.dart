@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 
 class DynamicSwitch extends StatefulWidget {
   final DynamicFormModel component;
@@ -28,24 +29,18 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
 
     // Only update if value actually changed
     if (current_value != new_value) {
-      String new_state = 'base';
-      if (new_value) {
-        new_state = 'success';
-      }
-
       debugPrint(
         '🔄 [${component.id}] Switch changing: $current_value → $new_value',
       );
 
+      // Use centralized field update data creation with boolean value
+      final updateData = ValidationUtils.createFieldUpdateData(
+        value: new_value,
+        selected: new_value,
+      );
+
       context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(
-          componentId: component.id,
-          value: {
-            'value': new_value,
-            'selected': new_value,
-            'current_state': new_state,
-          },
-        ),
+        UpdateFormFieldEvent(componentId: component.id, value: updateData),
       );
     }
   }

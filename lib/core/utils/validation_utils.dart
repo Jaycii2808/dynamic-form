@@ -4,6 +4,19 @@ import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:flutter/material.dart';
 
+/// Result class for button validation operations
+class ButtonValidationResult {
+  final bool isValid;
+  final String? errorMessage;
+  final ButtonCondition? failedCondition;
+
+  const ButtonValidationResult({
+    required this.isValid,
+    this.errorMessage,
+    this.failedCondition,
+  });
+}
+
 class ValidationUtils {
   /// Centralized validation for button conditions with null safety
   static bool validateCondition(ButtonCondition condition, dynamic value) {
@@ -167,5 +180,90 @@ class ValidationUtils {
     }
 
     return null;
+  }
+
+  /// Centralized button conditions validation - eliminates duplicated if-else logic
+  static ButtonValidationResult validateButtonConditions(
+    List<ButtonCondition> conditions,
+    List<DynamicFormModel> components,
+  ) {
+    for (final condition in conditions) {
+      final targetComponent = components.cast<DynamicFormModel?>().firstWhere(
+        (comp) => comp?.id == condition.componentId,
+        orElse: () => null,
+      );
+
+      if (targetComponent == null) {
+        return ButtonValidationResult(
+          isValid: false,
+          errorMessage: 'Component ${condition.componentId} not found',
+          failedCondition: condition,
+        );
+      }
+
+      final value = targetComponent.config['value'];
+      if (!validateCondition(condition, value)) {
+        return ButtonValidationResult(
+          isValid: false,
+          errorMessage: condition.errorMessage,
+          failedCondition: condition,
+        );
+      }
+    }
+
+    return ButtonValidationResult(isValid: true);
+  }
+
+  /// Centralized state determination - replaces multiple if-else chains
+  static String determineFieldState(
+    String? value,
+    String? errorText, {
+    bool? boolValue,
+    List<dynamic>? listValue,
+  }) {
+    if (errorText != null && errorText.isNotEmpty) return 'error';
+
+    // For boolean fields (checkbox, switch, radio)
+    if (boolValue != null) {
+      return boolValue ? 'selected' : 'base';
+    }
+
+    // For list fields (multi-select, tags)
+    if (listValue != null) {
+      return listValue.isNotEmpty ? 'success' : 'base';
+    }
+
+    // For text fields
+    if (value != null && value.toString().trim().isNotEmpty) {
+      return 'success';
+    }
+
+    return 'base';
+  }
+
+  /// Smart field update data creation - reduces boilerplate
+  static Map<String, dynamic> createFieldUpdateData({
+    required dynamic value,
+    String? errorText,
+    String? explicitState,
+    bool? selected,
+    Map<String, dynamic>? additionalData,
+  }) {
+    final state =
+        explicitState ??
+        determineFieldState(
+          value?.toString(),
+          errorText,
+          boolValue: selected,
+          listValue: value is List ? value : null,
+        );
+
+    final data = <String, dynamic>{'value': value, 'current_state': state};
+
+    if (errorText != null) data['error_text'] = errorText;
+    if (selected != null) data['selected'] = selected;
+    if (additionalData != null) data.addAll(additionalData);
+
+    return data;
   }
 }

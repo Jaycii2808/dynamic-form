@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_stat
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 
 class FormPreviewScreen extends StatelessWidget {
   final DynamicFormPageModel page;
@@ -232,82 +233,25 @@ class FormPreviewScreen extends StatelessWidget {
           }
         }
 
-        // Check if all conditions pass for this button
+        // Check conditions - replace duplicated if-else with centralized validation
         bool conditionsPass = false;
-
         final conditions = saveButton.config['conditions'] as List<dynamic>?;
 
         if (conditions != null && conditions.isNotEmpty) {
-          conditionsPass = true;
+          final buttonConditions = conditions
+              .map((c) => ButtonCondition.fromJson(c as Map<String, dynamic>))
+              .toList();
 
-          for (final conditionData in conditions) {
-            final condition = ButtonCondition.fromJson(
-              conditionData as Map<String, dynamic>,
-            );
+          // Use centralized validation instead of duplicated switch statements
+          final validationResult = ValidationUtils.validateButtonConditions(
+            buttonConditions,
+            state.page?.components ?? page.components,
+          );
 
-            // Get the latest component from BLoC state if available
-            DynamicFormModel? targetComponent;
-            if (state.page != null) {
-              targetComponent = state.page!.components
-                  .cast<DynamicFormModel?>()
-                  .firstWhere(
-                    (comp) => comp?.id == condition.componentId,
-                    orElse: () => null,
-                  );
-            }
+          conditionsPass = validationResult.isValid;
 
-            // Fallback to original page components if not found in state
-            targetComponent ??= page.components
-                .cast<DynamicFormModel?>()
-                .firstWhere(
-                  (comp) => comp?.id == condition.componentId,
-                  orElse: () => null,
-                );
-
-            if (targetComponent != null) {
-              final value = targetComponent.config['value'];
-              bool isValid = true;
-
-              switch (condition.rule) {
-                case 'not_null':
-                  if (value is String) {
-                    isValid = value.trim().isNotEmpty;
-                  } else if (value == null) {
-                    isValid = false;
-                  } else if (value.toString().isEmpty) {
-                    isValid = false;
-                  }
-                  break;
-                case 'equals':
-                  isValid = value == condition.expectedValue;
-                  break;
-                case 'not_empty':
-                  if (value is List) {
-                    isValid = value.isNotEmpty;
-                  } else if (value is String) {
-                    isValid = value.trim().isNotEmpty;
-                  } else if (value is bool) {
-                    isValid = value == true;
-                  } else {
-                    isValid = value != null;
-                  }
-                  break;
-                default:
-                  isValid = true;
-              }
-
-              if (!isValid) {
-                conditionsPass = false;
-                debugPrint(
-                  '❌ Condition failed for ${condition.componentId}: ${condition.rule} = $value',
-                );
-                break;
-              }
-            } else {
-              conditionsPass = false;
-              debugPrint('❌ Component not found: ${condition.componentId}');
-              break;
-            }
+          if (!conditionsPass) {
+            debugPrint('❌ Condition failed: ${validationResult.errorMessage}');
           }
         } else {
           conditionsPass = true; // No conditions means always pass
