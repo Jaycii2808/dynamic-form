@@ -220,4 +220,109 @@ class ComponentUtils {
         component.config['currentState'] as String? ??
         'base';
   }
+
+  /// Centralized style application - eliminates repetitive if-else chains
+  static Map<String, dynamic> applyComponentStyles(
+    DynamicFormModel component, {
+    String? currentState,
+    List<String>? conditionalVariants,
+  }) {
+    final style = Map<String, dynamic>.from(component.style);
+    final config = component.config;
+    final state = currentState ?? getCurrentState(component);
+
+    // Apply conditional variants based on component configuration
+    if (component.variants != null && conditionalVariants != null) {
+      for (final variantKey in conditionalVariants) {
+        if (component.variants!.containsKey(variantKey)) {
+          final variantStyle =
+              component.variants![variantKey]['style'] as Map<String, dynamic>?;
+          if (variantStyle != null) {
+            style.addAll(variantStyle);
+          }
+        }
+      }
+    }
+
+    // Apply common variants based on component properties
+    if (component.variants != null) {
+      // Icon variants
+      if ((config['icon'] != null || style['icon'] != null) &&
+          component.variants!.containsKey('with_icon')) {
+        final variantStyle =
+            component.variants!['with_icon']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+
+      // Label variants
+      final hasLabel =
+          config['label'] != null && config['label'].toString().isNotEmpty;
+      if (hasLabel && component.variants!.containsKey('with_label')) {
+        final variantStyle =
+            component.variants!['with_label']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      } else if (!hasLabel &&
+          component.variants!.containsKey('without_label')) {
+        final variantStyle =
+            component.variants!['without_label']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+
+      // Multiple/searchable variants for select/dropdown
+      if (config['multiple'] == true &&
+          component.variants!.containsKey('multiple')) {
+        final variantStyle =
+            component.variants!['multiple']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+
+      if (config['searchable'] == true &&
+          component.variants!.containsKey('searchable')) {
+        final variantStyle =
+            component.variants!['searchable']['style'] as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
+
+    // Apply state styles (highest priority)
+    if (component.states != null && component.states!.containsKey(state)) {
+      final stateStyle =
+          component.states![state]['style'] as Map<String, dynamic>?;
+      if (stateStyle != null) {
+        style.addAll(stateStyle);
+      }
+    }
+
+    return style;
+  }
+
+  /// Smart component style builder with automatic variant detection
+  static Map<String, dynamic> buildComponentStyles(
+    DynamicFormModel component, {
+    String? explicitState,
+    Map<String, dynamic>? overrideStyles,
+  }) {
+    // Auto-detect variants based on component configuration
+    final conditionalVariants = <String>[];
+    final config = component.config;
+
+    // Avatar variant for dropdowns
+    if (config['avatar'] != null) {
+      conditionalVariants.add('with_avatar');
+    }
+
+    final styles = applyComponentStyles(
+      component,
+      currentState: explicitState,
+      conditionalVariants: conditionalVariants,
+    );
+
+    // Apply override styles (highest priority)
+    if (overrideStyles != null) {
+      styles.addAll(overrideStyles);
+    }
+
+    return styles;
+  }
 }

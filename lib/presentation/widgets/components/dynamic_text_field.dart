@@ -8,6 +8,8 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 
 class DynamicTextField extends StatefulWidget {
   final DynamicFormModel component;
@@ -42,26 +44,20 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
       final new_value = _controller.text;
       final error = _validate(new_value, widget.component);
 
-      // Determine new state based on validation
-      String new_state = 'base';
-      if (error != null) {
-        new_state = 'error';
-      } else if (new_value.isNotEmpty) {
-        new_state = 'success';
-      }
+      // Use centralized field update data creation instead of manual if-else
+      final updateData = ValidationUtils.createFieldUpdateData(
+        value: new_value,
+        errorText: error,
+      );
 
       context.read<DynamicFormBloc>().add(
         UpdateFormFieldEvent(
           componentId: widget.component.id,
-          value: {
-            'value': new_value,
-            'error_text': error,
-            'current_state': new_state,
-          },
+          value: updateData,
         ),
       );
       debugPrint(
-        '[TextField] ${widget.component.id} value updated: $new_value, error: $error, state: $new_state',
+        '[TextField] ${widget.component.id} value updated: $new_value, error: $error, state: ${updateData['current_state']}',
       );
     }
   }
@@ -104,26 +100,12 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
             : widget.component;
         // Get dynamic state
         final current_state = component.config['current_state'] ?? 'base';
-        Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-        // Always apply variant with_icon if icon exists
-        if ((component.config['icon'] != null || style['icon'] != null) &&
-            component.variants != null &&
-            component.variants!.containsKey('with_icon')) {
-          final variant_style =
-              component.variants!['with_icon']['style']
-                  as Map<String, dynamic>?;
-          if (variant_style != null) style.addAll(variant_style);
-        }
-        // Apply state style if available
-        if (component.states != null &&
-            component.states!.containsKey(current_state)) {
-          final state_style =
-              component.states![current_state]['style']
-                  as Map<String, dynamic>?;
-          if (state_style != null) {
-            style.addAll(state_style);
-          }
-        }
+
+        // Use centralized style application instead of manual if-else chains
+        final style = ComponentUtils.buildComponentStyles(
+          component,
+          explicitState: current_state,
+        );
         final value = component.config['value']?.toString() ?? '';
         final error_text = component.config['error_text'] as String?;
         // Sync controller if value changes from BLoC
@@ -188,44 +170,32 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   onChanged: (value) {
                     final error = _validate(value, component);
 
-                    // Determine new state based on validation
-                    String new_state = 'base';
-                    if (error != null) {
-                      new_state = 'error';
-                    } else if (value.isNotEmpty) {
-                      new_state = 'success';
-                    }
+                    // Use centralized field update data creation
+                    final updateData = ValidationUtils.createFieldUpdateData(
+                      value: value,
+                      errorText: error,
+                    );
 
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: {
-                          'value': value,
-                          'error_text': error,
-                          'current_state': new_state,
-                        },
+                        value: updateData,
                       ),
                     );
                   },
                   onSubmitted: (value) {
                     final error = _validate(value, component);
 
-                    // Determine new state based on validation
-                    String new_state = 'base';
-                    if (error != null) {
-                      new_state = 'error';
-                    } else if (value.isNotEmpty) {
-                      new_state = 'success';
-                    }
+                    // Use centralized field update data creation
+                    final updateData = ValidationUtils.createFieldUpdateData(
+                      value: value,
+                      errorText: error,
+                    );
 
                     context.read<DynamicFormBloc>().add(
                       UpdateFormFieldEvent(
                         componentId: component.id,
-                        value: {
-                          'value': value,
-                          'error_text': error,
-                          'current_state': new_state,
-                        },
+                        value: updateData,
                       ),
                     );
                   },
