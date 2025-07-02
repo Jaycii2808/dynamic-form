@@ -62,6 +62,21 @@ class DynamicFormRenderer extends StatefulWidget {
 }
 
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
+  void handleFormFieldUpdate(
+    BuildContext context,
+    DynamicFormModel component,
+    dynamic value,
+  ) {
+    if (value != null) {
+      component.config['value'] = value['value'];
+      context.read<DynamicFormBloc>().add(
+        UpdateFormFieldEvent(componentId: component.id, value: value),
+      );
+    } else {
+      debugPrint("Error: No value received");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _buildComponents(widget.component);
@@ -76,19 +91,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.textAreaFormType:
         return DynamicTextArea(
           component: component,
-          onComplete: (value) {
-            if (value != null) {
-              component.config['value'] = value['value'];
-              context.read<DynamicFormBloc>().add(
-                UpdateFormFieldEvent(componentId: component.id, value: value),
-              );
-            } else {
-              debugPrint("Error: No value received");
-            }
-          },
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dateTimePickerFormType:
-        return DynamicDateTimePicker(component: component);
+        return DynamicDateTimePicker(
+          component: component,
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
+        );
       case FormTypeEnum.dateTimeRangePickerFormType:
         return DynamicDateTimeRangePicker(component: component);
       case FormTypeEnum.dropdownFormType:
@@ -108,7 +119,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
-        return DynamicButton(component: component, onAction: _handleButtonAction);
+        return DynamicButton(
+          component: component,
+          onAction: _handleButtonAction,
+        );
       case FormTypeEnum.container:
         return _buildContainerComponent(component);
       case FormTypeEnum.unknown:
@@ -129,7 +143,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         border: style['border_color'] != null
             ? Border.all(
                 color: StyleUtils.parseColor(style['border_color']),
-                width: ComponentUtils.getStyleValue<num>(style, 'border_width', 1.0).toDouble(),
+                width: ComponentUtils.getStyleValue<num>(
+                  style,
+                  'border_width',
+                  1.0,
+                ).toDouble(),
               )
             : null,
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
