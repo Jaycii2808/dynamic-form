@@ -11,7 +11,7 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_dropdown
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_file_uploader.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_radio.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_select.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_slider.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
@@ -238,8 +238,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return DynamicRadio(component: component);
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
-      case FormTypeEnum.selectorFormType:
-        return DynamicSelector(component: component);
+      case FormTypeEnum.selectorButtonFormType:
+        return DynamicSelectorButton(component: component);
       case FormTypeEnum.switchFormType:
         return DynamicSwitch(component: component);
       case FormTypeEnum.textFieldTagsFormType:

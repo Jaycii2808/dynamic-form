@@ -9,16 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class DynamicSelector extends StatefulWidget {
+class DynamicSelectorButton extends StatefulWidget {
   final DynamicFormModel component;
 
-  const DynamicSelector({super.key, required this.component});
+  const DynamicSelectorButton({super.key, required this.component});
 
   @override
-  State<DynamicSelector> createState() => _DynamicSelectorState();
+  State<DynamicSelectorButton> createState() => _DynamicSelectorState();
 }
 
-class _DynamicSelectorState extends State<DynamicSelector> {
+class _DynamicSelectorState extends State<DynamicSelectorButton> {
   @override
   void dispose() {
     super.dispose();

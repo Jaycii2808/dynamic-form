@@ -9,7 +9,7 @@ enum FormTypeEnum {
   radioFormType,
 
   sliderFormType,
-  selectorFormType,
+  selectorButtonFormType,
   switchFormType,
   textFieldTagsFormType,
   fileUploaderFormType,

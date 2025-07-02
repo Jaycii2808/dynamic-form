@@ -21,6 +21,7 @@ class UpdateFormFieldEvent extends DynamicFormEvent {
   final dynamic value;
 
   const UpdateFormFieldEvent({required this.componentId, required this.value});
+
   //props
   @override
   List<Object?> get props => [componentId, value];
