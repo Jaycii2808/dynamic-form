@@ -63,8 +63,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
   }
 
   PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
-    final pickerModeStr =
-        config['picker_mode'] ?? config['pickerMode'] ?? 'fullDateTime';
+    final pickerModeStr = config['picker_mode'] ?? config['pickerMode'] ?? 'fullDateTime';
     return PickerModeEnum.fromString(pickerModeStr);
   }
 
@@ -106,14 +105,12 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     final validationConfig = widget.component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation =
-        validationConfig['required'] as Map<String, dynamic>?;
+    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
     if (requiredValidation?['is_required'] == true && value.isEmpty) {
       debugPrint(
         'validate: componentId=${widget.component.id}, error=Required field empty',
       );
-      return requiredValidation?['error_message'] as String? ??
-          'Please select a date';
+      return requiredValidation?['error_message'] as String? ?? 'Please select a date';
     }
 
     if (value.isNotEmpty) {
@@ -145,8 +142,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
             widget.component;
         final inputConfig = InputConfig.fromMap(component.config);
         final currentState =
-            FormStateEnum.fromString(inputConfig.currentState) ??
-            FormStateEnum.base;
+            FormStateEnum.fromString(inputConfig.currentState) ?? FormStateEnum.base;
         final styleConfig = StyleConfig.fromMap(component.style);
 
         _errorText = inputConfig.errorText;
@@ -318,8 +314,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       pickedDate.month,
       pickedDate.day,
       _pickerMode == PickerModeEnum.dateOnly ? 0 : pickedTime?.hour ?? 0,
-      _pickerMode == PickerModeEnum.dateOnly ||
-              _pickerMode == PickerModeEnum.hourDate
+      _pickerMode == PickerModeEnum.dateOnly || _pickerMode == PickerModeEnum.hourDate
           ? 0
           : pickedTime?.minute ?? 0,
     );
@@ -351,11 +346,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
   Map<String, dynamic> _buildPickerStyle(DynamicFormModel component) {
     final style = Map<String, dynamic>.from(component.style);
     final currentState = InputConfig.fromMap(component.config).currentState;
-    final variantStyle =
-        component.variants?['single']?['style'] as Map<String, dynamic>?;
+    final variantStyle = component.variants?['single']?['style'] as Map<String, dynamic>?;
     if (variantStyle != null) style.addAll(variantStyle);
-    final stateStyle =
-        component.states?[currentState]?['style'] as Map<String, dynamic>?;
+    final stateStyle = component.states?[currentState]?['style'] as Map<String, dynamic>?;
     if (stateStyle != null) style.addAll(stateStyle);
     return style;
   }

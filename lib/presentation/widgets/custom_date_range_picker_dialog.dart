@@ -15,12 +15,10 @@ class CustomDateRangePickerDialog extends StatefulWidget {
   });
 
   @override
-  State<CustomDateRangePickerDialog> createState() =>
-      _CustomDateRangePickerDialogState();
+  State<CustomDateRangePickerDialog> createState() => _CustomDateRangePickerDialogState();
 }
 
-class _CustomDateRangePickerDialogState
-    extends State<CustomDateRangePickerDialog> {
+class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialog> {
   late DateTime? _startDate;
   late DateTime? _endDate;
 
@@ -72,12 +70,9 @@ class _CustomDateRangePickerDialogState
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor =
-    StyleUtils.parseColor(widget.style['iconColor'] ?? '#6979F8');
-    final surfaceColor =
-    StyleUtils.parseColor(widget.style['backgroundColor'] ?? '#FFFFFF');
-    final textColor =
-    StyleUtils.parseColor(widget.style['color'] ?? '#333333');
+    final primaryColor = StyleUtils.parseColor(widget.style['iconColor'] ?? '#6979F8');
+    final surfaceColor = StyleUtils.parseColor(widget.style['backgroundColor'] ?? '#FFFFFF');
+    final textColor = StyleUtils.parseColor(widget.style['color'] ?? '#333333');
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -120,8 +115,7 @@ class _CustomDateRangePickerDialogState
         Expanded(
           child: _buildDateSelectionBox(
             label: _startDate != null
-                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern)
-                .format(_startDate!)
+                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).format(_startDate!)
                 : 'Start Date',
             onTap: _selectStartDate,
             borderColor: primaryColor,
@@ -132,12 +126,10 @@ class _CustomDateRangePickerDialogState
         Expanded(
           child: _buildDateSelectionBox(
             label: _endDate != null
-                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern)
-                .format(_endDate!)
+                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).format(_endDate!)
                 : 'End Date',
             onTap: _startDate != null ? _selectEndDate : null,
-            borderColor:
-            _startDate != null ? primaryColor : primaryColor.withValues(alpha:0.3),
+            borderColor: _startDate != null ? primaryColor : primaryColor.withValues(alpha: 0.3),
             textColor: textColor,
             isActive: _startDate != null,
           ),
@@ -163,10 +155,9 @@ class _CustomDateRangePickerDialogState
           text: 'Confirm',
           onPressed: isConfirmEnabled
               ? () {
-            widget.onConfirm(
-                DateTimeRange(start: _startDate!, end: _endDate!));
-            Navigator.pop(context);
-          }
+                  widget.onConfirm(DateTimeRange(start: _startDate!, end: _endDate!));
+                  Navigator.pop(context);
+                }
               : null,
           isPrimary: true,
           primaryColor: primaryColor,
@@ -196,7 +187,7 @@ class _CustomDateRangePickerDialogState
           label,
           style: TextStyle(
             fontSize: 14,
-            color: isActive ? textColor : textColor.withValues(alpha:0.5),
+            color: isActive ? textColor : textColor.withValues(alpha: 0.5),
             fontWeight: FontWeight.w500,
           ),
           textAlign: TextAlign.center,
@@ -219,9 +210,8 @@ class _CustomDateRangePickerDialogState
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          disabledBackgroundColor: primaryColor.withValues(alpha:0.3),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          disabledBackgroundColor: primaryColor.withValues(alpha: 0.3),
         ),
         child: Text(text, style: const TextStyle(fontSize: 14)),
       );
@@ -230,14 +220,14 @@ class _CustomDateRangePickerDialogState
         onPressed: onPressed,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Text(text, style: TextStyle(fontSize: 14, color: primaryColor)),
       );
     }
   }
 }
+
 Future<DateTime?> _showConfiguredDatePicker({
   required BuildContext context,
   required DateTime? initialDate,
@@ -247,8 +237,7 @@ Future<DateTime?> _showConfiguredDatePicker({
   bool Function(DateTime)? selectableDayPredicate,
 }) {
   final primaryColor = StyleUtils.parseColor(style['iconColor'] ?? '#6979F8');
-  final surfaceColor =
-  StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
+  final surfaceColor = StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
   final onSurfaceColor = StyleUtils.parseColor(style['color'] ?? '#333333');
 
   return showDatePicker(

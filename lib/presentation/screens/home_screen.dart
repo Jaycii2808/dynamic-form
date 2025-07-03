@@ -53,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       body: _buildFormListView(configKeys: configKeys, onTapForm: _navigateToForm),
     );
-
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -67,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
-
 
   Widget _buildSavedFormsButton() {
     return Builder(
@@ -114,8 +112,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         margin: const EdgeInsets.all(10),
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.blueGrey, borderRadius: BorderRadius.circular(8)),
-        child: Text(configKey, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        decoration: BoxDecoration(
+          color: Colors.blueGrey,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          configKey,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
       ),
     );
   }

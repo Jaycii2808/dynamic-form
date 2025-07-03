@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/input_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 String? _validateForm(DynamicFormModel component, String? value) {
   try {
     return ValidationUtils.validateForm(component, value);
@@ -41,8 +42,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   @override
   void initState() {
     super.initState();
-    _textController.text =
-        widget.component.config[ValueKeyEnum.value.key] ?? '';
+    _textController.text = widget.component.config[ValueKeyEnum.value.key] ?? '';
     _focusNode.addListener(_handleFocusChange);
   }
 
@@ -50,8 +50,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   void didUpdateWidget(covariant DynamicTextArea oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newValue = widget.component.config[ValueKeyEnum.value.key] ?? '';
-    if (oldWidget.component.config[ValueKeyEnum.value.key] != newValue &&
-        !_focusNode.hasFocus) {
+    if (oldWidget.component.config[ValueKeyEnum.value.key] != newValue && !_focusNode.hasFocus) {
       _textController.text = newValue;
     }
   }
@@ -108,8 +107,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
 
         final inputConfig = InputConfig.fromMap(component.config);
         final currentState =
-            FormStateEnum.fromString(inputConfig.currentState) ??
-            FormStateEnum.base;
+            FormStateEnum.fromString(inputConfig.currentState) ?? FormStateEnum.base;
         final componentValue = inputConfig.value;
         final componentError = inputConfig.errorText;
 
