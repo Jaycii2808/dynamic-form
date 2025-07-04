@@ -11,13 +11,19 @@ class DynamicDateTimeRangePicker extends StatefulWidget {
   final DynamicFormModel component;
   final Function(Map<String, dynamic>) onComplete;
 
-  const DynamicDateTimeRangePicker({super.key, required this.component, required this.onComplete});
+  const DynamicDateTimeRangePicker({
+    super.key,
+    required this.component,
+    required this.onComplete,
+  });
 
   @override
-  State<DynamicDateTimeRangePicker> createState() => _DynamicDateTimeRangePickerState();
+  State<DynamicDateTimeRangePicker> createState() =>
+      _DynamicDateTimeRangePickerState();
 }
 
-class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker> {
+class _DynamicDateTimeRangePickerState
+    extends State<DynamicDateTimeRangePicker> {
   final TextEditingController _controller = TextEditingController();
   String? _errorText;
   late FocusNode _focusNode;
@@ -33,12 +39,16 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
 
   void _initializeValue() {
     final value = widget.component.config['value'];
-    if (value is Map<String, dynamic> && value.containsKey('start') && value.containsKey('end')) {
+    if (value is Map<String, dynamic> &&
+        value.containsKey('start') &&
+        value.containsKey('end')) {
       try {
         final startDate = DateFormat(
           DateFormatCustomPattern.mmmDyyyy.pattern,
         ).parse(value['start']);
-        final endDate = DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).parse(value['end']);
+        final endDate = DateFormat(
+          DateFormatCustomPattern.mmmDyyyy.pattern,
+        ).parse(value['end']);
         _selectedDateRange = DateTimeRange(start: startDate, end: endDate);
         _updateControllerText();
       } catch (e) {
@@ -75,7 +85,9 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
       'start': DateFormat(
         DateFormatCustomPattern.mmmDyyyy.pattern,
       ).format(_selectedDateRange!.start),
-      'end': DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).format(_selectedDateRange!.end),
+      'end': DateFormat(
+        DateFormatCustomPattern.mmmDyyyy.pattern,
+      ).format(_selectedDateRange!.end),
     };
 
     widget.component.config['value'] = newValue;
@@ -92,9 +104,12 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     final validationConfig = widget.component.validation;
     if (validationConfig == null) return null;
 
-    final requiredValidation = validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['isRequired'] == true && _selectedDateRange == null) {
-      return requiredValidation?['error_message'] as String? ?? 'Please select a date range';
+    final requiredValidation =
+        validationConfig['required'] as Map<String, dynamic>?;
+    if (requiredValidation?['isRequired'] == true &&
+        _selectedDateRange == null) {
+      return requiredValidation?['error_message'] as String? ??
+          'Please select a date range';
     }
 
     return null;
@@ -133,12 +148,15 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> combinedStyle = Map<String, dynamic>.from(widget.component.style);
+    final Map<String, dynamic> combinedStyle = Map<String, dynamic>.from(
+      widget.component.style,
+    );
     final config = widget.component.config;
     final isDisabled = config['disabled'] == true;
 
     if (widget.component.variants?.containsKey('range') == true) {
-      final variantStyle = widget.component.variants!['range']['style'] as Map<String, dynamic>?;
+      final variantStyle =
+          widget.component.variants!['range']['style'] as Map<String, dynamic>?;
       if (variantStyle != null) combinedStyle.addAll(variantStyle);
     }
 
@@ -147,7 +165,9 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
       currentState = _errorText != null ? 'error' : 'success';
     }
     if (widget.component.states?.containsKey(currentState) == true) {
-      final stateStyle = widget.component.states![currentState]['style'] as Map<String, dynamic>?;
+      final stateStyle =
+          widget.component.states![currentState]['style']
+              as Map<String, dynamic>?;
       if (stateStyle != null) combinedStyle.addAll(stateStyle);
     }
 
@@ -183,13 +203,16 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     );
   }
 
-  Widget _buildLabelText({required String label, required Map<String, dynamic> style}) {
+  Widget _buildLabelText({
+    required String label,
+    required Map<String, dynamic> style,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
       child: Text(
         label,
         style: TextStyle(
-          fontSize: style['labelTextSize']?.toDouble() ?? 16,
+          fontSize: (style['labelTextSize'] as num?)?.toDouble() ?? 16,
           color: StyleUtils.parseColor(style['labelColor'] ?? '#333333'),
           fontWeight: FontWeight.bold,
         ),
@@ -206,16 +229,22 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
     required Map<String, dynamic> style,
     required VoidCallback onTap,
   }) {
-    final borderColor = StyleUtils.parseColor(style['borderColor'] ?? '#CCCCCC');
+    final borderColor = StyleUtils.parseColor(
+      style['borderColor'] ?? '#CCCCCC',
+    );
     final focusedBorderColor = StyleUtils.parseColor(
       style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8',
     );
     final errorBorderColor = Colors.red;
-    final borderRadius = style['borderRadius']?.toDouble() ?? 8;
-    final borderWidth = style['borderWidth']?.toDouble() ?? 1;
+    final borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
+    final borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 1;
     final textColor = StyleUtils.parseColor(style['color'] ?? '#333333');
-    final fillColor = StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
-    final iconColor = StyleUtils.parseColor(style['iconColor'] ?? style['color'] ?? '#6979F8');
+    final fillColor = StyleUtils.parseColor(
+      style['backgroundColor'] ?? '#FFFFFF',
+    );
+    final iconColor = StyleUtils.parseColor(
+      style['iconColor'] ?? style['color'] ?? '#6979F8',
+    );
 
     return TextField(
       controller: controller,
@@ -230,8 +259,8 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
           child: SvgPicture.asset(
             'assets/svg/SelectDate.svg',
             colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-            width: style['iconSize']?.toDouble() ?? 20,
-            height: style['iconSize']?.toDouble() ?? 20,
+            width: (style['iconSize'] as num?)?.toDouble() ?? 20,
+            height: (style['iconSize'] as num?)?.toDouble() ?? 20,
           ),
         ),
         hintText: hintText,
@@ -245,7 +274,10 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: focusedBorderColor, width: borderWidth + 1),
+          borderSide: BorderSide(
+            color: focusedBorderColor,
+            width: borderWidth + 1,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -253,16 +285,19 @@ class _DynamicDateTimeRangePickerState extends State<DynamicDateTimeRangePicker>
         ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: style['contentVerticalPadding']?.toDouble() ?? 16,
-          horizontal: style['contentHorizontalPadding']?.toDouble() ?? 16,
+          vertical: (style['contentVerticalPadding'] as num?)?.toDouble() ?? 16,
+          horizontal:
+              (style['contentHorizontalPadding'] as num?)?.toDouble() ?? 16,
         ),
         filled: style['backgroundColor'] != null,
         fillColor: fillColor,
       ),
       style: TextStyle(
-        fontSize: style['fontSize']?.toDouble() ?? 14,
+        fontSize: (style['fontSize'] as num?)?.toDouble() ?? 14,
         color: textColor,
-        fontStyle: style['fontStyle'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+        fontStyle: style['fontStyle'] == 'italic'
+            ? FontStyle.italic
+            : FontStyle.normal,
       ),
     );
   }
