@@ -1,0 +1,297 @@
+[
+   {
+      "id": "username_field",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Tên đăng nhập",
+         "placeholder": "Nhập tên đăng nhập",
+         "is_required": true,
+         "required_message": "Tên đăng nhập không được để trống"
+      },
+      "style": {
+         "padding": "12px 16px",
+         "border_color": "#E5E7EB",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#1F2937",
+         "background_color": "#FFFFFF",
+         "label_text_size": 14,
+         "label_color": "#374151"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#E5E7EB",
+               "helper_text": "Tên đăng nhập từ 3-20 ký tự, chỉ chữ và số",
+               "helper_text_color": "#6B7280"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#EF4444",
+               "border_width": 2,
+               "color": "#EF4444",
+               "helper_text_color": "#EF4444"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#10B981",
+               "border_width": 2,
+               "icon": "check",
+               "icon_color": "#10B981",
+               "helper_text": "Tên đăng nhập hợp lệ",
+               "helper_text_color": "#10B981"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-Z0-9]{3,20}$",
+               "error_message": "Tên đăng nhập phải từ 3-20 ký tự, chỉ chứa chữ cái và số",
+               "min_length": 3,
+               "max_length": 20
+            }
+         }
+      }
+   },
+   {
+      "id": "email_field",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Email",
+         "placeholder": "example@gmail.com",
+         "icon": "mail",
+         "is_required": true,
+         "required_message": "Email không được để trống"
+      },
+      "style": {
+         "padding": "12px 16px",
+         "border_color": "#E5E7EB",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#1F2937",
+         "background_color": "#FFFFFF",
+         "label_text_size": 14,
+         "label_color": "#374151",
+         "icon_size": 20,
+         "icon_color": "#6B7280"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#E5E7EB",
+               "helper_text": "Nhập địa chỉ email hợp lệ",
+               "helper_text_color": "#6B7280"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#EF4444",
+               "border_width": 2,
+               "color": "#EF4444",
+               "icon": "close",
+               "icon_color": "#EF4444",
+               "helper_text_color": "#EF4444"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#10B981",
+               "border_width": 2,
+               "icon": "check",
+               "icon_color": "#10B981",
+               "helper_text": "Email hợp lệ",
+               "helper_text_color": "#10B981"
+            }
+         }
+      },
+      "input_types": {
+         "email": {
+            "validation": {
+               "regex": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+               "error_message": "Định dạng email không hợp lệ",
+               "min_length": 5,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "password_field",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Mật khẩu",
+         "placeholder": "Nhập mật khẩu",
+         "is_required": true,
+         "required_message": "Mật khẩu không được để trống"
+      },
+      "style": {
+         "padding": "12px 16px",
+         "border_color": "#E5E7EB",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#1F2937",
+         "background_color": "#FFFFFF",
+         "label_text_size": 14,
+         "label_color": "#374151"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#E5E7EB",
+               "helper_text": "Mật khẩu ít nhất 8 ký tự, có chữ hoa, chữ thường và số",
+               "helper_text_color": "#6B7280"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#EF4444",
+               "border_width": 2,
+               "color": "#EF4444",
+               "helper_text_color": "#EF4444"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#10B981",
+               "border_width": 2,
+               "helper_text": "Mật khẩu mạnh",
+               "helper_text_color": "#10B981"
+            }
+         }
+      },
+      "input_types": {
+         "password": {
+            "validation": {
+               "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+               "error_message": "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số",
+               "min_length": 8,
+               "max_length": 50
+            }
+         }
+      }
+   },
+   {
+      "id": "phone_field",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Số điện thoại",
+         "placeholder": "0xxx xxx xxx",
+         "icon": "phone",
+         "is_required": false
+      },
+      "style": {
+         "padding": "12px 16px",
+         "border_color": "#E5E7EB",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#1F2937",
+         "background_color": "#FFFFFF",
+         "label_text_size": 14,
+         "label_color": "#374151",
+         "icon_size": 20,
+         "icon_color": "#6B7280"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#E5E7EB",
+               "helper_text": "Số điện thoại Việt Nam (không bắt buộc)",
+               "helper_text_color": "#6B7280"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#EF4444",
+               "border_width": 2,
+               "color": "#EF4444",
+               "helper_text_color": "#EF4444"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#10B981",
+               "border_width": 2,
+               "helper_text": "Số điện thoại hợp lệ",
+               "helper_text_color": "#10B981"
+            }
+         }
+      },
+      "input_types": {
+         "tel": {
+            "validation": {
+               "regex": "^(0[3|5|7|8|9])+([0-9]{8})$",
+               "error_message": "Số điện thoại không đúng định dạng (VD: 0901234567)",
+               "min_length": 10,
+               "max_length": 10
+            }
+         }
+      }
+   },
+   {
+      "id": "validate_button",
+      "type": "buttonFormType",
+      "config": {
+         "label": "Validate All Fields",
+         "action": "validate_form",
+         "button_type": "outline"
+      },
+      "style": {
+         "padding": "12px 24px",
+         "border_color": "#3B82F6",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#3B82F6",
+         "background_color": "transparent",
+         "border_width": 2
+      }
+   },
+   {
+      "id": "submit_button",
+      "type": "buttonFormType",
+      "config": {
+         "label": "Đăng ký",
+         "action": "submit_form",
+         "button_type": "primary",
+         "conditions": [
+            {
+               "componentId": "username_field",
+               "rule": "not_empty",
+               "expectedValue": true,
+               "errorMessage": "Tên đăng nhập chưa được nhập"
+            },
+            {
+               "componentId": "email_field",
+               "rule": "not_empty",
+               "expectedValue": true,
+               "errorMessage": "Email chưa được nhập"
+            },
+            {
+               "componentId": "password_field",
+               "rule": "not_empty",
+               "expectedValue": true,
+               "errorMessage": "Mật khẩu chưa được nhập"
+            }
+         ]
+      },
+      "style": {
+         "padding": "12px 24px",
+         "border_color": "#3B82F6",
+         "border_radius": 8,
+         "font_size": 16,
+         "color": "#FFFFFF",
+         "background_color": "#3B82F6"
+      },
+      "states": {
+         "disabled": {
+            "style": {
+               "background_color": "#9CA3AF",
+               "border_color": "#9CA3AF",
+               "color": "#FFFFFF"
+            }
+         }
+      }
+   }
+]

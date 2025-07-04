@@ -64,3 +64,12 @@ class MarkPreviewValidatedEvent extends DynamicFormEvent {
   @override
   List<Object?> get props => [saveButtonId];
 }
+
+class ValidateAllFormFieldsEvent extends DynamicFormEvent {
+  final bool showErrorsImmediately;
+
+  const ValidateAllFormFieldsEvent({this.showErrorsImmediately = false});
+
+  @override
+  List<Object?> get props => [showErrorsImmediately];
+}
