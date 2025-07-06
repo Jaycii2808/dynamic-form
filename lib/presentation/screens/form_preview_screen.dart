@@ -269,17 +269,12 @@ class FormPreviewScreen extends StatelessWidget {
         // First check if there are any validation errors in the current state
         bool hasValidationErrors = false;
         if (state.page != null) {
-          for (final component in state.page!.components) {
-            final errorText = component.config['errorText'];
-            if (errorText != null && errorText.toString().isNotEmpty) {
-              hasValidationErrors = true;
-              debugPrint('❌ Validation error in ${component.id}: $errorText');
-              break;
-            }
-          }
+          hasValidationErrors = _hasValidationErrorsRecursive(
+            state.page!.components,
+          );
         }
 
-        // Check conditions - replace duplicated if-else with centralized validation
+        // Check conditions - only for components that actually exist
         bool conditionsPass = false;
         final conditions = saveButton.config['conditions'] as List<dynamic>?;
 
@@ -288,16 +283,51 @@ class FormPreviewScreen extends StatelessWidget {
               .map((c) => ButtonCondition.fromJson(c as Map<String, dynamic>))
               .toList();
 
-          // Use centralized validation instead of duplicated switch statements
-          final validationResult = ValidationUtils.validateButtonConditions(
-            buttonConditions,
-            state.page?.components ?? page.components,
+          debugPrint(
+            '🔍 Checking conditions for Save button: ${saveButton.id}',
+          );
+          debugPrint('📋 Found ${buttonConditions.length} conditions to check');
+
+          // Get list of existing component IDs
+          final currentComponents = state.page?.components ?? page.components;
+          final existingComponentIds = currentComponents
+              .map((c) => c.id)
+              .toSet();
+          debugPrint('📋 Existing components: $existingComponentIds');
+
+          // Filter conditions to only check existing components
+          final validConditions = buttonConditions.where((condition) {
+            final exists = existingComponentIds.contains(condition.componentId);
+            if (!exists) {
+              debugPrint(
+                '⚠️ Skipping condition for non-existent component: ${condition.componentId}',
+              );
+            }
+            return exists;
+          }).toList();
+
+          debugPrint(
+            '📋 Valid conditions (for existing components): ${validConditions.length}',
           );
 
-          conditionsPass = validationResult.isValid;
+          if (validConditions.isEmpty) {
+            // If no valid conditions, consider it as pass (no requirements)
+            conditionsPass = true;
+            debugPrint('✅ No valid conditions found - considering as pass');
+          } else {
+            // Use centralized validation for valid conditions only
+            final validationResult = ValidationUtils.validateButtonConditions(
+              validConditions,
+              currentComponents,
+            );
 
-          if (!conditionsPass) {
-            debugPrint('❌ Condition failed: ${validationResult.errorMessage}');
+            conditionsPass = validationResult.isValid;
+
+            if (!conditionsPass) {
+              debugPrint(
+                '❌ Condition failed: ${validationResult.errorMessage}',
+              );
+            }
           }
         } else {
           conditionsPass = true; // No conditions means always pass
@@ -310,6 +340,38 @@ class FormPreviewScreen extends StatelessWidget {
           '💾 Save button state: conditionsPass=$conditionsPass, hasValidationErrors=$hasValidationErrors, canSave=$canSave',
         );
 
+        // If conditions are not met, show message instead of Save button
+        if (!canSave) {
+          debugPrint('🚫 Save button hidden - conditions not met');
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: Colors.orange.shade600,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Complete all required fields',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.orange.shade600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         // Get button styles from Remote Config
         final style = Map<String, dynamic>.from(saveButton.style);
         final config = Map<String, dynamic>.from(saveButton.config);
@@ -318,131 +380,116 @@ class FormPreviewScreen extends StatelessWidget {
         debugPrint('🎯 Button label: ${config['label'] ?? 'Save'}');
         debugPrint('🔧 Button icon: ${config['icon']}');
 
-        // Apply disabled state if can't save
-        if (!canSave) {
-          final disabledStyle =
-              saveButton.states?['disabled']?['style'] as Map<String, dynamic>?;
-          if (disabledStyle != null) {
-            style.addAll(disabledStyle);
-          } else {
-            // Fallback disabled style
-            style['backgroundColor'] = '#F3F4F6';
-            style['color'] = '#9CA3AF';
-          }
-        }
-
         return ElevatedButton(
-          onPressed: canSave
-              ? () async {
-                  // Save form directly without dialog
-                  try {
-                    final savedFormsService = SavedFormsService();
-                    final timestamp = DateTime.now();
-                    final formId = 'form_${timestamp.millisecondsSinceEpoch}';
-                    final defaultName =
-                        'Form ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
+          onPressed: () async {
+            // Save form directly without dialog
+            try {
+              final savedFormsService = SavedFormsService();
+              final timestamp = DateTime.now();
+              final formId = 'form_${timestamp.millisecondsSinceEpoch}';
+              final defaultName =
+                  'Form ${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
 
-                    // Create the save format you requested
-                    final formToSave = {
-                      'form_id': formId,
-                      'components': page.components
-                          .map((component) => component.toJson())
-                          .toList(),
-                      'page_id': page.pageId,
-                      'title': defaultName,
-                    };
+              // Create the save format you requested
+              final formToSave = {
+                'form_id': formId,
+                'components': page.components
+                    .map((component) => component.toJson())
+                    .toList(),
+                'page_id': page.pageId,
+                'title': defaultName,
+              };
 
-                    debugPrint('💾 Starting to save form...');
-                    debugPrint('📝 Form name: $defaultName');
-                    debugPrint('🆔 Form ID: $formId');
-                    debugPrint('📄 Page ID: ${page.pageId}');
-                    debugPrint('🔢 Components: ${page.components.length}');
+              debugPrint('💾 Starting to save form...');
+              debugPrint('📝 Form name: $defaultName');
+              debugPrint('🆔 Form ID: $formId');
+              debugPrint('📄 Page ID: ${page.pageId}');
+              debugPrint('🔢 Components: ${page.components.length}');
 
-                    await savedFormsService.saveFormWithCustomFormat(
-                      formId: formId,
-                      name: defaultName,
-                      description: 'Auto-saved form',
-                      formData: formToSave,
-                      originalConfigKey: page.pageId,
-                    );
+              await savedFormsService.saveFormWithCustomFormat(
+                formId: formId,
+                name: defaultName,
+                description: 'Auto-saved form',
+                formData: formToSave,
+                originalConfigKey: page.pageId,
+              );
 
-                    debugPrint('✅ Form saved successfully!');
+              debugPrint('✅ Form saved successfully!');
 
-                    if (context.mounted) {
-                      // Show success dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (dialogContext) => AlertDialog(
-                          title: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Form Saved'),
-                            ],
+              if (context.mounted) {
+                // Show success dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Form Saved'),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Form saved successfully as:'),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Form saved successfully as:'),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  defaultName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'You can access saved forms from the main screen.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(
-                                  dialogContext,
-                                ).pop(); // Close dialog
-                                Navigator.of(context).popUntil(
-                                  (route) => route.isFirst,
-                                ); // Go to main screen
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text('OK'),
+                          child: Text(
+                            defaultName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
+                          ),
                         ),
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint('❌ Error saving form: $e');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error saving form: $e'),
-                          backgroundColor: Colors.red,
+                        const SizedBox(height: 8),
+                        Text(
+                          'You can access saved forms from the main screen.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                      );
-                    }
-                  }
-                }
-              : null,
+                      ],
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(
+                            dialogContext,
+                          ).pop(); // Close dialog
+                          Navigator.of(context).popUntil(
+                            (route) => route.isFirst,
+                          ); // Go to main screen
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            } catch (e) {
+              debugPrint('❌ Error saving form: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error saving form: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: StyleUtils.parseColor(style['backgroundColor']),
             foregroundColor: StyleUtils.parseColor(style['color']),
@@ -458,20 +505,13 @@ class FormPreviewScreen extends StatelessWidget {
             children: [
               if (config['icon'] != null) ...[
                 Icon(
-                  _mapIconNameToIconData(config['icon']) ??
-                      (canSave ? Icons.save : Icons.lock),
+                  _mapIconNameToIconData(config['icon']) ?? Icons.save,
                   size: style['iconSize']?.toDouble() ?? 18,
-                  color: canSave ? null : Colors.red.withValues(alpha: 0.4),
                 ),
                 const SizedBox(width: 8),
               ],
               Text(
-                canSave
-                    ? (config['label'] ?? 'Save')
-                    : 'Need Complete all fields',
-                style: TextStyle(
-                  color: canSave ? null : Colors.red.withValues(alpha: 0.4),
-                ),
+                config['label'] ?? 'Save',
               ),
             ],
           ),
@@ -640,5 +680,41 @@ class FormPreviewScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Thêm hàm kiểm tra lỗi validation cho toàn bộ cây component
+  bool _hasValidationErrorsRecursive(List components) {
+    for (final component in components) {
+      // Check top-level error
+      final errorText = component.config['error_text'];
+      final currentState = component.config['current_state'];
+
+      // Check nested value error (for components that store state in value)
+      final value = component.config['value'];
+      String? nestedErrorText;
+      String? nestedCurrentState;
+      if (value is Map) {
+        nestedErrorText = value['error_text']?.toString();
+        nestedCurrentState = value['current_state']?.toString();
+      }
+
+      if ((errorText != null && errorText.toString().isNotEmpty) ||
+          currentState == 'error' ||
+          (nestedErrorText != null && nestedErrorText.isNotEmpty) ||
+          nestedCurrentState == 'error') {
+        debugPrint(
+          '❌ Validation error in ${component.id}: error_text=$errorText, current_state=$currentState, nested_error_text=$nestedErrorText, nested_current_state=$nestedCurrentState',
+        );
+        return true;
+      }
+
+      // Check children recursively if present
+      if (component.children != null && component.children!.isNotEmpty) {
+        if (_hasValidationErrorsRecursive(component.children!)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

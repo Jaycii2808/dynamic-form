@@ -42,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DynamicFormScreen(configKey: configKey, title: configKey),
+        builder: (context) =>
+            DynamicFormScreen(configKey: configKey, title: configKey),
       ),
     );
   }
@@ -51,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildFormListView(configKeys: configKeys, onTapForm: _navigateToForm),
+      body: _buildFormListView(
+        configKeys: configKeys,
+        onTapForm: _navigateToForm,
+      ),
     );
   }
 
@@ -106,7 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFormItem({required String configKey, required VoidCallback onTap}) {
+  Widget _buildFormItem({
+    required String configKey,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

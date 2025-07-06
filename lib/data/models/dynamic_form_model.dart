@@ -33,7 +33,7 @@ class DynamicFormModel extends Equatable {
       order: json['order'] ?? 0,
       config: json['config'] ?? {},
       style: json['style'] ?? {},
-      inputTypes: json['input_types'] ?? json['inputTypes'],
+      inputTypes: json['inputTypes'] ?? json['input_types'],
       variants: json['variants'],
       states: json['states'],
       validation: json['validation'],
@@ -60,36 +60,23 @@ class DynamicFormModel extends Equatable {
   ];
 
   Map<String, dynamic> toJson() {
-    // Deep copy config để lấy giá trị hiện tại
-    Map<String, dynamic> deepCopyConfig(Map<String, dynamic> map) {
-      final result = <String, dynamic>{};
-      map.forEach((key, value) {
-        if (value is Map<String, dynamic>) {
-          result[key] = deepCopyConfig(value);
-        } else if (value is List) {
-          result[key] = value
-              .map((e) => e is Map<String, dynamic> ? deepCopyConfig(e) : e)
-              .toList();
-        } else {
-          result[key] = value;
-        }
-      });
-      return result;
-    } // rewrite
-
-    return {
+    final result = <String, dynamic>{
       'id': id,
       'type': type.toJson(),
       'order': order,
-      'config': deepCopyConfig(config),
+      'config': config,
       'style': style,
-      if (inputTypes != null) 'inputTypes': inputTypes,
-      if (variants != null) 'variants': variants,
-      if (states != null) 'states': states,
-      if (validation != null) 'validation': validation,
-      if (children != null)
-        'children': children!.map((c) => c.toJson()).toList(),
     };
+
+    if (inputTypes != null) result['inputTypes'] = inputTypes;
+    if (variants != null) result['variants'] = variants;
+    if (states != null) result['states'] = states;
+    if (validation != null) result['validation'] = validation;
+    if (children != null) {
+      result['children'] = children!.map((c) => c.toJson()).toList();
+    }
+
+    return result;
   }
 }
 
@@ -116,7 +103,7 @@ class DynamicFormPageModel extends Equatable {
     }
 
     return DynamicFormPageModel(
-      pageId: json['id_form'] ?? json['pageId'] ?? '',
+      pageId: json['pageId'] ?? '',
       title: json['title'] ?? '',
       order: json['order'] ?? 1,
       components: components,
@@ -128,22 +115,22 @@ class DynamicFormPageModel extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'id_form': pageId,
+      'pageId': pageId,
       'order': order,
       'title': title,
       'components': components.map((c) => c.toJson()).toList(),
     };
   }
 
-  // Convert to the format {form_id: id, layout: [components]}
+  // Convert to the format {pageId: id, layout: [components]}
   Map<String, dynamic> toFormLayoutJson() {
     return {
-      'form_id': pageId,
+      'pageId': pageId,
       'layout': components.map((c) => c.toJson()).toList(),
     };
   }
 
-  // Create from the format {form_id: id, layout: [components]}
+  // Create from the format {pageId: id, layout: [components]}
   factory DynamicFormPageModel.fromFormLayoutJson(Map<String, dynamic> json) {
     List<DynamicFormModel> components = [];
     if (json['layout'] != null) {
@@ -154,7 +141,7 @@ class DynamicFormPageModel extends Equatable {
     }
 
     return DynamicFormPageModel(
-      pageId: json['form_id'] ?? '',
+      pageId: json['pageId'] ?? '',
       title: json['title'] ?? '',
       order: json['order'] ?? 1,
       components: components,
@@ -225,12 +212,12 @@ class FormTemplateModel extends Equatable {
     };
   }
 
-  // Get form data in the format {form_id: id, layout: [components]}
+  // Get form data in the format {pageId: id, layout: [components]}
   Map<String, dynamic> getFormLayoutData() {
     return formData.toFormLayoutJson();
   }
 
-  // Create from form layout data
+  // Create from form layout data with pageId format
   factory FormTemplateModel.fromFormLayoutData({
     required String id,
     required String name,
