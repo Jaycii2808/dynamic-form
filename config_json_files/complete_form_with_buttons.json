@@ -663,29 +663,10 @@
          "icon": "check_circle",
          "conditions": [
             {
-               "component_id": "select_with_icon_label",
-               "type": "input",
-               "rule": "not_null",
-               "error_message": "Vui lòng chọn quốc gia"
-            },
-            {
                "component_id": "input_normal",
                "type": "input",
                "rule": "not_null",
                "error_message": "Vui lòng nhập thông tin"
-            },
-            {
-               "component_id": "textarea_no_label",
-               "type": "input",
-               "rule": "not_null",
-               "error_message": "Vui lòng nhập mô tả"
-            },
-            {
-               "component_id": "switch_with_label",
-               "type": "toggle",
-               "rule": "equals",
-               "expected_value": true,
-               "error_message": "Vui lòng bật toggle"
             },
             {
                "component_id": "cb_base",

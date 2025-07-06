@@ -1,0 +1,46 @@
+[
+   {
+      "id": "test_input",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Test Input",
+         "placeholder": "Enter something...",
+         "value": ""
+      },
+      "style": {
+         "margin": "16px"
+      }
+   },
+   {
+      "id": "simple_save_button",
+      "type": "buttonFormType",
+      "config": {
+         "label": "Save Form",
+         "action": "submit_form",
+         "icon": "save",
+         "conditions": [
+            {
+               "component_id": "test_input",
+               "type": "input",
+               "rule": "not_null",
+               "error_message": "Please enter something"
+            }
+         ]
+      },
+      "style": {
+         "backgroundColor": "#059669",
+         "color": "#FFFFFF",
+         "borderRadius": 8,
+         "margin": "16px",
+         "padding": "12px"
+      },
+      "states": {
+         "disabled": {
+            "style": {
+               "backgroundColor": "#F3F4F6",
+               "color": "#9CA3AF"
+            }
+         }
+      }
+   }
+]
