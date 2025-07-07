@@ -78,7 +78,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
           final max = maxSelectionsValidation['max'];
           if (max != null && values.length > max) {
             return maxSelectionsValidation['error_message'] as String? ??
-                'Vượt quá số lượng cho phép';
+                'Exceeds maximum allowed quantity';
           }
         }
       }
@@ -262,7 +262,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
       builder: (BuildContext context) => MultiSelectDialogBloc(
         componentId: component.id,
         options: options,
-        label: component.config['label'] ?? 'Chọn tùy chọn',
+        label: component.config['label'] ?? 'Select option',
         style: style,
         searchable: searchable,
         searchQuery: searchQuery,
@@ -275,7 +275,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {},
       builder: (context, state) {
-        // Lấy component mới nhất từ state (theo id)
+        // Get the latest component from state (by id)
         final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
@@ -402,7 +402,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         Widget displayContent;
 
         if (isMultiple) {
-          String displayText = 'Chọn các tùy chọn';
+          String displayText = 'Select options';
           if (selectedValues.isNotEmpty) {
             final selectedLabels = selectedValues.map((value) {
               final option = options.firstWhere(
@@ -438,7 +438,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
             }
           } else {
             displayContent = Text(
-              component.config['placeholder'] ?? 'Chọn tùy chọn',
+              component.config['placeholder'] ?? 'Select option',
               style: textStyle.copyWith(
                 color: StyleUtils.parseColor(style['color']).withOpacity(0.6),
               ),
@@ -663,7 +663,7 @@ class MultiSelectDialogBloc extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      style['noResultsText'] ?? 'Không tìm thấy kết quả',
+                      style['noResultsText'] ?? 'No results found',
                       style: const TextStyle(
                         color: Colors.grey,
                         fontStyle: FontStyle.italic,
@@ -676,11 +676,11 @@ class MultiSelectDialogBloc extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Xác nhận'),
+              child: const Text('Confirm'),
             ),
           ],
         );
@@ -703,7 +703,7 @@ class SearchFieldBloc extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
-        hintText: style['searchPlaceholder'] ?? 'Tìm kiếm...',
+        hintText: style['searchPlaceholder'] ?? 'Search...',
         prefixIcon: const Icon(Icons.search),
       ),
       controller: TextEditingController(text: searchQuery),
@@ -796,7 +796,7 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
                   child: TextField(
                     decoration: InputDecoration(
                       hintText:
-                          widget.style['searchPlaceholder'] ?? 'Tìm kiếm...',
+                          widget.style['searchPlaceholder'] ?? 'Search...',
                       prefixIcon: const Icon(Icons.search),
                     ),
                     controller: TextEditingController(text: searchQuery),
@@ -842,7 +842,7 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      widget.style['noResultsText'] ?? 'Không tìm thấy kết quả',
+                      widget.style['noResultsText'] ?? 'No results found',
                       style: const TextStyle(
                         color: Colors.grey,
                         fontStyle: FontStyle.italic,
@@ -855,11 +855,11 @@ class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Xác nhận'),
+              child: const Text('Confirm'),
             ),
           ],
         );

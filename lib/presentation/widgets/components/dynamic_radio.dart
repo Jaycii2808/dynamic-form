@@ -31,7 +31,7 @@ class _DynamicRadioState extends State<DynamicRadio> {
     return BlocConsumer<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {},
       builder: (context, state) {
-        // Lấy component mới nhất từ state (theo id)
+        // Get the latest component from state (by id)
         final component = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
