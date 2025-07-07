@@ -355,6 +355,20 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
               );
         }
       } else {
+        // ✅ Special handling for range slider (array values)
+        final isRangeSlider = component.config['range'] == true;
+
+        if (isRangeSlider && value is List && value.length == 2) {
+          // Range slider: store in 'values' field (plural)
+          updatedConfig['values'] = value;
+          debugPrint(
+            '📝 Range Slider Update: ${component.id} = $value (stored in values field)',
+          );
+        } else {
+          // Regular components: store in 'value' field (singular)
+          updatedConfig['value'] = value;
+        }
+
         // Simple value update with JSON-driven validation
         final stringValue = value?.toString() ?? '';
 
@@ -365,7 +379,6 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         );
 
         // Update component config
-        updatedConfig['value'] = value;
         updatedConfig['error_text'] = validationError;
 
         // Determine state based on validation result and JSON config

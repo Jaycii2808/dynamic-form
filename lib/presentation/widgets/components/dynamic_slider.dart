@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 
 class DynamicSlider extends StatefulWidget {
   final DynamicFormModel component;
@@ -23,22 +24,136 @@ class _DynamicSliderState extends State<DynamicSlider> {
   RangeValues? sliderRangeValues;
   final FocusNode focusNode = FocusNode();
 
+  // ✅ Flag to prevent BLoC sync while user is sliding
+  bool _isUserSliding = false;
+
+  // ✅ State variables for computed values - move logic from builder to listener
+  late DynamicFormModel _currentComponent;
+  Map<String, dynamic> _style = {};
+  bool _isRange = false;
+  double _min = 0;
+  double _max = 100;
+  int? _divisions;
+  String _prefix = '';
+  String? _hint;
+  String? _iconName;
+  String? _thumbIconName;
+  String? _errorText;
+  bool _isDisabled = false;
+  IconData? _thumbIcon;
+  SliderThemeData? _sliderTheme;
+
   @override
   void initState() {
     super.initState();
+    _currentComponent = widget.component;
     initLocalState(widget.component);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // ✅ Call _computeValues here where context is available for Theme access
+    _computeValues();
   }
 
   @override
   void didUpdateWidget(covariant DynamicSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
-    initLocalState(widget.component);
+    // Only update if component changed
+    if (widget.component != oldWidget.component) {
+      _currentComponent = widget.component;
+      _computeValues();
+      initLocalState(widget.component);
+    }
   }
 
   @override
   void dispose() {
     focusNode.dispose();
     super.dispose();
+  }
+
+  /// ✅ Compute all values from component - called in listener
+  void _computeValues() {
+    _style = Map<String, dynamic>.from(_currentComponent.style);
+    final config = _currentComponent.config;
+
+    _isRange = config['range'] == true;
+    _min = (config['min'] as num?)?.toDouble() ?? 0;
+    _max = (config['max'] as num?)?.toDouble() ?? 100;
+    _divisions = (config['divisions'] as num?)?.toInt();
+    _prefix = config['prefix']?.toString() ?? '';
+    _hint = config['hint'] as String?;
+    _iconName = config['icon'] as String?;
+    _thumbIconName = config['thumb_icon'] as String?;
+    _errorText = config['error_text'] as String?;
+    _isDisabled = config['disabled'] == true;
+
+    // Apply variants to style
+    if (_currentComponent.variants != null) {
+      if (_hint != null &&
+          _currentComponent.variants!.containsKey('with_hint')) {
+        final variantStyle =
+            _currentComponent.variants!['with_hint']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) _style.addAll(variantStyle);
+      }
+      if (_iconName != null &&
+          _currentComponent.variants!.containsKey('with_icon')) {
+        final variantStyle =
+            _currentComponent.variants!['with_icon']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) _style.addAll(variantStyle);
+      }
+      if (_thumbIconName != null &&
+          _currentComponent.variants!.containsKey('with_thumb_icon')) {
+        final variantStyle =
+            _currentComponent.variants!['with_thumb_icon']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) _style.addAll(variantStyle);
+      }
+    }
+
+    // Compute thumb icon
+    _thumbIcon = _thumbIconName != null
+        ? mapIconNameToIconData(_thumbIconName!)
+        : null;
+
+    // Compute slider theme
+    _sliderTheme = SliderTheme.of(context).copyWith(
+      activeTrackColor: StyleUtils.parseColor(_style['active_color']),
+      inactiveTrackColor: StyleUtils.parseColor(_style['inactive_color']),
+      thumbColor: StyleUtils.parseColor(_style['thumb_color']),
+      overlayColor: StyleUtils.parseColor(
+        _style['active_color'],
+      ).withValues(alpha: 0.2),
+      trackHeight: 6.0,
+    );
+  }
+
+  /// ✅ Send value to BLoC - only called when user finishes sliding
+  void _sendValueToBloc(dynamic value) {
+    // ✅ Convert RangeValues to array format for BLoC
+    final blocValue = value is RangeValues ? [value.start, value.end] : value;
+
+    context.read<DynamicFormBloc>().add(
+      UpdateFormFieldEvent(
+        componentId: widget.component.id,
+        value: blocValue,
+      ),
+    );
+  }
+
+  /// ✅ Immediate UI update - keep UI responsive
+  void _updateSliderValue(dynamic value) {
+    setState(() {
+      if (value is RangeValues) {
+        sliderRangeValues = value;
+      } else if (value is double) {
+        sliderValue = value;
+      }
+    });
   }
 
   void initLocalState(DynamicFormModel component) {
@@ -61,6 +176,9 @@ class _DynamicSliderState extends State<DynamicSlider> {
   }
 
   void syncWithBloc(DynamicFormModel component) {
+    // ✅ Don't sync while user is actively sliding
+    if (_isUserSliding) return;
+
     final config = component.config;
     final isRange = config['range'] == true;
     if (isRange) {
@@ -94,205 +212,190 @@ class _DynamicSliderState extends State<DynamicSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+    return BlocListener<DynamicFormBloc, DynamicFormState>(
       listener: (context, state) {
-        final component = (state.page?.components != null)
+        // ✅ ALL LOGIC HERE - như text field pattern
+        final updatedComponent = (state.page?.components != null)
             ? state.page!.components.firstWhere(
                 (c) => c.id == widget.component.id,
                 orElse: () => widget.component,
               )
             : widget.component;
-        syncWithBloc(component);
+
+        // Only update if component actually changed
+        if (updatedComponent != _currentComponent ||
+            updatedComponent.config['value'] !=
+                _currentComponent.config['value'] ||
+            updatedComponent.config['values'] !=
+                _currentComponent.config['values'] ||
+            updatedComponent.config['error_text'] !=
+                _currentComponent.config['error_text'] ||
+            updatedComponent.config['disabled'] !=
+                _currentComponent.config['disabled']) {
+          setState(() {
+            _currentComponent = updatedComponent;
+            _computeValues();
+          });
+        }
+
+        syncWithBloc(updatedComponent);
       },
-      builder: (context, state) {
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
+      child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
+        buildWhen: (previous, current) {
+          // Only rebuild when visual properties change
+          final prevComponent = previous.page?.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
+          final currComponent = current.page?.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
 
-        final style = Map<String, dynamic>.from(component.style);
-        final config = component.config;
-        final bool isRange = config['range'] == true;
-        final double min = (config['min'] as num?)?.toDouble() ?? 0;
-        final double max = (config['max'] as num?)?.toDouble() ?? 100;
-        final int? divisions = (config['divisions'] as num?)?.toInt();
-        final String prefix = config['prefix']?.toString() ?? '';
-        final String? hint = config['hint'] as String?;
-        final String? iconName = config['icon'] as String?;
-        final String? thumbIconName = config['thumb_icon'] as String?;
-        final String? errorText = config['error_text'] as String?;
-        final bool isDisabled = config['disabled'] == true;
+          return prevComponent?.config['disabled'] !=
+                  currComponent?.config['disabled'] ||
+              prevComponent?.config['error_text'] !=
+                  currComponent?.config['error_text'] ||
+              prevComponent?.config['icon'] != currComponent?.config['icon'] ||
+              prevComponent?.config['hint'] != currComponent?.config['hint'];
+        },
+        builder: (context, state) {
+          // ✅ Builder chỉ render UI với computed values từ listener
+          if (_sliderTheme == null) return const SizedBox.shrink();
 
-        if (component.variants != null) {
-          if (hint != null && component.variants!.containsKey('with_hint')) {
-            final variantStyle =
-                component.variants!['with_hint']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (iconName != null &&
-              component.variants!.containsKey('with_icon')) {
-            final variantStyle =
-                component.variants!['with_icon']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (thumbIconName != null &&
-              component.variants!.containsKey('with_thumb_icon')) {
-            final variantStyle =
-                component.variants!['with_thumb_icon']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-        }
-
-        final IconData? thumbIcon = thumbIconName != null
-            ? mapIconNameToIconData(thumbIconName)
-            : null;
-
-        final sliderTheme = SliderTheme.of(context).copyWith(
-          activeTrackColor: StyleUtils.parseColor(style['active_color']),
-          inactiveTrackColor: StyleUtils.parseColor(style['inactive_color']),
-          thumbColor: StyleUtils.parseColor(style['thumb_color']),
-          overlayColor: StyleUtils.parseColor(
-            style['active_color'],
-          ).withValues(alpha: 0.2),
-          trackHeight: 6.0,
-        );
-
-        final sliderWidget = SliderTheme(
-          data: sliderTheme.copyWith(
-            rangeThumbShape: CustomRangeSliderThumbShape(
-              thumbRadius: 14,
-              valuePrefix: prefix,
-              values: sliderRangeValues ?? RangeValues(min, max),
-              iconColor: StyleUtils.parseColor(style['thumb_icon_color']),
-              labelColor: StyleUtils.parseColor(style['value_label_color']),
-              thumbIcon: thumbIcon,
-            ),
-            thumbShape: CustomSliderThumbShape(
-              thumbRadius: 14,
-              valuePrefix: prefix,
-              displayValue: sliderValue ?? min,
-              iconColor: StyleUtils.parseColor(style['thumb_icon_color']),
-              labelColor: StyleUtils.parseColor(style['value_label_color']),
-              thumbIcon: thumbIcon,
-            ),
-          ),
-          child: isRange
-              ? RangeSlider(
-                  values: sliderRangeValues ?? RangeValues(min, max),
-                  min: min,
-                  max: max,
-                  divisions: divisions,
-                  labels: RangeLabels(
-                    '$prefix${(sliderRangeValues?.start ?? min).round()}',
-                    '$prefix${(sliderRangeValues?.end ?? max).round()}',
-                  ),
-                  onChanged: isDisabled
-                      ? null
-                      : (values) {
-                          setState(() {
-                            sliderRangeValues = values;
-                          });
-                        },
-                  onChangeEnd: isDisabled
-                      ? null
-                      : (values) {
-                          context.read<DynamicFormBloc>().add(
-                            UpdateFormFieldEvent(
-                              componentId: component.id,
-                              value: [values.start, values.end],
-                            ),
-                          );
-                        },
-                )
-              : Slider(
-                  value: sliderValue ?? min,
-                  min: min,
-                  max: max,
-                  divisions: divisions,
-                  label: '$prefix${sliderValue?.round()}',
-                  onChanged: isDisabled
-                      ? null
-                      : (value) {
-                          setState(() {
-                            sliderValue = value;
-                          });
-                        },
-                  onChangeEnd: isDisabled
-                      ? null
-                      : (value) {
-                          context.read<DynamicFormBloc>().add(
-                            UpdateFormFieldEvent(
-                              componentId: component.id,
-                              value: value,
-                            ),
-                          );
-                        },
-                ),
-        );
-
-        Widget? iconWidget;
-        if (iconName != null) {
-          final iconData = mapIconNameToIconData(iconName);
-          if (iconData != null) {
-            iconWidget = Icon(
-              iconData,
-              color: StyleUtils.parseColor(style['icon_color']),
-              size: (style['icon_size'] as num?)?.toDouble() ?? 24.0,
-            );
-          }
-        }
-
-        return Focus(
-          focusNode: focusNode,
-          child: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(focusNode);
-            },
-            child: Container(
-              key: Key(component.id),
-              margin: StyleUtils.parsePadding(style['margin']),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (iconWidget != null) ...[
-                        iconWidget,
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(child: sliderWidget),
-                    ],
-                  ),
-                  if (hint != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-                      child: Text(
-                        hint,
-                        style: TextStyle(
-                          color: StyleUtils.parseColor(style['hint_color']),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  if (errorText != null && errorText.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                      child: Text(
-                        errorText,
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-                ],
+          final sliderWidget = SliderTheme(
+            data: _sliderTheme!.copyWith(
+              rangeThumbShape: CustomRangeSliderThumbShape(
+                thumbRadius: 14,
+                valuePrefix: _prefix,
+                values: sliderRangeValues ?? RangeValues(_min, _max),
+                iconColor: StyleUtils.parseColor(_style['thumb_icon_color']),
+                labelColor: StyleUtils.parseColor(_style['value_label_color']),
+                thumbIcon: _thumbIcon,
+              ),
+              thumbShape: CustomSliderThumbShape(
+                thumbRadius: 14,
+                valuePrefix: _prefix,
+                displayValue: sliderValue ?? _min,
+                iconColor: StyleUtils.parseColor(_style['thumb_icon_color']),
+                labelColor: StyleUtils.parseColor(_style['value_label_color']),
+                thumbIcon: _thumbIcon,
               ),
             ),
-          ),
-        );
-      },
+            child: _isRange
+                ? RangeSlider(
+                    values: sliderRangeValues ?? RangeValues(_min, _max),
+                    min: _min,
+                    max: _max,
+                    divisions: _divisions,
+                    labels: RangeLabels(
+                      '$_prefix${(sliderRangeValues?.start ?? _min).round()}',
+                      '$_prefix${(sliderRangeValues?.end ?? _max).round()}',
+                    ),
+                    onChangeStart: _isDisabled
+                        ? null
+                        : (values) {
+                            _isUserSliding = true;
+                          },
+                    onChanged: _isDisabled
+                        ? null
+                        : (values) {
+                            _updateSliderValue(values);
+                          },
+                    onChangeEnd: _isDisabled
+                        ? null
+                        : (values) {
+                            _isUserSliding = false;
+                            _sendValueToBloc(values);
+                          },
+                  )
+                : Slider(
+                    value: sliderValue ?? _min,
+                    min: _min,
+                    max: _max,
+                    divisions: _divisions,
+                    label: '$_prefix${sliderValue?.round()}',
+                    onChangeStart: _isDisabled
+                        ? null
+                        : (value) {
+                            _isUserSliding = true;
+                          },
+                    onChanged: _isDisabled
+                        ? null
+                        : (value) {
+                            _updateSliderValue(value);
+                          },
+                    onChangeEnd: _isDisabled
+                        ? null
+                        : (value) {
+                            _isUserSliding = false;
+                            _sendValueToBloc(value);
+                          },
+                  ),
+          );
+
+          Widget? iconWidget;
+          if (_iconName != null) {
+            final iconData = mapIconNameToIconData(_iconName!);
+            if (iconData != null) {
+              iconWidget = Icon(
+                iconData,
+                color: StyleUtils.parseColor(_style['icon_color']),
+                size: (_style['icon_size'] as num?)?.toDouble() ?? 24.0,
+              );
+            }
+          }
+
+          return Focus(
+            focusNode: focusNode,
+            child: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).requestFocus(focusNode);
+              },
+              child: Container(
+                key: Key(_currentComponent.id),
+                margin: StyleUtils.parsePadding(_style['margin']),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (iconWidget != null) ...[
+                          iconWidget,
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(child: sliderWidget),
+                      ],
+                    ),
+                    if (_hint != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                        child: Text(
+                          _hint!,
+                          style: TextStyle(
+                            color: StyleUtils.parseColor(_style['hint_color']),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    if (_errorText != null && _errorText!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                        child: Text(
+                          _errorText!,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
