@@ -1,24 +1,14 @@
 import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/input_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
-
-String? _validateForm(DynamicFormModel component, String? value) {
-  try {
-    return ValidationUtils.validateForm(component, value);
-  } catch (e) {
-    debugPrint('Validation error for ${component.id}: $e');
-    return 'Validation error occurred';
-  }
-}
 
 class DynamicTextArea extends StatefulWidget {
   final DynamicFormModel component;
@@ -35,125 +25,60 @@ class DynamicTextArea extends StatefulWidget {
 }
 
 class _DynamicTextAreaState extends State<DynamicTextArea> {
-  final TextEditingController _textController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  String? _errorText;
-
   @override
   void initState() {
     super.initState();
-    _textController.text = widget.component.config[ValueKeyEnum.value.key] ?? '';
-    _focusNode.addListener(_handleFocusChange);
+
+    context.read<DynamicTextAreaBloc>().add(const InitializeTextAreaEvent());
   }
 
-  @override
-  void didUpdateWidget(covariant DynamicTextArea oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final newValue = widget.component.config[ValueKeyEnum.value.key] ?? '';
-    if (oldWidget.component.config[ValueKeyEnum.value.key] != newValue && !_focusNode.hasFocus) {
-      _textController.text = newValue;
-    }
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    if (!_focusNode.hasFocus) {
-      _saveAndValidate();
-    }
-  }
-
-  void _saveAndValidate() {
-    final newValue = _textController.text;
-
-    final validationError = _validateForm(widget.component, newValue);
-    FormStateEnum newState = FormStateEnum.base;
-
-    if (validationError != null) {
-      newState = FormStateEnum.error;
-    } else if (newValue.isNotEmpty) {
-      newState = FormStateEnum.success;
-    }
-
-    final valueMap = {
-      'value': newValue,
-      'currentState': newState.value,
-      'errorText': validationError,
-    };
-
-    setState(() {
-      _errorText = validationError;
-    });
-
-    widget.onComplete(valueMap);
-  }
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
+    return BlocConsumer<DynamicTextAreaBloc, DynamicTextAreaState>(
+      listenWhen: (previous, current) {
+        return previous is DynamicTextAreaLoading && current is DynamicTextAreaSuccess;
+      },
       listener: (context, state) {
-        final inputConfig = state.getInputConfig(
-          widget.component.id,
-        );
-        final styleConfig = state.getStyleConfig(
-          widget.component.id,
-        );
-        if (inputConfig != null) {
-          _errorText = inputConfig.errorText;
-          if (!_focusNode.hasFocus && _textController.text != inputConfig.value) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && !_focusNode.hasFocus) {
-                _textController.text = inputConfig.value;
-              }
-            });
-          }
-        }
+        if (state is DynamicTextAreaSuccess) {
+          final valueMap = {
+            ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
+            ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+            ValueKeyEnum.errorText.key: state.errorText,
+          };
+          widget.onComplete(valueMap);
 
-        if (state is DynamicFormError || inputConfig == null || styleConfig == null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              showDialog(
-                context: context,
-                builder: (_) => const AlertDialog(
-                  title: Text('Error'),
-                  content: Text('An error occurred'),
-                ),
-              );
-            }
-          });
+          if (state.textController!.text != state.component!.config[ValueKeyEnum.value.key]) {
+            state.textController!.text = state.component!.config[ValueKeyEnum.value.key] ?? '';
+          }
         }
       },
       builder: (context, state) {
-        if (state is DynamicFormLoading || state is DynamicFormInitial) {
-          return const Center(
-            child: CircularProgressIndicator(),
+        if (state is DynamicTextAreaLoading || state is DynamicTextAreaInitial) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is DynamicTextAreaError) {
+          return Center(
+            child: Text(
+              'Error: ${state.errorMessage}',
+              style: const TextStyle(color: Colors.red),
+            ),
           );
         }
 
-        final inputConfig = state.getInputConfig(
-          widget.component.id,
-        );
-        final styleConfig = state.getStyleConfig(
-          widget.component.id,
-        );
-        final currentState = state.getCurrentState(
-          widget.component.id,
-        );
-        final component = state.getComponentById(
-          widget.component.id,
-        );
+        if (state is DynamicTextAreaSuccess) {
+          return _buildBody(
+            state.styleConfig!,
+            state.inputConfig!,
+            state.component!,
+            state.formState!,
+            state.errorText,
+            state.textController!,
+            state.focusNode!,
+          );
+        }
 
-        return _buildBody(
-          styleConfig!,
-          inputConfig!,
-          component,
-          currentState,
-        );
+        return const SizedBox.shrink();
       },
     );
   }
@@ -163,6 +88,9 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     InputConfig inputConfig,
     DynamicFormModel component,
     FormStateEnum currentState,
+    String? errorText,
+    TextEditingController textController,
+    FocusNode focusNode,
   ) {
     return Container(
       key: Key(component.id),
@@ -171,22 +99,26 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(styleConfig, inputConfig, currentState),
-          _buildTextField(styleConfig, inputConfig, component, currentState),
+          _buildLabel(styleConfig, inputConfig),
+          _buildTextField(
+            styleConfig,
+            inputConfig,
+            component,
+            currentState,
+            errorText,
+            textController,
+            focusNode,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(
-    StyleConfig styleConfig,
-    InputConfig inputConfig,
-    FormStateEnum currentState,
-  ) {
+  Widget _buildLabel(StyleConfig styleConfig, InputConfig inputConfig) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
-    return Container(
+    return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
       child: Text(
         inputConfig.label!,
@@ -204,16 +136,18 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     InputConfig inputConfig,
     DynamicFormModel component,
     FormStateEnum currentState,
+    String? errorText,
+
+    TextEditingController textController,
+    FocusNode focusNode,
   ) {
     return TextField(
-      controller: _textController,
-      focusNode: _focusNode,
+      controller: textController,
+      focusNode: focusNode,
       enabled: inputConfig.editable && !inputConfig.disabled,
       readOnly: inputConfig.readOnly,
-      obscureText: component.inputTypes?.containsKey('password') ?? false,
-      keyboardType: _getKeyboardType(component),
-      onTapOutside: (pointer) {
-        _focusNode.unfocus();
+      onChanged: (value) {
+        context.read<DynamicTextAreaBloc>().add(TextAreaValueChangedEvent(value: value));
       },
       maxLines: styleConfig.maxLines,
       minLines: styleConfig.minLines,
@@ -221,19 +155,10 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         isDense: true,
         hintText: inputConfig.placeholder ?? '',
         border: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
-        enabledBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.base,
-        ),
-        focusedBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.focused,
-        ),
-        errorBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.error,
-        ),
-        errorText: _errorText,
+        enabledBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
+        focusedBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.focused),
+        errorBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.error),
+        errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleConfig.contentVerticalPadding,
           horizontal: styleConfig.contentHorizontalPadding,
@@ -241,19 +166,11 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         filled: styleConfig.fillColor != Colors.transparent,
         fillColor: styleConfig.fillColor,
         helperText: styleConfig.helperText,
-        helperStyle: TextStyle(
-          color: styleConfig.helperTextColor,
-          fontStyle: styleConfig.fontStyle,
-        ),
       ),
       style: TextStyle(
         fontSize: styleConfig.fontSize,
         color: styleConfig.textColor,
-        fontStyle: styleConfig.fontStyle,
       ),
-      onSubmitted: (value) {
-        _saveAndValidate();
-      },
     );
   }
 
@@ -267,6 +184,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
     );
     if (state == FormStateEnum.focused) {
       width += 1;
+      color = Theme.of(context).primaryColor;
     }
     if (state == FormStateEnum.error) {
       color = const Color(0xFFFF4D4F);
@@ -276,24 +194,5 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
       borderRadius: BorderRadius.circular(borderConfig.borderRadius),
       borderSide: BorderSide(color: color, width: width),
     );
-  }
-
-  TextInputType _getKeyboardType(DynamicFormModel component) {
-    if (component.inputTypes != null) {
-      for (final key in component.inputTypes!.keys) {
-        final inputType = InputTypeEnum.fromString(key);
-        switch (inputType) {
-          case InputTypeEnum.email:
-            return TextInputType.emailAddress;
-          case InputTypeEnum.tel:
-            return TextInputType.phone;
-          case InputTypeEnum.password:
-            return TextInputType.visiblePassword;
-          case InputTypeEnum.multiline:
-            return TextInputType.multiline;
-        }
-      }
-    }
-    return TextInputType.multiline;
   }
 }

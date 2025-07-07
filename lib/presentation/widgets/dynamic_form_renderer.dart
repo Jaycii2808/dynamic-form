@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -90,22 +91,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
-        return DynamicTextArea(
-          component: component,
-          onComplete: (value) =>
-              handleFormFieldUpdate(context, component, value),
-        );
+        return _buildTextAreaBlocProvider(component);
       case FormTypeEnum.dateTimePickerFormType:
         return DynamicDateTimePicker(
           component: component,
-          onComplete: (value) =>
-              handleFormFieldUpdate(context, component, value),
+          onComplete: (value) => handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dateTimeRangePickerFormType:
         return DynamicDateTimeRangePicker(
           component: component,
-          onComplete: (value) =>
-              handleFormFieldUpdate(context, component, value),
+          onComplete: (value) => handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
@@ -133,6 +128,17 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicTextAreaBloc(initialComponent: component),
+      child: DynamicTextArea(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
   }
 
   Widget _buildContainerComponent(DynamicFormModel component) {
