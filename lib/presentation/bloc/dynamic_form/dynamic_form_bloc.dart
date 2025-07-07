@@ -522,7 +522,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             'canSave': canSave,
             'allConditionsValid': allConditionsValid,
             'errorMessage': errorMessage,
-            'isVisible': true, // Always show Save button
+            // 'isVisible': false, // Always show Save button
             'disabled': !canSave, // Disable if can't save
           });
 
