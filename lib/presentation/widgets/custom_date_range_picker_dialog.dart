@@ -8,7 +8,7 @@ class CustomDateRangePickerDialog extends StatefulWidget {
   final Function(DateTimeRange?) onConfirm;
   final Map<String, dynamic> style;
 
-  const CustomDateRangePickerDialog({
+  const CustomDateRangePickerDialog({super.key,
     required this.initialDateRange,
     required this.onConfirm,
     required this.style,
@@ -70,9 +70,10 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = StyleUtils.parseColor(widget.style['iconColor'] ?? '#6979F8');
-    final surfaceColor = StyleUtils.parseColor(widget.style['backgroundColor'] ?? '#FFFFFF');
+    final primaryColor = StyleUtils.parseColor(widget.style['icon_color'] ?? '#6979F8');
+    final surfaceColor = StyleUtils.parseColor(widget.style['background_color'] ?? '#FFFFFF');
     final textColor = StyleUtils.parseColor(widget.style['color'] ?? '#333333');
+    final labelColor = StyleUtils.parseColor(widget.style['label_color'] ?? '#FFFFFF');
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -87,7 +88,7 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(textColor),
+            _buildTitle(labelColor),
             const SizedBox(height: 16),
             _buildDateSelectionRow(primaryColor, textColor),
             const SizedBox(height: 16),
@@ -236,8 +237,8 @@ Future<DateTime?> _showConfiguredDatePicker({
   required Map<String, dynamic> style,
   bool Function(DateTime)? selectableDayPredicate,
 }) {
-  final primaryColor = StyleUtils.parseColor(style['iconColor'] ?? '#6979F8');
-  final surfaceColor = StyleUtils.parseColor(style['backgroundColor'] ?? '#FFFFFF');
+  final primaryColor = StyleUtils.parseColor(style['icon_color'] ?? '#6979F8');
+  final surfaceColor = StyleUtils.parseColor(style['background_color'] ?? '#FFFFFF');
   final onSurfaceColor = StyleUtils.parseColor(style['color'] ?? '#333333');
 
   return showDatePicker(

@@ -78,6 +78,8 @@ class DynamicFormModel extends Equatable {
 
     return result;
   }
+  factory DynamicFormModel.empty() => const DynamicFormModel(id: '', config: {}, style: {}, type:FormTypeEnum.unknown  ,order: 0);
+
 }
 
 class DynamicFormPageModel extends Equatable {

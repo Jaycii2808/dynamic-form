@@ -1,6 +1,7 @@
 ﻿import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
@@ -68,7 +69,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     dynamic value,
   ) {
     if (value != null) {
-      component.config['value'] = value['value'];
+      component.config[ValueKeyEnum.value.key] = value[ValueKeyEnum.value.key];
       context.read<DynamicFormBloc>().add(
         UpdateFormFieldEvent(componentId: component.id, value: value),
       );

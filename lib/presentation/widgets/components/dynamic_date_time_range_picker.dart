@@ -212,8 +212,8 @@ class _DynamicDateTimeRangePickerState
       child: Text(
         label,
         style: TextStyle(
-          fontSize: (style['labelTextSize'] as num?)?.toDouble() ?? 16,
-          color: StyleUtils.parseColor(style['labelColor'] ?? '#333333'),
+          fontSize: style['label_text_size']?.toDouble() ?? 16,
+          color: StyleUtils.parseColor(style['label_color'] ?? '#333333'),
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -230,21 +230,38 @@ class _DynamicDateTimeRangePickerState
     required VoidCallback onTap,
   }) {
     final borderColor = StyleUtils.parseColor(
-      style['borderColor'] ?? '#CCCCCC',
+      style['border_color'] ?? '#CCCCCC',
     );
     final focusedBorderColor = StyleUtils.parseColor(
-      style['focusedBorderColor'] ?? style['iconColor'] ?? '#6979F8',
+      style['focused_border_color'] ?? style['icon_color'] ?? '#6979F8',
     );
     final errorBorderColor = Colors.red;
-    final borderRadius = (style['borderRadius'] as num?)?.toDouble() ?? 8;
-    final borderWidth = (style['borderWidth'] as num?)?.toDouble() ?? 1;
+    final borderRadius = (style['border_radius'] is num)
+        ? (style['border_radius'] as num).toDouble()
+        : 8.0;
+    final borderWidth = (style['border_width'] is num)
+        ? (style['border_width'] as num).toDouble()
+        : 1.0;
     final textColor = StyleUtils.parseColor(style['color'] ?? '#333333');
     final fillColor = StyleUtils.parseColor(
-      style['backgroundColor'] ?? '#FFFFFF',
+      style['background_color'] ?? '#FFFFFF',
     );
     final iconColor = StyleUtils.parseColor(
-      style['iconColor'] ?? style['color'] ?? '#6979F8',
+      style['icon_color'] ?? style['color'] ?? '#6979F8',
     );
+    final iconSize = (style['icon_size'] is num)
+        ? (style['icon_size'] as num).toDouble()
+        : 20.0;
+    final fontSize = (style['font_size'] is num)
+        ? (style['font_size'] as num).toDouble()
+        : 14.0;
+    final contentVerticalPadding = (style['content_vertical_padding'] is num)
+        ? (style['content_vertical_padding'] as num).toDouble()
+        : 16.0;
+    final contentHorizontalPadding =
+        (style['content_horizontal_padding'] is num)
+        ? (style['content_horizontal_padding'] as num).toDouble()
+        : 16.0;
 
     return TextField(
       controller: controller,
@@ -259,8 +276,8 @@ class _DynamicDateTimeRangePickerState
           child: SvgPicture.asset(
             'assets/svg/SelectDate.svg',
             colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-            width: (style['iconSize'] as num?)?.toDouble() ?? 20,
-            height: (style['iconSize'] as num?)?.toDouble() ?? 20,
+            width: iconSize,
+            height: iconSize,
           ),
         ),
         hintText: hintText,
@@ -285,17 +302,16 @@ class _DynamicDateTimeRangePickerState
         ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: (style['contentVerticalPadding'] as num?)?.toDouble() ?? 16,
-          horizontal:
-              (style['contentHorizontalPadding'] as num?)?.toDouble() ?? 16,
+          vertical: contentVerticalPadding,
+          horizontal: contentHorizontalPadding,
         ),
-        filled: style['backgroundColor'] != null,
+        filled: style['background_color'] != null,
         fillColor: fillColor,
       ),
       style: TextStyle(
-        fontSize: (style['fontSize'] as num?)?.toDouble() ?? 14,
+        fontSize: fontSize,
         color: textColor,
-        fontStyle: style['fontStyle'] == 'italic'
+        fontStyle: style['font_style'] == 'italic'
             ? FontStyle.italic
             : FontStyle.normal,
       ),
