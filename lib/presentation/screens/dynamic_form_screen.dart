@@ -56,20 +56,8 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
   List<DynamicFormModel> _getMainFormComponents(DynamicFormPageModel page) {
     final mainComponents = page.components.where((component) {
       final action = component.config['action'];
-      final isSubmitButton = action == 'submit_form';
-
-      if (isSubmitButton) {
-        debugPrint(
-          '🚫 Filtering out Save button from main form: ${component.id}',
-        );
-      }
-      // Exclude Save buttons (action: 'submit_form') from main form
-      return !isSubmitButton;
+      return action != 'submit_form';
     }).toList();
-
-    debugPrint(
-      '📋 Main form components: ${mainComponents.length} (filtered out Save buttons)',
-    );
     return mainComponents;
   }
 
