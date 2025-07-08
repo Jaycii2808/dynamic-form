@@ -11,7 +11,6 @@ abstract class DynamicTextAreaState extends Equatable {
   final StyleConfig? styleConfig;
   final FormStateEnum? formState;
   final String? errorText;
-  final String? errorMessage;
 
   final TextEditingController? textController;
   final FocusNode? focusNode;
@@ -22,7 +21,6 @@ abstract class DynamicTextAreaState extends Equatable {
     this.styleConfig,
     this.formState,
     this.errorText,
-    this.errorMessage,
     this.textController,
     this.focusNode,
   });
@@ -34,12 +32,19 @@ abstract class DynamicTextAreaState extends Equatable {
     styleConfig,
     formState,
     errorText,
-    errorMessage,
   ];
 }
 
 class DynamicTextAreaInitial extends DynamicTextAreaState {
-  const DynamicTextAreaInitial({required DynamicFormModel component}) : super(component: component);
+  const DynamicTextAreaInitial({
+    super.component,
+    super.inputConfig,
+    super.styleConfig,
+    super.formState,
+    super.errorText,
+    super.textController,
+    super.focusNode,
+  });
 }
 
 class DynamicTextAreaLoading extends DynamicTextAreaState {
@@ -67,13 +72,13 @@ class DynamicTextAreaLoading extends DynamicTextAreaState {
 
 class DynamicTextAreaSuccess extends DynamicTextAreaState {
   const DynamicTextAreaSuccess({
-    required DynamicFormModel super.component,
-    required InputConfig super.inputConfig,
-    required StyleConfig super.styleConfig,
-    required FormStateEnum super.formState,
-    required TextEditingController super.textController,
-    required FocusNode super.focusNode,
+    super.component,
+    super.inputConfig,
+    super.styleConfig,
+    super.formState,
     super.errorText,
+    super.textController,
+    super.focusNode,
   });
 
   DynamicTextAreaSuccess copyWith({
@@ -96,8 +101,16 @@ class DynamicTextAreaSuccess extends DynamicTextAreaState {
 }
 
 class DynamicTextAreaError extends DynamicTextAreaState {
+  final String? errorMessage;
+
   const DynamicTextAreaError({
-    required String super.errorMessage,
+    required this.errorMessage,
     super.component,
+    super.inputConfig,
+    super.styleConfig,
+    super.formState,
+    super.errorText,
+    super.textController,
+    super.focusNode,
   });
 }

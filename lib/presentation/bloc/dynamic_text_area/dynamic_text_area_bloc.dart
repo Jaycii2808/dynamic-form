@@ -14,20 +14,30 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text
 class DynamicTextAreaBloc extends Bloc<DynamicTextAreaEvent, DynamicTextAreaState> {
   final TextEditingController _textController;
   final FocusNode _focusNode;
+  final DynamicFormModel
+  initialComponent; // Lưu initialComponent để sử dụng trong _onInitializeTextArea
 
-  DynamicTextAreaBloc({required DynamicFormModel initialComponent})
+  DynamicTextAreaBloc({required this.initialComponent})
     : _textController = TextEditingController(
         text: initialComponent.config[ValueKeyEnum.value.key] ?? '',
       ),
       _focusNode = FocusNode(),
       super(
-        DynamicTextAreaInitial(component: initialComponent),
+        DynamicTextAreaInitial(
+          component: DynamicFormModel.empty(),
+          inputConfig: null,
+          styleConfig: null,
+          formState: null,
+          errorText: null,
+          textController: null,
+          focusNode: null,
+        ),
       ) {
     _focusNode.addListener(_onFocusChange);
 
     on<InitializeTextAreaEvent>(_onInitializeTextArea);
-    on<TextAreaValueChangedEvent>(_onTextAreaValueChanged);
     on<TextAreaFocusLostEvent>(_onTextAreaFocusLost);
+    add(const InitializeTextAreaEvent());
   }
 
   void _onFocusChange() {
@@ -50,19 +60,17 @@ class DynamicTextAreaBloc extends Bloc<DynamicTextAreaEvent, DynamicTextAreaStat
   ) async {
     emit(DynamicTextAreaLoading.fromState(state: state));
     try {
-      final component = state.component;
-      if (component == null) {
-        throw Exception("Component cannot be null for initialization.");
+      if (initialComponent.id.isEmpty || initialComponent.config.isEmpty) {
+        throw Exception("Invalid initial component: ID or config is empty.");
       }
-     // await Future.delayed(const Duration(milliseconds: 50));
-
       emit(
         DynamicTextAreaSuccess(
-          component: component,
-          inputConfig: InputConfig.fromJson(component.config),
-          styleConfig: StyleConfig.fromJson(component.style),
+          component: initialComponent,
+          inputConfig: InputConfig.fromJson(initialComponent.config),
+          styleConfig: StyleConfig.fromJson(initialComponent.style),
           formState:
-              FormStateEnum.fromString(component.config['currentState']) ?? FormStateEnum.base,
+              FormStateEnum.fromString(initialComponent.config['currentState']) ??
+              FormStateEnum.base,
 
           textController: _textController,
           focusNode: _focusNode,
@@ -70,33 +78,6 @@ class DynamicTextAreaBloc extends Bloc<DynamicTextAreaEvent, DynamicTextAreaStat
       );
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to initialize TextArea: $e';
-      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
-      emit(DynamicTextAreaError(errorMessage: errorMessage, component: state.component));
-    }
-  }
-
-  void _onTextAreaValueChanged(
-    TextAreaValueChangedEvent event,
-    Emitter<DynamicTextAreaState> emit,
-  ) {
-    if (state is! DynamicTextAreaSuccess) return;
-    final successState = state as DynamicTextAreaSuccess;
-    try {
-      final updatedConfig = Map<String, dynamic>.from(successState.component!.config);
-      updatedConfig['value'] = event.value;
-      final updatedComponent = ComponentUtils.updateComponentConfig(
-        successState.component!,
-        updatedConfig,
-      );
-
-      emit(
-        successState.copyWith(
-          component: updatedComponent,
-          inputConfig: InputConfig.fromJson(updatedComponent.config),
-        ),
-      );
-    } catch (e, stackTrace) {
-      final errorMessage = 'Failed to update TextArea value: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
       emit(DynamicTextAreaError(errorMessage: errorMessage, component: state.component));
     }
