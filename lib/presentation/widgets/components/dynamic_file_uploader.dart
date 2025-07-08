@@ -1,16 +1,16 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'dart:async';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -24,162 +24,272 @@ class DynamicFileUploader extends StatefulWidget {
 }
 
 class _DynamicFileUploaderState extends State<DynamicFileUploader> {
-  bool isMultipleFiles = false;
-  Timer? _timer;
-  final FocusNode focusNode = FocusNode();
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          DynamicFileUploaderBloc(initialComponent: widget.component)
+            ..add(const InitializeFileUploaderEvent()),
+      child: DynamicFileUploaderWidget(component: widget.component),
+    );
+  }
+}
 
-  // State variables for computed values
-  late DynamicFormModel _currentComponent;
-  String _currentState = 'base';
-  Map<String, dynamic> _style = {};
-  Map<String, dynamic> _config = {};
-  List<String> _files = [];
-  int _progress = 0;
-  String? _errorText;
-  bool _isProcessing = false;
-  bool _isDragging = false;
-  bool _isDisabled = false;
+class DynamicFileUploaderWidget extends StatelessWidget {
+  final DynamicFormModel component;
 
-  // Pre-computed UI elements
-  Widget? _childWidget;
-  VoidCallback? _onTapHandler;
-  void Function(DragTargetDetails<List<XFile>>)? _onAcceptHandler;
-  bool Function(DragTargetDetails<List<XFile>>)? _onWillAcceptHandler;
-  void Function(List<XFile>?)? _onLeaveHandler;
+  const DynamicFileUploaderWidget({
+    super.key,
+    required this.component,
+  });
 
   @override
-  void initState() {
-    super.initState();
-    isMultipleFiles = widget.component.config['multiple_files'] == true;
+  Widget build(BuildContext context) {
+    return BlocListener<DynamicFormBloc, DynamicFormState>(
+      listener: (context, formState) {
+        // Listen to main form state changes and update file uploader bloc
+        if (formState.page?.components != null) {
+          final updatedComponent = formState.page!.components.firstWhere(
+            (c) => c.id == component.id,
+            orElse: () => component,
+          );
 
-    // Initialize with widget component
-    _currentComponent = widget.component;
-    _computeValues();
-  }
+          // Check if component changed from external source
+          if (updatedComponent.config['value'] != component.config['value'] ||
+              updatedComponent.config['disabled'] !=
+                  component.config['disabled'] ||
+              updatedComponent.config['multiple_files'] !=
+                  component.config['multiple_files'] ||
+              updatedComponent.config['allowed_extensions'] !=
+                  component.config['allowed_extensions']) {
+            debugPrint(
+              '🔄 [FileUploader] External change detected',
+            );
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    focusNode.dispose();
-    super.dispose();
-  }
+            context.read<DynamicFileUploaderBloc>().add(
+              UpdateFileUploaderFromExternalEvent(component: updatedComponent),
+            );
+          }
+        }
+      },
+      child: BlocConsumer<DynamicFileUploaderBloc, DynamicFileUploaderState>(
+        listenWhen: (previous, current) {
+          return current is DynamicFileUploaderSuccess;
+        },
+        buildWhen: (previous, current) {
+          // Rebuild when state changes or important fields update
+          return previous.formState != current.formState ||
+              previous.errorText != current.errorText ||
+              (previous is DynamicFileUploaderSuccess &&
+                  current is DynamicFileUploaderSuccess &&
+                  (previous.currentState != current.currentState ||
+                      previous.files != current.files ||
+                      previous.progress != current.progress ||
+                      previous.isProcessing != current.isProcessing ||
+                      previous.isDragging != current.isDragging ||
+                      previous.isDisabled != current.isDisabled ||
+                      previous.updateTimestamp != current.updateTimestamp));
+        },
+        listener: (context, state) {
+          if (state is DynamicFileUploaderSuccess) {
+            // Update main form with current state
+            final valueMap = {
+              'state': state.currentState,
+              'files': state.files,
+              'progress': state.progress,
+              'is_processing': state.isProcessing,
+              'is_dragging': state.isDragging,
+              'error_text': state.errorText,
+            };
 
-  void _computeValues() {
-    // Extract value data
-    dynamic rawValue = _currentComponent.config['value'];
-    final Map<String, dynamic> value = rawValue is Map<String, dynamic>
-        ? rawValue
-        : {};
+            context.read<DynamicFormBloc>().add(
+              UpdateFormFieldEvent(
+                componentId: state.component!.id,
+                value: valueMap,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          debugPrint(
+            '🔵 [FileUploader] Building with state: ${state.runtimeType}',
+          );
 
-    _currentState = value['state'] as String? ?? 'base';
-    _files = (value['files'] as List?)?.cast<String>() ?? [];
-    _progress = (value['progress'] as num?)?.toInt() ?? 0;
-    _errorText = value['error_text'] as String?;
-    _isProcessing = value['is_processing'] == true;
-    _isDragging = value['is_dragging'] == true;
-    _isDisabled = _currentComponent.config['disabled'] == true;
+          if (state is DynamicFileUploaderLoading ||
+              state is DynamicFileUploaderInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    _computeStyles();
-    _computeConfig();
-    _computeUIElements();
-    _computeEventHandlers();
+          if (state is DynamicFileUploaderError) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
 
-    debugPrint(
-      '[FileUploader][_computeValues] id=${_currentComponent.id} state=$_currentState files=${_files.length} progress=$_progress',
+          if (state is DynamicFileUploaderSuccess) {
+            return _buildBody(context, state);
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
-  void _computeStyles() {
-    final Map<String, dynamic> baseStyle = Map.from(_currentComponent.style);
-    final Map<String, dynamic> variantStyle = _isDragging
-        ? Map.from(_currentComponent.variants?['dragging']?['style'] ?? {})
-        : {};
-    final Map<String, dynamic> stateStyle = Map.from(
-      _currentComponent.states?[_currentState]?['style'] ?? {},
+  Widget _buildBody(BuildContext context, DynamicFileUploaderSuccess state) {
+    return Focus(
+      focusNode: state.focusNode,
+      child: DragTarget<List<XFile>>(
+        onWillAcceptWithDetails: state.canAcceptDrop
+            ? (details) {
+                context.read<DynamicFileUploaderBloc>().add(
+                  const UpdateDraggingStateEvent(isDragging: true),
+                );
+                return true;
+              }
+            : null,
+        onAcceptWithDetails: (details) {
+          context.read<DynamicFileUploaderBloc>().add(
+            const UpdateDraggingStateEvent(isDragging: false),
+          );
+          context.read<DynamicFileUploaderBloc>().add(
+            FileSelectionEvent(files: details.data),
+          );
+        },
+        onLeave: (_) {
+          context.read<DynamicFileUploaderBloc>().add(
+            const UpdateDraggingStateEvent(isDragging: false),
+          );
+        },
+        builder: (context, candidateData, rejectedData) {
+          return GestureDetector(
+            onTap: state.canTap
+                ? () {
+                    FocusScope.of(context).requestFocus(state.focusNode);
+                  }
+                : null,
+            child: Container(
+              key: Key(state.component!.id),
+              margin: StyleUtils.parsePadding(state.computedStyle['margin']),
+              child: DottedBorder(
+                options: RoundedRectDottedBorderOptions(
+                  color: StyleUtils.parseColor(
+                    state.computedStyle['border_color'],
+                  ),
+                  strokeWidth:
+                      (state.computedStyle['border_width'] as num?)
+                          ?.toDouble() ??
+                      1,
+                  radius: Radius.circular(
+                    (state.computedStyle['border_radius'] as num?)
+                            ?.toDouble() ??
+                        0,
+                  ),
+                  dashPattern: const [6, 6],
+                  padding: const EdgeInsets.all(0),
+                ),
+                child: Container(
+                  width:
+                      (state.computedStyle['width'] as num?)?.toDouble() ?? 300,
+                  height:
+                      (state.computedStyle['height'] as num?)?.toDouble() ??
+                      200,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: StyleUtils.parseColor(
+                      state.computedStyle['background_color'],
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      (state.computedStyle['border_radius'] as num?)
+                              ?.toDouble() ??
+                          0,
+                    ),
+                  ),
+                  child: _buildStateContent(context, state),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
-    _style = {...baseStyle, ...variantStyle, ...stateStyle};
   }
 
-  void _computeConfig() {
-    final Map<String, dynamic> baseConfig = Map.from(_currentComponent.config);
-    final Map<String, dynamic> variantConfig = _isDragging
-        ? Map.from(_currentComponent.variants?['dragging']?['config'] ?? {})
-        : {};
-    final Map<String, dynamic> stateConfig = Map.from(
-      _currentComponent.states?[_currentState]?['config'] ?? {},
-    );
-    _config = {...baseConfig, ...variantConfig, ...stateConfig};
-  }
-
-  void _computeUIElements() {
-    switch (_currentState) {
+  Widget _buildStateContent(
+    BuildContext context,
+    DynamicFileUploaderSuccess state,
+  ) {
+    switch (state.currentState) {
       case 'loading':
-        _childWidget = _buildLoadingWidget();
-        break;
+        return _buildLoadingWidget(state);
       case 'success':
-        _childWidget = _buildSuccessWidget();
-        break;
+        return _buildSuccessWidget(context, state);
       case 'error':
-        _childWidget = _buildErrorWidget();
-        break;
+        return _buildErrorWidget(context, state);
       default:
-        _childWidget = _buildBaseWidget();
+        return _buildBaseWidget(context, state);
     }
   }
 
-  void _computeEventHandlers() {
-    _onTapHandler = _isDisabled ? null : _handleTap;
-    _onWillAcceptHandler = _handleWillAccept;
-    _onAcceptHandler = _handleAccept;
-    _onLeaveHandler = _handleLeave;
-  }
-
-  Widget _buildLoadingWidget() {
+  Widget _buildLoadingWidget(DynamicFileUploaderSuccess state) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_style['icon'] != null)
+          if (state.computedStyle['icon'] != null)
             Icon(
-              mapIconNameToIconData(_style['icon']),
-              color: StyleUtils.parseColor(_style['icon_color']),
+              DynamicFileUploaderBloc.mapIconNameToIconData(
+                state.computedStyle['icon'],
+              ),
+              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
               size: 48,
             ),
           const SizedBox(height: 16),
           Text(
-            _files.isNotEmpty
-                ? '${_files.length > 1 ? '${_files.length} files' : _files.first} uploading... $_progress%'
-                : 'Uploading... $_progress%',
+            state.files.isNotEmpty
+                ? '${state.files.length > 1 ? '${state.files.length} files' : state.files.first} uploading... ${state.progress}%'
+                : 'Uploading... ${state.progress}%',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: StyleUtils.parseColor(_style['text_color']),
+              color: StyleUtils.parseColor(state.computedStyle['text_color']),
             ),
           ),
           const SizedBox(height: 16),
-          LinearProgressIndicator(value: _progress / 100),
+          LinearProgressIndicator(value: state.progress / 100),
         ],
       ),
     );
   }
 
-  Widget _buildSuccessWidget() {
+  Widget _buildSuccessWidget(
+    BuildContext context,
+    DynamicFileUploaderSuccess state,
+  ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_style['icon'] != null)
+          if (state.computedStyle['icon'] != null)
             Icon(
-              mapIconNameToIconData(_style['icon']),
-              color: StyleUtils.parseColor(_style['icon_color']),
+              DynamicFileUploaderBloc.mapIconNameToIconData(
+                state.computedStyle['icon'],
+              ),
+              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
               size: 48,
             ),
           const SizedBox(height: 16),
-          if (_files.isNotEmpty)
-            ..._files.map(
-              (f) => ListTile(
-                leading: isImageFile(f)
+          if (state.files.isNotEmpty)
+            ...state.files.asMap().entries.map(
+              (entry) => ListTile(
+                leading: DynamicFileUploaderBloc.isImageFile(entry.value)
                     ? Image.file(
-                        File(f),
+                        File(entry.value),
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
@@ -187,406 +297,144 @@ class _DynamicFileUploaderState extends State<DynamicFileUploader> {
                     : Icon(
                         Icons.insert_drive_file,
                         color: StyleUtils.parseColor(
-                          _style['icon_color'],
+                          state.computedStyle['icon_color'],
                         ),
                       ),
-                title: Text(f.split('/').last),
+                title: Text(entry.value.split('/').last),
                 subtitle: FutureBuilder<String>(
-                  future: getFileSize(f),
+                  future: DynamicFileUploaderBloc.getFileSize(entry.value),
                   builder: (context, snapshot) => Text(snapshot.data ?? ''),
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => _handleRemoveFile(_files.indexOf(f)),
+                  onPressed: () {
+                    context.read<DynamicFileUploaderBloc>().add(
+                      RemoveFileEvent(index: entry.key),
+                    );
+                  },
                 ),
               ),
             ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _handleResetState,
-            child: Text(_config['button_text'] ?? 'Remove All'),
+            onPressed: () {
+              context.read<DynamicFileUploaderBloc>().add(
+                const ResetStateEvent(),
+              );
+            },
+            child: Text(state.computedConfig['button_text'] ?? 'Remove All'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorWidget() {
+  Widget _buildErrorWidget(
+    BuildContext context,
+    DynamicFileUploaderSuccess state,
+  ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_style['icon'] != null)
+          if (state.computedStyle['icon'] != null)
             Icon(
-              mapIconNameToIconData(_style['icon']),
-              color: StyleUtils.parseColor(_style['icon_color']),
+              DynamicFileUploaderBloc.mapIconNameToIconData(
+                state.computedStyle['icon'],
+              ),
+              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
               size: 48,
             ),
           const SizedBox(height: 16),
           Text(
-            _errorText ?? 'Error',
+            state.errorText ?? 'Error',
             style: const TextStyle(color: Colors.red),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _handleResetState,
-            child: Text(_config['button_text'] ?? 'Retry'),
+            onPressed: () {
+              context.read<DynamicFileUploaderBloc>().add(
+                const ResetStateEvent(),
+              );
+            },
+            child: Text(state.computedConfig['button_text'] ?? 'Retry'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBaseWidget() {
+  Widget _buildBaseWidget(
+    BuildContext context,
+    DynamicFileUploaderSuccess state,
+  ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_style['icon'] != null)
+          if (state.computedStyle['icon'] != null)
             Icon(
-              mapIconNameToIconData(_style['icon']),
-              color: StyleUtils.parseColor(_style['icon_color']),
+              DynamicFileUploaderBloc.mapIconNameToIconData(
+                state.computedStyle['icon'],
+              ),
+              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
               size: 48,
             ),
           const SizedBox(height: 8),
           Text(
-            _config['title'] ?? '',
+            state.computedConfig['title'] ?? '',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: StyleUtils.parseColor(_style['text_color']),
+              color: StyleUtils.parseColor(state.computedStyle['text_color']),
             ),
           ),
-          if (_config['subtitle'] != null)
+          if (state.computedConfig['subtitle'] != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
-                _config['subtitle'] ?? '',
+                state.computedConfig['subtitle'] ?? '',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: StyleUtils.parseColor(_style['text_color']),
+                  color: StyleUtils.parseColor(
+                    state.computedStyle['text_color'],
+                  ),
                 ),
               ),
             ),
-          if (_config['button_text'] != null &&
-              _config['button_text'].isNotEmpty) ...[
+          if (state.computedConfig['button_text'] != null &&
+              state.computedConfig['button_text'].isNotEmpty) ...[
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: (_isProcessing || _isDisabled)
-                  ? null
-                  : _handleBrowseFiles,
+              onPressed: state.canBrowse
+                  ? () {
+                      context.read<DynamicFileUploaderBloc>().add(
+                        const BrowseFilesEvent(),
+                      );
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: StyleUtils.parseColor(
-                  _style['button_background_color'],
+                  state.computedStyle['button_background_color'],
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    (_style['button_border_radius'] as num?)?.toDouble() ?? 8,
+                    (state.computedStyle['button_border_radius'] as num?)
+                            ?.toDouble() ??
+                        8,
                   ),
                 ),
               ),
               child: Text(
-                _config['button_text'] ?? 'Browse',
+                state.computedConfig['button_text'] ?? 'Browse',
                 style: TextStyle(
                   color: StyleUtils.parseColor(
-                    _style['button_text_color'],
+                    state.computedStyle['button_text_color'],
                   ),
                 ),
               ),
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  // Event handlers - business logic
-  void _handleTap() {
-    FocusScope.of(context).requestFocus(focusNode);
-  }
-
-  bool _handleWillAccept(DragTargetDetails<List<XFile>> details) {
-    if (_isProcessing || _isDisabled) return false;
-    FocusScope.of(context).requestFocus(focusNode);
-    _updateDraggingState(true);
-    return true;
-  }
-
-  void _handleAccept(DragTargetDetails<List<XFile>> details) {
-    _updateDraggingState(false);
-    handleFiles(details.data);
-  }
-
-  void _handleLeave(List<XFile>? data) {
-    _updateDraggingState(false);
-  }
-
-  void _handleBrowseFiles() async {
-    if (_isProcessing) return;
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        allowMultiple: isMultipleFiles,
-      );
-      if (result != null && result.files.isNotEmpty && mounted) {
-        final files = result.files.map((f) => XFile(f.path!)).toList();
-        handleFiles(files);
-      }
-    } catch (e) {
-      if (mounted) {
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(
-            componentId: _currentComponent.id,
-            value: {
-              'state': 'error',
-              'files': [],
-              'progress': 0,
-              'error_text': 'Error picking files',
-              'is_processing': false,
-            },
-          ),
-        );
-      }
-    }
-  }
-
-  void _handleRemoveFile(int index) {
-    final newFiles = List<String>.from(_files)..removeAt(index);
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: _currentComponent.id,
-        value: {
-          'state': newFiles.isEmpty ? 'base' : _currentState,
-          'files': newFiles,
-          'progress': _progress,
-          'is_processing': false,
-        },
-      ),
-    );
-  }
-
-  void _handleResetState() {
-    _timer?.cancel();
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: _currentComponent.id,
-        value: {
-          'state': 'base',
-          'files': [],
-          'progress': 0,
-          'is_processing': false,
-        },
-      ),
-    );
-  }
-
-  void _updateDraggingState(bool isDragging) {
-    final value =
-        _currentComponent.config['value'] as Map<String, dynamic>? ?? {};
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: _currentComponent.id,
-        value: {...value, 'is_dragging': isDragging},
-      ),
-    );
-  }
-
-  void startUpload(List<XFile> files) {
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: _currentComponent.id,
-        value: {
-          'state': 'loading',
-          'files': files.map((f) => f.path).toList(),
-          'progress': 0,
-          'is_processing': true,
-        },
-      ),
-    );
-
-    _timer?.cancel();
-    int progress = 0;
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      progress += 5;
-      if (progress >= 100) {
-        timer.cancel();
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(
-            componentId: _currentComponent.id,
-            value: {
-              'state': 'success',
-              'files': files.map((f) => f.path).toList(),
-              'progress': 100,
-              'is_processing': false,
-            },
-          ),
-        );
-      } else {
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(
-            componentId: _currentComponent.id,
-            value: {
-              'state': 'loading',
-              'files': files.map((f) => f.path).toList(),
-              'progress': progress,
-              'is_processing': true,
-            },
-          ),
-        );
-      }
-    });
-  }
-
-  void handleFiles(List<XFile> files) {
-    if (files.isEmpty) return;
-    final allowedExtensions =
-        (_currentComponent.config['allowed_extensions'] as List<dynamic>?)
-            ?.cast<String>() ??
-        [];
-    if (allowedExtensions.isNotEmpty) {
-      for (final file in files) {
-        final fileExtension = file.name.split('.').last.toLowerCase();
-        if (!allowedExtensions.any(
-          (ext) => ext.toLowerCase() == fileExtension,
-        )) {
-          context.read<DynamicFormBloc>().add(
-            UpdateFormFieldEvent(
-              componentId: _currentComponent.id,
-              value: {
-                'state': 'error',
-                'files': [],
-                'progress': 0,
-                'error_text': 'File type not allowed',
-                'is_processing': false,
-              },
-            ),
-          );
-          return;
-        }
-      }
-    }
-    startUpload(files);
-  }
-
-  IconData? mapIconNameToIconData(String name) {
-    return IconTypeEnum.fromString(name).toIconData();
-  }
-
-  bool isImageFile(String filePath) {
-    final imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
-    final extension = filePath.split('.').last.toLowerCase();
-    return imageExtensions.contains(extension);
-  }
-
-  Future<String> getFileSize(String filePath) async {
-    try {
-      final file = File(filePath);
-      final size = await file.length();
-      if (size < 1024) {
-        return '$size B';
-      } else if (size < 1024 * 1024) {
-        return '${(size / 1024).toStringAsFixed(1)} KB';
-      } else {
-        return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
-      }
-    } catch (e) {
-      return 'Unknown size';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {
-        // Update component from state and recompute values only when necessary
-        final updatedComponent = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
-
-        // Only update if component actually changed
-        if (updatedComponent != _currentComponent ||
-            updatedComponent.config['value'] !=
-                _currentComponent.config['value'] ||
-            updatedComponent.config['disabled'] !=
-                _currentComponent.config['disabled']) {
-          setState(() {
-            _currentComponent = updatedComponent;
-            _computeValues();
-          });
-        }
-      },
-      child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
-        buildWhen: (previous, current) {
-          // Only rebuild when something visual actually changes
-          final prevComponent = previous.page?.components.firstWhere(
-            (c) => c.id == widget.component.id,
-            orElse: () => widget.component,
-          );
-          final currComponent = current.page?.components.firstWhere(
-            (c) => c.id == widget.component.id,
-            orElse: () => widget.component,
-          );
-
-          return prevComponent?.config['value'] !=
-                  currComponent?.config['value'] ||
-              prevComponent?.config['disabled'] !=
-                  currComponent?.config['disabled'];
-        },
-        builder: (context, state) {
-          // Pure UI rendering - NO LOGIC HERE
-          return Focus(
-            focusNode: focusNode,
-            child: DragTarget<List<XFile>>(
-              onWillAcceptWithDetails: _onWillAcceptHandler,
-              onAcceptWithDetails: _onAcceptHandler,
-              onLeave: _onLeaveHandler,
-              builder: (context, candidateData, rejectedData) {
-                return GestureDetector(
-                  onTap: _onTapHandler,
-                  child: Container(
-                    key: Key(_currentComponent.id),
-                    margin: StyleUtils.parsePadding(_style['margin']),
-                    child: DottedBorder(
-                      options: RoundedRectDottedBorderOptions(
-                        color: StyleUtils.parseColor(_style['border_color']),
-                        strokeWidth:
-                            (_style['border_width'] as num?)?.toDouble() ?? 1,
-                        radius: Radius.circular(
-                          (_style['border_radius'] as num?)?.toDouble() ?? 0,
-                        ),
-                        dashPattern: const [6, 6],
-                        padding: const EdgeInsets.all(0),
-                      ),
-                      child: Container(
-                        width: (_style['width'] as num?)?.toDouble() ?? 300,
-                        height: (_style['height'] as num?)?.toDouble() ?? 200,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: StyleUtils.parseColor(
-                            _style['background_color'],
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            (_style['border_radius'] as num?)?.toDouble() ?? 0,
-                          ),
-                        ),
-                        child: _childWidget,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
       ),
     );
   }
