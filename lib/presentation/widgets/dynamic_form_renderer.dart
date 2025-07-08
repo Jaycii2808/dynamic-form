@@ -11,6 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -113,7 +114,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.switchFormType:
         return _buildSwitchBlocProvider(component);
       case FormTypeEnum.textFieldTagsFormType:
-        return DynamicTextFieldTags(component: component);
+        return _buildTextFieldTagsBlocProvider(component);
       case FormTypeEnum.fileUploaderFormType:
         return DynamicFileUploader(component: component);
       case FormTypeEnum.buttonFormType:
@@ -127,7 +128,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return const SizedBox.shrink();
     }
   }
-
+  Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicTextFieldTagsBloc(initialComponent: component),
+      child: DynamicTextFieldTags(
+        key: Key(component.id),
+        component: component,
+       onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
   Widget _buildSelectorButtonBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) =>

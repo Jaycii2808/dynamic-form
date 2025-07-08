@@ -1,222 +1,208 @@
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class DynamicTextFieldTags extends StatefulWidget {
+class DynamicTextFieldTags extends StatelessWidget {
   final DynamicFormModel component;
+  final Function(dynamic) onComplete;
 
-  const DynamicTextFieldTags({super.key, required this.component});
-
-  @override
-  State<DynamicTextFieldTags> createState() => _DynamicTextFieldTagsState();
-}
-
-class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
-  bool _showSuggestions = false;
-  String? _errorText;
-  final Set<String> _selectedTags = {};
+  const DynamicTextFieldTags({
+    super.key,
+    required this.component,
+    required this.onComplete,
+  });
 
   @override
-  void initState() {
-    super.initState();
-    final initialTags =
-        (widget.component.config['initial_tags'] as List<dynamic>?)?.cast<String>() ?? [];
-    _selectedTags.addAll(initialTags);
+  Widget build(BuildContext context) {
+    return BlocConsumer<DynamicTextFieldTagsBloc, DynamicTextFieldTagsState>(
+      listener: (context, state) {
+        final valueMap = {
+          ValueKeyEnum.value.key: state.selectedTags,
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.errorText.key: state.errorText,
+        };
+        if (state is DynamicTextFieldTagsSuccess) {
+          onComplete(valueMap);
+        } else if (state is DynamicTextFieldTagsError) {
+          DialogUtils.showErrorDialog(context, state.errorMessage!);
+        } else if (state is DynamicTextFieldTagsLoading ||
+            state is DynamicTextFieldTagsInitial) {
+          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else {
+          onComplete(valueMap);
+          DialogUtils.showErrorDialog(context, "Another Error");
+        }
+      },
+      builder: (context, state) {
+        if (state is DynamicTextFieldTagsLoading ||
+            state is DynamicTextFieldTagsInitial) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is DynamicTextFieldTagsSuccess) {
+          return _buildBody(context, state);
+        }
+        return const SizedBox.shrink();
+      },
+    );
   }
 
-  Map<String, dynamic> _resolveStyles(String currentState) {
-    final style = Map<String, dynamic>.from(widget.component.style);
-    if (widget.component.states != null && widget.component.states!.containsKey(currentState)) {
-      final stateStyle = widget.component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-    return style;
-  }
+  Widget _buildBody(
+    BuildContext context,
+    DynamicTextFieldTagsSuccess state,
+  ) {
+    final style = state.styleConfig!;
+    final config = state.inputConfig!;
+    final isDisabled = config.disabled;
 
-  String _determineState() {
-    if (_selectedTags.isNotEmpty) return 'success';
-    if (_errorText != null) return 'error';
-    return 'base';
-  }
-
-  void _addTag(String tag) {
-    if (!_selectedTags.contains(tag)) {
-      setState(() {
-        _selectedTags.add(tag);
-        _errorText = null;
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(componentId: widget.component.id, value: _selectedTags.toList()),
-        );
-      });
-    }
-  }
-
-  void _removeTag(String tag) {
-    setState(() {
-      _selectedTags.remove(tag);
-      context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(componentId: widget.component.id, value: _selectedTags.toList()),
-      );
-      // widget.onComplete(_selectedTags.toList());
-    });
-  }
-
-  Widget _buildTagChip(String tag, Map<String, dynamic> style, {bool allowRemoval = true}) {
     return Container(
+      key: Key(state.component!.id),
+      padding: const EdgeInsets.all(8.0),
+      margin: style.margin,
       decoration: BoxDecoration(
-        color: StyleUtils.parseColor('#CDD2FD'),
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: StyleUtils.parseColor('#CDD2FD'), width: 10.0),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Text(
-              tag,
-              style: TextStyle(
-                fontSize: style['tag_text_size']?.toDouble() ?? 14,
-                color: StyleUtils.parseColor(style['tag_text_color'] ?? '#6979F8'),
-              ),
-            ),
+        border: Border.all(
+          color: StyleUtils.parseColor(
+            state.component!.style['border_color'] ?? '#6979F8',
           ),
-          if (allowRemoval) ...[
-            const SizedBox(width: 2),
-            GestureDetector(
-              onTap: () => _removeTag(tag),
-              child: SvgPicture.asset(
-                'assets/svg/Close.svg',
-                width: 16,
-                height: 16,
-                colorFilter: const ColorFilter.mode(Colors.redAccent, BlendMode.srcIn),
-              ),
+          width:
+              (state.component!.style['border_width'] as num?)?.toDouble() ??
+              1.5,
+        ),
+        borderRadius: StyleUtils.parseBorderRadius(
+          state.component!.style['border_radius'] as int?,
+        ),
+        color: style.fillColor,
+      ),
+      child: state.isEditing
+          ? _buildTagsInputView(context, state)
+          : _buildTagsDisplayView(context, state, isDisabled),
+    );
+  }
+
+  Widget _buildTagsDisplayView(
+    BuildContext context,
+    DynamicTextFieldTagsSuccess state,
+    bool isDisabled,
+  ) {
+    final textFieldTagsBloc = context.read<DynamicTextFieldTagsBloc>();
+    return GestureDetector(
+      onTap: isDisabled
+          ? null
+          : () => textFieldTagsBloc.add(
+              const StartEditingTagsEvent(),
             ),
-          ],
-        ],
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
+        width: double.infinity,
+        child: state.selectedTags.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  state.inputConfig?.placeholder ?? 'Click to add tags',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              )
+            : Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: state.selectedTags
+                    .map(
+                      (tag) => _buildTagChip(
+                        context,
+                        tag,
+                        state.component!.style,
+                        isDisabled,
+                        allowRemoval: false,
+                      ),
+                    )
+                    .toList(),
+              ),
       ),
     );
   }
 
   Widget _buildTagsInputView(
-      Map<String, dynamic> style,
-      List<String> initialTags,
-      String placeholder,
-      ) {
+    BuildContext context,
+    DynamicTextFieldTagsSuccess state,
+  ) {
+    final textFieldTagsBloc = context.read<DynamicTextFieldTagsBloc>();
+    final unselectedTags = state.availableTags
+        .where((t) => !state.selectedTags.contains(t))
+        .toList();
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_selectedTags.isNotEmpty)
-          Container(
+        if (state.selectedTags.isNotEmpty)
+          Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Wrap(
               spacing: 8.0,
-              runSpacing: 8.0,
-              children: _selectedTags.map((tag) => _buildTagChip(tag, style)).toList(),
+              runSpacing: 4.0,
+              children: state.selectedTags
+                  .map(
+                    (tag) => _buildTagChip(
+                      context,
+                      tag,
+                      state.component!.style,
+                      false,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         Autocomplete<String>(
           optionsBuilder: (TextEditingValue textEditingValue) {
-            final availableTags = initialTags.where((tag) => !_selectedTags.contains(tag)).toList();
-            if (textEditingValue.text.isEmpty) return availableTags;
-            return availableTags.where(
-                  (tag) => tag.toLowerCase().contains(textEditingValue.text.toLowerCase()),
+            if (textEditingValue.text.isEmpty) {
+              return unselectedTags;
+            }
+            return unselectedTags.where(
+              (tag) => tag.toLowerCase().contains(
+                textEditingValue.text.toLowerCase(),
+              ),
             );
           },
           onSelected: (String selection) {
-            _addTag(selection);
+            textFieldTagsBloc.add(
+              TagAddedEvent(tag: selection),
+            );
           },
-          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
             return TextField(
-              controller: textEditingController,
+              controller: controller,
               focusNode: focusNode,
               onSubmitted: (value) {
-                final trimmedValue = value.trim();
-                if (trimmedValue.isNotEmpty &&
-                    initialTags.contains(trimmedValue) &&
-                    !_selectedTags.contains(trimmedValue)) {
-                  textEditingController.clear();
-                  _addTag(trimmedValue);
-                } else if (_selectedTags.contains(trimmedValue)) {
-                  setState(() {
-                    _errorText = 'Tag already selected';
-                  });
-                } else {
-                  setState(() {
-                    _errorText = 'Tag must match predefined list';
-                  });
-                }
-              },
-              onChanged: (value) {
-                if (_errorText != null) {
-                  setState(() => _errorText = null);
+                if (value.isNotEmpty) {
+                  final match = unselectedTags.firstWhere(
+                    (tag) => tag.toLowerCase().contains(value.toLowerCase()),
+                    orElse: () => '',
+                  );
+                  if (match.isNotEmpty) {
+                    textFieldTagsBloc.add(
+                      TagAddedEvent(tag: match),
+                    );
+                    controller.clear();
+                    focusNode.requestFocus();
+                  }
                 }
               },
               decoration: InputDecoration(
-                hintText: placeholder,
-                border: OutlineInputBorder(
-                  borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
-                  borderSide: BorderSide(
-                    color: StyleUtils.parseColor(style['border_color']),
-                    width: style['border_width']?.toDouble() ?? 1.0,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
-                  borderSide: BorderSide(
-                    color: StyleUtils.parseColor(style['border_color']),
-                    width: style['border_width']?.toDouble() ?? 1.0,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
-                  borderSide: BorderSide(
-                    color: StyleUtils.parseColor(style['border_color']),
-                    width: style['border_width']?.toDouble() ?? 2.0,
-                  ),
-                ),
-                filled: style['background_color'] != null,
-                fillColor: StyleUtils.parseColor(style['background_color']),
-                errorText: _errorText,
-              ),
-              style: TextStyle(
-                fontSize: style['font_size']?.toDouble() ?? 16,
-                color: StyleUtils.parseColor(style['color'] ?? '#000000'),
-              ),
-            );
-          },
-          optionsViewBuilder: (context, onSelected, options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                borderRadius: BorderRadius.circular(8.0),
-                child: Container(
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    itemBuilder: (context, index) {
-                      final option = options.elementAt(index);
-                      return ListTile(
-                        dense: true,
-                        title: Text(option),
-                        onTap: () => onSelected(option),
-                        hoverColor: Colors.grey[100],
-                      );
-                    },
-                  ),
-                ),
+                hintText: state.inputConfig?.placeholder ?? 'Enter tags...',
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                errorText: state.errorText,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
               ),
             );
           },
@@ -225,7 +211,14 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () => setState(() => _showSuggestions = false),
+            onPressed: () {
+              textFieldTagsBloc.add(
+                const TagsFinalizedEvent(),
+              );
+              textFieldTagsBloc.add(
+                const DoneEditingTagsEvent(),
+              );
+            },
             child: const Text('Done'),
           ),
         ),
@@ -233,48 +226,34 @@ class _DynamicTextFieldTagsState extends State<DynamicTextFieldTags> {
     );
   }
 
-  Widget _buildTagsDisplayView(Map<String, dynamic> style) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showSuggestions = true;
-        });
-      },
-      child: _selectedTags.isEmpty
-          ? const Center(
-        child: Text('Click to add tags', style: TextStyle(color: Colors.grey, fontSize: 14)),
-      )
-          : Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        children: _selectedTags
-            .map((tag) => _buildTagChip(tag, style, allowRemoval: true))
-            .toList(),
+  Widget _buildTagChip(
+    BuildContext context,
+    String tag,
+    Map<String, dynamic> style,
+    bool isDisabled, {
+    bool allowRemoval = true,
+  }) {
+    return Chip(
+      label: Text(
+        tag,
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final config = widget.component.config;
-    final initialTags = (config['initial_tags'] as List<dynamic>?)?.cast<String>() ?? [];
-    final placeholder = config['placeholder'] ?? 'Enter tags...';
-
-    final currentState = _determineState();
-    final style = _resolveStyles(currentState);
-
-    return Container(
-      key: Key(widget.component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.blueAccent, width: 1.5),
-        borderRadius: BorderRadius.circular(14.0),
-        color: Colors.white,
+      backgroundColor: StyleUtils.parseColor(style['tag_background_color']),
+      onDeleted: (allowRemoval && !isDisabled)
+          ? () => context.read<DynamicTextFieldTagsBloc>().add(
+              TagRemovedEvent(tag: tag),
+            )
+          : null,
+      deleteIcon: SvgPicture.asset(
+        'assets/svg/Close.svg',
+        width: 14,
+        height: 14,
+        colorFilter: ColorFilter.mode(
+          StyleUtils.parseColor(style['tag_remove_icon_color'] ?? '#F44336'),
+          BlendMode.srcIn,
+        ),
       ),
-      child: _showSuggestions
-          ? _buildTagsInputView(style, initialTags, placeholder)
-          : _buildTagsDisplayView(style),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
     );
   }
 }
