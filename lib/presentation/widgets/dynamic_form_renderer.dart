@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
@@ -113,7 +114,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.checkboxFormType:
         return DynamicCheckbox(component: component);
       case FormTypeEnum.radioFormType:
-        return DynamicRadio(component: component);
+        return _buildRadioBlocProvider(component);
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorButtonFormType:
@@ -153,6 +154,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         key: Key(component.id),
         component: component,
         onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+
+  Widget _buildRadioBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicRadioBloc(initialComponent: component),
+      child: DynamicRadio(
+        key: Key(component.id),
+        component: component,
       ),
     );
   }
