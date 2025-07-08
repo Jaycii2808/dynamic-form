@@ -225,7 +225,7 @@ class ValidationUtils {
 
     // For boolean fields (checkbox, switch, radio)
     if (boolValue != null) {
-      return boolValue ? 'selected' : 'base';
+      return boolValue ? 'success' : 'base';
     }
 
     // For list fields (multi-select, tags)
@@ -268,4 +268,3 @@ class ValidationUtils {
     return data;
   }
 }
- 

@@ -9,6 +9,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynam
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
@@ -110,7 +111,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.selectorButtonFormType:
         return _buildSelectorButtonBlocProvider(component);
       case FormTypeEnum.switchFormType:
-        return DynamicSwitch(component: component);
+        return _buildSwitchBlocProvider(component);
       case FormTypeEnum.textFieldTagsFormType:
         return DynamicTextFieldTags(component: component);
       case FormTypeEnum.fileUploaderFormType:
@@ -132,6 +133,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       create: (context) =>
           DynamicSelectorButtonBloc(initialComponent: component),
       child: DynamicSelectorButton(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+  Widget _buildSwitchBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicSwitchBloc(initialComponent: component),
+      child: DynamicSwitch(
         key: Key(component.id),
         component: component,
         onComplete: (value) => handleFormFieldUpdate(context, component, value),
