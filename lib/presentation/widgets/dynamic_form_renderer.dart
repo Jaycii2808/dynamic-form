@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -85,9 +86,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   Widget _buildComponents(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormRenderer] Building component: ${component.id}, type: ${component.type}',
+    );
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
-        return DynamicTextField(component: component);
+        return _buildTextFieldBlocProvider(component);
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
@@ -95,12 +99,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.dateTimePickerFormType:
         return DynamicDateTimePicker(
           component: component,
-          onComplete: (value) => handleFormFieldUpdate(context, component, value),
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dateTimeRangePickerFormType:
         return DynamicDateTimeRangePicker(
           component: component,
-          onComplete: (value) => handleFormFieldUpdate(context, component, value),
+          onComplete: (value) =>
+              handleFormFieldUpdate(context, component, value),
         );
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
@@ -128,6 +134,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildTextFieldBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicTextFieldBloc(initialComponent: component),
+      child: DynamicTextField(
+        key: Key(component.id),
+        component: component,
+      ),
+    );
   }
 
   Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
