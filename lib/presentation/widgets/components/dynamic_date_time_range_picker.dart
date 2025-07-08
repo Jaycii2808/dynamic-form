@@ -26,20 +26,23 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicDateTimeRangePickerBloc,
-        DynamicDateTimeRangePickerState>(
+    return BlocConsumer<DynamicDateTimeRangePickerBloc, DynamicDateTimeRangePickerState>(
       listener: (context, state) {
+        final valueMap = {
+          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.errorText.key: state.errorText,
+        };
         if (state is DynamicDateTimeRangePickerSuccess) {
-          final valueMap = {
-            ValueKeyEnum.value.key:
-            state.component!.config[ValueKeyEnum.value.key],
-            ValueKeyEnum.currentState.key:
-            state.component!.config[ValueKeyEnum.currentState.key],
-            ValueKeyEnum.errorText.key: state.errorText,
-          };
           onComplete(valueMap);
         } else if (state is DynamicDateTimeRangePickerError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
+        } else if (state is DynamicDateTimeRangePickerLoading ||
+            state is DynamicDateTimeRangePickerInitial) {
+          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else {
+          onComplete(valueMap);
+          DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
       builder: (context, state) {
@@ -66,14 +69,14 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   }
 
   Widget _buildBody(
-      StyleConfig styleConfig,
-      InputConfig inputConfig,
-      DynamicFormModel component,
-      TextEditingController textController,
-      FocusNode focusNode,
-      String? errorText,
-      BuildContext context,
-      ) {
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
+    DynamicFormModel component,
+    TextEditingController textController,
+    FocusNode focusNode,
+    String? errorText,
+    BuildContext context,
+  ) {
     final combinedStyle = Map<String, dynamic>.from(component.style);
     if (component.variants?.containsKey('range') == true) {
       combinedStyle.addAll(component.variants!['range']['style']);
@@ -98,8 +101,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
             controller: textController,
             focusNode: focusNode,
             errorText: errorText,
-            hintText:
-            inputConfig.placeholder ?? 'MMM d,yyyy - MMM d,yyyy',
+            hintText: inputConfig.placeholder ?? 'MMM d,yyyy - MMM d,yyyy',
             style: combinedStyle,
             onTap: inputConfig.disabled
                 ? () {}
@@ -110,35 +112,34 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
   }
 
-  void _showDateRangePickerDialog(
-      BuildContext context, DynamicFormModel component) {
+  void _showDateRangePickerDialog(BuildContext context, DynamicFormModel component) {
     showDialog(
-        context: context,
-        builder: (dialogContext) {
-          final value = component.config['value'];
-          DateTimeRange? initialRange;
-          if (value is Map<String, dynamic>) {
-            try {
-              initialRange = DateTimeRange(
-                start: DateFormat("MMM d,yyyy").parse(value['start']),
-                end: DateFormat("MMM d,yyyy").parse(value['end']),
-              );
-            } catch(e) {
-              debugPrint("Error parsing initial date range for dialog: $e");
-            }
+      context: context,
+      builder: (dialogContext) {
+        final value = component.config['value'];
+        DateTimeRange? initialRange;
+        if (value is Map<String, dynamic>) {
+          try {
+            initialRange = DateTimeRange(
+              start: DateFormat("MMM d,yyyy").parse(value['start']),
+              end: DateFormat("MMM d,yyyy").parse(value['end']),
+            );
+          } catch (e) {
+            debugPrint("Error parsing initial date range for dialog: $e");
           }
-          return CustomDateRangePickerDialog(
-            initialDateRange: initialRange,
-            onConfirm: (selectedRange) {
-              if (selectedRange != null) {
-                context
-                    .read<DynamicDateTimeRangePickerBloc>()
-                    .add(DateTimeRangePickedEvent(value: selectedRange));
-              }
-            },
-            style: component.style,
-          );
         }
+        return CustomDateRangePickerDialog(
+          initialDateRange: initialRange,
+          onConfirm: (selectedRange) {
+            if (selectedRange != null) {
+              context.read<DynamicDateTimeRangePickerBloc>().add(
+                DateTimeRangePickedEvent(value: selectedRange),
+              );
+            }
+          },
+          style: component.style,
+        );
+      },
     );
   }
 
@@ -169,7 +170,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     final borderColor = StyleUtils.parseColor(style['border_color'] ?? '#CCCCCC');
-    final focusedBorderColor = StyleUtils.parseColor(style['focused_border_color'] ?? style['icon_color'] ?? '#6979F8');
+    final focusedBorderColor = StyleUtils.parseColor(
+      style['focused_border_color'] ?? style['icon_color'] ?? '#6979F8',
+    );
     final errorBorderColor = Colors.red;
     final borderRadius = (style['border_radius'] as num?)?.toDouble() ?? 8.0;
     final borderWidth = (style['border_width'] as num?)?.toDouble() ?? 1.0;
@@ -179,7 +182,8 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     final iconSize = (style['icon_size'] as num?)?.toDouble() ?? 20.0;
     final fontSize = (style['font_size'] as num?)?.toDouble() ?? 14.0;
     final contentVerticalPadding = (style['content_vertical_padding'] as num?)?.toDouble() ?? 16.0;
-    final contentHorizontalPadding = (style['content_horizontal_padding'] as num?)?.toDouble() ?? 16.0;
+    final contentHorizontalPadding =
+        (style['content_horizontal_padding'] as num?)?.toDouble() ?? 16.0;
 
     return TextField(
       controller: controller,
