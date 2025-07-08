@@ -1,14 +1,17 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 
 class DynamicSlider extends StatefulWidget {
   final DynamicFormModel component;
@@ -20,381 +23,314 @@ class DynamicSlider extends StatefulWidget {
 }
 
 class _DynamicSliderState extends State<DynamicSlider> {
-  double? sliderValue;
-  RangeValues? sliderRangeValues;
-  final FocusNode focusNode = FocusNode();
-
-  // ✅ Flag to prevent BLoC sync while user is sliding
-  bool _isUserSliding = false;
-
-  // ✅ State variables for computed values - move logic from builder to listener
-  late DynamicFormModel _currentComponent;
-  Map<String, dynamic> _style = {};
-  bool _isRange = false;
-  double _min = 0;
-  double _max = 100;
-  int? _divisions;
-  String _prefix = '';
-  String? _hint;
-  String? _iconName;
-  String? _thumbIconName;
-  String? _errorText;
-  bool _isDisabled = false;
-  IconData? _thumbIcon;
-  SliderThemeData? _sliderTheme;
-
   @override
-  void initState() {
-    super.initState();
-    _currentComponent = widget.component;
-    initLocalState(widget.component);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // ✅ Call _computeValues here where context is available for Theme access
-    _computeValues();
-  }
-
-  @override
-  void didUpdateWidget(covariant DynamicSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Only update if component changed
-    if (widget.component != oldWidget.component) {
-      _currentComponent = widget.component;
-      _computeValues();
-      initLocalState(widget.component);
-    }
-  }
-
-  @override
-  void dispose() {
-    focusNode.dispose();
-    super.dispose();
-  }
-
-  /// ✅ Compute all values from component - called in listener
-  void _computeValues() {
-    _style = Map<String, dynamic>.from(_currentComponent.style);
-    final config = _currentComponent.config;
-
-    _isRange = config['range'] == true;
-    _min = (config['min'] as num?)?.toDouble() ?? 0;
-    _max = (config['max'] as num?)?.toDouble() ?? 100;
-    _divisions = (config['divisions'] as num?)?.toInt();
-    _prefix = config['prefix']?.toString() ?? '';
-    _hint = config['hint'] as String?;
-    _iconName = config['icon'] as String?;
-    _thumbIconName = config['thumb_icon'] as String?;
-    _errorText = config['error_text'] as String?;
-    _isDisabled = config['disabled'] == true;
-
-    // Apply variants to style
-    if (_currentComponent.variants != null) {
-      if (_hint != null &&
-          _currentComponent.variants!.containsKey('with_hint')) {
-        final variantStyle =
-            _currentComponent.variants!['with_hint']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) _style.addAll(variantStyle);
-      }
-      if (_iconName != null &&
-          _currentComponent.variants!.containsKey('with_icon')) {
-        final variantStyle =
-            _currentComponent.variants!['with_icon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) _style.addAll(variantStyle);
-      }
-      if (_thumbIconName != null &&
-          _currentComponent.variants!.containsKey('with_thumb_icon')) {
-        final variantStyle =
-            _currentComponent.variants!['with_thumb_icon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) _style.addAll(variantStyle);
-      }
-    }
-
-    // Compute thumb icon
-    _thumbIcon = _thumbIconName != null
-        ? mapIconNameToIconData(_thumbIconName!)
-        : null;
-
-    // Compute slider theme
-    _sliderTheme = SliderTheme.of(context).copyWith(
-      activeTrackColor: StyleUtils.parseColor(_style['active_color']),
-      inactiveTrackColor: StyleUtils.parseColor(_style['inactive_color']),
-      thumbColor: StyleUtils.parseColor(_style['thumb_color']),
-      overlayColor: StyleUtils.parseColor(
-        _style['active_color'],
-      ).withValues(alpha: 0.2),
-      trackHeight: 6.0,
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          DynamicSliderBloc(initialComponent: widget.component)
+            ..add(const InitializeSliderEvent()),
+      child: DynamicSliderWidget(component: widget.component),
     );
   }
+}
 
-  /// ✅ Send value to BLoC - only called when user finishes sliding
-  void _sendValueToBloc(dynamic value) {
-    // ✅ Convert RangeValues to array format for BLoC
-    final blocValue = value is RangeValues ? [value.start, value.end] : value;
+class DynamicSliderWidget extends StatelessWidget {
+  final DynamicFormModel component;
 
-    context.read<DynamicFormBloc>().add(
-      UpdateFormFieldEvent(
-        componentId: widget.component.id,
-        value: blocValue,
-      ),
-    );
-  }
-
-  /// ✅ Immediate UI update - keep UI responsive
-  void _updateSliderValue(dynamic value) {
-    setState(() {
-      if (value is RangeValues) {
-        sliderRangeValues = value;
-      } else if (value is double) {
-        sliderValue = value;
-      }
-    });
-  }
-
-  void initLocalState(DynamicFormModel component) {
-    final config = component.config;
-    final isRange = config['range'] == true;
-    if (isRange) {
-      final values = config['values'];
-      if (values is List && values.length == 2) {
-        sliderRangeValues = RangeValues(
-          (values[0] as num).toDouble(),
-          (values[1] as num).toDouble(),
-        );
-      }
-    } else {
-      final value = config['value'];
-      if (value is num) {
-        sliderValue = value.toDouble();
-      }
-    }
-  }
-
-  void syncWithBloc(DynamicFormModel component) {
-    // ✅ Don't sync while user is actively sliding
-    if (_isUserSliding) return;
-
-    final config = component.config;
-    final isRange = config['range'] == true;
-    if (isRange) {
-      final values = config['values'];
-      if (values is List && values.length == 2) {
-        final range = RangeValues(
-          (values[0] as num).toDouble(),
-          (values[1] as num).toDouble(),
-        );
-        if (sliderRangeValues == null ||
-            sliderRangeValues!.start != range.start ||
-            sliderRangeValues!.end != range.end) {
-          setState(() {
-            sliderRangeValues = range;
-          });
-        }
-      }
-    } else {
-      final value = config['value'];
-      if (value is num && sliderValue != value.toDouble()) {
-        setState(() {
-          sliderValue = value.toDouble();
-        });
-      }
-    }
-  }
-
-  IconData? mapIconNameToIconData(String name) {
-    return IconTypeEnum.fromString(name).toIconData();
-  }
+  const DynamicSliderWidget({
+    super.key,
+    required this.component,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {
-        // ✅ ALL LOGIC HERE - như text field pattern
-        final updatedComponent = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
+      listener: (context, formState) {
+        // Listen to main form state changes and update slider bloc
+        if (formState.page?.components != null) {
+          final updatedComponent = formState.page!.components.firstWhere(
+            (c) => c.id == component.id,
+            orElse: () => component,
+          );
 
-        // Only update if component actually changed
-        if (updatedComponent != _currentComponent ||
-            updatedComponent.config['value'] !=
-                _currentComponent.config['value'] ||
-            updatedComponent.config['values'] !=
-                _currentComponent.config['values'] ||
-            updatedComponent.config['error_text'] !=
-                _currentComponent.config['error_text'] ||
-            updatedComponent.config['disabled'] !=
-                _currentComponent.config['disabled']) {
-          setState(() {
-            _currentComponent = updatedComponent;
-            _computeValues();
-          });
+          // Check if component changed from external source
+          if (updatedComponent.config['value'] != component.config['value'] ||
+              updatedComponent.config['values'] != component.config['values'] ||
+              updatedComponent.config['disabled'] !=
+                  component.config['disabled'] ||
+              updatedComponent.config['error_text'] !=
+                  component.config['error_text']) {
+            debugPrint(
+              '🔄 [Slider] External change detected',
+            );
+
+            context.read<DynamicSliderBloc>().add(
+              UpdateSliderFromExternalEvent(component: updatedComponent),
+            );
+          }
         }
-
-        syncWithBloc(updatedComponent);
       },
-      child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
+      child: BlocConsumer<DynamicSliderBloc, DynamicSliderState>(
+        listenWhen: (previous, current) {
+          return current is DynamicSliderSuccess;
+        },
         buildWhen: (previous, current) {
-          // Only rebuild when visual properties change
-          final prevComponent = previous.page?.components.firstWhere(
-            (c) => c.id == widget.component.id,
-            orElse: () => widget.component,
-          );
-          final currComponent = current.page?.components.firstWhere(
-            (c) => c.id == widget.component.id,
-            orElse: () => widget.component,
-          );
+          // Rebuild when state changes or value updates
+          return previous.formState != current.formState ||
+              previous.errorText != current.errorText ||
+              (previous is DynamicSliderSuccess &&
+                  current is DynamicSliderSuccess &&
+                  (previous.sliderValue != current.sliderValue ||
+                      previous.sliderRangeValues != current.sliderRangeValues ||
+                      previous.isDisabled != current.isDisabled ||
+                      previous.valueTimestamp != current.valueTimestamp));
+        },
+        listener: (context, state) {
+          if (state is DynamicSliderSuccess && !state.isUserSliding) {
+            // Update main form with final value
+            final dynamic blocValue;
+            if (state.isRange && state.sliderRangeValues != null) {
+              blocValue = [
+                state.sliderRangeValues!.start,
+                state.sliderRangeValues!.end,
+              ];
+            } else {
+              blocValue = state.sliderValue;
+            }
 
-          return prevComponent?.config['disabled'] !=
-                  currComponent?.config['disabled'] ||
-              prevComponent?.config['error_text'] !=
-                  currComponent?.config['error_text'] ||
-              prevComponent?.config['icon'] != currComponent?.config['icon'] ||
-              prevComponent?.config['hint'] != currComponent?.config['hint'];
+            final valueMap = {
+              if (state.isRange)
+                'values': blocValue
+              else
+                ValueKeyEnum.value.key: blocValue,
+              'current_state': state.formState?.name ?? 'base',
+              'error_text': state.errorText,
+            };
+
+            context.read<DynamicFormBloc>().add(
+              UpdateFormFieldEvent(
+                componentId: state.component!.id,
+                value: valueMap,
+              ),
+            );
+          }
         },
         builder: (context, state) {
-          // ✅ Builder chỉ render UI với computed values từ listener
-          if (_sliderTheme == null) return const SizedBox.shrink();
-
-          final sliderWidget = SliderTheme(
-            data: _sliderTheme!.copyWith(
-              rangeThumbShape: CustomRangeSliderThumbShape(
-                thumbRadius: 14,
-                valuePrefix: _prefix,
-                values: sliderRangeValues ?? RangeValues(_min, _max),
-                iconColor: StyleUtils.parseColor(_style['thumb_icon_color']),
-                labelColor: StyleUtils.parseColor(_style['value_label_color']),
-                thumbIcon: _thumbIcon,
-              ),
-              thumbShape: CustomSliderThumbShape(
-                thumbRadius: 14,
-                valuePrefix: _prefix,
-                displayValue: sliderValue ?? _min,
-                iconColor: StyleUtils.parseColor(_style['thumb_icon_color']),
-                labelColor: StyleUtils.parseColor(_style['value_label_color']),
-                thumbIcon: _thumbIcon,
-              ),
-            ),
-            child: _isRange
-                ? RangeSlider(
-                    values: sliderRangeValues ?? RangeValues(_min, _max),
-                    min: _min,
-                    max: _max,
-                    divisions: _divisions,
-                    labels: RangeLabels(
-                      '$_prefix${(sliderRangeValues?.start ?? _min).round()}',
-                      '$_prefix${(sliderRangeValues?.end ?? _max).round()}',
-                    ),
-                    onChangeStart: _isDisabled
-                        ? null
-                        : (values) {
-                            _isUserSliding = true;
-                          },
-                    onChanged: _isDisabled
-                        ? null
-                        : (values) {
-                            _updateSliderValue(values);
-                          },
-                    onChangeEnd: _isDisabled
-                        ? null
-                        : (values) {
-                            _isUserSliding = false;
-                            _sendValueToBloc(values);
-                          },
-                  )
-                : Slider(
-                    value: sliderValue ?? _min,
-                    min: _min,
-                    max: _max,
-                    divisions: _divisions,
-                    label: '$_prefix${sliderValue?.round()}',
-                    onChangeStart: _isDisabled
-                        ? null
-                        : (value) {
-                            _isUserSliding = true;
-                          },
-                    onChanged: _isDisabled
-                        ? null
-                        : (value) {
-                            _updateSliderValue(value);
-                          },
-                    onChangeEnd: _isDisabled
-                        ? null
-                        : (value) {
-                            _isUserSliding = false;
-                            _sendValueToBloc(value);
-                          },
-                  ),
+          debugPrint(
+            '🔵 [Slider] Building with state: ${state.runtimeType}',
           );
 
-          Widget? iconWidget;
-          if (_iconName != null) {
-            final iconData = mapIconNameToIconData(_iconName!);
-            if (iconData != null) {
-              iconWidget = Icon(
-                iconData,
-                color: StyleUtils.parseColor(_style['icon_color']),
-                size: (_style['icon_size'] as num?)?.toDouble() ?? 24.0,
-              );
-            }
+          if (state is DynamicSliderLoading || state is DynamicSliderInitial) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          return Focus(
-            focusNode: focusNode,
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).requestFocus(focusNode);
-              },
-              child: Container(
-                key: Key(_currentComponent.id),
-                margin: StyleUtils.parsePadding(_style['margin']),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (iconWidget != null) ...[
-                          iconWidget,
-                          const SizedBox(width: 8),
-                        ],
-                        Expanded(child: sliderWidget),
-                      ],
-                    ),
-                    if (_hint != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-                        child: Text(
-                          _hint!,
-                          style: TextStyle(
-                            color: StyleUtils.parseColor(_style['hint_color']),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    if (_errorText != null && _errorText!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-                        child: Text(
-                          _errorText!,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+          if (state is DynamicSliderError) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: const TextStyle(color: Colors.red),
               ),
-            ),
-          );
+            );
+          }
+
+          if (state is DynamicSliderSuccess) {
+            // Trigger theme computation if not yet computed
+            if (state.sliderTheme == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                context.read<DynamicSliderBloc>().add(
+                  ComputeSliderThemeEvent(context: context),
+                );
+              });
+            }
+
+            return _buildBody(context, state);
+          }
+
+          return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, DynamicSliderSuccess state) {
+    // Use provided theme or fallback to default with computed colors
+    final sliderTheme =
+        state.sliderTheme ??
+        SliderTheme.of(context).copyWith(
+          activeTrackColor:
+              StyleUtils.parseColor(
+                state.computedStyle['active_color'],
+              ) ??
+              Colors.blue,
+          inactiveTrackColor:
+              StyleUtils.parseColor(
+                state.computedStyle['inactive_color'],
+              ) ??
+              Colors.grey,
+          thumbColor:
+              StyleUtils.parseColor(
+                state.computedStyle['thumb_color'],
+              ) ??
+              Colors.white,
+          overlayColor:
+              (StyleUtils.parseColor(
+                        state.computedStyle['active_color'],
+                      ) ??
+                      Colors.blue)
+                  .withValues(alpha: 0.2),
+          trackHeight: 6.0,
+        );
+
+    final sliderWidget = SliderTheme(
+      data: sliderTheme.copyWith(
+        rangeThumbShape: CustomRangeSliderThumbShape(
+          thumbRadius: 14,
+          valuePrefix: state.prefix,
+          values: state.sliderRangeValues ?? RangeValues(state.min, state.max),
+          iconColor: StyleUtils.parseColor(
+            state.computedStyle['thumb_icon_color'],
+          ),
+          labelColor: StyleUtils.parseColor(
+            state.computedStyle['value_label_color'],
+          ),
+          thumbIcon: state.thumbIcon,
+        ),
+        thumbShape: CustomSliderThumbShape(
+          thumbRadius: 14,
+          valuePrefix: state.prefix,
+          displayValue: state.sliderValue ?? state.min,
+          iconColor: StyleUtils.parseColor(
+            state.computedStyle['thumb_icon_color'],
+          ),
+          labelColor: StyleUtils.parseColor(
+            state.computedStyle['value_label_color'],
+          ),
+          thumbIcon: state.thumbIcon,
+        ),
+      ),
+      child: state.isRange
+          ? RangeSlider(
+              values:
+                  state.sliderRangeValues ?? RangeValues(state.min, state.max),
+              min: state.min,
+              max: state.max,
+              divisions: state.divisions,
+              labels: RangeLabels(
+                '${state.prefix}${(state.sliderRangeValues?.start ?? state.min).round()}',
+                '${state.prefix}${(state.sliderRangeValues?.end ?? state.max).round()}',
+              ),
+              onChangeStart: state.isDisabled
+                  ? null
+                  : (values) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderChangeStartEvent(value: values),
+                      );
+                    },
+              onChanged: state.isDisabled
+                  ? null
+                  : (values) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderValueChangedEvent(value: values),
+                      );
+                    },
+              onChangeEnd: state.isDisabled
+                  ? null
+                  : (values) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderChangeEndEvent(value: values),
+                      );
+                    },
+            )
+          : Slider(
+              value: state.sliderValue ?? state.min,
+              min: state.min,
+              max: state.max,
+              divisions: state.divisions,
+              label: '${state.prefix}${state.sliderValue?.round()}',
+              onChangeStart: state.isDisabled
+                  ? null
+                  : (value) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderChangeStartEvent(value: value),
+                      );
+                    },
+              onChanged: state.isDisabled
+                  ? null
+                  : (value) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderValueChangedEvent(value: value),
+                      );
+                    },
+              onChangeEnd: state.isDisabled
+                  ? null
+                  : (value) {
+                      context.read<DynamicSliderBloc>().add(
+                        SliderChangeEndEvent(value: value),
+                      );
+                    },
+            ),
+    );
+
+    Widget? iconWidget;
+    if (state.iconName != null) {
+      final iconData = IconTypeEnum.fromString(state.iconName!).toIconData();
+      if (iconData != null) {
+        iconWidget = Icon(
+          iconData,
+          color: StyleUtils.parseColor(state.computedStyle['icon_color']),
+          size: (state.computedStyle['icon_size'] as num?)?.toDouble() ?? 24.0,
+        );
+      }
+    }
+
+    return Focus(
+      focusNode: state.focusNode,
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(state.focusNode);
+        },
+        child: Container(
+          key: Key(state.component!.id),
+          margin: StyleUtils.parsePadding(state.computedStyle['margin']),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (iconWidget != null) ...[
+                    iconWidget,
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(child: sliderWidget),
+                ],
+              ),
+              if (state.hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                  child: Text(
+                    state.hint!,
+                    style: TextStyle(
+                      color: StyleUtils.parseColor(
+                        state.computedStyle['hint_color'],
+                      ),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              if (state.errorText != null && state.errorText!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+                  child: Text(
+                    state.errorText!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
