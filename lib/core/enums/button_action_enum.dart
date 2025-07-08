@@ -1,7 +1,9 @@
 enum ButtonAction {
   previewForm('preview_form'),
   submitForm('submit_form'),
-  resetForm('reset_form');
+  resetForm('reset_form'),
+  previousPage('previous_page'),
+  nextPage('next_page');
 
   final String value;
   const ButtonAction(this.value);

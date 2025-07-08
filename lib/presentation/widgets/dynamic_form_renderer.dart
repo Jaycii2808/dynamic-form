@@ -55,6 +55,7 @@ class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormPageModel? page;
   final VoidCallback? onCompleted;
   final Function(String componentId, dynamic value)? onFieldChanged;
+  final Function(String action, Map<String, dynamic>? data)? onButtonAction;
 
   const DynamicFormRenderer({
     super.key,
@@ -62,6 +63,7 @@ class DynamicFormRenderer extends StatefulWidget {
     this.page,
     this.onCompleted,
     this.onFieldChanged,
+    this.onButtonAction,
   });
 
   @override
@@ -70,15 +72,19 @@ class DynamicFormRenderer extends StatefulWidget {
 
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   void handleFormFieldUpdate(
-    BuildContext context,
-    DynamicFormModel component,
-    dynamic value,
-  ) {
+      BuildContext context,
+      DynamicFormModel component,
+      dynamic value,
+      ) {
     if (value != null) {
       component.config[ValueKeyEnum.value.key] = value[ValueKeyEnum.value.key];
-      context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(componentId: component.id, value: value),
-      );
+      if (widget.onFieldChanged != null) {
+        widget.onFieldChanged!(component.id, value);
+      } else {
+        context.read<DynamicFormBloc>().add(
+          UpdateFormFieldEvent(componentId: component.id, value: value),
+        );
+      }
     } else {
       debugPrint("Error: No value received");
     }
@@ -120,7 +126,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.buttonFormType:
         return DynamicButton(
           component: component,
-          onAction: _handleButtonAction,
+          onAction: (action, data) {
+            if (widget.onButtonAction != null) {
+              widget.onButtonAction!(action, data);
+            } else {
+              _handleButtonAction(action, data);
+            }
+          },
         );
       case FormTypeEnum.container:
         return _buildContainerComponent(component);
@@ -128,16 +140,19 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return const SizedBox.shrink();
     }
   }
+
   Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicTextFieldTagsBloc(initialComponent: component),
+      create: (context) =>
+          DynamicTextFieldTagsBloc(initialComponent: component),
       child: DynamicTextFieldTags(
         key: Key(component.id),
         component: component,
-       onComplete: (value) => handleFormFieldUpdate(context, component, value),
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
       ),
     );
   }
+
   Widget _buildSelectorButtonBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) =>
@@ -149,6 +164,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
+
   Widget _buildSwitchBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) => DynamicSwitchBloc(initialComponent: component),
@@ -207,13 +223,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         color: StyleUtils.parseColor(style['background_color']),
         border: style['border_color'] != null
             ? Border.all(
-                color: StyleUtils.parseColor(style['border_color']),
-                width: ComponentUtils.getStyleValue<num>(
-                  style,
-                  'border_width',
-                  1.0,
-                ).toDouble(),
-              )
+          color: StyleUtils.parseColor(style['border_color']),
+          width: ComponentUtils.getStyleValue<num>(
+            style,
+            'border_width',
+            1.0,
+          ).toDouble(),
+        )
             : null,
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
       ),
@@ -224,7 +240,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
           if (component.children != null)
             ...component.children!.map(
-              (child) => DynamicFormRenderer(
+                  (child) => DynamicFormRenderer(
                 component: child,
                 page: widget.page,
                 onCompleted: widget.onCompleted,
@@ -272,6 +288,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           break;
         case ButtonAction.resetForm:
           _handleResetAction();
+        case ButtonAction.nextPage:
+        case ButtonAction.previousPage:
           break;
       }
     } catch (e) {

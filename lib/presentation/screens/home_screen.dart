@@ -2,6 +2,8 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:dynamic_form_bi/presentation/screens/dynamic_form_multi_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,14 +40,48 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _navigateToForm(BuildContext context, String configKey) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            DynamicFormScreen(configKey: configKey, title: configKey),
-      ),
+  void _navigateToForm(BuildContext context, String configKey) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+    try {
+      final configString = RemoteConfigService().getAll()[configKey]?.asString() ?? '';
+      Navigator.of(context).pop(); // Close loading dialog
+      if (configString.isNotEmpty) {
+        try {
+          final json = configString.trim().startsWith('{') ? configString : null;
+          if (json != null) {
+            final map = Map<String, dynamic>.from(
+              (jsonDecode(json) as Map<String, dynamic>),
+            );
+            if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DynamicFormMultiScreen(configKey: configKey),
+                ),
+              );
+              return;
+            }
+          }
+        } catch (e) {
+          // Ignore and fallback to single page
+        }
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DynamicFormScreen(configKey: configKey, title: configKey),
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load form config: $e')),
+      );
+    }
   }
 
   @override
