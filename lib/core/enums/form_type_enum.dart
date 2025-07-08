@@ -19,6 +19,9 @@ enum FormTypeEnum {
 
   factory FormTypeEnum.fromJson(String? json) {
     try {
+      // Handle legacy textfield name
+      if (json == 'textfield') return FormTypeEnum.textFieldFormType;
+
       return FormTypeEnum.values.firstWhere(
         (e) => e.toString().split('.').last == json,
         orElse: () => FormTypeEnum.unknown,
