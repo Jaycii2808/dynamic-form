@@ -26,37 +26,35 @@ class DynamicTextArea extends StatelessWidget {
     return BlocConsumer<DynamicTextAreaBloc, DynamicTextAreaState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.value.key:
+              state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
           ValueKeyEnum.errorText.key: state.errorText,
         };
         if (state is DynamicTextAreaSuccess) {
           onComplete(valueMap);
-          if (state.textController!.text != state.component!.config[ValueKeyEnum.value.key]) {
-            state.textController!.text = state.component!.config[ValueKeyEnum.value.key] ?? '';
+          if (state.textController!.text !=
+              state.component!.config[ValueKeyEnum.value.key]) {
+            state.textController!.text =
+                state.component!.config[ValueKeyEnum.value.key] ?? '';
           }
         } else if (state is DynamicTextAreaError) {
           onComplete(valueMap);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        } else if (state is DynamicTextAreaInitial || state is DynamicTextAreaLoading) {
-          // if (state.component?.id.isNotEmpty ?? false) {
-          //   final valueMap = {
-          //     ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key] ?? '',
-          //     ValueKeyEnum.currentState.key:
-          //         state.component!.config[ValueKeyEnum.currentState.key] ??
-          //         FormStateEnum.base.value,
-          //     ValueKeyEnum.errorText.key: state.errorText,
-          //   };
-          //   onComplete(valueMap);
-          // }
-          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else if (state is DynamicTextAreaInitial ||
+            state is DynamicTextAreaLoading) {
+          debugPrint(
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+          );
         } else {
           onComplete(valueMap);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
       builder: (context, state) {
-        if (state is DynamicTextAreaLoading || state is DynamicTextAreaInitial) {
+        if (state is DynamicTextAreaLoading ||
+            state is DynamicTextAreaInitial) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -145,7 +143,9 @@ class DynamicTextArea extends StatelessWidget {
       enabled: inputConfig.editable && !inputConfig.disabled,
       readOnly: inputConfig.readOnly,
       onSubmitted: (value) {
-        context.read<DynamicTextAreaBloc>().add(TextAreaFocusLostEvent(value: value));
+        context.read<DynamicTextAreaBloc>().add(
+          TextAreaFocusLostEvent(value: value),
+        );
       },
       maxLines: styleConfig.maxLines,
       minLines: styleConfig.minLines,

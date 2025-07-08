@@ -25,16 +25,21 @@ class DynamicSwitch extends StatelessWidget {
     return BlocConsumer<DynamicSwitchBloc, DynamicSwitchState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.value.key:
+              state.component!.config[ValueKeyEnum.value.key],
           'selected': state.component!.config['selected'],
-          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
         };
         if (state is DynamicSwitchSuccess) {
           onComplete(valueMap);
         } else if (state is DynamicSwitchError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        }else if (state is DynamicSwitchLoading || state is DynamicSwitchInitial) {
-          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else if (state is DynamicSwitchLoading ||
+            state is DynamicSwitchInitial) {
+          debugPrint(
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+          );
         } else {
           onComplete(valueMap);
           DialogUtils.showErrorDialog(context, "Another Error");
@@ -97,7 +102,9 @@ class DynamicSwitch extends StatelessWidget {
             onChanged: isDisabled
                 ? null
                 : (bool value) {
-                    context.read<DynamicSwitchBloc>().add(SwitchToggledEvent(value: value));
+                    context.read<DynamicSwitchBloc>().add(
+                      SwitchToggledEvent(value: value),
+                    );
                   },
             activeColor: activeColor,
             inactiveThumbColor: inactiveThumbColor,
@@ -110,8 +117,9 @@ class DynamicSwitch extends StatelessWidget {
               child: Text(
                 config['label'],
                 style: TextStyle(
-                  fontSize: (style['label_text_size'] as num?)?.toDouble() ?? 16,
-                 // color: StyleUtils.parseColor(style['label_color'] ?? style['color']),
+                  fontSize:
+                      (style['label_text_size'] as num?)?.toDouble() ?? 16,
+                  // color: StyleUtils.parseColor(style['label_color'] ?? style['color']),
                 ),
               ),
             ),

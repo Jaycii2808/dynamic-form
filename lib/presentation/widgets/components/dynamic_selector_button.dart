@@ -26,24 +26,29 @@ class DynamicSelectorButton extends StatelessWidget {
     return BlocConsumer<DynamicSelectorButtonBloc, DynamicSelectorButtonState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.value.key:
+              state.component!.config[ValueKeyEnum.value.key],
           'selected': state.component!.config['selected'],
-          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
         };
         if (state is DynamicSelectorButtonSuccess) {
-
           onComplete(valueMap);
         } else if (state is DynamicSelectorButtonError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        }else if (state is DynamicSelectorButtonLoading || state is DynamicSelectorButtonInitial) {
-          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else if (state is DynamicSelectorButtonLoading ||
+            state is DynamicSelectorButtonInitial) {
+          debugPrint(
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+          );
         } else {
           onComplete(valueMap);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
       builder: (context, state) {
-        if (state is DynamicSelectorButtonLoading || state is DynamicSelectorButtonInitial) {
+        if (state is DynamicSelectorButtonLoading ||
+            state is DynamicSelectorButtonInitial) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -69,9 +74,12 @@ class DynamicSelectorButton extends StatelessWidget {
     final style = Map<String, dynamic>.from(component.style);
     final config = component.config;
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
-    final selected = config['selected'] == true || config[ValueKeyEnum.value.key] == true;
+    final selected =
+        config['selected'] == true || config[ValueKeyEnum.value.key] == true;
     final isDisabled = config['disabled'] == true;
-    final currentState = FormStateEnum.fromString(inputConfig.currentState) ?? FormStateEnum.base;
+    final currentState =
+        FormStateEnum.fromString(inputConfig.currentState) ??
+        FormStateEnum.base;
 
     if (component.states?.containsKey(currentState.value) == true) {
       style.addAll(component.states![currentState.value]['style']);
@@ -106,7 +114,9 @@ class DynamicSelectorButton extends StatelessWidget {
               child: selected
                   ? Icon(
                       Icons.check,
-                      size: ((style['icon_size'] as num?)?.toDouble() ?? 20.0) * 0.6,
+                      size:
+                          ((style['icon_size'] as num?)?.toDouble() ?? 20.0) *
+                          0.6,
                       color: Colors.white,
                     )
                   : null,
