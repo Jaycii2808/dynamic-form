@@ -19,147 +19,130 @@ class DynamicButton extends StatefulWidget {
 class _DynamicButtonState extends State<DynamicButton> {
   bool _isLoading = false;
 
+  // State variables for computed values
+  late DynamicFormModel _currentComponent;
+  String _currentState = 'base';
+  Map<String, dynamic> _style = {};
+  Map<String, dynamic> _config = {};
+  String _buttonText = 'Button';
+  String _action = 'custom';
+  bool _isVisible = true;
+  bool _isDisabled = false;
+  IconData? _iconData;
+
+  // Pre-computed UI elements
+  Widget? _buttonWidget;
+  VoidCallback? _onPressedHandler;
+  Widget? _buttonContent;
+
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
-      builder: (context, state) {
-        // Get the latest component from BLoC state to see visibility changes
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
+  void initState() {
+    super.initState();
 
-        final config = component.config;
-        final style = Map<String, dynamic>.from(component.style);
+    // Initialize with widget component
+    _currentComponent = widget.component;
+    _computeValues();
+  }
 
-        // Get button properties safely first
-        final buttonText =
-            config['label']?.toString() ??
-            config['text']?.toString() ??
-            'Button';
-        final action = config['action']?.toString() ?? 'custom';
+  void _computeValues() {
+    _config = Map<String, dynamic>.from(_currentComponent.config);
 
-        // Check visibility first - hide button if validation fails
-        final isVisible = config['isVisible'] ?? true;
+    // Extract button properties
+    _buttonText =
+        _config['label']?.toString() ?? _config['text']?.toString() ?? 'Button';
+    _action = _config['action']?.toString() ?? 'custom';
+    _isVisible = _config['isVisible'] ?? true;
+    _isDisabled = _config['disabled'] == true || _isLoading;
 
-        // Debug log for Save button visibility
-        if (action == 'submit_form') {
-          debugPrint(
-            '🔘 Save Button (${component.id}): isVisible=$isVisible, canSave=${config['canSave']}',
-          );
-        }
+    // Debug log for Save button visibility
+    if (_action == 'submit_form') {
+      debugPrint(
+        '🔘 Save Button (${_currentComponent.id}): isVisible=$_isVisible, canSave=${_config['canSave']}',
+      );
+    }
 
-        if (!isVisible) {
-          debugPrint(
-            '🚫 Hiding button ${component.id} due to validation failure',
-          );
-          return const SizedBox.shrink(); // Hide button completely
-        }
+    if (!_isVisible) {
+      debugPrint(
+        '🚫 Hiding button ${_currentComponent.id} due to validation failure',
+      );
+    }
 
-        // Check if button should be disabled
-        final isDisabled = config['disabled'] == true || _isLoading;
+    _computeStyles();
+    _computeCurrentState();
+    _computeIcon();
+    _computeUIElements();
 
-        // Apply variant styles
-        if (component.variants != null) {
-          final variant = config['variant']?.toString() ?? 'primary';
-          if (component.variants!.containsKey(variant)) {
-            final variantStyle =
-                component.variants![variant]['style'] as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-        }
-
-        // Determine current state
-        String currentState = 'base';
-        if (isDisabled) currentState = 'disabled';
-        if (_isLoading) currentState = 'loading';
-
-        // Apply state styles
-        if (component.states != null &&
-            component.states!.containsKey(currentState)) {
-          final stateStyle =
-              component.states![currentState]['style'] as Map<String, dynamic>?;
-          if (stateStyle != null) style.addAll(stateStyle);
-        }
-
-        // Parse style properties safely
-        final backgroundColor = StyleUtils.parseColor(
-          style['backgroundColor']?.toString() ?? '#2196f3',
-        );
-        final textColor = StyleUtils.parseColor(
-          style['color']?.toString() ?? '#ffffff',
-        );
-        final borderColor = StyleUtils.parseColor(
-          style['borderColor']?.toString() ?? 'transparent',
-        );
-        final borderWidth = _parseDouble(style['borderWidth']) ?? 1.0;
-        final borderRadius = StyleUtils.parseBorderRadius(
-          _parseInt(style['borderRadius']) ?? 8,
-        );
-        final fontSize = _parseDouble(style['fontSize']) ?? 16.0;
-        final fontWeight = _parseFontWeight(
-          style['fontWeight']?.toString() ?? 'normal',
-        );
-        final padding = StyleUtils.parsePadding(
-          style['padding']?.toString() ?? '12px 24px',
-        );
-        final margin = StyleUtils.parsePadding(
-          style['margin']?.toString() ?? '8px 4px',
-        );
-        final elevation = _parseDouble(style['elevation']) ?? 2.0;
-
-        // Get icon if specified
-        IconData? iconData;
-        final iconName =
-            config['icon']?.toString() ?? style['icon']?.toString();
-        if (iconName != null && iconName.isNotEmpty) {
-          iconData = IconTypeEnum.fromString(iconName).toIconData();
-        }
-
-        return Container(
-          key: Key(component.id),
-          margin: margin,
-          child: SizedBox(
-            width: _parseDouble(style['width']),
-            height: _parseDouble(style['height']) ?? 48.0,
-            child: ElevatedButton(
-              onPressed: isDisabled ? null : () => _handleButtonPress(action),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: backgroundColor,
-                foregroundColor: textColor,
-                disabledBackgroundColor: Colors.grey.shade300,
-                disabledForegroundColor: Colors.grey.shade600,
-                side: borderWidth > 0
-                    ? BorderSide(color: borderColor, width: borderWidth)
-                    : null,
-                shape: RoundedRectangleBorder(borderRadius: borderRadius),
-                padding: padding,
-                elevation: elevation,
-                shadowColor: StyleUtils.parseColor(
-                  style['shadowColor']?.toString() ?? '#000000',
-                ),
-              ),
-              child: _buildButtonContent(
-                buttonText,
-                iconData,
-                fontSize,
-                fontWeight,
-              ),
-            ),
-          ),
-        );
-      },
+    debugPrint(
+      '[Button][_computeValues] id=${_currentComponent.id} text=$_buttonText action=$_action visible=$_isVisible disabled=$_isDisabled',
     );
   }
 
-  Widget _buildButtonContent(
-    String text,
-    IconData? icon,
-    double fontSize,
-    FontWeight fontWeight,
-  ) {
+  void _computeStyles() {
+    _style = Map<String, dynamic>.from(_currentComponent.style);
+
+    // Apply variant styles
+    if (_currentComponent.variants != null) {
+      final variant = _config['variant']?.toString() ?? 'primary';
+      if (_currentComponent.variants!.containsKey(variant)) {
+        final variantStyle =
+            _currentComponent.variants![variant]['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) _style.addAll(variantStyle);
+      }
+    }
+
+    // Apply state styles
+    if (_currentComponent.states != null &&
+        _currentComponent.states!.containsKey(_currentState)) {
+      final stateStyle =
+          _currentComponent.states![_currentState]['style']
+              as Map<String, dynamic>?;
+      if (stateStyle != null) _style.addAll(stateStyle);
+    }
+  }
+
+  void _computeCurrentState() {
+    if (_isDisabled) {
+      _currentState = 'disabled';
+    } else if (_isLoading) {
+      _currentState = 'loading';
+    } else {
+      _currentState = 'base';
+    }
+  }
+
+  void _computeIcon() {
+    final iconName = _config['icon']?.toString() ?? _style['icon']?.toString();
+    if (iconName != null && iconName.isNotEmpty) {
+      _iconData = IconTypeEnum.fromString(iconName).toIconData();
+    } else {
+      _iconData = null;
+    }
+  }
+
+  void _computeUIElements() {
+    // Pre-compute event handler
+    _onPressedHandler = (_isDisabled || !_isVisible)
+        ? null
+        : _handleButtonPress;
+
+    // Pre-compute button content
+    _buttonContent = _buildButtonContent();
+
+    // Pre-compute button widget
+    if (!_isVisible) {
+      _buttonWidget = const SizedBox.shrink();
+    } else {
+      _buttonWidget = _buildButtonWidget();
+    }
+  }
+
+  Widget _buildButtonContent() {
+    final fontSize = _parseDouble(_style['fontSize']) ?? 16.0;
+    final fontWeight = _parseFontWeight(
+      _style['fontWeight']?.toString() ?? 'normal',
+    );
+
     if (_isLoading) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -171,7 +154,7 @@ class _DynamicButtonState extends State<DynamicButton> {
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
                 StyleUtils.parseColor(
-                  widget.component.style['color']?.toString() ?? '#ffffff',
+                  _style['color']?.toString() ?? '#ffffff',
                 ),
               ),
             ),
@@ -185,14 +168,14 @@ class _DynamicButtonState extends State<DynamicButton> {
       );
     }
 
-    if (icon != null) {
+    if (_iconData != null) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: fontSize + 4),
+          Icon(_iconData, size: fontSize + 4),
           const SizedBox(width: 8),
           Text(
-            text,
+            _buttonText,
             style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
           ),
         ],
@@ -200,27 +183,81 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
 
     return Text(
-      text,
+      _buttonText,
       style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
     );
   }
 
-  void _handleButtonPress(String action) async {
+  Widget _buildButtonWidget() {
+    // Parse style properties
+    final backgroundColor = StyleUtils.parseColor(
+      _style['backgroundColor']?.toString() ?? '#2196f3',
+    );
+    final textColor = StyleUtils.parseColor(
+      _style['color']?.toString() ?? '#ffffff',
+    );
+    final borderColor = StyleUtils.parseColor(
+      _style['borderColor']?.toString() ?? 'transparent',
+    );
+    final borderWidth = _parseDouble(_style['borderWidth']) ?? 1.0;
+    final borderRadius = StyleUtils.parseBorderRadius(
+      _parseInt(_style['borderRadius']) ?? 8,
+    );
+    final padding = StyleUtils.parsePadding(
+      _style['padding']?.toString() ?? '12px 24px',
+    );
+    final margin = StyleUtils.parsePadding(
+      _style['margin']?.toString() ?? '8px 4px',
+    );
+    final elevation = _parseDouble(_style['elevation']) ?? 2.0;
+
+    return Container(
+      key: Key(_currentComponent.id),
+      margin: margin,
+      child: SizedBox(
+        width: _parseDouble(_style['width']),
+        height: _parseDouble(_style['height']) ?? 48.0,
+        child: ElevatedButton(
+          onPressed: _onPressedHandler,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: textColor,
+            disabledBackgroundColor: Colors.grey.shade300,
+            disabledForegroundColor: Colors.grey.shade600,
+            side: borderWidth > 0
+                ? BorderSide(color: borderColor, width: borderWidth)
+                : null,
+            shape: RoundedRectangleBorder(borderRadius: borderRadius),
+            padding: padding,
+            elevation: elevation,
+            shadowColor: StyleUtils.parseColor(
+              _style['shadowColor']?.toString() ?? '#000000',
+            ),
+          ),
+          child: _buttonContent,
+        ),
+      ),
+    );
+  }
+
+  // Event handler - business logic
+  void _handleButtonPress() async {
     setState(() {
       _isLoading = true;
+      _computeValues(); // Recompute for loading state
     });
 
     try {
       // Prepare data based on action
       final data = {
-        'action': action,
+        'action': _action,
         'timestamp': DateTime.now().toIso8601String(),
-        'formId': widget.component.id,
-        'customData': widget.component.config['customData'],
+        'formId': _currentComponent.id,
+        'customData': _currentComponent.config['customData'],
       };
 
       // Call the onAction callback
-      widget.onAction?.call(action, data);
+      widget.onAction?.call(_action, data);
 
       // Add delay for better UX
       await Future.delayed(const Duration(milliseconds: 500));
@@ -228,11 +265,13 @@ class _DynamicButtonState extends State<DynamicButton> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _computeValues(); // Recompute to exit loading state
         });
       }
     }
   }
 
+  // Helper methods
   double? _parseDouble(dynamic value) {
     if (value == null) return null;
     if (value is double) return value;
@@ -282,5 +321,61 @@ class _DynamicButtonState extends State<DynamicButton> {
       default:
         return FontWeight.normal;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<DynamicFormBloc, DynamicFormState>(
+      listener: (context, state) {
+        // Update component from state and recompute values only when necessary
+        final updatedComponent = (state.page?.components != null)
+            ? state.page!.components.firstWhere(
+                (c) => c.id == widget.component.id,
+                orElse: () => widget.component,
+              )
+            : widget.component;
+
+        // Only update if component actually changed
+        if (updatedComponent != _currentComponent ||
+            updatedComponent.config['isVisible'] !=
+                _currentComponent.config['isVisible'] ||
+            updatedComponent.config['disabled'] !=
+                _currentComponent.config['disabled'] ||
+            updatedComponent.config['label'] !=
+                _currentComponent.config['label'] ||
+            updatedComponent.config['text'] !=
+                _currentComponent.config['text']) {
+          setState(() {
+            _currentComponent = updatedComponent;
+            _computeValues();
+          });
+        }
+      },
+      child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
+        buildWhen: (previous, current) {
+          // Only rebuild when something visual actually changes
+          final prevComponent = previous.page?.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
+          final currComponent = current.page?.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
+
+          return prevComponent?.config['isVisible'] !=
+                  currComponent?.config['isVisible'] ||
+              prevComponent?.config['disabled'] !=
+                  currComponent?.config['disabled'] ||
+              prevComponent?.config['label'] !=
+                  currComponent?.config['label'] ||
+              prevComponent?.config['text'] != currComponent?.config['text'];
+        },
+        builder: (context, state) {
+          // Pure UI rendering - NO LOGIC HERE
+          return _buttonWidget ?? const SizedBox.shrink();
+        },
+      ),
+    );
   }
 }
