@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
@@ -107,7 +108,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorButtonFormType:
-        return DynamicSelectorButton(component: component);
+        return _buildSelectorButtonBlocProvider(component);
       case FormTypeEnum.switchFormType:
         return DynamicSwitch(component: component);
       case FormTypeEnum.textFieldTagsFormType:
@@ -126,9 +127,22 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     }
   }
 
+  Widget _buildSelectorButtonBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) =>
+          DynamicSelectorButtonBloc(initialComponent: component),
+      child: DynamicSelectorButton(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+
   Widget _buildDateTimeRangePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicDateTimeRangePickerBloc(initialComponent: component),
+      create: (context) =>
+          DynamicDateTimeRangePickerBloc(initialComponent: component),
       child: DynamicDateTimeRangePicker(
         key: Key(component.id),
         component: component,
@@ -139,7 +153,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildDateTimePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicDateTimePickerBloc(initialComponent: component),
+      create: (context) =>
+          DynamicDateTimePickerBloc(initialComponent: component),
       child: DynamicDateTimePicker(
         key: Key(component.id),
         component: component,
