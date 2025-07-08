@@ -1,170 +1,76 @@
+import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/style_color_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 
-class DynamicDateTimePicker extends StatefulWidget {
+class DynamicDateTimePicker extends StatelessWidget {
   final DynamicFormModel component;
-  final Function(Map<String, dynamic>)? onComplete;
+  final Function(dynamic) onComplete;
 
   const DynamicDateTimePicker({
     super.key,
     required this.component,
-    this.onComplete,
+    required this.onComplete,
   });
 
   @override
-  State<DynamicDateTimePicker> createState() => _DynamicDateTimePickerState();
-}
-
-class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-  String? _errorText;
-  late PickerModeEnum _pickerMode;
-  late String _selectedFormat;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-    _focusNode = FocusNode()..addListener(_handleFocusChange);
-    final inputConfig = InputConfig.fromJson(widget.component.config);
-    _pickerMode = _determinePickerMode(widget.component.config);
-    _selectedFormat = _pickerMode.dateFormat;
-    _initializeValue(inputConfig);
-  }
-
-  void _initializeValue(InputConfig inputConfig) {
-    final value = inputConfig.value;
-    debugPrint(
-      'initState: componentId=${widget.component.id}, initialValue=$value, selectedFormat=$_selectedFormat',
-    );
-    if (value.isNotEmpty) {
-      try {
-        DateFormat(_selectedFormat).parseStrict(value);
-        _controller.text = value;
-        debugPrint('initState: controllerText=${_controller.text}');
-      } catch (e) {
-        debugPrint('initState: Error parsing initial value: $e');
-        _controller.text = '';
-      }
-    }
-  }
-
-  PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
-    final pickerModeStr =
-        config['picker_mode']  ?? 'fullDateTime';
-    return PickerModeEnum.fromString(pickerModeStr);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode
-      ..removeListener(_handleFocusChange)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    if (!_focusNode.hasFocus) {
-      _saveAndValidate();
-    }
-  }
-
-  void _saveAndValidate() {
-    final value = _controller.text;
-    final validationError = _validateDateTimePicker(value);
-    final newState = validationError != null
-        ? FormStateEnum.error
-        : value.isNotEmpty
-        ? FormStateEnum.success
-        : FormStateEnum.base;
-
-    final valueMap = {
-      ValueKeyEnum.value.key: value,
-      ValueKeyEnum.currentState.key: newState.value,
-      ValueKeyEnum.errorText.key: validationError,
-    };
-
-    setState(() => _errorText = validationError);
-    widget.onComplete?.call(valueMap);
-  }
-
-  String? _validateDateTimePicker(String value) {
-    final validationConfig = widget.component.validation;
-    if (validationConfig == null) return null;
-
-    final requiredValidation =
-        validationConfig['required'] as Map<String, dynamic>?;
-    if (requiredValidation?['is_required'] == true && value.isEmpty) {
-      debugPrint(
-        'validate: componentId=${widget.component.id}, error=Required field empty',
-      );
-      return requiredValidation?['error_message'] as String? ??
-          'Please select a date';
-    }
-
-    if (value.isNotEmpty) {
-      try {
-        DateFormat(_selectedFormat).parseStrict(value);
-        debugPrint(
-          'validate: componentId=${widget.component.id}, value=$value, validation=success',
-        );
-        return null;
-      } catch (e) {
-        debugPrint(
-          'validate: componentId=${widget.component.id}, value=$value, error=Invalid date format: $e',
-        );
-        return 'Invalid date format';
-      }
-    }
-    return null;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
+    return BlocConsumer<DynamicDateTimePickerBloc, DynamicDateTimePickerState>(
+      listener: (context, state) {
+        final valueMap = {
+          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.errorText.key: state.errorText,
+        };
+        if (state is DynamicDateTimePickerSuccess) {
+          onComplete(valueMap);
+          // Sync controller if not focused
+          if (state.focusNode?.hasFocus == false &&
+              state.textController!.text != state.component!.config[ValueKeyEnum.value.key]) {
+            state.textController!.text = state.component!.config[ValueKeyEnum.value.key] ?? '';
+          }
+        } else if (state is DynamicDateTimePickerError) {
+          DialogUtils.showErrorDialog(context, state.errorMessage!);
+        } else if (state is DynamicDateTimePickerLoading || state is DynamicDateTimePickerInitial) {
+          debugPrint('Listener: Handling ${state.runtimeType} state');
+        } else {
+          onComplete(valueMap);
+          DialogUtils.showErrorDialog(context, "Another Error");
+        }
+      },
       builder: (context, state) {
-        final component =
-            state.page?.components.firstWhere(
-              (c) => c.id == widget.component.id,
-              orElse: () => widget.component,
-            ) ??
-            widget.component;
-        final inputConfig = InputConfig.fromJson(component.config);
-        final currentState =
-            FormStateEnum.fromString(inputConfig.currentState) ??
-            FormStateEnum.base;
-        final styleConfig = StyleConfig.fromJson(component.style);
+        if (state is DynamicDateTimePickerLoading || state is DynamicDateTimePickerInitial) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-        _errorText = inputConfig.errorText;
-        _syncControllerWithState(inputConfig.value);
+        if (state is DynamicDateTimePickerSuccess) {
+          return _buildBody(
+            state.styleConfig!,
+            state.inputConfig!,
+            state.component!,
+            state.formState!,
+            state.errorText,
+            state.textController!,
+            state.focusNode!,
+            context,
+          );
+        }
 
-        return _buildBody(styleConfig, inputConfig, component, currentState);
+        return const SizedBox.shrink();
       },
     );
-  }
-
-  void _syncControllerWithState(String componentValue) {
-    if (!_focusNode.hasFocus && _controller.text != componentValue) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_focusNode.hasFocus) {
-          _controller.text = componentValue;
-        }
-      });
-    }
   }
 
   Widget _buildBody(
@@ -172,6 +78,10 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     InputConfig inputConfig,
     DynamicFormModel component,
     FormStateEnum currentState,
+    String? errorText,
+    TextEditingController textController,
+    FocusNode focusNode,
+    BuildContext context,
   ) {
     return Container(
       key: Key(component.id),
@@ -180,24 +90,23 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(styleConfig, inputConfig, currentState),
+          _buildLabel(styleConfig, inputConfig),
           _buildDateTimeField(
             styleConfig,
             inputConfig,
             component,
-            currentState,
+            textController,
+            focusNode,
+            errorText,
+            context,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(
-    StyleConfig styleConfig,
-    InputConfig inputConfig,
-    FormStateEnum currentState,
-  ) {
-    if (inputConfig.label == null) {
+  Widget _buildLabel(StyleConfig styleConfig, InputConfig inputConfig) {
+    if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
     return Padding(
@@ -217,30 +126,24 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    TextEditingController textController,
+    FocusNode focusNode,
+    String? errorText,
+    BuildContext context,
   ) {
     return TextField(
-      controller: _controller,
-      focusNode: _focusNode,
+      controller: textController,
+      focusNode: focusNode,
       readOnly: true,
-      onTapOutside: (_) => _focusNode.unfocus(),
+      onTapOutside: (_) => focusNode.unfocus(),
       decoration: InputDecoration(
         isDense: true,
         hintText: inputConfig.placeholder,
         border: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
-        enabledBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.base,
-        ),
-        focusedBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.focused,
-        ),
-        errorBorder: _buildBorder(
-          styleConfig.borderConfig,
-          FormStateEnum.error,
-        ),
-        errorText: _errorText,
+        enabledBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
+        focusedBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.focused),
+        errorBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.error),
+        errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleConfig.contentVerticalPadding,
           horizontal: styleConfig.contentHorizontalPadding,
@@ -271,14 +174,9 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     );
   }
 
-  OutlineInputBorder _buildBorder(
-    BorderConfig borderConfig,
-    FormStateEnum? state,
-  ) {
+  OutlineInputBorder _buildBorder(BorderConfig borderConfig, FormStateEnum? state) {
     double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withValues(
-      alpha: borderConfig.borderOpacity,
-    );
+    Color color = borderConfig.borderColor.withOpacity(borderConfig.borderOpacity);
     if (state == FormStateEnum.focused) {
       width += 1;
     } else if (state == FormStateEnum.error) {
@@ -291,24 +189,29 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     );
   }
 
+  PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
+    final pickerModeStr = config['picker_mode'] ?? 'fullDateTime';
+    return PickerModeEnum.fromString(pickerModeStr);
+  }
+
   Future<void> _pickDateTime(
     BuildContext context,
     DynamicFormModel component,
     StyleConfig styleConfig,
   ) async {
-    final config = component.config;
-    _pickerMode = _determinePickerMode(config);
-    _selectedFormat = _pickerMode.dateFormat;
-    // debugPrint(
-    //   'pickDateTime: componentId=$[38;5;246m${component.id}[0m, pickerMode=$_pickerMode, selectedFormat=$_selectedFormat',
-    // );
+    final pickerMode = _determinePickerMode(component.config);
+    final selectedFormat = pickerMode.dateFormat;
 
-    final style = _buildPickerStyle(component);
-    final pickedDate = await _showDatePicker(context, style, styleConfig);
+    final style = component.style; // Using simplified style from component
+    final pickedDate = await _showDatePicker(
+      context,
+      style,
+      styleConfig,
+    );
     if (pickedDate == null || !context.mounted) return;
 
     TimeOfDay? pickedTime;
-    if (_pickerMode != PickerModeEnum.dateOnly) {
+    if (pickerMode != PickerModeEnum.dateOnly) {
       pickedTime = await _showTimePicker(context, style, styleConfig);
       if (pickedTime == null || !context.mounted) return;
     }
@@ -317,47 +220,15 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
       pickedDate.year,
       pickedDate.month,
       pickedDate.day,
-      _pickerMode == PickerModeEnum.dateOnly ? 0 : pickedTime?.hour ?? 0,
-      _pickerMode == PickerModeEnum.dateOnly ||
-              _pickerMode == PickerModeEnum.hourDate
+      pickerMode == PickerModeEnum.dateOnly ? 0 : pickedTime?.hour ?? 0,
+      pickerMode == PickerModeEnum.dateOnly || pickerMode == PickerModeEnum.hourDate
           ? 0
           : pickedTime?.minute ?? 0,
     );
 
-    final formattedDateTime = DateFormat(_selectedFormat).format(dateTime);
-    final validationError = _validateDateTimePicker(formattedDateTime);
-    final newState = validationError != null
-        ? FormStateEnum.error
-        : formattedDateTime.isNotEmpty
-        ? FormStateEnum.success
-        : FormStateEnum.base;
-
-    final valueMap = {
-      ValueKeyEnum.value.key: formattedDateTime,
-      ValueKeyEnum.currentState.key: newState.value,
-      ValueKeyEnum.errorText.key: validationError,
-    };
-
-    setState(() {
-      _errorText = validationError;
-      _controller.text = formattedDateTime;
-    });
-    widget.onComplete?.call(valueMap);
-    debugPrint(
-      'pickDateTime: componentId=${component.id}, formattedDateTime=$formattedDateTime',
-    );
-  }
-
-  Map<String, dynamic> _buildPickerStyle(DynamicFormModel component) {
-    final style = Map<String, dynamic>.from(component.style);
-    final currentState = InputConfig.fromJson(component.config).currentState;
-    final variantStyle =
-        component.variants?['single']?['style'] as Map<String, dynamic>?;
-    if (variantStyle != null) style.addAll(variantStyle);
-    final stateStyle =
-        component.states?[currentState]?['style'] as Map<String, dynamic>?;
-    if (stateStyle != null) style.addAll(stateStyle);
-    return style;
+    final formattedDateTime = DateFormat(selectedFormat).format(dateTime);
+    // Dispatch event to BLoC instead of setState
+    context.read<DynamicDateTimePickerBloc>().add(DateTimePickedEvent(value: formattedDateTime));
   }
 
   Future<DateTime?> _showDatePicker(
@@ -365,7 +236,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     Map<String, dynamic> style,
     StyleConfig styleConfig,
   ) async {
-    final pickedDate = await showDatePicker(
+    return showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
@@ -393,10 +264,6 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
         child: child!,
       ),
     );
-    debugPrint(
-      'pickDateTime: componentId=${widget.component.id}, pickedDate=$pickedDate',
-    );
-    return pickedDate;
   }
 
   Future<TimeOfDay?> _showTimePicker(
@@ -404,7 +271,7 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
     Map<String, dynamic> style,
     StyleConfig styleConfig,
   ) async {
-    final pickedTime = await showTimePicker(
+    return showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (context, child) => Theme(
@@ -430,9 +297,5 @@ class _DynamicDateTimePickerState extends State<DynamicDateTimePicker> {
         child: child!,
       ),
     );
-    debugPrint(
-      'pickDateTime: componentId=${widget.component.id}, pickedTime=$pickedTime',
-    );
-    return pickedTime;
   }
 }

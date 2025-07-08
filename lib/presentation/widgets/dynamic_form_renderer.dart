@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
@@ -93,10 +94,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.textAreaFormType:
         return _buildTextAreaBlocProvider(component);
       case FormTypeEnum.dateTimePickerFormType:
-        return DynamicDateTimePicker(
-          component: component,
-          onComplete: (value) => handleFormFieldUpdate(context, component, value),
-        );
+        return _buildDateTimePickerBlocProvider(component);
       case FormTypeEnum.dateTimeRangePickerFormType:
         return DynamicDateTimeRangePicker(
           component: component,
@@ -129,7 +127,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return const SizedBox.shrink();
     }
   }
-
+  Widget _buildDateTimePickerBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicDateTimePickerBloc(initialComponent: component),
+      child: DynamicDateTimePicker(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
   Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) => DynamicTextAreaBloc(initialComponent: component),
