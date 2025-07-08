@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
@@ -96,10 +97,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.dateTimePickerFormType:
         return _buildDateTimePickerBlocProvider(component);
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return DynamicDateTimeRangePicker(
-          component: component,
-          onComplete: (value) => handleFormFieldUpdate(context, component, value),
-        );
+        return _buildDateTimeRangePickerBlocProvider(component);
       case FormTypeEnum.dropdownFormType:
         return DynamicDropdown(component: component);
       case FormTypeEnum.checkboxFormType:
@@ -127,6 +125,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return const SizedBox.shrink();
     }
   }
+
+  Widget _buildDateTimeRangePickerBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicDateTimeRangePickerBloc(initialComponent: component),
+      child: DynamicDateTimeRangePicker(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+
   Widget _buildDateTimePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) => DynamicDateTimePickerBloc(initialComponent: component),
@@ -137,6 +147,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
+
   Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) => DynamicTextAreaBloc(initialComponent: component),
