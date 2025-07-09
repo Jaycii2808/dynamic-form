@@ -191,6 +191,9 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
               ],
               onSelected: (value) async {
                 if (value == 'clear_all') {
+                  // Capture ScaffoldMessenger before any async operations
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -215,7 +218,6 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                   );
 
                   if (confirmed == true) {
-                    final scaffoldMessenger = ScaffoldMessenger.of(context);
                     try {
                       await _savedFormsService.clearAllSavedForms();
                       await _loadSavedForms();

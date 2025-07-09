@@ -157,27 +157,18 @@ class DynamicSliderWidget extends StatelessWidget {
     final sliderTheme =
         state.sliderTheme ??
         SliderTheme.of(context).copyWith(
-          activeTrackColor:
-              StyleUtils.parseColor(
-                state.computedStyle['active_color'],
-              ) ??
-              Colors.blue,
-          inactiveTrackColor:
-              StyleUtils.parseColor(
-                state.computedStyle['inactive_color'],
-              ) ??
-              Colors.grey,
-          thumbColor:
-              StyleUtils.parseColor(
-                state.computedStyle['thumb_color'],
-              ) ??
-              Colors.white,
-          overlayColor:
-              (StyleUtils.parseColor(
-                        state.computedStyle['active_color'],
-                      ) ??
-                      Colors.blue)
-                  .withValues(alpha: 0.2),
+          activeTrackColor: StyleUtils.parseColor(
+            state.computedStyle['active_color'],
+          ),
+          inactiveTrackColor: StyleUtils.parseColor(
+            state.computedStyle['inactive_color'],
+          ),
+          thumbColor: StyleUtils.parseColor(
+            state.computedStyle['thumb_color'],
+          ),
+          overlayColor: StyleUtils.parseColor(
+            state.computedStyle['active_color'],
+          ).withValues(alpha: 0.2),
           trackHeight: 6.0,
         );
 
