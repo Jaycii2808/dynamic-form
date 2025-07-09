@@ -8,9 +8,11 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
@@ -96,9 +98,12 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   }
 
   Widget _buildComponents(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormRenderer] Building component: ${component.id}, type: ${component.type}',
+    );
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
-        return DynamicTextField(component: component);
+        return _buildTextFieldBlocProvider(component);
       case FormTypeEnum.selectFormType:
         return DynamicSelect(component: component);
       case FormTypeEnum.textAreaFormType:
@@ -112,7 +117,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.checkboxFormType:
         return DynamicCheckbox(component: component);
       case FormTypeEnum.radioFormType:
-        return DynamicRadio(component: component);
+        return _buildRadioBlocProvider(component);
       case FormTypeEnum.sliderFormType:
         return DynamicSlider(component: component);
       case FormTypeEnum.selectorButtonFormType:
@@ -139,6 +144,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildTextFieldBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicTextFieldBloc(initialComponent: component),
+      child: DynamicTextField(
+        key: Key(component.id),
+        component: component,
+      ),
+    );
   }
 
   Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
@@ -207,6 +222,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         key: Key(component.id),
         component: component,
         onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+
+  Widget _buildRadioBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicRadioBloc(initialComponent: component),
+      child: DynamicRadio(
+        key: Key(component.id),
+        component: component,
       ),
     );
   }

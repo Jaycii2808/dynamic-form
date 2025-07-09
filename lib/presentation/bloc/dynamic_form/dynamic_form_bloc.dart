@@ -185,6 +185,17 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         '📝 Form field updated: ${event.componentId} = ${event.value}',
       );
 
+      debugPrint(
+        '🔄 [FormBloc] Emitting updated state with ${finalPage.components.length} components',
+      );
+      final targetComp = finalPage.components.firstWhere(
+        (c) => c.id == event.componentId,
+        orElse: () => finalPage.components.first,
+      );
+      debugPrint(
+        '📊 [FormBloc] Target component ${event.componentId} final config: ${targetComp.config}',
+      );
+
       emit(DynamicFormSuccess(page: finalPage));
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to update form field: $e';
@@ -331,11 +342,19 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     try {
       final updatedConfig = Map<String, dynamic>.from(component.config);
 
+      debugPrint(
+        '🔧 [FormBloc] Updating component ${component.id} with value: $value',
+      );
+
       if (value is Map && (value as Map).containsKey('value')) {
         final mapValue = value as Map<String, dynamic>;
 
         // Direct map-based update (for complex components)
         updatedConfig['value'] = mapValue['value'];
+
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.value = ${mapValue['value']} (was: ${component.config['value']})',
+        );
 
         if (mapValue.containsKey('error_text')) {
           updatedConfig['error_text'] = mapValue['error_text'];
@@ -367,6 +386,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         } else {
           // Regular components: store in 'value' field (singular)
           updatedConfig['value'] = value;
+          debugPrint(
+            '📝 [FormBloc] Setting ${component.id}.value = $value (was: ${component.config['value']})',
+          );
         }
 
         // Simple value update with JSON-driven validation
@@ -393,7 +415,15 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         );
       }
 
-      return ComponentUtils.updateComponentConfig(component, updatedConfig);
+      final updatedComponent = ComponentUtils.updateComponentConfig(
+        component,
+        updatedConfig,
+      );
+      debugPrint(
+        '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config}',
+      );
+
+      return updatedComponent;
     } catch (e) {
       debugPrint('Error updating component ${component.id}: $e');
       return component;

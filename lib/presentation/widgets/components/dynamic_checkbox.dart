@@ -1,11 +1,17 @@
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+// ignore_for_file: non_constant_identifier_names
+
+import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicCheckbox extends StatefulWidget {
   final DynamicFormModel component;
@@ -17,161 +23,267 @@ class DynamicCheckbox extends StatefulWidget {
 }
 
 class _DynamicCheckboxState extends State<DynamicCheckbox> {
-  final FocusNode focusNode = FocusNode();
-
-  IconData? mapIconNameToIconData(String name) {
-    return IconTypeEnum.fromString(name).toIconData();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {},
-      builder: (context, state) {
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
-
-        final bool isSelected = component.config['value'] == true;
-        final bool isEditable =
-            (component.config['editable'] != false) &&
-            (component.config['disabled'] != true);
-        Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
-        String currentState = isSelected ? 'selected' : 'base';
-        if (component.states != null &&
-            component.states!.containsKey(currentState)) {
-          final stateStyle =
-              component.states![currentState]['style'] as Map<String, dynamic>?;
-          if (stateStyle != null) style.addAll(stateStyle);
-        }
-
-        final String? label = component.config['label'];
-        final String? hint = component.config['hint'];
-        final String? iconName = component.config['icon'];
-        final IconData? leadingIconData = iconName != null
-            ? mapIconNameToIconData(iconName)
-            : null;
-
-        final Color backgroundColor = StyleUtils.parseColor(
-          style['background_color'],
-        );
-        final Color borderColor = StyleUtils.parseColor(style['border_color']);
-        final double borderWidth =
-            (style['border_width'] as num?)?.toDouble() ?? 1.0;
-        final Color iconColor = StyleUtils.parseColor(style['icon_color']);
-        final double controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
-        final double controlHeight =
-            (style['height'] as num?)?.toDouble() ?? 28;
-        final controlBorderRadius = (StyleUtils.parseBorderRadius(
-          style['border_radius'],
-        ).resolve(TextDirection.ltr).topLeft.x);
-
-        debugPrint(
-          '[Checkbox][build] id=${component.id} value=$isSelected state=$currentState',
-        );
-        debugPrint('[Checkbox][build] style=${style.toString()}');
-        debugPrint(
-          '[Checkbox][build] iconColor=$iconColor, backgroundColor=$backgroundColor, borderColor=$borderColor',
-        );
-
-        Widget toggleControl = Container(
-          width: controlWidth,
-          height: controlHeight,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            border: Border.all(color: borderColor, width: borderWidth),
-            borderRadius: BorderRadius.circular(controlBorderRadius),
-          ),
-          child: isSelected
-              ? Icon(Icons.check, color: iconColor, size: controlWidth * 0.75)
-              : null,
-        );
-
-        Widget? labelAndHint;
-        if (label != null) {
-          labelAndHint = Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: style['label_text_size']?.toDouble() ?? 16,
-                    color: StyleUtils.parseColor(style['label_color']),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (hint != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      hint,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: StyleUtils.parseColor(style['hint_color']),
-                        fontStyle: FontStyle.italic,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
-            ),
-          );
-        }
-
-        void handleTap() {
-          FocusScope.of(context).requestFocus(focusNode);
-          if (!isEditable) return;
-          debugPrint(
-            '[Checkbox][tap] id=${component.id} valueBefore=$isSelected',
-          );
-          final newValue = !isSelected;
-          context.read<DynamicFormBloc>().add(
-            UpdateFormFieldEvent(componentId: component.id, value: newValue),
-          );
-          debugPrint('[Checkbox][tap] id=${component.id} valueAfter=$newValue');
-          debugPrint('[Checkbox] Save value: ${component.id} = $newValue');
-        }
-
-        return Focus(
-          focusNode: focusNode,
-          child: GestureDetector(
-            onTap: handleTap,
-            child: Container(
-              margin: StyleUtils.parsePadding(style['margin']),
-              padding: StyleUtils.parsePadding(style['padding']),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  toggleControl,
-                  const SizedBox(width: 12),
-                  if (leadingIconData != null) ...[
-                    Icon(
-                      leadingIconData,
-                      size: 20,
-                      color: StyleUtils.parseColor(style['icon_color']),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  if (labelAndHint != null) labelAndHint,
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+    return BlocProvider(
+      create: (context) =>
+          DynamicCheckboxBloc(initialComponent: widget.component),
+      child: DynamicCheckboxWidget(
+        component: widget.component,
+      ),
     );
+  }
+}
+
+class DynamicCheckboxWidget extends StatefulWidget {
+  final DynamicFormModel component;
+
+  const DynamicCheckboxWidget({
+    super.key,
+    required this.component,
+  });
+
+  @override
+  State<DynamicCheckboxWidget> createState() => _DynamicCheckboxWidgetState();
+}
+
+class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
+  DynamicCheckboxBloc? _checkboxBloc;
+  DynamicFormBloc? _formBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkboxBloc = context.read<DynamicCheckboxBloc>();
+    _formBloc = context.read<DynamicFormBloc>();
+    _checkboxBloc!.add(const InitializeCheckboxEvent());
   }
 
   @override
   void dispose() {
-    focusNode.dispose();
+    _checkboxBloc = null;
+    _formBloc = null;
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<DynamicFormBloc, DynamicFormState>(
+      listener: (context, formState) {
+        // Listen to main form state changes and update checkbox bloc
+        if (formState.page?.components != null) {
+          final updatedComponent = formState.page!.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
+
+          // Check if component state changed from external source
+          if (updatedComponent.config['current_state'] != null &&
+              updatedComponent.config['current_state'] !=
+                  widget.component.config['current_state']) {
+            debugPrint(
+              '🔄 [Checkbox] External state change detected: ${updatedComponent.config['current_state']}',
+            );
+
+            // Update the checkbox bloc with new component state
+            _checkboxBloc?.add(
+              UpdateCheckboxFromExternalEvent(component: updatedComponent),
+            );
+          }
+        }
+      },
+      child: BlocConsumer<DynamicCheckboxBloc, DynamicCheckboxState>(
+        listenWhen: (previous, current) {
+          // Listen when state changes to success (for value updates)
+          if (current is DynamicCheckboxSuccess) {
+            // Initial load: previous is loading/initial
+            if (previous is DynamicCheckboxLoading ||
+                previous is DynamicCheckboxInitial) {
+              return true;
+            }
+
+            // Value change: compare isSelected values
+            if (previous is DynamicCheckboxSuccess) {
+              return previous.isSelected != current.isSelected;
+            }
+          }
+          return false;
+        },
+        buildWhen: (previous, current) {
+          // Rebuild when state, error, or form state changes
+          return previous.formState != current.formState ||
+              previous.errorText != current.errorText ||
+              previous.component?.config['current_state'] !=
+                  current.component?.config['current_state'];
+        },
+        listener: (context, state) {
+          if (state is DynamicCheckboxSuccess) {
+            // CRITICAL FIX: Use state.isSelected directly instead of reading from config
+            // because component config might not be fully updated yet
+            final valueMap = {
+              ValueKeyEnum.value.key:
+                  state.isSelected, // ✅ Use confirmed state value
+              'current_state':
+                  state.formState?.name, // ✅ Use computed form state
+              'error_text': state.errorText,
+            };
+
+            debugPrint(
+              '📤 [Checkbox] Sending to FormBloc: ${state.component!.id} = $valueMap',
+            );
+            debugPrint(
+              '🔍 [Checkbox] Component config: ${state.component!.config}',
+            );
+            debugPrint('🔍 [Checkbox] isSelected: ${state.isSelected}');
+
+            // Update the main form bloc with new value
+            _formBloc?.add(
+              UpdateFormFieldEvent(
+                componentId: state.component!.id,
+                value: valueMap,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          debugPrint(
+            '🔵 [Checkbox] Building with state: ${state.runtimeType}, formState: ${state.formState}, errorText: ${state.errorText}',
+          );
+
+          if (state is DynamicCheckboxLoading ||
+              state is DynamicCheckboxInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is DynamicCheckboxError) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          if (state is DynamicCheckboxSuccess) {
+            debugPrint(
+              '🎯 [Checkbox] Success state - formState: ${state.formState}, isSelected: ${state.isSelected}',
+            );
+            return _buildBody(state);
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(DynamicCheckboxSuccess state) {
+    final String? label = state.component!.config['label'];
+    final String? hint = state.component!.config['hint'];
+
+    Widget toggleControl = Container(
+      width: state.controlWidth,
+      height: state.controlHeight,
+      decoration: BoxDecoration(
+        color: state.backgroundColor,
+        border: Border.all(color: state.borderColor, width: state.borderWidth),
+        borderRadius: BorderRadius.circular(state.controlBorderRadius),
+      ),
+      child: state.isSelected
+          ? Icon(
+              Icons.check,
+              color: state.iconColor,
+              size: state.controlWidth * 0.75,
+            )
+          : null,
+    );
+
+    Widget? labelAndHint;
+    if (label != null) {
+      labelAndHint = Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: state.styleConfig?.labelTextSize?.toDouble() ?? 16,
+                color: StyleUtils.parseColor(
+                  state.component!.style['label_color'],
+                ),
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (hint != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  hint,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: StyleUtils.parseColor(
+                      state.component!.style['hint_color'],
+                    ),
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    return Focus(
+      focusNode: state.focusNode,
+      child: GestureDetector(
+        onTap: () => _handleTap(state),
+        child: Container(
+          key: Key(state.component!.id),
+          margin: StyleUtils.parsePadding(state.component!.style['margin']),
+          padding: StyleUtils.parsePadding(state.component!.style['padding']),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              toggleControl,
+              const SizedBox(width: 12),
+              if (state.leadingIconData != null) ...[
+                Icon(
+                  state.leadingIconData,
+                  size: 20,
+                  color: StyleUtils.parseColor(
+                    state.component!.style['icon_color'],
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (labelAndHint != null) labelAndHint,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleTap(DynamicCheckboxSuccess state) {
+    FocusScope.of(context).requestFocus(state.focusNode);
+    if (!state.isEditable) return;
+
+    debugPrint(
+      '[Checkbox][tap] id=${state.component!.id} valueBefore=${state.isSelected}',
+    );
+    final newValue = !state.isSelected;
+
+    _checkboxBloc?.add(
+      CheckboxValueChangedEvent(value: newValue),
+    );
+
+    debugPrint(
+      '[Checkbox][tap] id=${state.component!.id} valueAfter=$newValue',
+    );
+    debugPrint('[Checkbox] Save value: ${state.component!.id} = $newValue');
   }
 }

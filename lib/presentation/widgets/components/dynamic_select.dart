@@ -1,24 +1,20 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-String? validateForm(DynamicFormModel component, String? value) {
-  try {
-    return ValidationUtils.validateForm(component, value);
-  } catch (e) {
-    debugPrint('Validation error for ${component.id}: $e');
-    return 'Validation error occurred';
-  }
-}
 
 class DynamicSelect extends StatefulWidget {
   final DynamicFormModel component;
@@ -30,860 +26,404 @@ class DynamicSelect extends StatefulWidget {
 }
 
 class _DynamicSelectState extends State<DynamicSelect> {
-  bool isDropdownOpen = false;
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          DynamicSelectBloc(initialComponent: widget.component),
+      child: DynamicSelectWidget(
+        component: widget.component,
+      ),
+    );
+  }
+}
 
-  final GlobalKey selectKey = GlobalKey();
-  OverlayEntry? overlayEntry;
-  final FocusNode focusNode = FocusNode();
+class DynamicSelectWidget extends StatefulWidget {
+  final DynamicFormModel component;
 
+  const DynamicSelectWidget({
+    super.key,
+    required this.component,
+  });
+
+  @override
+  State<DynamicSelectWidget> createState() => _DynamicSelectWidgetState();
+}
+
+class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   @override
   void initState() {
     super.initState();
-    // No need to setState for value here anymore, just for temporary UI like dropdown
+    context.read<DynamicSelectBloc>().add(const InitializeSelectEvent());
   }
 
   @override
-  void dispose() {
-    closeDropdown();
-    focusNode.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context) {
+    return BlocListener<DynamicFormBloc, DynamicFormState>(
+      listener: (context, formState) {
+        // Listen to main form state changes and update select bloc
+        if (formState.page?.components != null) {
+          final updatedComponent = formState.page!.components.firstWhere(
+            (c) => c.id == widget.component.id,
+            orElse: () => widget.component,
+          );
 
-  // Common utility function for mapping icon names to IconData
-  IconData? mapIconNameToIconData(String name) {
-    return IconTypeEnum.fromString(name).toIconData();
-  }
+          // Check if component state changed from external source
+          if (updatedComponent.config['current_state'] != null &&
+              updatedComponent.config['current_state'] !=
+                  widget.component.config['current_state']) {
+            debugPrint(
+              '🔄 [Select] External state change detected: ${updatedComponent.config['current_state']}',
+            );
 
-  String? validateSelect(DynamicFormModel component, List<String> values) {
-    // Use validateForm for basic validation (required field, etc.)
-    if (values.isEmpty) {
-      return validateForm(component, '');
-    }
-
-    // For multiple values, validate each one
-    for (String value in values) {
-      final validationError = validateForm(component, value);
-      if (validationError != null) {
-        return validationError;
-      }
-    }
-
-    // Check max selections for multiple select (specific to select widget)
-    if (component.config['multiple'] == true) {
-      final validationConfig = component.validation;
-      if (validationConfig != null) {
-        final maxSelectionsValidation =
-            validationConfig['max_selections'] as Map<String, dynamic>?;
-        if (maxSelectionsValidation != null) {
-          final max = maxSelectionsValidation['max'];
-          if (max != null && values.length > max) {
-            return maxSelectionsValidation['error_message'] as String? ??
-                'Exceeds maximum allowed quantity';
+            // Update the select bloc with new component state
+            context.read<DynamicSelectBloc>().add(
+              UpdateSelectFromExternalEvent(component: updatedComponent),
+            );
           }
         }
-      }
-    }
+      },
+      child: BlocConsumer<DynamicSelectBloc, DynamicSelectState>(
+        listenWhen: (previous, current) {
+          return current is DynamicSelectSuccess;
+        },
+        buildWhen: (previous, current) {
+          // Rebuild when state, error, dropdown state, or form state changes
+          return previous.formState != current.formState ||
+              previous.errorText != current.errorText ||
+              (previous is DynamicSelectSuccess &&
+                  current is DynamicSelectSuccess &&
+                  (previous.isDropdownOpen != current.isDropdownOpen ||
+                      previous.selectedValue != current.selectedValue));
+        },
+        listener: (context, state) {
+          if (state is DynamicSelectSuccess) {
+            // Update main form with new value
+            final valueMap = {
+              ValueKeyEnum.value.key: state.selectedValue,
+              'current_state': state.formState?.name ?? 'base',
+              'error_text': state.errorText,
+            };
 
-    return null;
+            context.read<DynamicFormBloc>().add(
+              UpdateFormFieldEvent(
+                componentId: state.component!.id,
+                value: valueMap,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          debugPrint(
+            '🔵 [Select] Building with state: ${state.runtimeType}, formState: ${state.formState}',
+          );
+
+          if (state is DynamicSelectLoading || state is DynamicSelectInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is DynamicSelectError) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          if (state is DynamicSelectSuccess) {
+            debugPrint(
+              '🎯 [Select] Success state - formState: ${state.formState}',
+            );
+            return _buildBody(state);
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
   }
 
-  void toggleDropdown() {
-    if (isDropdownOpen) {
-      closeDropdown();
-    } else {
-      openDropdown();
-    }
-  }
-
-  void openDropdown() {
-    // Get component from current state
-    final component =
-        context.read<DynamicFormBloc>().state.page?.components.firstWhere(
-          (c) => c.id == widget.component.id,
-          orElse: () => widget.component,
-        ) ??
-        widget.component;
-
-    final RenderBox renderBox =
-        selectKey.currentContext!.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    overlayEntry = OverlayEntry(
-      builder: (context) => Stack(
+  Widget _buildBody(DynamicSelectSuccess state) {
+    return Container(
+      key: Key(state.component!.id),
+      margin: StyleUtils.parsePadding(state.component!.style['margin']),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: closeDropdown,
-              child: Container(color: Colors.transparent),
-            ),
+          // Label
+          if (state.component!.config['label'] != null) _buildLabel(state),
+
+          // Select field
+          GestureDetector(
+            key: state.selectKey,
+            onTap: state.isDisabled ? null : () => _handleSelectTap(state),
+            child: _buildSelectField(state),
           ),
-          Positioned(
-            left: offset.dx,
-            top: offset.dy + size.height,
-            width: size.width,
-            child: Material(
-              elevation: 4.0,
-              borderRadius: StyleUtils.parseBorderRadius(
-                component.style['border_radius'],
-              ),
-              child: BlocBuilder<DynamicFormBloc, DynamicFormState>(
-                builder: (context, state) {
-                  // Get updated component from state
-                  final updatedComponent = (state.page?.components != null)
-                      ? state.page!.components.firstWhere(
-                          (c) => c.id == widget.component.id,
-                          orElse: () => widget.component,
-                        )
-                      : widget.component;
-                  return buildDropdownList(updatedComponent);
-                },
-              ),
-            ),
-          ),
+
+          // Helper text
+          if (_getHelperText(state) != null) _buildHelperText(state)!,
         ],
       ),
     );
-    isDropdownOpen = true;
-    Overlay.of(context).insert(overlayEntry!);
   }
 
-  void closeDropdown() {
-    if (!isDropdownOpen) return;
-    overlayEntry?.remove();
-    overlayEntry = null;
-    isDropdownOpen = false;
-  }
-
-  Widget buildDropdownList(DynamicFormModel component) {
-    final options = component.config['options'] as List<dynamic>? ?? [];
-    final dynamic height = component.config['height'];
-    final style = component.style;
-    final isMultiple = component.config['multiple'] ?? false;
-    // Get selected_values from BLoC state
-    final componentValue = component.config['value'];
-    List<String> selectedValues = [];
-    if (isMultiple) {
-      if (componentValue is List) {
-        selectedValues = componentValue.cast<String>();
-      } else {
-        selectedValues = [];
-      }
-    }
-    Widget listView = ListView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: height == null || height == 'auto',
-      itemCount: options.length,
-      itemBuilder: (context, index) {
-        final option = options[index];
-        final optionValue = option['value']?.toString() ?? '';
-        final label = option['label']?.toString() ?? '';
-        final avatarUrl = option['avatar']?.toString();
-
-        if (isMultiple) {
-          bool isSelected = selectedValues.contains(optionValue);
-          return CheckboxListTile(
-            title: Text(label),
-            value: isSelected,
-            onChanged: (bool? newValue) {
-              List<String> newValues = List.from(selectedValues);
-              if (newValue == true) {
-                if (!newValues.contains(optionValue)) {
-                  newValues.add(optionValue);
-                }
-              } else {
-                newValues.remove(optionValue);
-              }
-              context.read<DynamicFormBloc>().add(
-                UpdateFormFieldEvent(
-                  componentId: component.id,
-                  value: newValues,
-                ),
-              );
-              debugPrint(
-                '[Select] ${component.id} value updated: $newValues (multiple)',
-              );
-            },
-            secondary: avatarUrl != null
-                ? CircleAvatar(backgroundImage: NetworkImage(avatarUrl))
-                : null,
-          );
-        } else {
-          return ListTile(
-            leading: avatarUrl != null
-                ? CircleAvatar(backgroundImage: NetworkImage(avatarUrl))
-                : null,
-            title: Text(label),
-            onTap: () {
-              context.read<DynamicFormBloc>().add(
-                UpdateFormFieldEvent(
-                  componentId: component.id,
-                  value: optionValue,
-                ),
-              );
-              debugPrint(
-                '[Select] ${component.id} value updated: $optionValue (single)',
-              );
-              closeDropdown();
-            },
-          );
-        }
-      },
+  Widget _buildLabel(DynamicSelectSuccess state) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        state.component!.config['label'],
+        style: TextStyle(
+          fontSize: state.component!.style['label_text_size']?.toDouble() ?? 14,
+          color: StyleUtils.parseColor(state.component!.style['label_color']),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
+  }
 
-    Widget listContainer;
-    if (height is num) {
-      listContainer = SizedBox(height: height.toDouble(), child: listView);
-    } else {
-      listContainer = listView;
-    }
+  Widget _buildSelectField(DynamicSelectSuccess state) {
+    final style = _getAppliedStyle(state);
 
     return Container(
+      padding: StyleUtils.parsePadding(style['padding']),
       decoration: BoxDecoration(
         color: StyleUtils.parseColor(style['background_color']),
+        border: Border.all(
+          color: StyleUtils.parseColor(style['border_color']),
+          width: 1.0,
+        ),
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
-        border: Border.all(color: StyleUtils.parseColor(style['border_color'])),
       ),
-      child: listContainer,
-    );
-  }
-
-  void showMultiSelectDialog(
-    BuildContext context,
-    DynamicFormModel component,
-    List<dynamic> options,
-    bool isMultiple,
-    bool searchable, {
-    String searchQuery = '',
-  }) {
-    final style = Map<String, dynamic>.from(component.style);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => MultiSelectDialogBloc(
-        componentId: component.id,
-        options: options,
-        label: component.config['label'] ?? 'Select option',
-        style: style,
-        searchable: searchable,
-        searchQuery: searchQuery,
+      child: Row(
+        children: [
+          if (_getPrefixIcon(state) != null) ...[
+            _getPrefixIcon(state)!,
+            const SizedBox(width: 8),
+          ],
+          Expanded(child: _buildDisplayContent(state, style)),
+          if (_getSuffixIcon(state) != null) ...[
+            const SizedBox(width: 8),
+            _getSuffixIcon(state)!,
+          ],
+        ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<DynamicFormBloc, DynamicFormState>(
-      listener: (context, state) {},
-      builder: (context, state) {
-        // Get the latest component from state (by id)
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
-                orElse: () => widget.component,
-              )
-            : widget.component;
+  Widget _buildDisplayContent(
+    DynamicSelectSuccess state,
+    Map<String, dynamic> style,
+  ) {
+    final textStyle = TextStyle(
+      fontSize: style['font_size']?.toDouble() ?? 16,
+      color: StyleUtils.parseColor(style['color']),
+      fontStyle: style['font_style'] == 'italic'
+          ? FontStyle.italic
+          : FontStyle.normal,
+    );
 
-        // Read value from BLoC state, do not use setState
-        final value = component.config['value'];
-        List<String> selectedValues = [];
-        String? selectedValue;
-        if (value is List) {
-          selectedValues = value.cast<String>();
-          selectedValue = value.isNotEmpty ? value.first.toString() : null;
-        } else {
-          selectedValue = value?.toString();
-        }
-
-        final style = Map<String, dynamic>.from(component.style);
-        final options = component.config['options'] as List<dynamic>? ?? [];
-        final isMultiple = component.config['multiple'] ?? false;
-        final searchable = component.config['searchable'] ?? false;
-        final isDisabled = component.config['disabled'] == true;
-
-        // Apply variant styles
-        if (component.variants != null) {
-          if (component.config['label'] != null &&
-              component.variants!.containsKey('with_label')) {
-            final variantStyle =
-                component.variants!['with_label']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (component.config['icon'] != null &&
-              component.variants!.containsKey('with_icon')) {
-            final variantStyle =
-                component.variants!['with_icon']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (isMultiple && component.variants!.containsKey('multiple')) {
-            final variantStyle =
-                component.variants!['multiple']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-          if (searchable && component.variants!.containsKey('searchable')) {
-            final variantStyle =
-                component.variants!['searchable']['style']
-                    as Map<String, dynamic>?;
-            if (variantStyle != null) style.addAll(variantStyle);
-          }
-        }
-
-        // Determine current state
-        String currentState = 'base';
-        final List<String> currentValues = isMultiple
-            ? selectedValues
-            : (selectedValue != null ? [selectedValue] : []);
-
-        final validationError = validateSelect(component, currentValues);
-
-        if (validationError != null) {
-          currentState = 'error';
-        } else if (currentValues.isNotEmpty && validationError == null) {
-          currentState = 'success';
-        } else {
-          currentState = 'base';
-        }
-
-        // Apply state styles
-        if (component.states != null &&
-            component.states!.containsKey(currentState)) {
-          final stateStyle =
-              component.states![currentState]['style'] as Map<String, dynamic>?;
-          if (stateStyle != null) style.addAll(stateStyle);
-        }
-
-        debugPrint(
-          '[Select][build] id=${component.id} value=${isMultiple ? selectedValues : selectedValue} state=$currentState',
+    if (state.isMultiple) {
+      String displayText = 'Select options';
+      if (state.selectedValue is List &&
+          (state.selectedValue as List).isNotEmpty) {
+        final selectedValues = state.selectedValue as List;
+        final selectedLabels = selectedValues.map((value) {
+          final option = state.options.firstWhere(
+            (opt) => opt['value'] == value,
+            orElse: () => {'label': value},
+          );
+          return option['label'] ?? value;
+        }).toList();
+        displayText = selectedLabels.join(', ');
+      }
+      return Text(displayText, style: textStyle);
+    } else {
+      if (state.selectedValue != null &&
+          state.selectedValue.toString().isNotEmpty) {
+        final option = state.options.firstWhere(
+          (opt) => opt['value'] == state.selectedValue,
+          orElse: () => {'label': state.selectedValue},
         );
-        debugPrint('[Select][build] style=${style.toString()}');
+        final displayText = option['label'] ?? state.selectedValue;
 
-        // Icon rendering
-        Widget? prefixIcon;
-        if ((component.config['icon'] != null || style['icon'] != null) &&
-            style['icon_position'] != 'right') {
-          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
-              .toString();
-          final iconColor = StyleUtils.parseColor(style['icon_color']);
-          final iconSize = (style['icon_size'] is num)
-              ? (style['icon_size'] as num).toDouble()
-              : 20.0;
-          final iconData = mapIconNameToIconData(iconName);
-          if (iconData != null) {
-            prefixIcon = Icon(iconData, color: iconColor, size: iconSize);
-          }
-        }
-
-        Widget? suffixIcon;
-        if ((component.config['icon'] != null || style['icon'] != null) &&
-            style['icon_position'] == 'right') {
-          final iconName = (style['icon'] ?? component.config['icon'] ?? '')
-              .toString();
-          final iconColor = StyleUtils.parseColor(style['icon_color']);
-          final iconSize = (style['icon_size'] is num)
-              ? (style['icon_size'] as num).toDouble()
-              : 20.0;
-          final iconData = mapIconNameToIconData(iconName);
-          if (iconData != null) {
-            suffixIcon = Icon(iconData, color: iconColor, size: iconSize);
-          }
-        }
-
-        // Get display text
-        final textStyle = TextStyle(
-          fontSize: style['font_size']?.toDouble() ?? 16,
-          color: StyleUtils.parseColor(style['color']),
-          fontStyle: style['font_style'] == 'italic'
-              ? FontStyle.italic
-              : FontStyle.normal,
-        );
-
-        Widget displayContent;
-
-        if (isMultiple) {
-          String displayText = 'Select options';
-          if (selectedValues.isNotEmpty) {
-            final selectedLabels = selectedValues.map((value) {
-              final option = options.firstWhere(
-                (opt) => opt['value'] == value,
-                orElse: () => {'label': value},
-              );
-              return option['label'] ?? value;
-            }).toList();
-            displayText = selectedLabels.join(', ');
-          }
-          displayContent = Text(displayText, style: textStyle);
-        } else {
-          if (selectedValue != null && selectedValue.isNotEmpty) {
-            final option = options.firstWhere(
-              (opt) => opt['value'] == selectedValue,
-              orElse: () => {'label': selectedValue},
-            );
-            final displayText = option['label'] ?? selectedValue;
-
-            if (option['avatar'] != null) {
-              displayContent = Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundImage: NetworkImage(option['avatar']),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(displayText, style: textStyle)),
-                ],
-              );
-            } else {
-              displayContent = Text(displayText, style: textStyle);
-            }
-          } else {
-            displayContent = Text(
-              component.config['placeholder'] ?? 'Select option',
-              style: textStyle.copyWith(
-                color: StyleUtils.parseColor(style['color']).withOpacity(0.6),
-              ),
-            );
-          }
-        }
-
-        final helperText = style['helper_text']?.toString();
-
-        // Main widget structure
-        return Container(
-          key: Key(component.id),
-          margin: StyleUtils.parsePadding(style['margin']),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        if (option['avatar'] != null) {
+          return Row(
             children: [
-              // Label
-              if (component.config['label'] != null) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    component.config['label'],
-                    style: TextStyle(
-                      fontSize: style['label_text_size']?.toDouble() ?? 14,
-                      color: StyleUtils.parseColor(style['label_color']),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-
-              // Select field
-              GestureDetector(
-                key: selectKey,
-                onTap: isDisabled
-                    ? null
-                    : () {
-                        FocusScope.of(context).requestFocus(focusNode);
-                        toggleDropdown();
-                      },
-                child: Container(
-                  padding: StyleUtils.parsePadding(style['padding']),
-                  decoration: BoxDecoration(
-                    color: StyleUtils.parseColor(style['background_color']),
-                    border: Border.all(
-                      color: StyleUtils.parseColor(style['border_color']),
-                      width: 1.0,
-                    ),
-                    borderRadius: StyleUtils.parseBorderRadius(
-                      style['border_radius'],
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      if (prefixIcon != null) ...[
-                        prefixIcon,
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(child: displayContent),
-                      if (suffixIcon != null) ...[
-                        const SizedBox(width: 8),
-                        suffixIcon,
-                      ],
-                    ],
-                  ),
-                ),
+              CircleAvatar(
+                radius: 12,
+                backgroundImage: NetworkImage(option['avatar']),
               ),
-
-              // Helper text
-              if (helperText != null && helperText.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    helperText,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: StyleUtils.parseColor(style['helper_text_color']),
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ],
+              const SizedBox(width: 8),
+              Expanded(child: Text(displayText, style: textStyle)),
             ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class MultiSelectDialogBloc extends StatelessWidget {
-  final String componentId;
-  final List<dynamic> options;
-  final String label;
-  final Map<String, dynamic> style;
-  final bool searchable;
-  final String searchQuery;
-
-  const MultiSelectDialogBloc({
-    super.key,
-    required this.componentId,
-    required this.options,
-    required this.label,
-    required this.style,
-    required this.searchable,
-    this.searchQuery = '',
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
-      builder: (context, state) {
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == componentId,
-                orElse: () => DynamicFormModel(
-                  id: componentId,
-                  type: FormTypeEnum.unknown,
-                  order: 0,
-                  config: {},
-                  style: {},
-                ),
-              )
-            : DynamicFormModel(
-                id: componentId,
-                type: FormTypeEnum.unknown,
-                order: 0,
-                config: {},
-                style: {},
-              );
-        if (component.type == FormTypeEnum.unknown) {
-          return const SizedBox.shrink();
-        }
-        final value = component.config['value'];
-        List<String> selectedValues = [];
-        if (component.config['multiple'] == true) {
-          if (value is List) {
-            selectedValues = value.cast<String>();
-          }
-        }
-        List<dynamic> filteredOptions = options;
-        if (searchable && searchQuery.isNotEmpty) {
-          filteredOptions = options.where((option) {
-            final label = option['label']?.toString().toLowerCase() ?? '';
-            return label.contains(searchQuery.toLowerCase());
-          }).toList();
-        }
-        return AlertDialog(
-          title: Text(label),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 8,
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (searchable)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: SearchFieldBloc(
-                      style: style,
-                      searchQuery: searchQuery,
-                      onChanged: (value) {
-                        Navigator.of(context).pop();
-                        Future.delayed(const Duration(milliseconds: 10), () {
-                          if (context.mounted) {
-                            showDialog(
-                              context: context,
-                              builder: (ctx) => MultiSelectDialogBloc(
-                                componentId: componentId,
-                                options: options,
-                                label: label,
-                                style: style,
-                                searchable: searchable,
-                                searchQuery: value,
-                              ),
-                            );
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                if (searchable) const SizedBox(height: 16),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: filteredOptions.length,
-                    itemBuilder: (context, index) {
-                      final option = filteredOptions[index];
-                      final value = option['value']?.toString() ?? '';
-                      final label = option['label']?.toString() ?? '';
-                      bool isSelected = selectedValues.contains(value);
-                      return CheckboxListTile(
-                        title: Text(label),
-                        value: isSelected,
-                        onChanged: (bool? newValue) {
-                          List<String> newValues = List.from(selectedValues);
-                          if (newValue == true) {
-                            if (!newValues.contains(value)) {
-                              newValues.add(value);
-                            }
-                          } else {
-                            newValues.remove(value);
-                          }
-                          context.read<DynamicFormBloc>().add(
-                            UpdateFormFieldEvent(
-                              componentId: componentId,
-                              value: newValues,
-                            ),
-                          );
-                          debugPrint(
-                            '[Select] $componentId value updated: $newValues (multiple, dialog)',
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-                if (filteredOptions.isEmpty && searchable)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      style['noResultsText'] ?? 'No results found',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class SearchFieldBloc extends StatelessWidget {
-  final Map<String, dynamic> style;
-  final String searchQuery;
-  final ValueChanged<String> onChanged;
-  const SearchFieldBloc({
-    super.key,
-    required this.style,
-    required this.searchQuery,
-    required this.onChanged,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: style['searchPlaceholder'] ?? 'Search...',
-        prefixIcon: const Icon(Icons.search),
-      ),
-      controller: TextEditingController(text: searchQuery),
-      onChanged: onChanged,
-    );
-  }
-}
-
-class CitySearchDialogBloc extends StatefulWidget {
-  final String componentId;
-  final List<dynamic> options;
-  final String label;
-  final Map<String, dynamic> style;
-  final String initialSearchQuery;
-
-  const CitySearchDialogBloc({
-    super.key,
-    required this.componentId,
-    required this.options,
-    required this.label,
-    required this.style,
-    this.initialSearchQuery = '',
-  });
-
-  @override
-  State<CitySearchDialogBloc> createState() => _CitySearchDialogBlocState();
-}
-
-class _CitySearchDialogBlocState extends State<CitySearchDialogBloc> {
-  late String searchQuery;
-
-  @override
-  void initState() {
-    super.initState();
-    searchQuery = widget.initialSearchQuery;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
-      builder: (context, state) {
-        final component = (state.page?.components != null)
-            ? state.page!.components.firstWhere(
-                (c) => c.id == widget.componentId,
-                orElse: () => DynamicFormModel(
-                  id: widget.componentId,
-                  type: FormTypeEnum.unknown,
-                  order: 0,
-                  config: {},
-                  style: {},
-                ),
-              )
-            : DynamicFormModel(
-                id: widget.componentId,
-                type: FormTypeEnum.unknown,
-                order: 0,
-                config: {},
-                style: {},
-              );
-        if (component.type == FormTypeEnum.unknown) {
-          return const SizedBox.shrink();
-        }
-        final value = component.config['value'];
-        String? selectedValue;
-        if (value is List) {
-          selectedValue = value.isNotEmpty ? value.first.toString() : null;
+          );
         } else {
-          selectedValue = value?.toString();
+          return Text(displayText, style: textStyle);
         }
-        List<dynamic> filteredOptions = widget.options;
-        if (searchQuery.isNotEmpty) {
-          filteredOptions = widget.options.where((option) {
-            final label = option['label']?.toString().toLowerCase() ?? '';
-            return label.contains(searchQuery.toLowerCase());
-          }).toList();
-        }
-        return AlertDialog(
-          title: Text(widget.label),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 8,
+      } else {
+        return Text(
+          state.component!.config['placeholder'] ?? 'Select option',
+          style: textStyle.copyWith(
+            color: StyleUtils.parseColor(style['color']).withOpacity(0.6),
           ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText:
-                          widget.style['searchPlaceholder'] ?? 'Search...',
-                      prefixIcon: const Icon(Icons.search),
-                    ),
-                    controller: TextEditingController(text: searchQuery),
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: filteredOptions.length,
-                    itemBuilder: (context, index) {
-                      final option = filteredOptions[index];
-                      final value = option['value']?.toString() ?? '';
-                      final label = option['label']?.toString() ?? '';
-                      bool isSelected = selectedValue == value;
-                      return ListTile(
-                        title: Text(label),
-                        selected: isSelected,
-                        onTap: () {
-                          context.read<DynamicFormBloc>().add(
-                            UpdateFormFieldEvent(
-                              componentId: widget.componentId,
-                              value: value,
-                            ),
-                          );
-                          debugPrint(
-                            '[Select] ${widget.componentId} value updated: $value (single, city search dialog)',
-                          );
-                        },
-                        trailing: isSelected
-                            ? const Icon(Icons.check, color: Colors.blue)
-                            : null,
-                      );
-                    },
-                  ),
-                ),
-                if (filteredOptions.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      widget.style['noResultsText'] ?? 'No results found',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Confirm'),
-            ),
-          ],
         );
-      },
+      }
+    }
+  }
+
+  Widget? _buildHelperText(DynamicSelectSuccess state) {
+    final helperText = _getHelperText(state);
+    if (helperText == null || helperText.isEmpty) return null;
+
+    final style = _getAppliedStyle(state);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Text(
+        helperText,
+        style: TextStyle(
+          fontSize: 12,
+          color: StyleUtils.parseColor(style['helper_text_color']),
+          fontStyle: FontStyle.italic,
+        ),
+      ),
     );
   }
-}
 
-// void _showCitySearchDialog(
-//   BuildContext context,
-//   DynamicFormModel component,
-//   List<dynamic> options,
-//   String label,
-//   Map<String, dynamic> style, {
-//   String searchQuery = '',
-// }) {
-//   showDialog(
-//     context: context,
-//     builder: (BuildContext context) => CitySearchDialogBloc(
-//       componentId: component.id,
-//       options: options,
-//       label: label,
-//       style: style,
-//       initialSearchQuery: searchQuery,
-//     ),
-//   );
-// }
+  // Helper methods
+  Map<String, dynamic> _getAppliedStyle(DynamicSelectSuccess state) {
+    Map<String, dynamic> style = Map<String, dynamic>.from(
+      state.component!.style,
+    );
+
+    // Apply variant styles
+    if (state.component!.variants != null) {
+      if (state.component!.config['label'] != null &&
+          state.component!.variants!.containsKey('with_label')) {
+        final variantStyle =
+            state.component!.variants!['with_label']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (state.component!.config['icon'] != null &&
+          state.component!.variants!.containsKey('with_icon')) {
+        final variantStyle =
+            state.component!.variants!['with_icon']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (state.isMultiple &&
+          state.component!.variants!.containsKey('multiple')) {
+        final variantStyle =
+            state.component!.variants!['multiple']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+      if (state.isSearchable &&
+          state.component!.variants!.containsKey('searchable')) {
+        final variantStyle =
+            state.component!.variants!['searchable']['style']
+                as Map<String, dynamic>?;
+        if (variantStyle != null) style.addAll(variantStyle);
+      }
+    }
+
+    // Apply state styles
+    final currentStateKey = _getStateKey(state.formState);
+    if (state.component!.states != null &&
+        state.component!.states!.containsKey(currentStateKey)) {
+      final stateStyle =
+          state.component!.states![currentStateKey]['style']
+              as Map<String, dynamic>?;
+      if (stateStyle != null) style.addAll(stateStyle);
+    }
+
+    return style;
+  }
+
+  String _getStateKey(FormStateEnum? formState) {
+    switch (formState) {
+      case FormStateEnum.error:
+        return 'error';
+      case FormStateEnum.success:
+        return 'success';
+      case FormStateEnum.focused:
+        return 'focused';
+      default:
+        return 'base';
+    }
+  }
+
+  Widget? _getPrefixIcon(DynamicSelectSuccess state) {
+    final style = _getAppliedStyle(state);
+
+    if ((state.component!.config['icon'] != null || style['icon'] != null) &&
+        style['icon_position'] != 'right') {
+      final iconName = (style['icon'] ?? state.component!.config['icon'] ?? '')
+          .toString();
+      final iconColor = StyleUtils.parseColor(style['icon_color']);
+      final iconSize = (style['icon_size'] is num)
+          ? (style['icon_size'] as num).toDouble()
+          : 20.0;
+      final iconData = IconTypeEnum.fromString(iconName).toIconData();
+      if (iconData != null) {
+        return Icon(iconData, color: iconColor, size: iconSize);
+      }
+    }
+    return null;
+  }
+
+  Widget? _getSuffixIcon(DynamicSelectSuccess state) {
+    final style = _getAppliedStyle(state);
+
+    if ((state.component!.config['icon'] != null || style['icon'] != null) &&
+        style['icon_position'] == 'right') {
+      final iconName = (style['icon'] ?? state.component!.config['icon'] ?? '')
+          .toString();
+      final iconColor = StyleUtils.parseColor(style['icon_color']);
+      final iconSize = (style['icon_size'] is num)
+          ? (style['icon_size'] as num).toDouble()
+          : 20.0;
+      final iconData = IconTypeEnum.fromString(iconName).toIconData();
+      if (iconData != null) {
+        return Icon(iconData, color: iconColor, size: iconSize);
+      }
+    }
+    return null;
+  }
+
+  String? _getHelperText(DynamicSelectSuccess state) {
+    final style = _getAppliedStyle(state);
+    return style['helper_text']?.toString();
+  }
+
+  // Event handlers
+  void _handleSelectTap(DynamicSelectSuccess state) {
+    debugPrint('👆 [Select] Field tapped');
+
+    FocusScope.of(context).requestFocus(state.focusNode);
+
+    // Calculate dropdown position
+    final RenderBox? renderBox =
+        state.selectKey!.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final position = Rect.fromLTWH(
+      offset.dx,
+      offset.dy,
+      size.width,
+      size.height,
+    );
+
+    if (state.isDropdownOpen) {
+      context.read<DynamicSelectBloc>().add(const CloseDropdownEvent());
+    } else {
+      context.read<DynamicSelectBloc>().add(
+        OpenDropdownEvent(position: position, context: context),
+      );
+    }
+  }
+}
