@@ -94,8 +94,9 @@ class ComponentUtils {
     // Priority order for keyboard types
     if (inputTypes.containsKey('email')) return TextInputType.emailAddress;
     if (inputTypes.containsKey('tel')) return TextInputType.phone;
-    if (inputTypes.containsKey('password'))
+    if (inputTypes.containsKey('password')) {
       return TextInputType.visiblePassword;
+    }
     if (inputTypes.containsKey('number')) return TextInputType.number;
     if (inputTypes.containsKey('url')) return TextInputType.url;
 

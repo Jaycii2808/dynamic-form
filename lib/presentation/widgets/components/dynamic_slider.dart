@@ -98,19 +98,12 @@ class DynamicSliderWidget extends StatelessWidget {
               blocValue = state.sliderValue;
             }
 
-            final valueMap = {
-              if (state.isRange)
-                'values': blocValue
-              else
-                ValueKeyEnum.value.key: blocValue,
-              'current_state': state.formState?.name ?? 'base',
-              'error_text': state.errorText,
-            };
-
+            // ✅ Send value directly to form BLoC for consistent handling
+            // Range sliders send List, single sliders send double
             context.read<DynamicFormBloc>().add(
               UpdateFormFieldEvent(
                 componentId: state.component!.id,
-                value: valueMap,
+                value: blocValue, // Send raw value, let FormBloc handle storage
               ),
             );
           }

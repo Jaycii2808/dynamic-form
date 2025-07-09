@@ -177,7 +177,6 @@ class DynamicTextFieldBloc
     Emitter<DynamicTextFieldState> emit,
   ) async {
     if (state is! DynamicTextFieldSuccess) return;
-    final successState = state as DynamicTextFieldSuccess;
 
     try {
       // Update text controller if value changed
