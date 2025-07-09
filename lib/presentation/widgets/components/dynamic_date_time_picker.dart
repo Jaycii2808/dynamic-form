@@ -30,20 +30,25 @@ class DynamicDateTimePicker extends StatelessWidget {
     return BlocConsumer<DynamicDateTimePickerBloc, DynamicDateTimePickerState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.value.key:
+              state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
           ValueKeyEnum.errorText.key: state.errorText,
         };
         if (state is DynamicDateTimePickerSuccess) {
           onComplete(valueMap);
           // Sync controller if not focused
           if (state.focusNode?.hasFocus == false &&
-              state.textController!.text != state.component!.config[ValueKeyEnum.value.key]) {
-            state.textController!.text = state.component!.config[ValueKeyEnum.value.key] ?? '';
+              state.textController!.text !=
+                  state.component!.config[ValueKeyEnum.value.key]) {
+            state.textController!.text =
+                state.component!.config[ValueKeyEnum.value.key] ?? '';
           }
         } else if (state is DynamicDateTimePickerError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        } else if (state is DynamicDateTimePickerLoading || state is DynamicDateTimePickerInitial) {
+        } else if (state is DynamicDateTimePickerLoading ||
+            state is DynamicDateTimePickerInitial) {
           debugPrint('Listener: Handling ${state.runtimeType} state');
         } else {
           onComplete(valueMap);
@@ -51,7 +56,8 @@ class DynamicDateTimePicker extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        if (state is DynamicDateTimePickerLoading || state is DynamicDateTimePickerInitial) {
+        if (state is DynamicDateTimePickerLoading ||
+            state is DynamicDateTimePickerInitial) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -90,7 +96,7 @@ class DynamicDateTimePicker extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(styleConfig, inputConfig),
+          _buildLabel(styleConfig, inputConfig, component),
           _buildDateTimeField(
             styleConfig,
             inputConfig,
@@ -105,19 +111,37 @@ class DynamicDateTimePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildLabel(StyleConfig styleConfig, InputConfig inputConfig) {
+  Widget _buildLabel(
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
+    DynamicFormModel component,
+  ) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
+    final bool isRequired = component.config['is_required'] == true;
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
-      child: Text(
-        inputConfig.label!,
-        style: TextStyle(
-          fontSize: styleConfig.labelTextSize,
-          color: styleConfig.labelColor,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            inputConfig.label!,
+            style: TextStyle(
+              fontSize: styleConfig.labelTextSize,
+              color: styleConfig.labelColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (isRequired)
+            const Text(
+              ' *',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -140,9 +164,18 @@ class DynamicDateTimePicker extends StatelessWidget {
         isDense: true,
         hintText: inputConfig.placeholder,
         border: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
-        enabledBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
-        focusedBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.focused),
-        errorBorder: _buildBorder(styleConfig.borderConfig, FormStateEnum.error),
+        enabledBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.base,
+        ),
+        focusedBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.focused,
+        ),
+        errorBorder: _buildBorder(
+          styleConfig.borderConfig,
+          FormStateEnum.error,
+        ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleConfig.contentVerticalPadding,
@@ -174,9 +207,14 @@ class DynamicDateTimePicker extends StatelessWidget {
     );
   }
 
-  OutlineInputBorder _buildBorder(BorderConfig borderConfig, FormStateEnum? state) {
+  OutlineInputBorder _buildBorder(
+    BorderConfig borderConfig,
+    FormStateEnum? state,
+  ) {
     double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withOpacity(borderConfig.borderOpacity);
+    Color color = borderConfig.borderColor.withOpacity(
+      borderConfig.borderOpacity,
+    );
     if (state == FormStateEnum.focused) {
       width += 1;
     } else if (state == FormStateEnum.error) {
@@ -221,14 +259,17 @@ class DynamicDateTimePicker extends StatelessWidget {
       pickedDate.month,
       pickedDate.day,
       pickerMode == PickerModeEnum.dateOnly ? 0 : pickedTime?.hour ?? 0,
-      pickerMode == PickerModeEnum.dateOnly || pickerMode == PickerModeEnum.hourDate
+      pickerMode == PickerModeEnum.dateOnly ||
+              pickerMode == PickerModeEnum.hourDate
           ? 0
           : pickedTime?.minute ?? 0,
     );
 
     final formattedDateTime = DateFormat(selectedFormat).format(dateTime);
     // Dispatch event to BLoC instead of setState
-    context.read<DynamicDateTimePickerBloc>().add(DateTimePickedEvent(value: formattedDateTime));
+    context.read<DynamicDateTimePickerBloc>().add(
+      DateTimePickedEvent(value: formattedDateTime),
+    );
   }
 
   Future<DateTime?> _showDatePicker(

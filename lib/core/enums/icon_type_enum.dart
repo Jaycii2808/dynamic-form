@@ -41,6 +41,10 @@ enum IconTypeEnum {
   file,
   checkCircle,
   errorOutline,
+  previous,
+  next,
+  preview,
+  submit,
   unknown;
 
   factory IconTypeEnum.fromJson(String? json) {
@@ -136,6 +140,14 @@ enum IconTypeEnum {
         return Icons.check_circle_outline;
       case IconTypeEnum.errorOutline:
         return Icons.error_outline;
+      case IconTypeEnum.previous:
+        return Icons.arrow_back_ios_new;
+      case IconTypeEnum.next:
+        return Icons.arrow_forward_ios;
+      case IconTypeEnum.preview:
+        return Icons.visibility;
+      case IconTypeEnum.submit:
+        return Icons.send;
       case IconTypeEnum.unknown:
         return null;
     }
@@ -221,6 +233,14 @@ enum IconTypeEnum {
         return IconTypeEnum.checkCircle;
       case 'error_outline':
         return IconTypeEnum.errorOutline;
+      case 'previous':
+        return IconTypeEnum.previous;
+      case 'next':
+        return IconTypeEnum.next;
+      case 'preview':
+        return IconTypeEnum.preview;
+      case 'submit':
+        return IconTypeEnum.submit;
       default:
         return IconTypeEnum.unknown;
     }

@@ -42,7 +42,7 @@ class _DynamicButtonState extends State<DynamicButton> {
         final action = config['action']?.toString() ?? 'custom';
 
         // Check visibility first - hide button if validation fails
-        final isVisible = config['isVisible'] ?? true;
+        final isVisible = config['is_visible'] ?? true;
 
         // Debug log for Save button visibility
         if (action == 'submit_form') {
@@ -86,21 +86,21 @@ class _DynamicButtonState extends State<DynamicButton> {
 
         // Parse style properties safely
         final backgroundColor = StyleUtils.parseColor(
-          style['backgroundColor']?.toString() ?? '#2196f3',
+          style['background_color']?.toString() ?? '#2196f3',
         );
         final textColor = StyleUtils.parseColor(
           style['color']?.toString() ?? '#ffffff',
         );
         final borderColor = StyleUtils.parseColor(
-          style['borderColor']?.toString() ?? 'transparent',
+          style['border_color']?.toString() ?? 'transparent',
         );
-        final borderWidth = _parseDouble(style['borderWidth']) ?? 1.0;
+        final borderWidth = _parseDouble(style['border_width']) ?? 1.0;
         final borderRadius = StyleUtils.parseBorderRadius(
-          _parseInt(style['borderRadius']) ?? 8,
+          _parseInt(style['border_radius']) ?? 8,
         );
-        final fontSize = _parseDouble(style['fontSize']) ?? 16.0;
+        final fontSize = _parseDouble(style['font_size']) ?? 16.0;
         final fontWeight = _parseFontWeight(
-          style['fontWeight']?.toString() ?? 'normal',
+          style['font_weight']?.toString() ?? 'normal',
         );
         final padding = StyleUtils.parsePadding(
           style['padding']?.toString() ?? '12px 24px',
@@ -138,7 +138,7 @@ class _DynamicButtonState extends State<DynamicButton> {
                 padding: padding,
                 elevation: elevation,
                 shadowColor: StyleUtils.parseColor(
-                  style['shadowColor']?.toString() ?? '#000000',
+                  style['shadow_color']?.toString() ?? '#000000',
                 ),
               ),
               child: _buildButtonContent(
@@ -146,6 +146,7 @@ class _DynamicButtonState extends State<DynamicButton> {
                 iconData,
                 fontSize,
                 fontWeight,
+                textColor,
               ),
             ),
           ),
@@ -159,7 +160,12 @@ class _DynamicButtonState extends State<DynamicButton> {
     IconData? icon,
     double fontSize,
     FontWeight fontWeight,
+    Color textColor,
   ) {
+    final isIconRightPosition =
+        widget.component.config['is_icon_right_position'] == true ||
+        widget.component.config['is_icon_right_position'] == 'true';
+
     if (_isLoading) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -186,22 +192,50 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
 
     if (icon != null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: fontSize + 4),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
-          ),
-        ],
-      );
+      if (isIconRightPosition) {
+        // right
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(icon, size: fontSize + 4),
+          ],
+        );
+      } else {
+        // leffft
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: fontSize + 4),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                color: textColor,
+              ),
+            ),
+          ],
+        );
+      }
     }
 
     return Text(
       text,
-      style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: textColor,
+      ),
     );
   }
 

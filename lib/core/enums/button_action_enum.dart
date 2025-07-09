@@ -5,6 +5,7 @@ enum ButtonAction {
   previousPage('previous_page'),
   nextPage('next_page');
 
+
   final String value;
   const ButtonAction(this.value);
 
@@ -15,3 +16,4 @@ enum ButtonAction {
     );
   }
 }
+
