@@ -167,8 +167,29 @@ class _DynamicButtonState extends State<DynamicButton> {
         ],
       );
     }
+    final isIconRightPosition =
+        widget.component.config['is_icon_right_position'] == true ||
+            widget.component.config['is_icon_right_position'] == 'true';
 
     if (_iconData != null) {
+      if (isIconRightPosition) {
+        // right
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _buttonText,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                //color: textColor,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(_iconData, size: fontSize + 4),
+          ],
+        );
+      }
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
