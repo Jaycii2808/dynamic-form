@@ -387,12 +387,16 @@ class FormPreviewScreen extends StatelessWidget {
                   color: Colors.orange.shade600,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Complete all required fields',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.orange.shade600,
+                Flexible(
+                  child: Text(
+                    'Complete all fields',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.orange.shade600,
+                    ),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
