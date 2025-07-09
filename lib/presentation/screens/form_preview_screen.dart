@@ -192,74 +192,102 @@ class FormPreviewScreen extends StatelessWidget {
   }
 
   Widget _buildPreviewComponent(DynamicFormModel component) {
-    // Create a comprehensive disabled config for all component types
-    final disabledConfig = Map<String, dynamic>.from(component.config);
+    return BlocBuilder<DynamicFormBloc, DynamicFormState>(
+      builder: (context, state) {
+        debugPrint(
+          '🔍 [Preview] BlocBuilder called for ${component.id} with state: ${state.runtimeType}',
+        );
 
-    // Universal disable flags
-    disabledConfig.addAll({
-      'disabled': true, // For buttons, inputs
-      'readOnly': true, // For text fields, text areas
-      'editable': false, // For general editing
-      'interactive': false, // For custom components
-      'clickable': false, // For buttons, selectors
-      'selectable': false, // For dropdowns, selects
-      'draggable': false, // For file uploaders
-      'uploadable': false, // For file uploaders
-      'checkable': false, // For checkboxes, radios
-      'switchable': false, // For switches
-      'slidable': false, // For sliders
-      'expandable': false, // For expandable components
-      'focusable': false, // Prevent focus
-      'onTap': null, // Remove tap handlers
-      'onChanged': null, // Remove change handlers
-      'onPressed': null, // Remove press handlers
-      'onSubmitted': null, // Remove submit handlers
-      'onUpload': null, // Remove upload handlers
-    });
+        // CRITICAL FIX: Get updated component from FormBloc state instead of original
+        final updatedComponent =
+            state.page?.components.firstWhere(
+              (c) => c.id == component.id,
+              orElse: () => component, // Fallback to original if not found
+            ) ??
+            component;
 
-    // Enhanced preview styles with visual indicators
-    final previewStyle = Map<String, dynamic>.from(component.style);
-    previewStyle.addAll({
-      'opacity': 0.7, // Fade to indicate disabled
-      'pointer_events': 'none', // Block all pointer events
-      'user_select': 'none', // Prevent text selection
-      'cursor': 'default', // Default cursor (not pointer)
-    });
+        debugPrint(
+          '🔍 [Preview] Component ${component.id}: Original value=${component.config['value']}, Updated value=${updatedComponent.config['value']}',
+        );
+        debugPrint(
+          '📊 [Preview] FormBloc state has ${state.page?.components.length ?? 0} components',
+        );
+        debugPrint(
+          '🕐 [Preview] State timestamp: ${DateTime.now().millisecondsSinceEpoch}',
+        );
 
-    // For input components, add visual disabled state
-    if ([
-      'textFieldFormType',
-      'textAreaFormType',
-      'selectFormType',
-    ].contains(component.type.toString().split('.').last)) {
-      previewStyle.addAll({
-        'background_color': previewStyle['background_color'] ?? '#f5f5f5',
-        'border_color': '#d1d5db', // Gray border for disabled look
-        'color': '#6b7280', // Gray text for disabled look
-      });
-    }
+        // Create disabled config from UPDATED component (preserves user input)
+        final disabledConfig = Map<String, dynamic>.from(
+          updatedComponent.config,
+        );
 
-    // Create preview component with same ID (for BLoC sync) but disabled
-    final previewComponent = DynamicFormModel(
-      id: component.id, // Keep same ID for BLoC state sync
-      type: component.type,
-      order: component.order,
-      config: disabledConfig,
-      style: previewStyle,
-      inputTypes: component.inputTypes,
-      variants: component.variants,
-      states: component.states,
-      validation: component.validation,
-      children: component.children,
-    );
+        // Universal disable flags
+        disabledConfig.addAll({
+          'disabled': true, // For buttons, inputs
+          'readOnly': true, // For text fields, text areas
+          'editable': false, // For general editing
+          'interactive': false, // For custom components
+          'clickable': false, // For buttons, selectors
+          'selectable': false, // For dropdowns, selects
+          'draggable': false, // For file uploaders
+          'uploadable': false, // For file uploaders
+          'checkable': false, // For checkboxes, radios
+          'switchable': false, // For switches
+          'slidable': false, // For sliders
+          'expandable': false, // For expandable components
+          'focusable': false, // Prevent focus
+          'onTap': null, // Remove tap handlers
+          'onChanged': null, // Remove change handlers
+          'onPressed': null, // Remove press handlers
+          'onSubmitted': null, // Remove submit handlers
+          'onUpload': null, // Remove upload handlers
+        });
 
-    // Wrap in IgnorePointer to completely block interactions
-    return IgnorePointer(
-      ignoring: true, // Block ALL touch interactions
-      child: AbsorbPointer(
-        absorbing: true, // Absorb pointer events
-        child: DynamicFormRenderer(component: previewComponent, page: page),
-      ),
+        // Enhanced preview styles with visual indicators
+        final previewStyle = Map<String, dynamic>.from(updatedComponent.style);
+        previewStyle.addAll({
+          'opacity': 0.7, // Fade to indicate disabled
+          'pointer_events': 'none', // Block all pointer events
+          'user_select': 'none', // Prevent text selection
+          'cursor': 'default', // Default cursor (not pointer)
+        });
+
+        // For input components, add visual disabled state
+        if ([
+          'textFieldFormType',
+          'textAreaFormType',
+          'selectFormType',
+        ].contains(updatedComponent.type.toString().split('.').last)) {
+          previewStyle.addAll({
+            'background_color': previewStyle['background_color'] ?? '#f5f5f5',
+            'border_color': '#d1d5db', // Gray border for disabled look
+            'color': '#6b7280', // Gray text for disabled look
+          });
+        }
+
+        // Create preview component with UPDATED config (preserves user values)
+        final previewComponent = DynamicFormModel(
+          id: updatedComponent.id, // Keep same ID for BLoC state sync
+          type: updatedComponent.type,
+          order: updatedComponent.order,
+          config: disabledConfig, // ✅ Now uses updated config with user values
+          style: previewStyle,
+          inputTypes: updatedComponent.inputTypes,
+          variants: updatedComponent.variants,
+          states: updatedComponent.states,
+          validation: updatedComponent.validation,
+          children: updatedComponent.children,
+        );
+
+        // Wrap in IgnorePointer to completely block interactions
+        return IgnorePointer(
+          ignoring: true, // Block ALL touch interactions
+          child: AbsorbPointer(
+            absorbing: true, // Absorb pointer events
+            child: DynamicFormRenderer(component: previewComponent, page: page),
+          ),
+        );
+      },
     );
   }
 

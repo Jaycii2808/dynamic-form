@@ -94,8 +94,20 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
       },
       child: BlocConsumer<DynamicCheckboxBloc, DynamicCheckboxState>(
         listenWhen: (previous, current) {
-          return previous is DynamicCheckboxLoading &&
-              current is DynamicCheckboxSuccess;
+          // Listen when state changes to success (for value updates)
+          if (current is DynamicCheckboxSuccess) {
+            // Initial load: previous is loading/initial
+            if (previous is DynamicCheckboxLoading ||
+                previous is DynamicCheckboxInitial) {
+              return true;
+            }
+
+            // Value change: compare isSelected values
+            if (previous is DynamicCheckboxSuccess) {
+              return previous.isSelected != current.isSelected;
+            }
+          }
+          return false;
         },
         buildWhen: (previous, current) {
           // Rebuild when state, error, or form state changes
@@ -106,12 +118,23 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
         },
         listener: (context, state) {
           if (state is DynamicCheckboxSuccess) {
+            // CRITICAL FIX: Use state.isSelected directly instead of reading from config
+            // because component config might not be fully updated yet
             final valueMap = {
               ValueKeyEnum.value.key:
-                  state.component!.config[ValueKeyEnum.value.key],
-              'current_state': state.component!.config['current_state'],
+                  state.isSelected, // ✅ Use confirmed state value
+              'current_state':
+                  state.formState?.name, // ✅ Use computed form state
               'error_text': state.errorText,
             };
+
+            debugPrint(
+              '📤 [Checkbox] Sending to FormBloc: ${state.component!.id} = $valueMap',
+            );
+            debugPrint(
+              '🔍 [Checkbox] Component config: ${state.component!.config}',
+            );
+            debugPrint('🔍 [Checkbox] isSelected: ${state.isSelected}');
 
             // Update the main form bloc with new value
             _formBloc?.add(
