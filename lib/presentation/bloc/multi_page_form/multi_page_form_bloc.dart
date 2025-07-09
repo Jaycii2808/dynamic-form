@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +36,10 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       final initialValues = <String, dynamic>{};
       for (var page in formModel.pages) {
         for (var component in page.components) {
-          if (component.config.containsKey('value')) {
-            initialValues[component.id] = component.config['value'];
-          } else if (component.config.containsKey('values')) {
-            initialValues[component.id] = component.config['values'];
+          if (component.config.containsKey(ValueKeyEnum.value.key)) {
+            initialValues[component.id] = component.config[ValueKeyEnum.value.key];
+          } else {
+            initialValues[component.id] = null;
           }
         }
       }

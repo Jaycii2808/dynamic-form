@@ -5,7 +5,8 @@ enum ValueKeyEnum {
   currentState('current_state'),
   editable('editable'),
   disabled('disabled'),
-  readOnly('readOnly');
+  readOnly('readOnly'),
+  isRequired('is_required');
 
   final String key;
   const ValueKeyEnum(this.key);
