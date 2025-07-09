@@ -95,22 +95,10 @@ class DynamicSwitch extends StatelessWidget {
       padding: StyleUtils.parsePadding(style['padding']),
       margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //mainAxisSize: MainAxisSize.min,
         children: [
-          Switch(
-            value: isSelected,
-            onChanged: isDisabled
-                ? null
-                : (bool value) {
-                    context.read<DynamicSwitchBloc>().add(
-                      SwitchToggledEvent(value: value),
-                    );
-                  },
-            activeColor: activeColor,
-            inactiveThumbColor: inactiveThumbColor,
-            inactiveTrackColor: inactiveTrackColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+
           if (hasLabel)
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
@@ -123,6 +111,20 @@ class DynamicSwitch extends StatelessWidget {
                 ),
               ),
             ),
+          Switch(
+            value: isSelected,
+            onChanged: isDisabled
+                ? null
+                : (bool value) {
+              context.read<DynamicSwitchBloc>().add(
+                SwitchToggledEvent(value: value),
+              );
+            },
+            activeColor: activeColor,
+            inactiveThumbColor: inactiveThumbColor,
+            inactiveTrackColor: inactiveTrackColor,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ],
       ),
     );
