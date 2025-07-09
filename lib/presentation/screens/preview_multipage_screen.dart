@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
@@ -20,119 +21,180 @@ class PreviewMultiPageScreen extends StatelessWidget {
     this.onPrevious,
   });
 
-  DynamicFormModel? _buildButton(RemoteButtonConfigKey key) {
-    final jsonString = RemoteConfigService().getString(key.key);
-    if (jsonString.isNotEmpty) {
-      return DynamicFormModel.fromJson(jsonDecode(jsonString));
-    }
-    return null;
-  }
-
-  bool _isFormValid() {
-    // Check if all required components have a non-null, non-empty value
-    for (final comp in pages.expand((p) => p.components)) {
-      if (ComponentUtils.isRequired(comp)) {
-        final value = allComponentValues[comp.id];
-        if (value == null ||
-            (value is String && value.trim().isEmpty) ||
-            (value is List && value.isEmpty)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final allComponents = pages.expand((p) => p.components).toList();
-    // Clone each component and set config['value'] from allComponentValues
-    final previewComponents = allComponents.map((comp) {
-      final value = allComponentValues[comp.id];
-      final newConfig = Map<String, dynamic>.from(comp.config);
-      if (value != null) {
-        newConfig['value'] = value;
-      } else {
-        newConfig.remove('value');
-      }
-      return DynamicFormModel(
-        id: comp.id,
-        type: comp.type,
-        order: comp.order,
-        config: newConfig,
-        style: comp.style,
-        inputTypes: comp.inputTypes,
-        variants: comp.variants,
-        states: comp.states,
-        validation: comp.validation,
-        children: comp.children,
-      );
-    }).toList();
-    final previousButton = _buildButton(RemoteButtonConfigKey.previousButton);
-    // Find the submit button from previewComponents
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final previewComponents = _buildPreviewComponents(
+      pages,
+      allComponentValues,
+    );
+    final nonSubmitComponents = previewComponents
+        .where((c) => c.id != RemoteButtonConfigKey.formSaveButton.key)
+        .toList();
     final submitButton = previewComponents.firstWhere(
-      (comp) => comp.id == 'form_save_button',
+      (c) => c.id == RemoteButtonConfigKey.formSaveButton.key,
       orElse: () => DynamicFormModel.empty(),
     );
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Preview All Pages'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    final previousButton = buildRemoteButton(
+      RemoteButtonConfigKey.previousButton,
+    );
+    final isFormValid = isAllRequiredFilled(
+      previewComponents,
+      allComponentValues,
+    );
+    return Stack(
+      children: [
+        _buildPreviewListView(components: nonSubmitComponents),
+        _buildPreviewButtonsRow(
+          previousButton: previousButton,
+          submitButton: submitButton,
+          isFormValid: isFormValid,
+          onPrevious: onPrevious,
+          onSubmit: () {
+            if (onSubmit != null) onSubmit!();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Form submitted successfully.'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          ...previewComponents.map(
-            (comp) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: AbsorbPointer(
-                absorbing: true,
-                child: Opacity(
-                  opacity: 0.7,
-                  child: DynamicFormRenderer(
-                    component: comp,
-                    // Optionally pass values if DynamicFormRenderer supports it
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: previousButton != null
-                    ? DynamicFormRenderer(
-                        component: previousButton,
-                        onButtonAction: (action, data) {
-                          if (onPrevious != null) onPrevious!();
-                        },
-                      )
-                    : ElevatedButton(
-                        onPressed:
-                            onPrevious ?? () => Navigator.of(context).pop(),
-                        child: const Text('Previous.'),
-                      ),
-              ),
-              if (_isFormValid() && submitButton.id.isNotEmpty) ...[
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DynamicFormRenderer(
-                    component: submitButton,
-                    onButtonAction: (action, data) {
-                      if (onSubmit != null) onSubmit!();
-                    },
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
+      ],
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: const Text('Preview All Pages'),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => Navigator.of(context).pop(),
       ),
     );
   }
+}
+
+List<DynamicFormModel> _buildPreviewComponents(
+  List<DynamicFormPageModel> pages,
+  Map<String, dynamic> allComponentValues,
+) {
+  return pages.expand((p) => p.components).map((componentItem) {
+    final value = allComponentValues[componentItem.id];
+    final newConfig = Map<String, dynamic>.from(componentItem.config);
+    if (value != null) {
+      newConfig[ValueKeyEnum.value.key] = value;
+    } else {
+      newConfig.remove(ValueKeyEnum.value.key);
+    }
+    return DynamicFormModel(
+      id: componentItem.id,
+      type: componentItem.type,
+      order: componentItem.order,
+      config: newConfig,
+      style: componentItem.style,
+      inputTypes: componentItem.inputTypes,
+      variants: componentItem.variants,
+      states: componentItem.states,
+      validation: componentItem.validation,
+      children: componentItem.children,
+    );
+  }).toList();
+}
+
+DynamicFormModel? buildRemoteButton(RemoteButtonConfigKey key) {
+  final jsonString = RemoteConfigService().getString(key.key);
+  if (jsonString.isNotEmpty) {
+    return DynamicFormModel.fromJson(jsonDecode(jsonString));
+  }
+  return null;
+}
+
+bool isAllRequiredFilled(
+  List<DynamicFormModel> components,
+  Map<String, dynamic> allComponentValues,
+) {
+  for (final component in components) {
+    if (ComponentUtils.isRequired(component)) {
+      final value = allComponentValues[component.id];
+      if (value == null ||
+          (value is String && value.trim().isEmpty) ||
+          (value is List && value.isEmpty)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+Widget _buildPreviewListView({required List<DynamicFormModel> components}) {
+  return ListView.separated(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+    itemCount: components.length,
+    separatorBuilder: (_, __) => const SizedBox(height: 16),
+    itemBuilder: (context, index) {
+      final component = components[index];
+      return AbsorbPointer(
+        absorbing: true,
+        child: Opacity(
+          opacity: 0.7,
+          child: DynamicFormRenderer(
+            component: component,
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildPreviewButtonsRow({
+  required DynamicFormModel? previousButton,
+  required DynamicFormModel submitButton,
+  required bool isFormValid,
+  VoidCallback? onPrevious,
+  VoidCallback? onSubmit,
+}) {
+  return Positioned(
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: SafeArea(
+      child: SizedBox(
+        width: double.infinity,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: previousButton != null
+                  ? DynamicFormRenderer(
+                      component: previousButton,
+                      onButtonAction: (action, data) {
+                        if (onPrevious != null) onPrevious();
+                      },
+                    )
+                  : const Text("Missing Previous Button"),
+            ),
+            if (isFormValid && submitButton.id.isNotEmpty) ...[
+              const SizedBox(width: 16),
+              Expanded(
+                child: DynamicFormRenderer(
+                  component: submitButton,
+                  onButtonAction: (action, data) {
+                    if (onSubmit != null) onSubmit();
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 }

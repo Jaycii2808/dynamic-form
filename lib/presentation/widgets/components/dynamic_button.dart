@@ -206,7 +206,7 @@ class _DynamicButtonState extends State<DynamicButton> {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(icon, size: fontSize + 4),
+           // Icon(icon, size: fontSize),
           ],
         );
       } else {
@@ -214,7 +214,7 @@ class _DynamicButtonState extends State<DynamicButton> {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: fontSize + 4),
+            //Icon(icon, size: fontSize ),
             const SizedBox(width: 8),
             Text(
               text,
