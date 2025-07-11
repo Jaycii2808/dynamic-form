@@ -53,9 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
         try {
           final json = configString.trim().startsWith('{') ? configString : null;
           if (json != null) {
-            final map = Map<String, dynamic>.from(
-              (jsonDecode(json) as Map<String, dynamic>),
-            );
+            // final map = Map<String, dynamic>.from(
+            //   (jsonDecode(json) as Map<String, dynamic>),
+            // );
             //if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
               Navigator.push(
                 context,

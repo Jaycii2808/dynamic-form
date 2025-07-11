@@ -91,7 +91,6 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
 
   void _loadSavedForm(SavedFormModel savedForm) {
     try {
-      // Nếu là multipage (customFormData có 'pages')
       if (savedForm.customFormData != null &&
           savedForm.customFormData!.containsKey('pages')) {
         final formJson = savedForm.customFormData!;
@@ -107,7 +106,6 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
             componentValues[id] = value;
           }
         }
-        // Convert sang List<DynamicFormPageModel> để truyền vào PreviewMultiPageScreen
         final dynamicPages = pages
             .map(
               (page) => DynamicFormPageModel(

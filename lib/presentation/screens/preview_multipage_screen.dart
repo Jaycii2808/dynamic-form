@@ -132,7 +132,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
         // Lớp phủ read only
         Positioned.fill(
           child: Container(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha:0.15),
             alignment: Alignment.topCenter,
             child: SafeArea(
               child: Padding(
@@ -143,7 +143,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha:0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -243,25 +243,6 @@ bool isAllRequiredFilled(
   return true;
 }
 
-Widget _buildPreviewListView({required List<DynamicFormModel> components}) {
-  return ListView.separated(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-    itemCount: components.length,
-    separatorBuilder: (_, __) => const SizedBox(height: 16),
-    itemBuilder: (context, index) {
-      final component = components[index];
-      return AbsorbPointer(
-        absorbing: true,
-        child: Opacity(
-          opacity: 0.7,
-          child: DynamicFormRenderer(
-            component: component,
-          ),
-        ),
-      );
-    },
-  );
-}
 
 Widget _buildPreviewButtonsRow({
   required DynamicFormModel? previousButton,
@@ -300,7 +281,7 @@ Widget _buildPreviewButtonsRow({
                     child: DynamicFormRenderer(
                       component: submitButton,
                       onButtonAction: (action, data) {
-                        if (isFormValid && onSubmit != null) onSubmit!();
+                        if (isFormValid && onSubmit != null) onSubmit();
                       },
                     ),
                   ),

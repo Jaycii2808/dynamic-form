@@ -1,14 +1,10 @@
-import 'dart:convert';
-
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/config_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/remote_button_config_key_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -48,15 +44,13 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   }
 
   Widget _bodyWidget(BuildContext context, MultiPageFormSuccess state) {
-    final isFirstPage = state.currentPageIndex == 0;
-    final isLastPage = state.formModel == null
-        ? true
-        : state.currentPageIndex == state.formModel!.pages.length - 1;
+    // final isFirstPage = state.currentPageIndex == 0;
+    // final isLastPage = state.formModel == null
+    //     ? true
+    //     : state.currentPageIndex == state.formModel!.pages.length - 1;
 
-    // Không cần _getPageFlag nữa, lấy trực tiếp từ model
     final showNext = page.showNextButton;
     final showPrevious = page.showPreviousButton;
-    // Ẩn nút submit ở page cuối cùng, chỉ show ở preview
     final showSubmit = false;
 
     // Find navigation/submit buttons by action
@@ -80,8 +74,17 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .map((component) => _toDynamicFormModel(component))
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
+    DynamicFormModel? submitButton = page.components
+        .where(
+          (component) =>
+              component.type == FormTypeEnum.buttonFormType &&
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.submitForm.value,
+        )
+        .map((component) => _toDynamicFormModel(component))
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
     // Không lấy submitButton ở đây nữa
-    DynamicFormModel? submitButton = null;
     DynamicFormModel? previewButton = page.components
         .where(
           (component) =>
@@ -93,7 +96,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
 
-    // ==== Tìm các id component required từ validate.condition của next/submit button ====
     final requiredIds = <String>{};
     for (final button in [nextButton, submitButton]) {
       final validate = button?.validation;
@@ -196,7 +198,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         previewButton == null) {
       return const SizedBox.shrink();
     }
-    // Kiểm tra validation cho từng button
+
     bool isNextValid = nextButton == null
         ? true
         : _validateButtonConditions(
@@ -238,16 +240,15 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           previousButton,
                           context,
                           showDialogOnError: true,
-                        ))
+                        )) {
                           return;
+                        }
 
-                        // Lấy target page từ validate.previous_page
                         final validate = previousButton.validation;
                         final targetPage =
                             validate?['previous_page'] as String?;
 
                         if (targetPage != null) {
-                          // Tìm index của target page
                           final targetIndex = state.formModel?.pages.indexWhere(
                             (p) => p.pageId == targetPage,
                           );
@@ -256,13 +257,11 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                               NavigateToPageByIndex(targetIndex),
                             );
                           } else {
-                            // Fallback về trang trước nếu không tìm thấy
                             multiPageBloc.add(
                               const NavigateToPage(isNext: false),
                             );
                           }
                         } else {
-                          // Fallback về trang trước nếu không có previous_page
                           multiPageBloc.add(
                             const NavigateToPage(isNext: false),
                           );
@@ -285,8 +284,9 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           nextButton,
                           context,
                           showDialogOnError: true,
-                        ))
+                        )) {
                           return;
+                        }
                         multiPageBloc.add(const NavigateToPage(isNext: true));
                       },
                     ),
@@ -322,7 +322,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                   child: DynamicFormRenderer(
                     component: previewButton,
                     onButtonAction: (action, data) async {
-                      // Preview does not require validation
                       final allPages = state.formModel?.pages ?? [];
                       List<DynamicFormPageModel> dynamicPages = allPages
                           .map(
@@ -359,7 +358,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     );
   }
 
-  // Sửa lại hàm validate để lấy validate đúng từ model (button.validation hoặc button.config['validate'])
   bool _validateButtonConditions(
     DynamicFormModel button,
     BuildContext context, {
@@ -425,15 +423,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     return true;
   }
 
-  bool _isComponentRequired(
-    DynamicFormModel comp,
-    Map<String, dynamic> allValues,
-  ) {
-    final isRequired = comp.config[ValueKeyEnum.isRequired.key] == true;
-    final value = allValues[comp.id];
-    return isRequired && (value == null || value.toString().trim().isEmpty);
-  }
-
   DynamicFormModel _toDynamicFormModel(
     FormComponentMultiPageModel componentModel,
   ) {
@@ -449,19 +438,10 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     );
   }
 
-  DynamicFormModel? _getRemoteButton(RemoteButtonConfigKey key) {
-    final jsonString = RemoteConfigService().getString(key.key);
-    if (jsonString.isNotEmpty) {
-      return DynamicFormModel.fromJson(jsonDecode(jsonString));
-    }
-    return null;
-  }
-
   void _handlePreviewFormAction(
     BuildContext context,
     MultiPageFormState state,
   ) async {
-    // final allPages = state.formModel?.pages ?? [];
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
