@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
 
 class SavedFormsScreen extends StatefulWidget {
   const SavedFormsScreen({super.key});
@@ -393,6 +395,44 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                         ],
                       ],
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, color: Colors.grey),
+                    tooltip: 'Copy Config',
+                    onPressed: () async {
+                      String configJson;
+                      try {
+                        if (form.customFormData != null) {
+                          configJson = const JsonEncoder().convert(
+                            form.customFormData,
+                          );
+                        } else if (form.formData != null) {
+                          configJson = const JsonEncoder().convert(
+                            form.formData!.toJson(),
+                          );
+                        } else {
+                          throw Exception('No config data available');
+                        }
+                        await Clipboard.setData(
+                          ClipboardData(text: configJson),
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Config copied to clipboard'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to copy config: $e'),
+                            ),
+                          );
+                        }
+                      }
+                    },
                   ),
                   PopupMenuButton(
                     icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
