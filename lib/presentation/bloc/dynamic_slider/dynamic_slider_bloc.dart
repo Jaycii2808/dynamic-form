@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
@@ -323,7 +323,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
         ),
         overlayColor: StyleUtils.parseColor(
           currentState.computedStyle['active_color'],
-        )?.withValues(alpha: 0.2),
+        ).withValues(alpha: 0.2),
         trackHeight: 6.0,
       );
 

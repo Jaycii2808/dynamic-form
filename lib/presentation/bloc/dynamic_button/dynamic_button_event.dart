@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 
 /// Base class for all dynamic button events
 abstract class DynamicButtonEvent extends Equatable {

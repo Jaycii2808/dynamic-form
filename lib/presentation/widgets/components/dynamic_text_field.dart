@@ -376,8 +376,6 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       case FormStateEnum.focused:
         stateKey = 'focused';
         break;
-      default:
-        stateKey = 'base';
     }
 
     return component.states![stateKey]?['style'] as Map<String, dynamic>?;

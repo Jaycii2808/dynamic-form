@@ -80,7 +80,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       final currentPage = state.page;
       if (currentPage == null) {
         debugPrint('❌ No page found in state');
-        emit(DynamicFormError(errorMessage: 'Form page not found'));
+        emit(const DynamicFormError(errorMessage: 'Form page not found'));
         return;
       }
 
@@ -346,7 +346,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         '🔧 [FormBloc] Updating component ${component.id} with value: $value',
       );
 
-      if (value is Map && (value as Map).containsKey('value')) {
+      if (value is Map && value.containsKey('value')) {
         final mapValue = value as Map<String, dynamic>;
 
         // Direct map-based update (for complex components)
@@ -430,42 +430,6 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     }
   }
 
-  /// Validate all form components using JSON configuration
-  void _validateAllComponents(DynamicFormPageModel page) {
-    for (final component in page.components) {
-      final currentValue = component.config['value']?.toString() ?? '';
-
-      // Skip validation for non-input components
-      if (!_isInputComponent(component)) continue;
-
-      // Use JSON-driven validation
-      final validationError = ValidationUtils.validateForm(
-        component,
-        currentValue,
-      );
-
-      if (validationError != null) {
-        debugPrint(
-          '⚠️ Validation failed for ${component.id}: $validationError',
-        );
-
-        // Update component with validation error
-        final updateData = ValidationUtils.createFieldUpdateData(
-          value: currentValue,
-          errorText: validationError,
-          explicitState: 'error',
-        );
-
-        add(
-          UpdateFormFieldEvent(
-            componentId: component.id,
-            value: updateData,
-          ),
-        );
-      }
-    }
-  }
-
   /// Check if component is an input component that needs validation
   bool _isInputComponent(DynamicFormModel component) {
     final inputTypes = [
@@ -481,39 +445,6 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     ];
 
     return inputTypes.contains(component.type.toString().split('.').last);
-  }
-
-  /// Apply JSON-configured styles and states based on validation result
-  Map<String, dynamic> _buildComponentStyleWithState(
-    DynamicFormModel component,
-    String currentState,
-  ) {
-    final baseStyle = Map<String, dynamic>.from(component.style);
-
-    // Apply variant styles if configured
-    if (component.variants != null) {
-      for (final variant in component.variants!.values) {
-        final variantStyle = variant['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) {
-          baseStyle.addAll(variantStyle);
-        }
-      }
-    }
-
-    // Apply state-specific styles from JSON
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) {
-        baseStyle.addAll(stateStyle);
-        debugPrint(
-          '📋 Applied JSON state style for ${component.id}: $currentState',
-        );
-      }
-    }
-
-    return baseStyle;
   }
 
   DynamicFormPageModel _updateButtonStates(DynamicFormPageModel page) {
