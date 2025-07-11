@@ -51,7 +51,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
     final showNext = page.showNextButton;
     final showPrevious = page.showPreviousButton;
-    final showSubmit = false;
 
     // Find navigation/submit buttons by action
     DynamicFormModel? nextButton = page.components
@@ -74,17 +73,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .map((component) => _toDynamicFormModel(component))
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
-    DynamicFormModel? submitButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
-                  ButtonAction.submitForm.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-    // Không lấy submitButton ở đây nữa
     DynamicFormModel? previewButton = page.components
         .where(
           (component) =>
@@ -97,7 +85,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .firstWhere((b) => b != null, orElse: () => null);
 
     final requiredIds = <String>{};
-    for (final button in [nextButton, submitButton]) {
+    for (final button in [nextButton]) {
       final validate = button?.validation;
       if (validate != null && validate['condition'] is List) {
         for (final cond in validate['condition']) {
@@ -138,7 +126,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
             context,
             showPrevious ? previousButton : null,
             showNext ? nextButton : null,
-            showSubmit ? submitButton : null,
             previewButton,
             otherComponents,
             state,
@@ -186,16 +173,12 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context,
     DynamicFormModel? previousButton,
     DynamicFormModel? nextButton,
-    DynamicFormModel? submitButton,
     DynamicFormModel? previewButton,
     List<DynamicFormModel> otherComponents,
     MultiPageFormState state,
   ) {
     final multiPageBloc = context.read<MultiPageFormBloc>();
-    if (previousButton == null &&
-        nextButton == null &&
-        submitButton == null &&
-        previewButton == null) {
+    if (previousButton == null && nextButton == null && previewButton == null) {
       return const SizedBox.shrink();
     }
 
@@ -213,13 +196,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
             context,
             showDialogOnError: false,
           );
-    bool isSubmitValid = submitButton == null
-        ? true
-        : _validateButtonConditions(
-            submitButton,
-            context,
-            showDialogOnError: false,
-          );
+    // Removed isSubmitValid and submitButton logic
     return Positioned(
       bottom: 0,
       left: 0,
@@ -288,28 +265,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           return;
                         }
                         multiPageBloc.add(const NavigateToPage(isNext: true));
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            if (submitButton != null)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Opacity(
-                    opacity: isSubmitValid ? 1.0 : 0.5,
-                    child: DynamicFormRenderer(
-                      component: submitButton,
-                      onButtonAction: (action, data) {
-                        if (!_validateButtonConditions(
-                          submitButton,
-                          context,
-                          showDialogOnError: true,
-                        )) {
-                          return;
-                        }
-                        multiPageBloc.add(const SubmitMultiPageForm());
                       },
                     ),
                   ),

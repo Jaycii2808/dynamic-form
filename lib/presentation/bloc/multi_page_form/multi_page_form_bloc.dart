@@ -42,7 +42,8 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       for (var page in formModel.pages) {
         for (var component in page.components) {
           if (component.config.containsKey(ValueKeyEnum.value.key)) {
-            initialValues[component.id] = component.config[ValueKeyEnum.value.key];
+            initialValues[component.id] =
+                component.config[ValueKeyEnum.value.key];
           } else {
             initialValues[component.id] = null;
           }
@@ -101,9 +102,11 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         throw Exception("Form model is not loaded.");
       }
 
-      int nextPageIndex = currentState.currentPageIndex + (event.isNext ? 1 : -1);
+      int nextPageIndex =
+          currentState.currentPageIndex + (event.isNext ? 1 : -1);
 
-      if (nextPageIndex >= 0 && nextPageIndex < currentState.formModel!.pages.length) {
+      if (nextPageIndex >= 0 &&
+          nextPageIndex < currentState.formModel!.pages.length) {
         emit(currentState.copyWith(currentPageIndex: nextPageIndex));
       }
     } catch (e) {
@@ -129,13 +132,15 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         throw Exception("Form model is not loaded.");
       }
 
-      if (event.targetIndex >= 0 && event.targetIndex < currentState.formModel!.pages.length) {
+      if (event.targetIndex >= 0 &&
+          event.targetIndex < currentState.formModel!.pages.length) {
         emit(currentState.copyWith(currentPageIndex: event.targetIndex));
       }
     } catch (e) {
       emit(
         MultiPageFormError(
-          errorMessage: "Failed to navigate to page ${event.targetIndex}: ${e.toString()}",
+          errorMessage:
+              "Failed to navigate to page ${event.targetIndex}: ${e.toString()}",
           formModel: currentState.formModel,
           componentValues: currentState.componentValues,
           currentPageIndex: currentState.currentPageIndex,
@@ -171,7 +176,9 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       final formWithValue = formJson;
 
       await SavedFormsService().saveFormWithCustomFormat(
-        formId: formWithValue['formId'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        formId:
+            formWithValue['formId'] ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
         name: formWithValue['name'] ?? 'No name',
         description: '',
         formData: formWithValue,

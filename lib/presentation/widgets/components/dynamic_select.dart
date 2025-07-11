@@ -264,7 +264,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
         return Text(
           state.component!.config['placeholder'] ?? 'Select option',
           style: textStyle.copyWith(
-            color: StyleUtils.parseColor(style['color']).withOpacity(0.6),
+            color: StyleUtils.parseColor(style['color']).withValues(alpha:0.6),
           ),
         );
       }

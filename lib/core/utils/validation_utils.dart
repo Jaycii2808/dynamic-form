@@ -211,7 +211,7 @@ class ValidationUtils {
       }
     }
 
-    return ButtonValidationResult(isValid: true);
+    return const ButtonValidationResult(isValid: true);
   }
 
   /// Centralized state determination - replaces multiple if-else chains
