@@ -124,12 +124,25 @@ class DynamicSelectorButton extends StatelessWidget {
             if (hasLabel)
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  config['label'],
-                  style: TextStyle(
-                    fontSize: style['label_text_size']?.toDouble() ?? 16,
-                    //color: StyleUtils.parseColor(style['label_color']),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      config['label'],
+                      style: TextStyle(
+                        fontSize: style['label_text_size']?.toDouble() ?? 16,
+                        //color: StyleUtils.parseColor(style['label_color']),
+                      ),
+                    ),
+                    if (component.config['is_required'] == true)
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],

@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/enums/remote_button_config_key_enum.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'dart:convert';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 class PreviewMultiPageScreen extends StatelessWidget {
   final List<DynamicFormPageModel> pages;
@@ -30,19 +31,78 @@ class PreviewMultiPageScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
+    // Thay vì gộp tất cả component, chia thành từng block theo page
+    final pageBlocks = pages.asMap().entries.map((entry) {
+      final pageIndex = entry.key;
+      final page = entry.value;
+      final pageComponents = page.components
+          .map((componentItem) {
+            final value = allComponentValues[componentItem.id];
+            final newConfig = Map<String, dynamic>.from(componentItem.config);
+            if (value != null) {
+              newConfig[ValueKeyEnum.value.key] = value;
+            } else {
+              newConfig.remove(ValueKeyEnum.value.key);
+            }
+            return DynamicFormModel(
+              id: componentItem.id,
+              type: componentItem.type,
+              order: componentItem.order,
+              config: newConfig,
+              style: componentItem.style,
+              inputTypes: componentItem.inputTypes,
+              variants: componentItem.variants,
+              states: componentItem.states,
+              validation: componentItem.validation,
+              children: componentItem.children,
+            );
+          })
+          .where((c) => c.type != FormTypeEnum.buttonFormType)
+          .toList();
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Trang ${pageIndex + 1}/${pages.length}: ${page.title}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ),
+            ...pageComponents.map(
+              (c) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: DynamicFormRenderer(
+                  component: c,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+
     final previewComponents = _buildPreviewComponents(
       pages,
       allComponentValues,
     );
-    final nonSubmitComponents = previewComponents
-        .where((c) => c.id != RemoteButtonConfigKey.formSaveButton.key)
-        .toList();
     final submitButton = previewComponents.firstWhere(
-      (c) => c.id == RemoteButtonConfigKey.formSaveButton.key,
+      (c) =>
+          c.type == FormTypeEnum.buttonFormType &&
+          c.config['action'] == 'submit_form',
       orElse: () => DynamicFormModel.empty(),
     );
-    final previousButton = buildRemoteButton(
-      RemoteButtonConfigKey.previousButton,
+    final previousButton = previewComponents.firstWhere(
+      (c) =>
+          c.type == FormTypeEnum.buttonFormType &&
+          c.config['action'] == 'previous_page',
+      orElse: () => DynamicFormModel.empty(),
     );
     final isFormValid = isAllRequiredFilled(
       previewComponents,
@@ -50,14 +110,63 @@ class PreviewMultiPageScreen extends StatelessWidget {
     );
     return Stack(
       children: [
-        _buildPreviewListView(components: nonSubmitComponents),
+        IgnorePointer(
+          ignoring: true,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Preview (${pages.length} trang)',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ...pageBlocks,
+            ],
+          ),
+        ),
+        // Lớp phủ read only
+        Positioned.fill(
+          child: Container(
+            color: Colors.black.withOpacity(0.15),
+            alignment: Alignment.topCenter,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Chế độ xem trước (Read Only)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
         _buildPreviewButtonsRow(
           previousButton: previousButton,
           submitButton: submitButton,
           isFormValid: isFormValid,
           onPrevious: onPrevious,
           onSubmit: () {
-            if (onSubmit != null) onSubmit!();
+            if (isFormValid && onSubmit != null) onSubmit!();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Form submitted successfully.'),
@@ -181,14 +290,20 @@ Widget _buildPreviewButtonsRow({
                     )
                   : const Text("Missing Previous Button"),
             ),
-            if (isFormValid && submitButton.id.isNotEmpty) ...[
+            if (submitButton.id.isNotEmpty) ...[
               const SizedBox(width: 16),
               Expanded(
-                child: DynamicFormRenderer(
-                  component: submitButton,
-                  onButtonAction: (action, data) {
-                    if (onSubmit != null) onSubmit();
-                  },
+                child: Opacity(
+                  opacity: isFormValid ? 1.0 : 0.5,
+                  child: IgnorePointer(
+                    ignoring: !isFormValid,
+                    child: DynamicFormRenderer(
+                      component: submitButton,
+                      onButtonAction: (action, data) {
+                        if (isFormValid && onSubmit != null) onSubmit!();
+                      },
+                    ),
+                  ),
                 ),
               ),
             ],

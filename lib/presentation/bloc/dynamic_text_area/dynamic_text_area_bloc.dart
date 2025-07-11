@@ -58,7 +58,7 @@ class DynamicTextAreaBloc extends Bloc<DynamicTextAreaEvent, DynamicTextAreaStat
     InitializeTextAreaEvent event,
     Emitter<DynamicTextAreaState> emit,
   ) async {
-    emit(DynamicTextAreaLoading.fromState(state: state));
+   // emit(DynamicTextAreaLoading.fromState(state: state));
     try {
       if (initialComponent.id.isEmpty || initialComponent.config.isEmpty) {
         throw Exception("Invalid initial component: ID or config is empty.");
@@ -89,7 +89,7 @@ class DynamicTextAreaBloc extends Bloc<DynamicTextAreaEvent, DynamicTextAreaStat
   ) async {
     if (state is! DynamicTextAreaSuccess) return;
     final successState = state as DynamicTextAreaSuccess;
-    emit(DynamicTextAreaLoading.fromState(state: successState));
+   // emit(DynamicTextAreaLoading.fromState(state: successState));
 
     try {
       await Future.delayed(const Duration(milliseconds: 50));

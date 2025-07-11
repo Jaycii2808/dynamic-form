@@ -147,15 +147,28 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     required String label,
     required Map<String, dynamic> style,
   }) {
+    final bool isRequired = component.config['is_required'] == true;
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: (style['label_text_size'] as num?)?.toDouble() ?? 16,
-          color: StyleUtils.parseColor(style['label_color'] ?? '#333333'),
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: (style['label_text_size'] as num?)?.toDouble() ?? 16,
+              color: StyleUtils.parseColor(style['label_color'] ?? '#333333'),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (isRequired)
+            const Text(
+              ' *',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ],
       ),
     );
   }

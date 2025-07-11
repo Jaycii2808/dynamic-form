@@ -212,8 +212,8 @@ class DynamicDateTimePicker extends StatelessWidget {
     FormStateEnum? state,
   ) {
     double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withValues(alpha:
-      borderConfig.borderOpacity,
+    Color color = borderConfig.borderColor.withValues(
+      alpha: borderConfig.borderOpacity,
     );
     if (state == FormStateEnum.focused) {
       width += 1;

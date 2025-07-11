@@ -53,10 +53,20 @@ class DynamicTextArea extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        if (state is DynamicTextAreaLoading ||
-            state is DynamicTextAreaInitial) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        // if (state is DynamicTextAreaLoading ||
+        //     state is DynamicTextAreaInitial) {
+        //   return const Center(child: Text("CC"),);
+        // }
+        // return _buildBody(
+        //   state.styleConfig!,
+        //   state.inputConfig!,
+        //   state.component!,
+        //   state.formState!,
+        //   state.errorText!,
+        //   state.textController!,
+        //   state.focusNode!,
+        //   context,
+        // );
 
         if (state is DynamicTextAreaSuccess) {
           return _buildBody(
@@ -113,15 +123,28 @@ class DynamicTextArea extends StatelessWidget {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
+    final bool isRequired = component.config['is_required'] == true;
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
-      child: Text(
-        inputConfig.label!,
-        style: TextStyle(
-          fontSize: styleConfig.labelTextSize,
-          color: styleConfig.labelColor,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        children: [
+          Text(
+            inputConfig.label!,
+            style: TextStyle(
+              fontSize: styleConfig.labelTextSize,
+              color: styleConfig.labelColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (isRequired)
+            const Text(
+              ' *',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+        ],
       ),
     );
   }

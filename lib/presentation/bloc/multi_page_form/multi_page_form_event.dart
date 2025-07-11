@@ -28,7 +28,13 @@ class NavigateToPage extends MultiPageFormEvent {
   List<Object?> get props => [isNext];
 }
 
-class SubmitMultiPageForm extends MultiPageFormEvent {
+class NavigateToPageByIndex extends MultiPageFormEvent {
+  final int targetIndex;
+  const NavigateToPageByIndex(this.targetIndex);
+  @override
+  List<Object?> get props => [targetIndex];
+}
 
+class SubmitMultiPageForm extends MultiPageFormEvent {
   const SubmitMultiPageForm();
 }

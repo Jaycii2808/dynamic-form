@@ -5,6 +5,8 @@ import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
 
 class SavedFormsScreen extends StatefulWidget {
   const SavedFormsScreen({super.key});
@@ -89,6 +91,55 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
 
   void _loadSavedForm(SavedFormModel savedForm) {
     try {
+      // Nếu là multipage (customFormData có 'pages')
+      if (savedForm.customFormData != null &&
+          savedForm.customFormData!.containsKey('pages')) {
+        final formJson = savedForm.customFormData!;
+        final pages = (formJson['pages'] as List)
+            .map((e) => FormForMultiPageModel.fromJson(e))
+            .toList();
+        // Parse lại value cho từng component
+        final Map<String, dynamic> componentValues = {};
+        for (var page in formJson['pages']) {
+          for (var component in page['components']) {
+            final id = component['id'];
+            final value = component['config']['value'];
+            componentValues[id] = value;
+          }
+        }
+        // Convert sang List<DynamicFormPageModel> để truyền vào PreviewMultiPageScreen
+        final dynamicPages = pages
+            .map(
+              (page) => DynamicFormPageModel(
+                pageId: page.pageId,
+                title: page.title,
+                order: page.order,
+                components: page.components.map((comp) {
+                  return DynamicFormModel(
+                    id: comp.id,
+                    type: comp.type,
+                    order: comp.order,
+                    config: Map<String, dynamic>.from(comp.config),
+                    style: Map<String, dynamic>.from(comp.style),
+                    validation: comp.validation,
+                    children: const [],
+                  );
+                }).toList(),
+              ),
+            )
+            .toList();
+        Navigator.pop(context); // Close saved forms screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PreviewMultiPageScreen(
+              pages: dynamicPages,
+              allComponentValues: componentValues,
+            ),
+          ),
+        );
+        return;
+      }
       // Check if we have custom form data (new format)
       if (savedForm.customFormData != null) {
         final customData = savedForm.customFormData!;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/config_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
@@ -52,66 +53,80 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         ? true
         : state.currentPageIndex == state.formModel!.pages.length - 1;
 
-    final navigateButtons = page.components
+    // Không cần _getPageFlag nữa, lấy trực tiếp từ model
+    final showNext = page.showNextButton;
+    final showPrevious = page.showPreviousButton;
+    // Ẩn nút submit ở page cuối cùng, chỉ show ở preview
+    final showSubmit = false;
+
+    // Find navigation/submit buttons by action
+    DynamicFormModel? nextButton = page.components
         .where(
           (component) =>
               component.type == FormTypeEnum.buttonFormType &&
-              (component.config[ConfigEnum.action.value] ==
-                      ButtonAction.previousPage.value ||
-                  component.config[ConfigEnum.action.value] ==
-                      ButtonAction.nextPage.value),
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.nextPage.value,
         )
         .map((component) => _toDynamicFormModel(component))
-        .toList();
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
+    DynamicFormModel? previousButton = page.components
+        .where(
+          (component) =>
+              component.type == FormTypeEnum.buttonFormType &&
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.previousPage.value,
+        )
+        .map((component) => _toDynamicFormModel(component))
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
+    // Không lấy submitButton ở đây nữa
+    DynamicFormModel? submitButton = null;
+    DynamicFormModel? previewButton = page.components
+        .where(
+          (component) =>
+              component.type == FormTypeEnum.buttonFormType &&
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.previewForm.value,
+        )
+        .map((component) => _toDynamicFormModel(component))
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
 
+    // ==== Tìm các id component required từ validate.condition của next/submit button ====
+    final requiredIds = <String>{};
+    for (final button in [nextButton, submitButton]) {
+      final validate = button?.validation;
+      if (validate != null && validate['condition'] is List) {
+        for (final cond in validate['condition']) {
+          if (cond['is_required'] == true && cond['id_component'] != null) {
+            requiredIds.add(cond['id_component']);
+          }
+        }
+      }
+    }
+
+    // Filter out navigation/submit/preview buttons from main components
     final otherComponents = page.components
         .where(
           (component) =>
               !(component.type == FormTypeEnum.buttonFormType &&
-                  component.config[ConfigEnum.action.value] ==
-                      ButtonAction.submitForm.value) &&
-              !(component.type == FormTypeEnum.buttonFormType &&
                   (component.config[ConfigEnum.action.value] ==
+                          ButtonAction.submitForm.value ||
+                      component.config[ConfigEnum.action.value] ==
                           ButtonAction.previousPage.value ||
                       component.config[ConfigEnum.action.value] ==
-                          ButtonAction.nextPage.value)),
+                          ButtonAction.nextPage.value ||
+                      component.config[ConfigEnum.action.value] ==
+                          ButtonAction.previewForm.value)),
         )
-        .map((component) => _toDynamicFormModel(component))
+        .map((component) {
+          final model = _toDynamicFormModel(component);
+          // Set is_required flag cho widget con
+          model.config['is_required'] = requiredIds.contains(model.id);
+          return model;
+        })
         .toList();
-
-    final bool isCurrentPageValid = otherComponents.every(
-      (comp) => !_isComponentRequired(comp, allComponentValues),
-    );
-
-    DynamicFormModel? previousButton = navigateButtons.firstWhere(
-      (b) =>
-          b.config[ConfigEnum.action.value] == ButtonAction.previousPage.value,
-      orElse: () => DynamicFormModel.empty(),
-    );
-    if (previousButton.id.isEmpty) previousButton = null;
-
-    DynamicFormModel? nextButton = navigateButtons.firstWhere(
-      (b) => b.config[ConfigEnum.action.value] == ButtonAction.nextPage.value,
-      orElse: () => DynamicFormModel.empty(),
-    );
-    if (nextButton.id.isEmpty) nextButton = null;
-
-    DynamicFormModel? previewButton;
-    if (isLastPage) {
-      previewButton = _getRemoteButton(RemoteButtonConfigKey.previewButton);
-      otherComponents.removeWhere(
-        (c) =>
-            c.config[ConfigEnum.action.value] == ButtonAction.previewForm.value,
-      );
-      nextButton = null;
-    }
-
-    if (previousButton == null && !isFirstPage && page.showPrevious) {
-      previousButton = _getRemoteButton(RemoteButtonConfigKey.previousButton);
-    }
-    if (nextButton == null && !isLastPage) {
-      nextButton = _getRemoteButton(RemoteButtonConfigKey.nextButton);
-    }
 
     return Scaffold(
       body: Stack(
@@ -119,10 +134,10 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
           _buildListViewWidget(context, otherComponents, state),
           _buildButtonsRowWidget(
             context,
-            previousButton,
-            nextButton,
+            showPrevious ? previousButton : null,
+            showNext ? nextButton : null,
+            showSubmit ? submitButton : null,
             previewButton,
-            isCurrentPageValid,
             otherComponents,
             state,
           ),
@@ -169,160 +184,245 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context,
     DynamicFormModel? previousButton,
     DynamicFormModel? nextButton,
+    DynamicFormModel? submitButton,
     DynamicFormModel? previewButton,
-    bool isCurrentPageValid,
     List<DynamicFormModel> otherComponents,
     MultiPageFormState state,
   ) {
+    final multiPageBloc = context.read<MultiPageFormBloc>();
+    if (previousButton == null &&
+        nextButton == null &&
+        submitButton == null &&
+        previewButton == null) {
+      return const SizedBox.shrink();
+    }
+    // Kiểm tra validation cho từng button
+    bool isNextValid = nextButton == null
+        ? true
+        : _validateButtonConditions(
+            nextButton,
+            context,
+            showDialogOnError: false,
+          );
+    bool isPreviousValid = previousButton == null
+        ? true
+        : _validateButtonConditions(
+            previousButton,
+            context,
+            showDialogOnError: false,
+          );
+    bool isSubmitValid = submitButton == null
+        ? true
+        : _validateButtonConditions(
+            submitButton,
+            context,
+            showDialogOnError: false,
+          );
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
       child: SafeArea(
-        child: _buildFloatingButtonRowWidget(
-          context: context,
-          previousButton: previousButton,
-          nextButton: nextButton,
-          previewButton: previewButton,
-          isCurrentPageValid: isCurrentPageValid,
-          otherComponents: otherComponents,
-          allComponentValues: allComponentValues,
-          state: state,
-          page: page,
+        child: Row(
+          children: [
+            if (previousButton != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Opacity(
+                    opacity: isPreviousValid ? 1.0 : 0.5,
+                    child: DynamicFormRenderer(
+                      component: previousButton,
+                      onButtonAction: (action, data) {
+                        if (!_validateButtonConditions(
+                          previousButton,
+                          context,
+                          showDialogOnError: true,
+                        ))
+                          return;
+
+                        // Lấy target page từ validate.previous_page
+                        final validate = previousButton.validation;
+                        final targetPage =
+                            validate?['previous_page'] as String?;
+
+                        if (targetPage != null) {
+                          // Tìm index của target page
+                          final targetIndex = state.formModel?.pages.indexWhere(
+                            (p) => p.pageId == targetPage,
+                          );
+                          if (targetIndex != null && targetIndex >= 0) {
+                            multiPageBloc.add(
+                              NavigateToPageByIndex(targetIndex),
+                            );
+                          } else {
+                            // Fallback về trang trước nếu không tìm thấy
+                            multiPageBloc.add(
+                              const NavigateToPage(isNext: false),
+                            );
+                          }
+                        } else {
+                          // Fallback về trang trước nếu không có previous_page
+                          multiPageBloc.add(
+                            const NavigateToPage(isNext: false),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            if (nextButton != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Opacity(
+                    opacity: isNextValid ? 1.0 : 0.5,
+                    child: DynamicFormRenderer(
+                      component: nextButton,
+                      onButtonAction: (action, data) {
+                        if (!_validateButtonConditions(
+                          nextButton,
+                          context,
+                          showDialogOnError: true,
+                        ))
+                          return;
+                        multiPageBloc.add(const NavigateToPage(isNext: true));
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            if (submitButton != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Opacity(
+                    opacity: isSubmitValid ? 1.0 : 0.5,
+                    child: DynamicFormRenderer(
+                      component: submitButton,
+                      onButtonAction: (action, data) {
+                        if (!_validateButtonConditions(
+                          submitButton,
+                          context,
+                          showDialogOnError: true,
+                        )) {
+                          return;
+                        }
+                        multiPageBloc.add(const SubmitMultiPageForm());
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            if (previewButton != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: DynamicFormRenderer(
+                    component: previewButton,
+                    onButtonAction: (action, data) async {
+                      // Preview does not require validation
+                      final allPages = state.formModel?.pages ?? [];
+                      List<DynamicFormPageModel> dynamicPages = allPages
+                          .map(
+                            (page) => DynamicFormPageModel(
+                              pageId: page.pageId,
+                              title: page.title,
+                              order: page.order,
+                              components: page.components
+                                  .map((comp) => _toDynamicFormModel(comp))
+                                  .toList(),
+                            ),
+                          )
+                          .toList();
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PreviewMultiPageScreen(
+                            pages: dynamicPages,
+                            allComponentValues: allComponentValues,
+                            onPrevious: () => Navigator.of(context).pop(),
+                            onSubmit: () async {
+                              multiPageBloc.add(const SubmitMultiPageForm());
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFloatingButtonRowWidget({
-    required BuildContext context,
-    required DynamicFormModel? previousButton,
-    required DynamicFormModel? nextButton,
-    required DynamicFormModel? previewButton,
-    required bool isCurrentPageValid,
-    required List<DynamicFormModel> otherComponents,
-    required Map<String, dynamic> allComponentValues,
-    required MultiPageFormState state,
-    required FormForMultiPageModel page,
+  // Sửa lại hàm validate để lấy validate đúng từ model (button.validation hoặc button.config['validate'])
+  bool _validateButtonConditions(
+    DynamicFormModel button,
+    BuildContext context, {
+    bool showDialogOnError = true,
   }) {
-    final multiPageBloc = context.read<MultiPageFormBloc>();
-    if (previousButton == null && nextButton == null && previewButton == null) {
-      return const SizedBox.shrink();
-    }
-    return Row(
-      children: [
-        if (previousButton != null)
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: DynamicFormRenderer(
-                component: previousButton,
-                onButtonAction: (action, data) {
-                  if (page.showPrevious) {
-                    multiPageBloc.add(const NavigateToPage(isNext: false));
-                  }
-                },
-              ),
-            ),
-          ),
-        if (nextButton != null)
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Opacity(
-                opacity: isCurrentPageValid ? 1.0 : 0.5,
-                child: DynamicFormRenderer(
-                  component: nextButton,
-                  onButtonAction: (action, data) {
-                    if (!isCurrentPageValid) {
-                      final missingFields = otherComponents
-                          .where(
-                            (comp) =>
-                                _isComponentRequired(comp, allComponentValues),
-                          )
-                          .toList();
-                      final missingLabels = missingFields
-                          .map(
-                            (comp) =>
-                                comp.config[ValueKeyEnum.label.key]
-                                    ?.toString() ??
-                                comp.id,
-                          )
-                          .toList();
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Required Fields'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Please fill the following required fields:',
-                              ),
-                              const SizedBox(height: 8),
-                              ...missingLabels.map((label) => Text('- $label')),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                      return;
-                    }
-                    multiPageBloc.add(const NavigateToPage(isNext: true));
-                  },
-                ),
-              ),
-            ),
-          ),
-        if (previewButton != null)
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: DynamicFormRenderer(
-                component: previewButton,
-                onButtonAction: (action, data) async {
-                  final allPages = state.formModel?.pages ?? [];
-                  List<DynamicFormPageModel> dynamicPages = allPages
-                      .map(
-                        (page) => DynamicFormPageModel(
-                          pageId: page.pageId,
-                          title: page.title,
-                          order: page.order,
-                          components: page.components
-                              .map((comp) => _toDynamicFormModel(comp))
-                              .toList(),
-                        ),
-                      )
-                      .toList();
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PreviewMultiPageScreen(
-                        pages: dynamicPages,
-                        allComponentValues: allComponentValues,
-                        onPrevious: () => Navigator.of(context).pop(),
-                        onSubmit: () async {
-                          bool isValid = true;
-                          // Form validation logic remains here
-                          if (isValid) {
-                            multiPageBloc.add(const SubmitMultiPageForm());
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-      ],
+    final validate = button.validation;
+    final conditions = (validate != null && validate['condition'] is List)
+        ? validate['condition'] as List
+        : [];
+    debugPrint(
+      'Validating button: ${button.id}, conditions: ${conditions.length}',
     );
+    final List<String> errors = [];
+    for (final cond in conditions) {
+      final id = cond['id_component'];
+      final value = allComponentValues[id];
+      debugPrint(
+        'Checking condition for component: $id, value: $value, cond: $cond',
+      );
+      if (cond['is_required'] == true &&
+          (value == null ||
+              (value is bool
+                  ? value == false
+                  : value.toString().trim().isEmpty))) {
+        errors.add(cond['error_message']?.toString() ?? 'Required');
+      } else if ((cond['regex'] ?? '').toString().isNotEmpty) {
+        final regex = RegExp(cond['regex']);
+        if (value != null &&
+            value.toString().isNotEmpty &&
+            !regex.hasMatch(value.toString())) {
+          errors.add(
+            cond['regex_error']?.toString() ??
+                cond['error_message']?.toString() ??
+                'Invalid format',
+          );
+        }
+      }
+    }
+    if (errors.isNotEmpty) {
+      debugPrint('Validation errors for button ${button.id}: $errors');
+      if (showDialogOnError) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Validation Errors'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: errors.map((e) => Text('- $e')).toList(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+      return false;
+    }
+    debugPrint('Button ${button.id} passed validation');
+    return true;
   }
 
   bool _isComponentRequired(
@@ -343,7 +443,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       order: componentModel.order,
       config: Map<String, dynamic>.from(componentModel.config),
       style: componentModel.style,
-      validation: componentModel.validation,
+      validation:
+          componentModel.validation ?? componentModel.config['validate'],
       children: const [],
     );
   }

@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final map = Map<String, dynamic>.from(
               (jsonDecode(json) as Map<String, dynamic>),
             );
-            if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
+            //if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
               return;
-            }
+            //}
           }
         } catch (e) {
           // Ignore and fallback to single page

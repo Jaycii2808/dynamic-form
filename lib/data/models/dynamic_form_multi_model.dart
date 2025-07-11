@@ -17,7 +17,11 @@ class DynamicMultiPageFormModel extends Equatable {
   factory DynamicMultiPageFormModel.fromJson(Map<String, dynamic> json) {
     var pageList =
         (json['pages'] as List<dynamic>?)
-            ?.map((pageJson) => FormForMultiPageModel.fromJson(pageJson as Map<String, dynamic>))
+            ?.map(
+              (pageJson) => FormForMultiPageModel.fromJson(
+                pageJson as Map<String, dynamic>,
+              ),
+            )
             .toList() ??
         [];
 
@@ -30,8 +34,6 @@ class DynamicMultiPageFormModel extends Equatable {
       pages: pageList,
     );
     //empty factory
-
-
   }
 
   @override
@@ -42,21 +44,29 @@ class FormForMultiPageModel extends Equatable {
   final String pageId;
   final String title;
   final int order;
-  final bool showPrevious;
+  final bool showNextButton;
+  final bool showPreviousButton;
+  final bool showSubmitButton;
   final List<FormComponentMultiPageModel> components;
 
   const FormForMultiPageModel({
     required this.pageId,
     required this.title,
     required this.order,
-    this.showPrevious = true,
+    this.showNextButton = false,
+    this.showPreviousButton = false,
+    this.showSubmitButton = false,
     required this.components,
   });
 
   factory FormForMultiPageModel.fromJson(Map<String, dynamic> json) {
     var componentList =
         (json['components'] as List<dynamic>?)
-            ?.map((compJson) => FormComponentMultiPageModel.fromJson(compJson as Map<String, dynamic>))
+            ?.map(
+              (compJson) => FormComponentMultiPageModel.fromJson(
+                compJson as Map<String, dynamic>,
+              ),
+            )
             .toList() ??
         [];
 
@@ -66,13 +76,23 @@ class FormForMultiPageModel extends Equatable {
       pageId: json['pageId'] ?? '',
       title: json['title'] ?? '',
       order: json['order'] ?? 0,
-      showPrevious: json['showPrevious'] ?? true,
+      showNextButton: json['show_next_button'] ?? false,
+      showPreviousButton: json['show_previous_button'] ?? false,
+      showSubmitButton: json['show_submit_button'] ?? false,
       components: componentList,
     );
   }
 
   @override
-  List<Object?> get props => [pageId, title, order, showPrevious, components];
+  List<Object?> get props => [
+    pageId,
+    title,
+    order,
+    showNextButton,
+    showPreviousButton,
+    showSubmitButton,
+    components,
+  ];
 }
 
 class FormComponentMultiPageModel extends Equatable {
@@ -101,13 +121,25 @@ class FormComponentMultiPageModel extends Equatable {
       order: json['order'] ?? 0,
       config: json['config'] ?? {},
       style: json['style'] ?? {},
-      validation: json['validation'],
+      validation: json['validate'], // <-- fix đúng ánh xạ validate
       children: (json['children'] as List<dynamic>?)
-          ?.map((child) => FormComponentMultiPageModel.fromJson(child as Map<String, dynamic>))
+          ?.map(
+            (child) => FormComponentMultiPageModel.fromJson(
+              child as Map<String, dynamic>,
+            ),
+          )
           .toList(),
     );
   }
 
   @override
-  List<Object?> get props => [id, type, order, config, style, validation, children];
+  List<Object?> get props => [
+    id,
+    type,
+    order,
+    config,
+    style,
+    validation,
+    children,
+  ];
 }

@@ -98,17 +98,29 @@ class DynamicSwitch extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         //mainAxisSize: MainAxisSize.min,
         children: [
-
           if (hasLabel)
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                config['label'],
-                style: TextStyle(
-                  fontSize:
-                      (style['label_text_size'] as num?)?.toDouble() ?? 16,
-                  // color: StyleUtils.parseColor(style['label_color'] ?? style['color']),
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    config['label'],
+                    style: TextStyle(
+                      fontSize:
+                          (style['label_text_size'] as num?)?.toDouble() ?? 16,
+                      // color: StyleUtils.parseColor(style['label_color'] ?? style['color']),
+                    ),
+                  ),
+                  if (component.config['is_required'] == true)
+                    const Text(
+                      ' *',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
               ),
             ),
           Switch(
@@ -116,10 +128,10 @@ class DynamicSwitch extends StatelessWidget {
             onChanged: isDisabled
                 ? null
                 : (bool value) {
-              context.read<DynamicSwitchBloc>().add(
-                SwitchToggledEvent(value: value),
-              );
-            },
+                    context.read<DynamicSwitchBloc>().add(
+                      SwitchToggledEvent(value: value),
+                    );
+                  },
             activeColor: activeColor,
             inactiveThumbColor: inactiveThumbColor,
             inactiveTrackColor: inactiveTrackColor,
