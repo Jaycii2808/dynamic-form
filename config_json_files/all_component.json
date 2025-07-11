@@ -1,0 +1,1775 @@
+[
+   {
+      "id": "cb_base",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Base Checkbox",
+         "hint": "Simple border style.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E",
+               "background_color": "transparent"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "background_color": "transparent",
+               "icon_color": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_filled",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Filled Checkbox",
+         "hint": "Fills with color when selected.",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#BDBDBD",
+               "background_color": "#424242"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "background_color": "#6979F8",
+               "icon_color": "#FFFFFF"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_icon_hint",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "With Leading Icon",
+         "hint": "Displays an icon next to the checkbox.",
+         "icon": "book",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "border_width": 2,
+         "icon_color": "#8D6E63",
+         "label_color": "#8D6E63",
+         "label_text_size": 16,
+         "hint_color": "#BCAAA4",
+         "width": 40,
+         "height": 40
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#8D6E63",
+               "background_color": "transparent"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#8D6E63",
+               "background_color": "#D7CCC8",
+               "icon_color": "#5D4037"
+            }
+         }
+      }
+   },
+   {
+      "id": "cb_disabled_selected",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Disabled (Selected)",
+         "hint": "This checkbox is not interactive.",
+         "value": true,
+         "editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "background_color": "#424242",
+         "border_color": "#616161",
+         "icon_color": "#757575",
+         "label_color": "#9E9E9E",
+         "label_text_size": 16,
+         "hint_color": "#757575",
+         "width": 40,
+         "height": 40
+      }
+   },
+   {
+      "id": "cb_disabled_unselected",
+      "type": "checkboxFormType",
+      "config": {
+         "label": "Disabled (Unselected)",
+         "hint": "This one is also not interactive.",
+         "value": false,
+         "editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "padding": "8 12 8 12",
+         "border_radius": 8,
+         "background_color": "#424242",
+         "border_color": "#616161",
+         "label_color": "#9E9E9E",
+         "label_text_size": 16,
+         "hint_color": "#757575",
+         "width": 40,
+         "height": 40
+      }
+   },
+   {
+      "id": "user_menu_with_states",
+      "type": "dropdownFormType",
+      "config": {
+         "label": "Jocelyn Botos",
+         "avatar": "https://randomuser.me/api/portraits/women/68.jpg",
+         "value": "settings",
+         "items": [
+            {
+               "id": "account",
+               "label": "Your Account",
+               "icon": "user"
+            },
+            {
+               "type": "divider"
+            },
+            {
+               "id": "settings",
+               "label": "Settings",
+               "icon": "settings"
+            },
+            {
+               "id": "logout",
+               "label": "Log Out",
+               "icon": "logout"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#555555",
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "dropdown_background_color": "#0d0d0d",
+         "dropdown_width": 280,
+         "divider_color": "#444444"
+      },
+      "variants": {
+         "with_avatar": {
+            "style": {
+               "padding": "8px 12px"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#555555"
+            }
+         },
+         "hover": {
+            "style": {
+               "border_color": "#A0A5F5",
+               "background_color": "#2c2c2e"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "helper_text": "An error occurred with your account.",
+               "helper_text_color": "#ff4d4f"
+            }
+         }
+      },
+      "validation": {
+         "demo_error": true
+      }
+   },
+   {
+      "id": "search_dropdown",
+      "type": "dropdownFormType",
+      "config": {
+         "searchable": true,
+         "placeholder": "Search actions...",
+         "value": "item2",
+         "items": [
+            {
+               "id": "item1",
+               "label": "First Action"
+            },
+            {
+               "id": "item2",
+               "label": "Second Action"
+            },
+            {
+               "id": "item3",
+               "label": "Third Action"
+            },
+            {
+               "id": "item4",
+               "label": "Fourth Action"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#6979F8",
+         "border_width": 1.5,
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "rgba(105, 121, 248, 0.4)",
+         "dropdown_background_color": "#1c1c1e",
+         "icon_color": "#e0e0e0"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "background_color": "rgba(105, 121, 248, 0.4)"
+            }
+         },
+         "hover": {
+            "style": {
+               "background_color": "rgba(105, 121, 248, 0.6)"
+            }
+         }
+      }
+   },
+   {
+      "id": "language_selector",
+      "type": "dropdownFormType",
+      "config": {
+         "label": "English",
+         "icon": "globe",
+         "value": "lang_en",
+         "items": [
+            {
+               "id": "lang_en",
+               "label": "English"
+            },
+            {
+               "id": "lang_es",
+               "label": "Español"
+            },
+            {
+               "id": "lang_fr",
+               "label": "Français"
+            },
+            {
+               "id": "lang_de",
+               "label": "Deutsch"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px",
+         "border_color": "#555555",
+         "border_radius": 8,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "icon_color": "#e0e0e0",
+         "dropdown_background_color": "#0d0d0d",
+         "dropdown_width": 200
+      },
+      "variants": {
+         "with_icon": {
+            "style": {
+               "padding": "12px"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#555555"
+            }
+         },
+         "hover": {
+            "style": {
+               "border_color": "#A0A5F5",
+               "background_color": "#2c2c2e"
+            }
+         }
+      }
+   },
+   {
+      "id": "file_uploader_1",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop files or click to upload",
+         "button_text": "Browse",
+         "allowed_extensions": ["jpg", "png", "pdf"]
+      },
+      "style": {
+         "width": 320,
+         "height": 200,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "margin": "16"
+      },
+      "variants": {
+         "dragging": {
+            "config": {
+               "title": "Drop files here",
+               "subtitle": "or"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "loading": {
+            "config": {
+               "status_text_format": "Uploading {fileName} {progress}/{total}%",
+               "subtitle": "very soon it's over",
+               "button_text": "Loading"
+            },
+            "style": {
+               "icon": "file",
+               "icon_color": "#FFFFFF",
+               "progress_color": "#6979F8"
+            }
+         },
+         "success": {
+            "config": {
+               "status_text_format": "{fileName} uploaded!",
+               "button_text": "Remove"
+            },
+            "style": {
+               "icon": "check",
+               "icon_color": "#27AE60"
+            }
+         },
+         "error": {
+            "config": {
+               "status_text": "Upload failed. Please try again.",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "file_uploader_multiple",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop multiple files or click to upload",
+         "subtitle": "You can select multiple files at once",
+         "button_text": "Browse Files",
+         "multiple_files": true,
+         "allowed_extensions": [
+            "jpg",
+            "png",
+            "pdf",
+            "doc",
+            "docx",
+            "txt",
+            "jpeg",
+            "webp"
+         ]
+      },
+      "style": {
+         "width": 400,
+         "height": 300,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "file_item_background_color": "#2A2A2A",
+         "remove_all_button_color": "#E74C3C",
+         "margin": "16"
+      },
+      "variants": {
+         "multiple_files": {},
+         "dragging": {
+            "config": {
+               "title": "Drop multiple files here",
+               "subtitle": "or click to browse"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "loading": {
+            "config": {
+               "status_text_format": "Uploading {fileName} {progress}/{total}%",
+               "subtitle": "Processing multiple files...",
+               "button_text": "Loading"
+            },
+            "style": {
+               "icon": "file",
+               "icon_color": "#FFFFFF",
+               "progress_color": "#6979F8"
+            }
+         },
+         "success": {
+            "config": {
+               "status_text_format": "{fileName} uploaded successfully!",
+               "add_more_button_text": "Add More Files",
+               "remove_all_button_text": "Remove All"
+            },
+            "style": {
+               "icon": "check",
+               "icon_color": "#27AE60"
+            }
+         },
+         "error": {
+            "config": {
+               "status_text": "Some files failed to upload. Please try again.",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "file_uploader_with_preview",
+      "type": "fileUploaderFormType",
+      "config": {
+         "title": "Drop an image to preview",
+         "button_text": "Upload Image",
+         "allowed_extensions": ["jpg", "png", "gif", "jpeg", "webp"]
+      },
+      "style": {
+         "width": 320,
+         "height": 200,
+         "background_color": "#000000",
+         "border_color": "#4A4A4A",
+         "border_radius": 12,
+         "border_width": 1.5,
+         "border_style": "dashed",
+         "text_color": "#FFFFFF",
+         "button_background_color": "#6979F8",
+         "button_text_color": "#FFFFFF",
+         "button_border_radius": 8,
+         "margin": "16"
+      },
+      "variants": {
+         "with_preview": {},
+         "dragging": {
+            "config": {
+               "title": "Drop image here"
+            },
+            "style": {
+               "background_color": "#1A1A1A",
+               "border_color": "#6979F8"
+            }
+         }
+      },
+      "states": {
+         "success": {
+            "config": {
+               "button_text": "Change Image"
+            },
+            "style": {}
+         },
+         "error": {
+            "config": {
+               "status_text": "Upload failed. Not an image?",
+               "button_text": "Retry"
+            },
+            "style": {
+               "icon": "error",
+               "icon_color": "#E74C3C",
+               "border_color": "#E74C3C"
+            }
+         }
+      }
+   },
+   {
+      "id": "price_filter_container",
+      "type": "container",
+      "config": {
+         "label": "Price filter"
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "children": [
+         {
+            "id": "price_range_slider",
+            "type": "sliderFormType",
+            "config": {
+               "range": true,
+               "min": 0,
+               "max": 2000,
+               "divisions": 100,
+               "values": [262, 1043],
+               "prefix": "$"
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "margin": "16 0 48 0"
+            }
+         },
+         {
+            "id": "price_single_slider",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "divisions": 100,
+               "value": 980,
+               "prefix": "$"
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF"
+            }
+         },
+         {
+            "id": "price_single_slider_with_hint",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "value": 500,
+               "prefix": "$",
+               "hint": "Adjust the slider to set your maximum price."
+            },
+            "variants": {
+               "with_hint": {
+                  "style": {
+                     "margin": "16 0 0 0"
+                  }
+               }
+            },
+            "style": {
+               "active_color": "#6979F8",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "hint_color": "#9E9E9E"
+            }
+         },
+         {
+            "id": "price_range_slider_with_icon",
+            "type": "sliderFormType",
+            "config": {
+               "range": true,
+               "min": 0,
+               "max": 2000,
+               "values": [150, 1250],
+               "prefix": "$",
+               "icon": "shopping"
+            },
+            "variants": {
+               "with_icon": {
+                  "style": {}
+               }
+            },
+            "style": {
+               "active_color": "#1ABC9C",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#1ABC9C",
+               "thumb_icon_color": "#6979F8",
+               "value_label_color": "#FFFFFF",
+               "icon_color": "#6979F8",
+               "margin": "16 0 48 0"
+            }
+         },
+         {
+            "id": "price_single_slider_with_thumb_icon",
+            "type": "sliderFormType",
+            "config": {
+               "range": false,
+               "min": 0,
+               "max": 2000,
+               "value": 1500,
+               "prefix": "$",
+               "thumb_icon": "plane"
+            },
+            "variants": {
+               "with_thumb_icon": {
+                  "style": {}
+               }
+            },
+            "style": {
+               "active_color": "#1ABC9C",
+               "inactive_color": "#BDBDBD",
+               "thumb_color": "#FFFFFF",
+               "thumb_icon_color": "#1ABC9C",
+               "value_label_color": "#FFFFFF",
+               "margin": "16 0 48 0"
+            }
+         }
+      ]
+   },
+   {
+      "id": "radio_male",
+      "type": "radioFormType",
+      "config": {
+         "label": "Male",
+         "hint": "Select if you identify as male.",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#6979F8",
+               "icon_color": "#6979F8"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_female",
+      "type": "radioFormType",
+      "config": {
+         "label": "Female",
+         "hint": "Select if you identify as female.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#E040FB",
+               "icon_color": "#E040FB"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_label_only",
+      "type": "radioFormType",
+      "config": {
+         "label": "Label Only",
+         "hint": "This is a label-only variant.",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#00BCD4",
+               "icon_color": "#00BCD4"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_anonymous",
+      "type": "radioFormType",
+      "config": {
+         "label": "Anonymous",
+         "hint": "With a leading icon.",
+         "icon": "user",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#8D6E63",
+         "label_color": "#8D6E63",
+         "hint_color": "#BCAAA4"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#8D6E63"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#5D4037",
+               "icon_color": "#5D4037"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_standard",
+      "type": "radioFormType",
+      "config": {
+         "label": "Standard Shipping",
+         "hint": "5-7 business days",
+         "icon": "local_shipping",
+         "value": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#FF7043"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#FF7043",
+               "icon_color": "#FF7043"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_express",
+      "type": "radioFormType",
+      "config": {
+         "label": "Express Shipping",
+         "hint": "1-2 business days",
+         "icon": "flight_takeoff",
+         "value": true
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "icon_color": "#29B6F6"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#9E9E9E"
+            }
+         },
+         "selected": {
+            "style": {
+               "border_color": "#29B6F6",
+               "icon_color": "#29B6F6"
+            }
+         }
+      }
+   },
+   {
+      "id": "radio_disabled",
+      "type": "radioFormType",
+      "config": {
+         "label": "Overnight (Disabled)",
+         "hint": "Currently unavailable",
+         "icon": "moon",
+         "value": false,
+         "is_editable": false
+      },
+      "style": {
+         "margin": "16 16 0 16",
+         "border_color": "#616161",
+         "label_color": "#9E9E9E",
+         "hint_color": "#757575",
+         "icon_color": "#757575"
+      }
+   },
+   {
+      "id": "select_normal",
+      "type": "selectFormType",
+      "config": {
+         "label": "Normal Select",
+         "placeholder": "Chọn một tùy chọn",
+         "is_required": false,
+         "height": 150,
+         "options": [
+            {
+               "value": "option1",
+               "label": "Tùy chọn 1"
+            },
+            {
+               "value": "option2",
+               "label": "Tùy chọn 2"
+            },
+            {
+               "value": "option3",
+               "label": "Tùy chọn 3"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "normal": {
+            "style": {}
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn một tùy chọn",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Đã chọn thành công",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Trường này là bắt buộc"
+         }
+      }
+   },
+   {
+      "id": "select_with_icon",
+      "type": "selectFormType",
+      "config": {
+         "label": "Select with Icon",
+         "placeholder": "Chọn một tùy chọn",
+         "icon": "chevron-down",
+         "height": 150,
+         "is_required": false,
+         "options": [
+            {
+               "value": "option1",
+               "label": "Tùy chọn 1"
+            },
+            {
+               "value": "option2",
+               "label": "Tùy chọn 2"
+            },
+            {
+               "value": "option3",
+               "label": "Tùy chọn 3"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_icon": {
+            "style": {
+               "icon_position": "right",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn một tùy chọn",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Đã chọn thành công",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Trường này là bắt buộc"
+         }
+      }
+   },
+   {
+      "id": "select_with_label",
+      "type": "selectFormType",
+      "config": {
+         "label": "Chọn loại tài khoản",
+         "placeholder": "Chọn một tùy chọn",
+         "is_required": false,
+         "height": "auto",
+         "options": [
+            {
+               "value": "personal",
+               "label": "Tài khoản cá nhân"
+            },
+            {
+               "value": "business",
+               "label": "Tài khoản doanh nghiệp"
+            },
+            {
+               "value": "premium",
+               "label": "Tài khoản cao cấp"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000",
+         "label_color": "#3b82f6",
+         "label_text_size": 14
+      },
+      "variants": {},
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn loại tài khoản",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Loại tài khoản đã được chọn",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Vui lòng chọn loại tài khoản"
+         }
+      }
+   },
+   {
+      "id": "select_with_icon_label",
+      "type": "selectFormType",
+      "config": {
+         "label": "Chọn quốc gia",
+         "placeholder": "Chọn quốc gia của bạn",
+         "icon": "globe",
+         "is_required": false,
+         "height": "auto",
+         "options": [
+            {
+               "value": "vn",
+               "label": "Việt Nam"
+            },
+            {
+               "value": "us",
+               "label": "Hoa Kỳ"
+            },
+            {
+               "value": "jp",
+               "label": "Nhật Bản"
+            },
+            {
+               "value": "kr",
+               "label": "Hàn Quốc"
+            },
+            {
+               "value": "cn",
+               "label": "Trung Quốc"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000",
+         "label_color": "#3b82f6",
+         "label_text_size": 14,
+         "icon_position": "left",
+         "icon_size": 18,
+         "icon_color": "#ffffff"
+      },
+      "variants": {},
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn quốc gia",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Quốc gia đã được chọn",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Vui lòng chọn quốc gia"
+         }
+      }
+   },
+   {
+      "id": "select_multiple",
+      "type": "selectFormType",
+      "config": {
+         "label": "Chọn nhiều sở thích",
+         "placeholder": "Chọn các sở thích của bạn",
+         "icon": "heart",
+         "is_required": false,
+         "multiple": true,
+         "options": [
+            {
+               "value": "reading",
+               "label": "Đọc sách"
+            },
+            {
+               "value": "music",
+               "label": "Âm nhạc"
+            },
+            {
+               "value": "sports",
+               "label": "Thể thao"
+            },
+            {
+               "value": "travel",
+               "label": "Du lịch"
+            },
+            {
+               "value": "cooking",
+               "label": "Nấu ăn"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         },
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         },
+         "multiple": {
+            "style": {
+               "max_selections": 3,
+               "selection_display": "chips"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn ít nhất một sở thích",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Sở thích đã được chọn",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Vui lòng chọn ít nhất một sở thích"
+         },
+         "max_selections": {
+            "max": 3,
+            "error_message": "Chỉ được chọn tối đa 3 sở thích"
+         }
+      }
+   },
+   {
+      "id": "select_searchable",
+      "type": "selectFormType",
+      "config": {
+         "label": "Tìm kiếm thành phố",
+         "placeholder": "Nhập để tìm kiếm thành phố",
+         "icon": "search",
+         "is_required": false,
+         "searchable": true,
+         "options": [
+            {
+               "value": "hanoi",
+               "label": "Hà Nội"
+            },
+            {
+               "value": "hcm",
+               "label": "TP. Hồ Chí Minh"
+            },
+            {
+               "value": "danang",
+               "label": "Đà Nẵng"
+            },
+            {
+               "value": "haiphong",
+               "label": "Hải Phòng"
+            },
+            {
+               "value": "cantho",
+               "label": "Cần Thơ"
+            },
+            {
+               "value": "nhatrang",
+               "label": "Nha Trang"
+            },
+            {
+               "value": "dalat",
+               "label": "Đà Lạt"
+            },
+            {
+               "value": "vungtau",
+               "label": "Vũng Tàu"
+            }
+         ]
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         },
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         },
+         "searchable": {
+            "style": {
+               "search_placeholder": "Tìm kiếm...",
+               "no_results_text": "Không tìm thấy kết quả"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Vui lòng chọn một thành phố",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Thành phố đã được chọn",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Vui lòng chọn một thành phố"
+         }
+      }
+   },
+   {
+      "id": "select_user",
+      "type": "selectFormType",
+      "order": 1,
+      "config": {
+         "label": "Select User",
+         "height": "auto",
+         "options": [
+            {
+               "value": "user1",
+               "label": "Jocelyn Botos",
+               "avatar": "https://randomuser.me/api/portraits/women/68.jpg"
+            },
+            {
+               "value": "user2",
+               "label": "John Doe",
+               "avatar": "https://randomuser.me/api/portraits/men/1.jpg"
+            },
+            {
+               "value": "user3",
+               "label": "Jane Smith",
+               "avatar": "https://randomuser.me/api/portraits/women/2.jpg"
+            }
+         ]
+      },
+      "style": {
+         "margin": "0 16px 16px 16px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "label_color": "#e0e0e0",
+         "label_text_size": 16
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "helper_text": "Please select a user.",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "User selection is required."
+         }
+      }
+   },
+   {
+      "id": "select_date",
+      "type": "dateTimePickerFormType",
+      "order": 2,
+      "config": {
+         "label": "Select Date",
+         "placeholder": "Select a date range"
+      },
+      "style": {
+         "margin": "0 16px 16px 16px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "label_color": "#e0e0e0",
+         "label_text_size": 16,
+         "icon_color": "#e0e0e0"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "helper_text": "Please select a date range.",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Date range is required."
+         }
+      }
+   },
+   {
+      "id": "select_role",
+      "type": "selectFormType",
+      "order": 3,
+      "config": {
+         "label": "Select Role",
+         "height": "auto",
+         "icon": "user",
+         "options": [
+            {
+               "value": "admin",
+               "label": "Administrator"
+            },
+            {
+               "value": "editor",
+               "label": "Editor"
+            },
+            {
+               "value": "viewer",
+               "label": "Viewer"
+            }
+         ]
+      },
+      "style": {
+         "margin": "0 16px 16px 16px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#1c1c1e",
+         "label_color": "#e0e0e0",
+         "label_text_size": 16,
+         "icon_color": "#e0e0e0",
+         "icon_position": "left"
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "helper_text": "Please select a role.",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b"
+            }
+         }
+      },
+      "validation": {
+         "required": {
+            "is_required": true,
+            "error_message": "Role selection is required."
+         }
+      }
+   },
+   {
+      "id": "input_normal",
+      "type": "textFieldFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "normal": {
+            "style": {}
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Errors",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Placeholders",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_icon",
+      "type": "textFieldFormType",
+      "config": {
+         "placeholder": "Placeholders",
+         "icon": "mail",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Errors",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Success",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_label",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Label",
+         "placeholder": "Placeholders",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Error Notification",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Positive Message",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   },
+   {
+      "id": "input_with_icon_label",
+      "type": "textFieldFormType",
+      "config": {
+         "label": "Label",
+         "placeholder": "Placeholders",
+         "icon": "mail",
+         "is_required": false
+      },
+      "style": {
+         "padding": "10px 12px",
+         "border_color": "#888888",
+         "border_radius": 6,
+         "font_size": 15,
+         "color": "#e0e0e0",
+         "background_color": "#000000"
+      },
+      "variants": {
+         "with_label": {
+            "style": {
+               "label_text_size": 14,
+               "label_color": "#3b82f6"
+            }
+         },
+         "with_icon": {
+            "style": {
+               "icon_position": "left",
+               "icon_size": 18,
+               "icon_color": "#ffffff"
+            }
+         }
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#888888"
+            }
+         },
+         "error": {
+            "style": {
+               "border_color": "#ff4d4f",
+               "color": "#ff4d4f",
+               "icon": "close",
+               "icon_color": "#ff4d4f",
+               "label_color": "#ff4d4f",
+               "font_style": "italic",
+               "helper_text": "Wrong Value",
+               "helper_text_color": "#ff4d4f"
+            }
+         },
+         "success": {
+            "style": {
+               "border_color": "#00b96b",
+               "color": "#00b96b",
+               "icon": "check",
+               "icon_color": "#00b96b",
+               "label_color": "#00b96b",
+               "font_style": "italic",
+               "helper_text": "Correct Value",
+               "helper_text_color": "#00b96b"
+            }
+         }
+      },
+      "input_types": {
+         "text": {
+            "validation": {
+               "regex": "^[a-zA-ZÀ-ỹ\\s]+$",
+               "error_message": "Chỉ được nhập chữ cái",
+               "min_length": 1,
+               "max_length": 100
+            }
+         }
+      }
+   }
+]

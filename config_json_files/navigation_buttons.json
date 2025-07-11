@@ -1,0 +1,104 @@
+[
+   {
+      "id": "btn_previous",
+      "type": "buttonFormType",
+      "order": 998,
+      "config": {
+         "text": "Previous",
+         "action": "previous_page",
+         "icon": "arrow_back",
+         "variant": "secondary"
+      },
+      "style": {
+         "margin": "16px 8px 16px 16px",
+         "padding": "12px 24px",
+         "border_radius": 8,
+         "border_width": 1,
+         "border_color": "#6979F8",
+         "background_color": "transparent",
+         "color": "#6979F8",
+         "font_size": 16,
+         "font_weight": "500",
+         "min_width": 120
+      },
+      "states": {
+         "base": {
+            "style": {
+               "border_color": "#6979F8",
+               "background_color": "transparent",
+               "color": "#6979F8"
+            }
+         },
+         "hover": {
+            "style": {
+               "background_color": "rgba(105, 121, 248, 0.1)",
+               "border_color": "#5A6ACF"
+            }
+         },
+         "disabled": {
+            "style": {
+               "border_color": "#666666",
+               "color": "#666666",
+               "background_color": "transparent"
+            }
+         }
+      }
+   },
+   {
+      "id": "btn_next",
+      "type": "buttonFormType",
+      "order": 999,
+      "config": {
+         "text": "Next",
+         "action": "next_page",
+         "icon": "arrow_forward",
+         "variant": "primary",
+         "conditions": [
+            {
+               "type": "all_current_page_fields_valid",
+               "description": "All required fields in current page must be filled and valid",
+               "validation_rule": "required_and_valid"
+            }
+         ]
+      },
+      "style": {
+         "margin": "16px 16px 16px 8px",
+         "padding": "12px 24px",
+         "border_radius": 8,
+         "border_width": 0,
+         "background_color": "#6979F8",
+         "color": "#FFFFFF",
+         "font_size": 16,
+         "font_weight": "600",
+         "min_width": 120
+      },
+      "states": {
+         "base": {
+            "style": {
+               "background_color": "#6979F8",
+               "color": "#FFFFFF"
+            }
+         },
+         "hover": {
+            "style": {
+               "background_color": "#5A6ACF"
+            }
+         },
+         "disabled": {
+            "style": {
+               "background_color": "#404040",
+               "color": "#999999"
+            }
+         },
+         "loading": {
+            "config": {
+               "text": "Loading...",
+               "icon": "hourglass"
+            },
+            "style": {
+               "background_color": "#5A6ACF"
+            }
+         }
+      }
+   }
+]

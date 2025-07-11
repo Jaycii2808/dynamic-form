@@ -227,6 +227,9 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
         debugPrint('🔄 [ButtonBloc] Reset form action triggered');
         // formBloc.add(ResetFormEvent());
         break;
+      default:
+        debugPrint('🔄 [ButtonBloc] Unknown action triggered: $action');
+        break;
     }
   }
 }
