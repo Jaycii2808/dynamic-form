@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
-import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_state.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextFieldTagsBloc
     extends Bloc<DynamicTextFieldTagsEvent, DynamicTextFieldTagsState> {
@@ -49,11 +49,11 @@ class DynamicTextFieldTagsBloc
 
   List<String> _getInitialTags(Map<String, dynamic> config) {
     final value = config[ValueKeyEnum.value.key];
-    debugPrint('DEBUG: _getInitialTags value = ' + value.toString());
+    debugPrint('DEBUG: _getInitialTags value = $value');
     if (value is List) {
       // Filter out nulls and non-strings, and print debug info if any nulls found
       final filtered = value
-          .where((e) => e is String && e != null)
+          .whereType<String>()
           .cast<String>()
           .toList();
       if (filtered.length != value.length) {
@@ -72,11 +72,11 @@ class DynamicTextFieldTagsBloc
     }
     final initialTags = config['initial_tags'] ?? config['initialTags'];
     debugPrint(
-      'DEBUG: _getInitialTags initialTags = ' + initialTags.toString(),
+      'DEBUG: _getInitialTags initialTags = $initialTags',
     );
     if (initialTags is List) {
       final filtered = initialTags
-          .where((e) => e is String && e != null)
+          .whereType<String>()
           .cast<String>()
           .toList();
       if (filtered.length != initialTags.length) {
@@ -90,10 +90,9 @@ class DynamicTextFieldTagsBloc
   }
 
   List<String> _getAvailableTags(Map<String, dynamic> config) {
-    final tags = config['initial_tags'] ?? config['initialTags'];
-    if (tags is List) {
+    if (config['initial_tags'] ?? config['initialTags'] case final List tags) {
       final filtered = tags
-          .where((e) => e is String && e != null)
+          .whereType<String>()
           .cast<String>()
           .toList();
       if (filtered.length != tags.length) {
@@ -113,8 +112,7 @@ class DynamicTextFieldTagsBloc
     emit(DynamicTextFieldTagsLoading.fromState(state: state));
     try {
       debugPrint(
-        'DEBUG: _onInitialize called with config: ' +
-            initialComponent.config.toString(),
+        'DEBUG: _onInitialize called with config: ${initialComponent.config}',
       );
       final initialTags = _getInitialTags(initialComponent.config);
       final availableTags = _getAvailableTags(initialComponent.config);
@@ -122,12 +120,11 @@ class DynamicTextFieldTagsBloc
         'DEBUG: _onInitialize initialTags: $initialTags, availableTags: $availableTags',
       );
       debugPrint(
-        'DEBUG: _onInitialize about to parse InputConfig.fromJson with config: ' +
-            initialComponent.config.toString(),
+        'DEBUG: _onInitialize about to parse InputConfig.fromJson with config: ${initialComponent.config}',
       );
       initialComponent.config.forEach((k, v) {
         debugPrint(
-          'DEBUG: config key: ' + k.toString() + ', value: ' + v.toString(),
+          'DEBUG: config key: $k, value: $v',
         );
       });
       InputConfig inputConfig;
@@ -135,21 +132,19 @@ class DynamicTextFieldTagsBloc
         inputConfig = InputConfig.fromJson(initialComponent.config);
         debugPrint('DEBUG: InputConfig.fromJson succeeded');
       } catch (e, stack) {
-        debugPrint('DEBUG: InputConfig.fromJson error: ' + e.toString());
+        debugPrint('DEBUG: InputConfig.fromJson error: $e');
         debugPrint(stack.toString());
         rethrow;
       }
       debugPrint(
-        'DEBUG: About to parse formState: ' +
-            (initialComponent.config['current_state'] ??
-                    initialComponent.config['currentState'])
-                .toString(),
+        'DEBUG: About to parse formState: ${initialComponent.config['current_state'] ??
+                    initialComponent.config['currentState']}',
       );
       final formState = ComponentStateEnum.fromString(
         initialComponent.config['current_state'] ??
             initialComponent.config['currentState'],
       );
-      debugPrint('DEBUG: Parsed formState: ' + formState.toString());
+      debugPrint('DEBUG: Parsed formState: $formState');
       emit(
         DynamicTextFieldTagsSuccess(
           component: initialComponent,

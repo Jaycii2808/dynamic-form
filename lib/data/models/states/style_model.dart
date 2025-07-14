@@ -47,11 +47,10 @@ class StyleModel {
   }
 
   static String _colorToHex(Color color) {
-    // Returns #RRGGBB
-    return '#'
-        '${color.red.toRadixString(16).padLeft(2, '0')}'
-        '${color.green.toRadixString(16).padLeft(2, '0')}'
-        '${color.blue.toRadixString(16).padLeft(2, '0')}';
+    // Returns #RRGGBB in uppercase
+    return '#${((color.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${((color.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${((color.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}';
   }
 
   static Color? _parseColor(dynamic value) {
