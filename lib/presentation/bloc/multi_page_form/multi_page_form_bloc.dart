@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_multiline/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
