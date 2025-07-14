@@ -229,7 +229,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                             ?.conditions
                             .firstWhere(
                               (c) => c.idComponent == 'previous_page',
-                              orElse: () => const ButtonCondition(idComponent: ''),
+                              orElse: () =>
+                                  const ButtonCondition(idComponent: ''),
                             )
                             .idComponent;
 

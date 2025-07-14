@@ -60,8 +60,9 @@ class DynamicDateTimePickerBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-              ComponentStateEnum.fromString(initialComponent.config['currentState']) ,
+          formState: ComponentStateEnum.fromString(
+            initialComponent.config['currentState']?.toString() ?? 'base',
+          ),
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -69,7 +70,12 @@ class DynamicDateTimePickerBloc
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to initialize DateTimePicker: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
-      emit(DynamicDateTimePickerError(errorMessage: errorMessage, component: state.component));
+      emit(
+        DynamicDateTimePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
     }
   }
 
@@ -98,7 +104,10 @@ class DynamicDateTimePickerBloc
     DynamicDateTimePickerSuccess currentState,
     Emitter<DynamicDateTimePickerState> emit,
   ) {
-    final validationError = ValidationUtils.validateForm(currentState.component!, value);
+    final validationError = ValidationUtils.validateForm(
+      currentState.component!,
+      value,
+    );
 
     ComponentStateEnum newState = ComponentStateEnum.base;
     if (validationError != null) {
@@ -109,7 +118,9 @@ class DynamicDateTimePickerBloc
     if (_textController.text != value) {
       _textController.text = value;
     }
-    final updatedConfig = Map<String, dynamic>.from(currentState.component!.config);
+    final updatedConfig = Map<String, dynamic>.from(
+      currentState.component!.config,
+    );
     updatedConfig[ValueKeyEnum.value.key] = value;
     updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
     updatedConfig[ValueKeyEnum.errorText.key] = validationError;

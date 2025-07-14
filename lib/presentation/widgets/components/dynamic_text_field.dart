@@ -306,7 +306,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         fillColor: styleConfig.fillColor,
         helperText: helperText,
         helperStyle: TextStyle(
-          color: helperTextColor ,
+          color: helperTextColor,
           fontSize: 12,
         ),
       ),
@@ -349,7 +349,6 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     }
     return TextInputType.text;
   }
-
 
   StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {

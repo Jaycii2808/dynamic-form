@@ -37,8 +37,9 @@ class DynamicSwitchBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-          ComponentStateEnum.fromString(initialComponent.config['currentState']) ,
+          formState: ComponentStateEnum.fromString(
+            initialComponent.config['currentState']?.toString() ?? 'base',
+          ),
         ),
       );
     } catch (e, stackTrace) {

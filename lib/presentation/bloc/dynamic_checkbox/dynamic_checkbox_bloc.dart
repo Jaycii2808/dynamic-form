@@ -79,13 +79,14 @@ class DynamicCheckboxBloc
           isSelected: isSelected,
           isEditable: isEditable,
           focusNode: focusNode,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -129,13 +130,14 @@ class DynamicCheckboxBloc
           isSelected: event.value,
           formState: formState,
           errorText: errorText,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -191,13 +193,14 @@ class DynamicCheckboxBloc
           errorText: errorText,
           isSelected: isSelected,
           isEditable: isEditable,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -232,7 +235,10 @@ class DynamicCheckboxBloc
     );
   }
 
-  ComponentStateEnum _computeFormState(DynamicFormModel component, bool isSelected) {
+  ComponentStateEnum _computeFormState(
+    DynamicFormModel component,
+    bool isSelected,
+  ) {
     // Checkbox state logic: selected = success, unselected = base
     return isSelected ? ComponentStateEnum.success : ComponentStateEnum.base;
   }

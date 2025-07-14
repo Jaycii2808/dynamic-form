@@ -79,8 +79,9 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-          ComponentStateEnum.fromString(initialComponent.config['currentState']) ,
+          formState: ComponentStateEnum.fromString(
+            initialComponent.config['currentState']?.toString() ?? 'base',
+          ),
           textController: _textController,
           focusNode: _focusNode,
         ),

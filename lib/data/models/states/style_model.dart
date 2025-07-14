@@ -35,13 +35,23 @@ class StyleModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'border_color': borderColor,
+      'border_color': borderColor != null ? _colorToHex(borderColor!) : null,
       'border_width': borderWidth,
       'helper_text': helperText,
-      'helper_text_color': helperTextColor,
-      'color': textColor,
+      'helper_text_color': helperTextColor != null
+          ? _colorToHex(helperTextColor!)
+          : null,
+      'color': textColor != null ? _colorToHex(textColor!) : null,
       'font_style': fontStyle == FontStyle.italic ? 'italic' : 'normal',
     };
+  }
+
+  static String _colorToHex(Color color) {
+    // Returns #RRGGBB
+    return '#'
+        '${color.red.toRadixString(16).padLeft(2, '0')}'
+        '${color.green.toRadixString(16).padLeft(2, '0')}'
+        '${color.blue.toRadixString(16).padLeft(2, '0')}';
   }
 
   static Color? _parseColor(dynamic value) {
@@ -66,7 +76,6 @@ class StyleModel {
       }
       if (value.startsWith('0x') || value.startsWith('0X')) {
         try {
-
           final hex = value.replaceAll(RegExp(r'0[xX]'), '');
           final color = Color(int.parse(hex, radix: 16));
           debugPrint('[StyleModel] _parseColor 0x => $color');
@@ -79,6 +88,7 @@ class StyleModel {
     debugPrint('[StyleModel] _parseColor NULL for value=$value');
     return null;
   }
+
   @override
   String toString() => toJson().toString();
 }
