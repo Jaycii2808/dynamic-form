@@ -10,10 +10,9 @@ class DynamicFormModel extends Equatable {
   final int order;
   final Map<String, dynamic> config;
   final Map<String, dynamic> style;
-  //final Map<String, dynamic>? inputTypes;
-  final InputTypesModel? inputTypes;
+  final InputTypesModel? inputTypes; // changed
   final Map<String, dynamic>? variants;
-  final StatesModel? states;
+  final StatesModel? states; // changed
   final BaseValidation? validation;
   final List<DynamicFormModel>? children;
 
