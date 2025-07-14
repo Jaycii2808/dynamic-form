@@ -1,7 +1,8 @@
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/input_types_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 import 'package:equatable/equatable.dart';
 import '../validation/validation_models.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 
 class DynamicFormModel extends Equatable {
   final String id;
@@ -12,7 +13,7 @@ class DynamicFormModel extends Equatable {
   //final Map<String, dynamic>? inputTypes;
   final InputTypesModel? inputTypes;
   final Map<String, dynamic>? variants;
-  final Map<String, dynamic>? states;
+  final StatesModel? states;
   final BaseValidation? validation;
   final List<DynamicFormModel>? children;
 
@@ -40,7 +41,7 @@ class DynamicFormModel extends Equatable {
         json['input_types'],
       ),
       variants: json['variants'],
-      states: json['states'],
+      states: StatesModel.fromJson(json['states']),
       validation: ValidationFactory.fromJson(json['validation']),
       children: json['children'] != null
           ? List<DynamicFormModel>.from(
@@ -75,7 +76,7 @@ class DynamicFormModel extends Equatable {
 
     if (inputTypes != null) result['input_types'] = inputTypes!.toJson();
     if (variants != null) result['variants'] = variants;
-    if (states != null) result['states'] = states;
+    if (states != null) result['states'] = states!.toJson();
     if (validation != null) result['validation'] = validation!.toJson();
     if (children != null) {
       result['children'] = children!.map((c) => c.toJson()).toList();

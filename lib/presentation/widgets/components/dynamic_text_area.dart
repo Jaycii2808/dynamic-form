@@ -1,8 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
@@ -90,7 +92,7 @@ class DynamicTextArea extends StatelessWidget {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -98,8 +100,8 @@ class DynamicTextArea extends StatelessWidget {
   ) {
     // Determine state from config['current_state'] if available
     final String? stateKey = component.config['current_state']?.toString();
-    final FormStateEnum effectiveState =
-        _formStateEnumFromKey(stateKey) ?? currentState;
+    final ComponentStateEnum effectiveState =
+        _getComponentStateEnumFromKey(stateKey) ?? currentState;
     return Container(
       key: Key(component.id),
       padding: styleConfig.padding,
@@ -123,17 +125,17 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  // Helper to convert string to FormStateEnum
-  FormStateEnum? _formStateEnumFromKey(String? key) {
+  // Helper to convert string to ComponentStateEnum
+  ComponentStateEnum? _getComponentStateEnumFromKey(String? key) {
     switch (key) {
       case 'base':
-        return FormStateEnum.base;
+        return ComponentStateEnum.base;
       case 'error':
-        return FormStateEnum.error;
+        return ComponentStateEnum.error;
       case 'success':
-        return FormStateEnum.success;
+        return ComponentStateEnum.success;
       case 'focused':
-        return FormStateEnum.focused;
+        return ComponentStateEnum.focused;
       default:
         return null;
     }
@@ -173,23 +175,18 @@ class DynamicTextArea extends StatelessWidget {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
     BuildContext context,
   ) {
     // Get state key
-    final String stateKey = _formStateEnumToKey(currentState);
-    final Map<String, dynamic>? stateStyle =
-        component.states != null && component.states![stateKey] != null
-        ? component.states![stateKey]['style'] as Map<String, dynamic>?
-        : null;
-    final String? helperText =
-        stateStyle?['helper_text'] as String? ?? styleConfig.helperText;
+    final String stateKey = _componentStateEnumToKey(currentState);
+    final StyleModel? stateStyle = _getStateStyle(component.states, stateKey);
+    final String? helperText = stateStyle?.helperText ?? styleConfig.helperText;
     final Color helperTextColor =
-        _parseColor(stateStyle?['helper_text_color']) ??
-        styleConfig.helperTextColor;
+        stateStyle?.helperTextColor ?? styleConfig.helperTextColor;
 
     return TextField(
       controller: textController,
@@ -220,13 +217,13 @@ class DynamicTextArea extends StatelessWidget {
         ),
         focusedBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.focused,
+          ComponentStateEnum.focused,
           component,
           context,
         ),
         errorBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.error,
+          ComponentStateEnum.error,
           component,
           context,
         ),
@@ -239,7 +236,7 @@ class DynamicTextArea extends StatelessWidget {
         fillColor: styleConfig.fillColor,
         helperText: helperText,
         helperStyle: TextStyle(
-          color: helperTextColor ?? Colors.grey,
+          color: helperTextColor ,
           fontSize: 12,
         ),
       ),
@@ -250,9 +247,24 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
+  StyleModel? _getStateStyle(StatesModel? states, String stateKey) {
+    switch (stateKey) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
+  }
+
   OutlineInputBorder _buildBorder(
     BorderConfig borderConfig,
-    FormStateEnum? state,
+    ComponentStateEnum? state,
     DynamicFormModel component,
     BuildContext? context,
   ) {
@@ -263,28 +275,27 @@ class DynamicTextArea extends StatelessWidget {
 
     // Get border color from component states if available
     if (state != null && component.states != null) {
-      final stateKey = _formStateEnumToKey(state);
-      final stateStyle =
-          component.states![stateKey]?['style'] as Map<String, dynamic>?;
-      if (stateStyle?['border_color'] != null) {
-        final stateColor = _parseColor(stateStyle!['border_color']);
-        if (stateColor != null) {
-          color = stateColor;
-          width = 2; // Use thicker border for state styles
-        }
+      final stateKey = _componentStateEnumToKey(state);
+      final StyleModel? stateStyle = _getStateStyle(component.states, stateKey);
+      if (stateStyle?.borderColor != null) {
+        color = stateStyle!.borderColor!;
+        width = 2; // Use thicker border for state styles
       }
     }
 
     // Special handling for focused state
-    if (state == FormStateEnum.focused) {
+    if (state == ComponentStateEnum.focused) {
       width += 1;
       // Only use theme color if no state style is defined
-      final focusedStyle =
-          component.states?['focused']?['style'] as Map<String, dynamic>?;
-      if (focusedStyle?['border_color'] == null && context != null) {
+      final StyleModel? focusedStyle = component.states?.focused;
+      if (focusedStyle?.borderColor == null && context != null) {
         color = Theme.of(context).primaryColor;
       }
     }
+
+    debugPrint(
+      '[DynamicTextArea] _buildBorder: state=$state, color=$color, width=$width',
+    );
 
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(borderConfig.borderRadius),
@@ -292,31 +303,33 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  String _formStateEnumToKey(FormStateEnum state) {
+  String _componentStateEnumToKey(ComponentStateEnum state) {
     switch (state) {
-      case FormStateEnum.base:
+      case ComponentStateEnum.base:
         return 'base';
-      case FormStateEnum.error:
+      case ComponentStateEnum.error:
         return 'error';
-      case FormStateEnum.success:
+      case ComponentStateEnum.success:
         return 'success';
-      case FormStateEnum.focused:
+      case ComponentStateEnum.focused:
         return 'focused';
+      case ComponentStateEnum.enabled:
+        return 'enabled';
     }
   }
 
-  Color? _parseColor(dynamic value) {
-    if (value is int) return Color(value);
-    if (value is String) {
-      if (value.startsWith('#')) {
-        final hex = value.replaceAll('#', '');
-        if (hex.length == 6) {
-          return Color(int.parse('FF$hex', radix: 16));
-        } else if (hex.length == 8) {
-          return Color(int.parse(hex, radix: 16));
-        }
-      }
-    }
-    return null;
-  }
+  // Color? _parseColor(dynamic value) {
+  //   if (value is int) return Color(value);
+  //   if (value is String) {
+  //     if (value.startsWith('#')) {
+  //       final hex = value.replaceAll('#', '');
+  //       if (hex.length == 6) {
+  //         return Color(int.parse('FF$hex', radix: 16));
+  //       } else if (hex.length == 8) {
+  //         return Color(int.parse(hex, radix: 16));
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
 }
