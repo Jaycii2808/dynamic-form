@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_multiline/dynamic_form_multi_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class MultiPageFormState extends Equatable {

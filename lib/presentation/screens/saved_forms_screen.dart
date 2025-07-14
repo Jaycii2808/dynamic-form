@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_multiline/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
