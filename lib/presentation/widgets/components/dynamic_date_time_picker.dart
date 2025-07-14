@@ -1,5 +1,5 @@
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/style_color_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
@@ -83,7 +83,7 @@ class DynamicDateTimePicker extends StatelessWidget {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -163,18 +163,18 @@ class DynamicDateTimePicker extends StatelessWidget {
       decoration: InputDecoration(
         isDense: true,
         hintText: inputConfig.placeholder,
-        border: _buildBorder(styleConfig.borderConfig, FormStateEnum.base),
+        border: _buildBorder(styleConfig.borderConfig, ComponentStateEnum.base),
         enabledBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.base,
+          ComponentStateEnum.base,
         ),
         focusedBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.focused,
+          ComponentStateEnum.focused,
         ),
         errorBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.error,
+          ComponentStateEnum.error,
         ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
@@ -209,15 +209,15 @@ class DynamicDateTimePicker extends StatelessWidget {
 
   OutlineInputBorder _buildBorder(
     BorderConfig borderConfig,
-    FormStateEnum? state,
+    ComponentStateEnum? state,
   ) {
     double width = borderConfig.borderWidth;
     Color color = borderConfig.borderColor.withValues(
       alpha: borderConfig.borderOpacity,
     );
-    if (state == FormStateEnum.focused) {
+    if (state == ComponentStateEnum.focused) {
       width += 1;
-    } else if (state == FormStateEnum.error) {
+    } else if (state == ComponentStateEnum.error) {
       color = const Color(0xFFFF4D4F);
       width = 2;
     }

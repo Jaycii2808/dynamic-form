@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
@@ -10,6 +10,8 @@ import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_state.dart';
 import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {
@@ -453,12 +455,12 @@ class DynamicDropdownBloc
     );
   }
 
-  FormStateEnum _computeFormState(DynamicFormModel component, String? value) {
+  ComponentStateEnum _computeFormState(DynamicFormModel component, String? value) {
     // Same logic as other components - value exists = success
     if (value != null && value.isNotEmpty) {
-      return FormStateEnum.success;
+      return ComponentStateEnum.success;
     }
-    return FormStateEnum.base;
+    return ComponentStateEnum.base;
   }
 
   String? _validateDropdown(DynamicFormModel component, String? value) {
@@ -479,13 +481,15 @@ class DynamicDropdownBloc
     final isDisabled = config['disabled'] == true;
     final items = config['items'] as List<dynamic>? ?? [];
 
-    // Compute styles (from original _computeStyles)
-    final style = _computeStyles(
-      component,
-      triggerIcon,
-      triggerAvatar,
+    // Compute styles
+    final Map<String, dynamic> baseStyle = Map.from(component.style);
+    final Map<String, dynamic> variantStyle = {};
+    final StyleModel? stateStyleModel = _getTypedStateStyle(
+      component.states,
       currentState,
     );
+    final Map<String, dynamic> stateStyle = stateStyleModel?.toJson() ?? {};
+    final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute display label (from original _computeDisplayLabel)
     final displayLabel = _computeDisplayLabel(config, value, items);
@@ -497,7 +501,7 @@ class DynamicDropdownBloc
       triggerIcon,
       triggerAvatar,
       isSearchable,
-      style,
+      computedStyle,
       false, // Default to closed state
     );
 
@@ -509,7 +513,7 @@ class DynamicDropdownBloc
       'placeholder': placeholder,
       'triggerIcon': triggerIcon,
       'triggerAvatar': triggerAvatar,
-      'style': style,
+      'style': computedStyle,
       'displayLabel': displayLabel,
       'triggerContent': triggerContent,
       'items': items,
@@ -522,7 +526,6 @@ class DynamicDropdownBloc
     String? triggerAvatar,
     String currentState,
   ) {
-    // Exact same logic as original _computeStyles
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
 
     // Always apply variant with_icon if icon exists
@@ -544,11 +547,9 @@ class DynamicDropdownBloc
     }
 
     // Apply state style if available
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
+    if (component.states != null) {
+      final stateStyle = _getTypedStateStyle(component.states, currentState);
+      if (stateStyle != null) style.addAll(stateStyle.toJson());
     }
 
     return style;
@@ -880,5 +881,20 @@ class DynamicDropdownBloc
         ),
       ),
     );
+  }
+
+  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 }

@@ -1,8 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
@@ -26,11 +28,16 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicDateTimeRangePickerBloc, DynamicDateTimeRangePickerState>(
+    return BlocConsumer<
+      DynamicDateTimeRangePickerBloc,
+      DynamicDateTimeRangePickerState
+    >(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key: state.component!.config[ValueKeyEnum.currentState.key],
+          ValueKeyEnum.value.key:
+              state.component!.config[ValueKeyEnum.value.key],
+          ValueKeyEnum.currentState.key:
+              state.component!.config[ValueKeyEnum.currentState.key],
           ValueKeyEnum.errorText.key: state.errorText,
         };
         if (state is DynamicDateTimeRangePickerSuccess) {
@@ -82,9 +89,14 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       combinedStyle.addAll(component.variants!['range']['style']);
     }
 
-    final currentState = FormStateEnum.fromString(inputConfig.currentState) ?? FormStateEnum.base;
-    if (component.states?.containsKey(currentState.value) == true) {
-      combinedStyle.addAll(component.states![currentState.value]['style']);
+    final currentState =
+        ComponentStateEnum.fromString(inputConfig.currentState) ;
+    final StyleModel? stateStyle = _getTypedStateStyle(
+      component.states,
+      currentState.value,
+    );
+    if (stateStyle != null) {
+      combinedStyle.addAll(stateStyle.toJson());
     }
 
     return Container(
@@ -112,7 +124,10 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
   }
 
-  void _showDateRangePickerDialog(BuildContext context, DynamicFormModel component) {
+  void _showDateRangePickerDialog(
+    BuildContext context,
+    DynamicFormModel component,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -182,7 +197,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     required Map<String, dynamic> style,
     required VoidCallback onTap,
   }) {
-    final borderColor = StyleUtils.parseColor(style['border_color'] ?? '#CCCCCC');
+    final borderColor = StyleUtils.parseColor(
+      style['border_color'] ?? '#CCCCCC',
+    );
     final focusedBorderColor = StyleUtils.parseColor(
       style['focused_border_color'] ?? style['icon_color'] ?? '#6979F8',
     );
@@ -190,11 +207,16 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     final borderRadius = (style['border_radius'] as num?)?.toDouble() ?? 8.0;
     final borderWidth = (style['border_width'] as num?)?.toDouble() ?? 1.0;
     final textColor = StyleUtils.parseColor(style['color'] ?? '#333333');
-    final fillColor = StyleUtils.parseColor(style['background_color'] ?? '#FFFFFF');
-    final iconColor = StyleUtils.parseColor(style['icon_color'] ?? style['color'] ?? '#6979F8');
+    final fillColor = StyleUtils.parseColor(
+      style['background_color'] ?? '#FFFFFF',
+    );
+    final iconColor = StyleUtils.parseColor(
+      style['icon_color'] ?? style['color'] ?? '#6979F8',
+    );
     final iconSize = (style['icon_size'] as num?)?.toDouble() ?? 20.0;
     final fontSize = (style['font_size'] as num?)?.toDouble() ?? 14.0;
-    final contentVerticalPadding = (style['content_vertical_padding'] as num?)?.toDouble() ?? 16.0;
+    final contentVerticalPadding =
+        (style['content_vertical_padding'] as num?)?.toDouble() ?? 16.0;
     final contentHorizontalPadding =
         (style['content_horizontal_padding'] as num?)?.toDouble() ?? 16.0;
 
@@ -226,7 +248,10 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: focusedBorderColor, width: borderWidth + 1),
+          borderSide: BorderSide(
+            color: focusedBorderColor,
+            width: borderWidth + 1,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -243,8 +268,25 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       style: TextStyle(
         fontSize: fontSize,
         color: textColor,
-        fontStyle: style['font_style'] == 'italic' ? FontStyle.italic : FontStyle.normal,
+        fontStyle: style['font_style'] == 'italic'
+            ? FontStyle.italic
+            : FontStyle.normal,
       ),
     );
+  }
+
+  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 }

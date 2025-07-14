@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -61,9 +61,9 @@ class DynamicTextFieldBloc
           component: component,
           inputConfig: InputConfig.fromJson(component.config),
           styleConfig: StyleConfig.fromJson(component.style),
-          formState:
-              FormStateEnum.fromString(component.config['current_state']) ??
-              FormStateEnum.base,
+          formState: ComponentStateEnum.fromString(
+            component.config['current_state']?.toString() ?? 'base',
+          ),
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -130,11 +130,11 @@ class DynamicTextFieldBloc
         event.value,
       );
 
-      FormStateEnum newState = FormStateEnum.base;
+      ComponentStateEnum newState = ComponentStateEnum.base;
       if (validationError != null) {
-        newState = FormStateEnum.error;
+        newState = ComponentStateEnum.error;
       } else if (event.value.isNotEmpty) {
-        newState = FormStateEnum.success;
+        newState = ComponentStateEnum.success;
       }
 
       final updatedConfig = Map<String, dynamic>.from(
@@ -191,11 +191,9 @@ class DynamicTextFieldBloc
           component: event.component,
           inputConfig: InputConfig.fromJson(event.component.config),
           styleConfig: StyleConfig.fromJson(event.component.style),
-          formState:
-              FormStateEnum.fromString(
-                event.component.config['current_state'],
-              ) ??
-              FormStateEnum.base,
+          formState: ComponentStateEnum.fromString(
+            event.component.config['current_state']?.toString() ?? 'base',
+          ),
           textController: _textController,
           focusNode: _focusNode,
           errorText: event.component.config['error_text']?.toString(),

@@ -1,5 +1,5 @@
 
-import 'package:dynamic_form_bi/data/models/dynamic_form/input_type_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
 
 class InputTypesModel {
   final InputTypeValidationModel? text;

@@ -2,8 +2,8 @@
 
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/input_type_validation_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/input_types_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 import 'package:flutter/material.dart';
 
 /// Result class for button validation operations
@@ -179,32 +179,32 @@ class ValidationUtils {
     }
   }
 
-  static String? _validateByRules(
-    String value,
-    Map<String, dynamic> validation,
-  ) {
-    final minLength = validation['min_length'] ?? 0;
-    final maxLength = validation['max_length'] ?? 9999;
-    final regexStr = validation['regex'] ?? '';
-    final errorMsg = validation['error_message'] ?? 'Invalid input';
-
-    // Length validation
-    if (value.length < minLength || value.length > maxLength) {
-      return errorMsg;
-    }
-
-    // Regex validation
-    if (regexStr.isNotEmpty) {
-      try {
-        if (!RegExp(regexStr).hasMatch(value)) return errorMsg;
-      } catch (e) {
-        debugPrint('Invalid regex pattern: $regexStr');
-        return 'Invalid format';
-      }
-    }
-
-    return null;
-  }
+  // static String? _validateByRules(
+  //   String value,
+  //   Map<String, dynamic> validation,
+  // ) {
+  //   final minLength = validation['min_length'] ?? 0;
+  //   final maxLength = validation['max_length'] ?? 9999;
+  //   final regexStr = validation['regex'] ?? '';
+  //   final errorMsg = validation['error_message'] ?? 'Invalid input';
+  //
+  //   // Length validation
+  //   if (value.length < minLength || value.length > maxLength) {
+  //     return errorMsg;
+  //   }
+  //
+  //   // Regex validation
+  //   if (regexStr.isNotEmpty) {
+  //     try {
+  //       if (!RegExp(regexStr).hasMatch(value)) return errorMsg;
+  //     } catch (e) {
+  //       debugPrint('Invalid regex pattern: $regexStr');
+  //       return 'Invalid format';
+  //     }
+  //   }
+  //
+  //   return null;
+  // }
 
   /// Centralized button conditions validation - eliminates duplicated if-else logic
   static ButtonValidationResult validateButtonConditions(

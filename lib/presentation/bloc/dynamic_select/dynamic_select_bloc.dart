@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
@@ -391,25 +391,25 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     );
   }
 
-  FormStateEnum _computeFormState(DynamicFormModel component, dynamic value) {
+  ComponentStateEnum _computeFormState(DynamicFormModel component, dynamic value) {
     final validationError = _validateSelect(component, value);
 
     if (validationError != null && validationError.isNotEmpty) {
-      return FormStateEnum.error;
+      return ComponentStateEnum.error;
     }
 
     // Check if has value (success state)
     if (component.config['multiple'] == true) {
       if (value is List && value.isNotEmpty) {
-        return FormStateEnum.success;
+        return ComponentStateEnum.success;
       }
     } else {
       if (value != null && value.toString().isNotEmpty) {
-        return FormStateEnum.success;
+        return ComponentStateEnum.success;
       }
     }
 
-    return FormStateEnum.base;
+    return ComponentStateEnum.base;
   }
 
   String? _validateSelect(DynamicFormModel component, dynamic value) {

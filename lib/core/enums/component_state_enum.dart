@@ -3,7 +3,8 @@ enum ComponentStateEnum {
   base('base'),
   focused('focused'),
   error('error'),
-  enabled('enabled');
+  enabled('enabled'),
+  success('success');
   
 
   final String value; 

@@ -1,10 +1,12 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -169,7 +171,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -223,42 +225,33 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
     // Determine the appropriate border state based on current state and error
-    FormStateEnum enabledBorderState = FormStateEnum.base;
+    ComponentStateEnum enabledBorderState = ComponentStateEnum.base;
     if (errorText != null && errorText.isNotEmpty) {
-      enabledBorderState = FormStateEnum.error;
-    } else if (currentState == FormStateEnum.success) {
-      enabledBorderState = FormStateEnum.success;
+      enabledBorderState = ComponentStateEnum.error;
+    } else if (currentState == ComponentStateEnum.success) {
+      enabledBorderState = ComponentStateEnum.success;
     }
 
-    // Get style from component states
-    Map<String, dynamic>? stateStyle = _getStateStyle(
-      component,
-      enabledBorderState,
+    // Get style from component states (as StyleModel)
+    final String stateKey = _ComponentStateEnumToKey(enabledBorderState);
+    final StyleModel? stateStyle = _getTypedStateStyle(
+      component.states,
+      stateKey,
     );
 
     // Determine text color from state or fallback to styleConfig
-    Color textColor = styleConfig.textColor;
-    if (stateStyle?['color'] != null) {
-      textColor = _parseColor(stateStyle!['color']) ?? styleConfig.textColor;
-    }
+    Color textColor = stateStyle?.textColor ?? styleConfig.textColor;
 
     // Determine helper text and color from state
-    String? helperText = styleConfig.helperText;
-    Color? helperTextColor;
-
-    if (stateStyle?['helper_text'] != null) {
-      helperText = stateStyle!['helper_text'].toString();
-    }
-
-    if (stateStyle?['helper_text_color'] != null) {
-      helperTextColor = _parseColor(stateStyle!['helper_text_color']);
-    }
+    String? helperText = stateStyle?.helperText ?? styleConfig.helperText;
+    Color? helperTextColor =
+        stateStyle?.helperTextColor ?? styleConfig.helperTextColor;
 
     debugPrint(
       '🎨 [TextField] State: $enabledBorderState, textColor: $textColor, helperText: $helperText',
@@ -296,12 +289,12 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         ),
         focusedBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.focused,
+          ComponentStateEnum.focused,
           component,
         ),
         errorBorder: _buildBorder(
           styleConfig.borderConfig,
-          FormStateEnum.error,
+          ComponentStateEnum.error,
           component,
         ),
         errorText: errorText,
@@ -313,7 +306,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         fillColor: styleConfig.fillColor,
         helperText: helperText,
         helperStyle: TextStyle(
-          color: helperTextColor ?? Colors.grey,
+          color: helperTextColor ,
           fontSize: 12,
         ),
       ),
@@ -357,34 +350,25 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     return TextInputType.text;
   }
 
-  Map<String, dynamic>? _getStateStyle(
-    DynamicFormModel component,
-    FormStateEnum state,
-  ) {
-    if (component.states == null) return null;
 
-    String stateKey;
-    switch (state) {
-      case FormStateEnum.base:
-        stateKey = 'base';
-        break;
-      case FormStateEnum.error:
-        stateKey = 'error';
-        break;
-      case FormStateEnum.success:
-        stateKey = 'success';
-        break;
-      case FormStateEnum.focused:
-        stateKey = 'focused';
-        break;
+  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
     }
-
-    return component.states![stateKey]?['style'] as Map<String, dynamic>?;
   }
 
   OutlineInputBorder _buildBorder(
     BorderConfig borderConfig,
-    FormStateEnum? state,
+    ComponentStateEnum? state,
     DynamicFormModel component,
   ) {
     double width = borderConfig.borderWidth;
@@ -393,26 +377,24 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
 
     // Get border color from component states if available
-    if (state != null) {
-      Map<String, dynamic>? stateStyle = _getStateStyle(component, state);
-      if (stateStyle?['border_color'] != null) {
-        Color? stateColor = _parseColor(stateStyle!['border_color']);
-        if (stateColor != null) {
-          color = stateColor;
-          width = 2; // Use thicker border for state styles
-        }
+    if (state != null && component.states != null) {
+      final String stateKey = _ComponentStateEnumToKey(state);
+      final StyleModel? stateStyle = _getTypedStateStyle(
+        component.states,
+        stateKey,
+      );
+      if (stateStyle?.borderColor != null) {
+        color = stateStyle!.borderColor!;
+        width = 2; // Use thicker border for state styles
       }
     }
 
     // Special handling for focused state
-    if (state == FormStateEnum.focused) {
+    if (state == ComponentStateEnum.focused) {
       width += 1;
       // Only use theme color if no state style is defined
-      Map<String, dynamic>? focusedStyle = _getStateStyle(
-        component,
-        FormStateEnum.focused,
-      );
-      if (focusedStyle?['border_color'] == null) {
+      final StyleModel? focusedStyle = component.states?.focused;
+      if (focusedStyle?.borderColor == null) {
         color = Theme.of(context).primaryColor;
       }
     }
@@ -440,5 +422,20 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       }
     }
     return null;
+  }
+
+  String _ComponentStateEnumToKey(ComponentStateEnum state) {
+    switch (state) {
+      case ComponentStateEnum.base:
+        return 'base';
+      case ComponentStateEnum.error:
+        return 'error';
+      case ComponentStateEnum.success:
+        return 'success';
+      case ComponentStateEnum.focused:
+        return 'focused';
+      case ComponentStateEnum.enabled:
+        return 'enabled';
+    }
   }
 }

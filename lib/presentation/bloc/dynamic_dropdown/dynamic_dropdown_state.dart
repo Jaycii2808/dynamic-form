@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
@@ -9,7 +9,7 @@ abstract class DynamicDropdownState extends Equatable {
   final DynamicFormModel? component;
   final StyleConfig? styleConfig;
   final InputConfig? inputConfig;
-  final FormStateEnum? formState;
+  final ComponentStateEnum? formState;
   final String? errorText;
 
   const DynamicDropdownState({
@@ -107,7 +107,7 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
     DynamicFormModel? component,
     StyleConfig? styleConfig,
     InputConfig? inputConfig,
-    FormStateEnum? formState,
+    ComponentStateEnum? formState,
     String? errorText,
     FocusNode? focusNode,
     FocusNode? searchFocusNode,

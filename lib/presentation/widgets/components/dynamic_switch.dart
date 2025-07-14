@@ -2,6 +2,8 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
@@ -63,6 +65,21 @@ class DynamicSwitch extends StatelessWidget {
     );
   }
 
+  StyleModel? _getStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
+  }
+
   Widget _buildBody(
     BuildContext context,
     StyleConfig styleConfig,
@@ -76,8 +93,12 @@ class DynamicSwitch extends StatelessWidget {
     final isSelected = config['selected'] == true || config['value'] == true;
     final isDisabled = config['disabled'] == true;
 
-    if (component.states?.containsKey(inputConfig.currentState) == true) {
-      style.addAll(component.states![inputConfig.currentState]!['style']);
+    final stateStyle = _getStateStyle(
+      component.states,
+      inputConfig.currentState,
+    );
+    if (stateStyle != null) {
+      style.addAll(stateStyle.toJson());
     }
 
     final activeColor = StyleUtils.parseColor(

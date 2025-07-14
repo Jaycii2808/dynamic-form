@@ -3,6 +3,8 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 
 class ComponentUtils {
   /// Create updated DynamicFormModel with new config - clean and safe
@@ -36,14 +38,27 @@ class ComponentUtils {
       variants: component.variants != null
           ? Map<String, dynamic>.from(component.variants!)
           : null,
-      states: component.states != null
-          ? Map<String, dynamic>.from(component.states!)
-          : null,
+      states: component.states, // assign as is, do not clone as Map
       validation: component.validation != null
           ? ValidationFactory.fromJson(component.validation!.toJson())
           : null,
       children: component.children,
     );
+  }
+
+  static StyleModel? getStateStyle(StatesModel? states, String? key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 
   /// Merge styles with null safety and state priority
@@ -67,13 +82,10 @@ class ComponentUtils {
     }
 
     // Apply state style if exists (higher priority)
-    if (state != null &&
-        component.states != null &&
-        component.states!.containsKey(state)) {
-      final stateStyle =
-          component.states![state]['style'] as Map<String, dynamic>?;
+    if (state != null && component.states != null) {
+      final stateStyle = getStateStyle(component.states, state);
       if (stateStyle != null) {
-        style.addAll(stateStyle);
+        style.addAll(stateStyle.toJson());
       }
     }
 
@@ -284,11 +296,10 @@ class ComponentUtils {
     }
 
     // Apply state styles (highest priority)
-    if (component.states != null && component.states!.containsKey(state)) {
-      final stateStyle =
-          component.states![state]['style'] as Map<String, dynamic>?;
+    if (component.states != null) {
+      final stateStyle = getStateStyle(component.states, state);
       if (stateStyle != null) {
-        style.addAll(stateStyle);
+        style.addAll(stateStyle.toJson());
       }
     }
 

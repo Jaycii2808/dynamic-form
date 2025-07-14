@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
@@ -61,8 +61,7 @@ class DynamicDateTimePickerBloc
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleConfig: StyleConfig.fromJson(initialComponent.style),
           formState:
-              FormStateEnum.fromString(initialComponent.config['currentState']) ??
-              FormStateEnum.base,
+              ComponentStateEnum.fromString(initialComponent.config['currentState']) ,
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -101,11 +100,11 @@ class DynamicDateTimePickerBloc
   ) {
     final validationError = ValidationUtils.validateForm(currentState.component!, value);
 
-    FormStateEnum newState = FormStateEnum.base;
+    ComponentStateEnum newState = ComponentStateEnum.base;
     if (validationError != null) {
-      newState = FormStateEnum.error;
+      newState = ComponentStateEnum.error;
     } else if (value.isNotEmpty) {
-      newState = FormStateEnum.success;
+      newState = ComponentStateEnum.success;
     }
     if (_textController.text != value) {
       _textController.text = value;

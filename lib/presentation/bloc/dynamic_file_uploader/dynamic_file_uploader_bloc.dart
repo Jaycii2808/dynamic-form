@@ -4,6 +4,8 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_state.dart';
 import 'package:file_picker/file_picker.dart';
@@ -395,9 +397,11 @@ class DynamicFileUploaderBloc
     final Map<String, dynamic> variantStyle = isDragging
         ? Map.from(component.variants?['dragging']?['style'] ?? {})
         : {};
-    final Map<String, dynamic> stateStyle = Map.from(
-      component.states?[currentState]?['style'] ?? {},
+    final StyleModel? stateStyleModel = _getTypedStateStyle(
+      component.states,
+      currentState,
     );
+    final Map<String, dynamic> stateStyle = stateStyleModel?.toJson() ?? {};
     final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute config
@@ -405,10 +409,11 @@ class DynamicFileUploaderBloc
     final Map<String, dynamic> variantConfig = isDragging
         ? Map.from(component.variants?['dragging']?['config'] ?? {})
         : {};
-    final Map<String, dynamic> stateConfig = Map.from(
-      component.states?[currentState]?['config'] ?? {},
-    );
-    final computedConfig = {...baseConfig, ...variantConfig, ...stateConfig};
+    // Remove stateConfig from states as a map
+    final Map<String, dynamic> computedConfig = {
+      ...baseConfig,
+      ...variantConfig,
+    };
 
     // Compute event handler flags
     final canTap = !isDisabled;
@@ -447,6 +452,21 @@ class DynamicFileUploaderBloc
         return ComponentStateEnum.enabled;
       default:
         return ComponentStateEnum.base;
+    }
+  }
+
+  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
     }
   }
 
