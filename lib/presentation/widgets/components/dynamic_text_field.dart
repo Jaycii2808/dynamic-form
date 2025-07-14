@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -269,7 +269,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       focusNode: focusNode,
       enabled: inputConfig.editable && !inputConfig.disabled,
       readOnly: inputConfig.readOnly,
-      obscureText: component.inputTypes?.containsKey('password') ?? false,
+      obscureText: component.inputTypes?.password != null,
       keyboardType: _getKeyboardType(component),
       onChanged: (value) {
         context.read<DynamicTextFieldBloc>().add(
@@ -344,12 +344,13 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   TextInputType _getKeyboardType(DynamicFormModel component) {
-    if (component.inputTypes != null) {
-      if (component.inputTypes!.containsKey('email')) {
+    final inputTypes = component.inputTypes;
+    if (inputTypes != null) {
+      if (inputTypes.email != null) {
         return TextInputType.emailAddress;
-      } else if (component.inputTypes!.containsKey('tel')) {
+      } else if (inputTypes.tel != null) {
         return TextInputType.phone;
-      } else if (component.inputTypes!.containsKey('password')) {
+      } else if (inputTypes.password != null) {
         return TextInputType.visiblePassword;
       }
     }
