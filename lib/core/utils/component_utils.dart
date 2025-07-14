@@ -1,6 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
 
@@ -32,9 +32,7 @@ class ComponentUtils {
       order: component.order,
       config: Map<String, dynamic>.from(component.config),
       style: Map<String, dynamic>.from(component.style),
-      inputTypes: component.inputTypes != null
-          ? Map<String, dynamic>.from(component.inputTypes!)
-          : null,
+      inputTypes: component.inputTypes, // just reference, since it's immutable
       variants: component.variants != null
           ? Map<String, dynamic>.from(component.variants!)
           : null,
@@ -93,14 +91,12 @@ class ComponentUtils {
     if (inputTypes == null || inputTypes.isEmpty) return TextInputType.text;
 
     // Priority order for keyboard types
-    if (inputTypes.containsKey('email')) return TextInputType.emailAddress;
-    if (inputTypes.containsKey('tel')) return TextInputType.phone;
-    if (inputTypes.containsKey('password')) {
+    if (inputTypes.email != null) return TextInputType.emailAddress;
+    if (inputTypes.tel != null) return TextInputType.phone;
+    if (inputTypes.password != null) {
       return TextInputType.visiblePassword;
     }
-    if (inputTypes.containsKey('number')) return TextInputType.number;
-    if (inputTypes.containsKey('url')) return TextInputType.url;
-
+    // No number/url in model, fallback to text
     return TextInputType.text;
   }
 

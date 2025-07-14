@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_state.dart';
 import 'package:file_picker/file_picker.dart';

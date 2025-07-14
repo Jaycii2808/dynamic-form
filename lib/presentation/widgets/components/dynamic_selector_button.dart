@@ -2,7 +2,7 @@ import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:flutter/material.dart';
@@ -215,27 +215,22 @@ class DynamicTextFieldBloc
 
   String? _validateTextField(DynamicFormModel component, String value) {
     final inputTypes = component.inputTypes;
-    final validation =
-        inputTypes?['text']?['validation'] as Map<String, dynamic>?;
-    if (validation == null) return null;
-
-    // Min length
-    if (validation['min_length'] != null &&
-        value.length < validation['min_length']) {
-      return validation['error_message'] ?? 'Too short';
-    }
-    // Max length
-    if (validation['max_length'] != null &&
-        value.length > validation['max_length']) {
-      return validation['error_message'] ?? 'Too long';
-    }
-    // Regex
-    if (validation['regex'] != null && value.isNotEmpty) {
-      final regex = RegExp(validation['regex']);
-      if (!regex.hasMatch(value)) {
-        return validation['error_message'] ?? 'Invalid format';
+    final validation = inputTypes?.text;
+    if (validation != null) {
+      if (validation.minLength != null &&
+          value.length < validation.minLength!) {
+        return validation.errorMessage ?? 'Quá ngắn';
+      }
+      if (validation.maxLength != null &&
+          value.length > validation.maxLength!) {
+        return validation.errorMessage ?? 'Quá dài';
+      }
+      if (validation.regex != null &&
+          !RegExp(validation.regex!).hasMatch(value)) {
+        return validation.errorMessage ?? 'Sai định dạng';
       }
     }
+    // Có thể bổ sung validate cho email, tel, password nếu muốn
     return null;
   }
 }

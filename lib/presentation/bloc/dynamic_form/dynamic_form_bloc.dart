@@ -3,7 +3,8 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/input_types_model.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -146,11 +147,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             'color': '#e0e0e0',
             'background_color': '#000000',
           },
-          inputTypes: {
-            'text': {
-              'validation': {'min_length': 1, 'max_length': 100},
-            },
-          },
+          inputTypes: InputTypesModel(),
           variants: {},
           states: {
             'base': {

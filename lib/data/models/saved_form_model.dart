@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 
 class SavedFormModel {
   final String id;

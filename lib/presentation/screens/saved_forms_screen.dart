@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/data/models/saved_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:flutter/material.dart';

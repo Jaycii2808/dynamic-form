@@ -1,5 +1,5 @@
 import 'package:cross_file/cross_file.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
