@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
-class StyleModel {
+class StyleStatesModel {
   final Color? borderColor;
   final double? borderWidth;
   final String? helperText;
@@ -10,7 +10,7 @@ class StyleModel {
   final FontStyle? fontStyle;
   // Add more fields as needed
 
-  StyleModel({
+  StyleStatesModel({
     this.borderColor,
     this.borderWidth,
     this.helperText,
@@ -19,14 +19,14 @@ class StyleModel {
     this.fontStyle,
   });
 
-  factory StyleModel.fromJson(Map<String, dynamic>? json) {
-    if (json == null) return StyleModel();
-    return StyleModel(
-      borderColor: StyleModel._parseColor(json['border_color']),
+  factory StyleStatesModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return StyleStatesModel();
+    return StyleStatesModel(
+      borderColor: StyleStatesModel._parseColor(json['border_color']),
       borderWidth: (json['border_width'] as num?)?.toDouble(),
       helperText: json['helper_text'] as String?,
-      helperTextColor: StyleModel._parseColor(json['helper_text_color']),
-      textColor: StyleModel._parseColor(json['color']),
+      helperTextColor: StyleStatesModel._parseColor(json['helper_text_color']),
+      textColor: StyleStatesModel._parseColor(json['color']),
       fontStyle: (json['font_style'] == 'italic')
           ? FontStyle.italic
           : FontStyle.normal,
@@ -54,22 +54,22 @@ class StyleModel {
   }
 
   static Color? _parseColor(dynamic value) {
-    debugPrint('[StyleModel] _parseColor input: $value');
+    debugPrint('[StyleStatesModel] _parseColor input: $value');
     if (value is int) {
-      debugPrint('[StyleModel] _parseColor int: $value');
+      debugPrint('[StyleStatesModel] _parseColor int: $value');
       return Color(value);
     }
     if (value is String) {
-      debugPrint('[StyleModel] _parseColor string: $value');
+      debugPrint('[StyleStatesModel] _parseColor string: $value');
       if (value.startsWith('#')) {
         final hex = value.replaceAll('#', '');
         if (hex.length == 6) {
           final color = Color(int.parse('FF$hex', radix: 16));
-          debugPrint('[StyleModel] _parseColor HEX #$hex => $color');
+          debugPrint('[StyleStatesModel] _parseColor HEX #$hex => $color');
           return color;
         } else if (hex.length == 8) {
           final color = Color(int.parse(hex, radix: 16));
-          debugPrint('[StyleModel] _parseColor HEX8 $hex => $color');
+          debugPrint('[StyleStatesModel] _parseColor HEX8 $hex => $color');
           return color;
         }
       }
@@ -77,14 +77,14 @@ class StyleModel {
         try {
           final hex = value.replaceAll(RegExp(r'0[xX]'), '');
           final color = Color(int.parse(hex, radix: 16));
-          debugPrint('[StyleModel] _parseColor 0x => $color');
+          debugPrint('[StyleStatesModel] _parseColor 0x => $color');
           return color;
         } catch (e) {
-          debugPrint('[StyleModel] _parseColor ERROR: $e, value=$value');
+          debugPrint('[StyleStatesModel] _parseColor ERROR: $e, value=$value');
         }
       }
     }
-    debugPrint('[StyleModel] _parseColor NULL for value=$value');
+    debugPrint('[StyleStatesModel] _parseColor NULL for value=$value');
     return null;
   }
 

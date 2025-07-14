@@ -11,7 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropd
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_state.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {
@@ -484,11 +484,11 @@ class DynamicDropdownBloc
     // Compute styles
     final Map<String, dynamic> baseStyle = Map.from(component.style);
     final Map<String, dynamic> variantStyle = {};
-    final StyleModel? stateStyleModel = _getTypedStateStyle(
+    final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
       currentState,
     );
-    final Map<String, dynamic> stateStyle = stateStyleModel?.toJson() ?? {};
+    final Map<String, dynamic> stateStyle = stateStyleStatesModel?.toJson() ?? {};
     final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute display label (from original _computeDisplayLabel)
@@ -883,7 +883,7 @@ class DynamicDropdownBloc
     );
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

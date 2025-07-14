@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
@@ -183,7 +183,7 @@ class DynamicTextArea extends StatelessWidget {
   ) {
     // Get state key
     final String stateKey = _componentStateEnumToKey(currentState);
-    final StyleModel? stateStyle = _getStateStyle(component.states, stateKey);
+    final StyleStatesModel? stateStyle = _getStateStyle(component.states, stateKey);
     final String? helperText = stateStyle?.helperText ?? styleConfig.helperText;
     final Color helperTextColor =
         stateStyle?.helperTextColor ?? styleConfig.helperTextColor;
@@ -247,7 +247,7 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  StyleModel? _getStateStyle(StatesModel? states, String stateKey) {
+  StyleStatesModel? _getStateStyle(StatesModel? states, String stateKey) {
     switch (stateKey) {
       case 'base':
         return states?.base;
@@ -276,7 +276,7 @@ class DynamicTextArea extends StatelessWidget {
     // Get border color from component states if available
     if (state != null && component.states != null) {
       final stateKey = _componentStateEnumToKey(state);
-      final StyleModel? stateStyle = _getStateStyle(component.states, stateKey);
+      final StyleStatesModel? stateStyle = _getStateStyle(component.states, stateKey);
       if (stateStyle?.borderColor != null) {
         color = stateStyle!.borderColor!;
         width = 2; // Use thicker border for state styles
@@ -287,7 +287,7 @@ class DynamicTextArea extends StatelessWidget {
     if (state == ComponentStateEnum.focused) {
       width += 1;
       // Only use theme color if no state style is defined
-      final StyleModel? focusedStyle = component.states?.focused;
+      final StyleStatesModel? focusedStyle = component.states?.focused;
       if (focusedStyle?.borderColor == null && context != null) {
         color = Theme.of(context).primaryColor;
       }

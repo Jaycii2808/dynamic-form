@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_state.dart';
 import 'package:file_picker/file_picker.dart';
@@ -397,11 +397,11 @@ class DynamicFileUploaderBloc
     final Map<String, dynamic> variantStyle = isDragging
         ? Map.from(component.variants?['dragging']?['style'] ?? {})
         : {};
-    final StyleModel? stateStyleModel = _getTypedStateStyle(
+    final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
       currentState,
     );
-    final Map<String, dynamic> stateStyle = stateStyleModel?.toJson() ?? {};
+    final Map<String, dynamic> stateStyle = stateStyleStatesModel?.toJson() ?? {};
     final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute config
@@ -455,7 +455,7 @@ class DynamicFileUploaderBloc
     }
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

@@ -1,10 +1,10 @@
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 class StatesModel {
-  final StyleModel? base;
-  final StyleModel? focused;
-  final StyleModel? error;
-  final StyleModel? success;
+  final StyleStatesModel? base;
+  final StyleStatesModel? focused;
+  final StyleStatesModel? error;
+  final StyleStatesModel? success;
 
   StatesModel(this.base, this.focused, this.error, this.success);
   //toString, toJson, fromJson
@@ -23,18 +23,18 @@ class StatesModel {
     if (json == null) return StatesModel(null, null, null, null);
     return StatesModel(
       json['base'] != null
-          ? StyleModel.fromJson(json['base']['style'] as Map<String, dynamic>?)
+          ? StyleStatesModel.fromJson(json['base']['style'] as Map<String, dynamic>?)
           : null,
       json['focused'] != null
-          ? StyleModel.fromJson(
+          ? StyleStatesModel.fromJson(
               json['focused']['style'] as Map<String, dynamic>?,
             )
           : null,
       json['error'] != null
-          ? StyleModel.fromJson(json['error']['style'] as Map<String, dynamic>?)
+          ? StyleStatesModel.fromJson(json['error']['style'] as Map<String, dynamic>?)
           : null,
       json['success'] != null
-          ? StyleModel.fromJson(
+          ? StyleStatesModel.fromJson(
               json['success']['style'] as Map<String, dynamic>?,
             )
           : null,

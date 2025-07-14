@@ -2,7 +2,7 @@ import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
@@ -94,7 +94,7 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
 
     // Apply state styles
-    final StyleModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
       _currentComponent.states,
       _currentState,
     );
@@ -103,7 +103,7 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

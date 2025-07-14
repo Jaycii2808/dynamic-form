@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
@@ -67,7 +67,7 @@ class DynamicSelectorButton extends StatelessWidget {
     );
   }
 
-  StyleModel? _getStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

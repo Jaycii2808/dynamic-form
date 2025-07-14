@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
@@ -255,7 +255,7 @@ class DynamicCheckboxBloc
     // Build combined style
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
 
-    final StyleModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
       currentState,
     );
@@ -265,7 +265,7 @@ class DynamicCheckboxBloc
     return style;
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

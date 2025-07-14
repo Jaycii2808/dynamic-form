@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -332,7 +332,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
 
     // Apply state styles
     final currentStateKey = _getStateKey(state.formState);
-    final StyleModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
       state.component!.states,
       currentStateKey,
     );
@@ -353,7 +353,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
     }
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

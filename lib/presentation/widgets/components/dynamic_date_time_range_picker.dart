@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
@@ -91,7 +91,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
 
     final currentState =
         ComponentStateEnum.fromString(inputConfig.currentState) ;
-    final StyleModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
       currentState.value,
     );
@@ -275,7 +275,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;

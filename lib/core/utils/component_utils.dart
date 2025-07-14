@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 class ComponentUtils {
   /// Create updated DynamicFormModel with new config - clean and safe
@@ -46,7 +46,7 @@ class ComponentUtils {
     );
   }
 
-  static StyleModel? getStateStyle(StatesModel? states, String? key) {
+  static StyleStatesModel? getStateStyle(StatesModel? states, String? key) {
     switch (key) {
       case 'base':
         return states?.base;

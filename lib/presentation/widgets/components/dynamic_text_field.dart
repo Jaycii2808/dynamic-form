@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -238,9 +238,9 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       enabledBorderState = ComponentStateEnum.success;
     }
 
-    // Get style from component states (as StyleModel)
+    // Get style from component states (as StyleStatesModel)
     final String stateKey = _ComponentStateEnumToKey(enabledBorderState);
-    final StyleModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
       stateKey,
     );
@@ -350,7 +350,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     return TextInputType.text;
   }
 
-  StyleModel? _getTypedStateStyle(StatesModel? states, String key) {
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
     switch (key) {
       case 'base':
         return states?.base;
@@ -378,7 +378,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     // Get border color from component states if available
     if (state != null && component.states != null) {
       final String stateKey = _ComponentStateEnumToKey(state);
-      final StyleModel? stateStyle = _getTypedStateStyle(
+      final StyleStatesModel? stateStyle = _getTypedStateStyle(
         component.states,
         stateKey,
       );
@@ -392,7 +392,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     if (state == ComponentStateEnum.focused) {
       width += 1;
       // Only use theme color if no state style is defined
-      final StyleModel? focusedStyle = component.states?.focused;
+      final StyleStatesModel? focusedStyle = component.states?.focused;
       if (focusedStyle?.borderColor == null) {
         color = Theme.of(context).primaryColor;
       }
