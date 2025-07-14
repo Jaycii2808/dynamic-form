@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
 
 class ComponentUtils {
@@ -41,7 +42,7 @@ class ComponentUtils {
           ? Map<String, dynamic>.from(component.states!)
           : null,
       validation: component.validation != null
-          ? Map<String, dynamic>.from(component.validation!)
+          ? ValidationFactory.fromJson(component.validation!.toJson())
           : null,
       children: component.children,
     );

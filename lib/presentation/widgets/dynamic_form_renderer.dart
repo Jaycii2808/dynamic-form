@@ -74,10 +74,10 @@ class DynamicFormRenderer extends StatefulWidget {
 
 class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   void handleFormFieldUpdate(
-      BuildContext context,
-      DynamicFormModel component,
-      dynamic value,
-      ) {
+    BuildContext context,
+    DynamicFormModel component,
+    dynamic value,
+  ) {
     if (value != null) {
       component.config[ValueKeyEnum.value.key] = value[ValueKeyEnum.value.key];
       if (widget.onFieldChanged != null) {
@@ -248,13 +248,13 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         color: StyleUtils.parseColor(style['background_color']),
         border: style['border_color'] != null
             ? Border.all(
-          color: StyleUtils.parseColor(style['border_color']),
-          width: ComponentUtils.getStyleValue<num>(
-            style,
-            'border_width',
-            1.0,
-          ).toDouble(),
-        )
+                color: StyleUtils.parseColor(style['border_color']),
+                width: ComponentUtils.getStyleValue<num>(
+                  style,
+                  'border_width',
+                  1.0,
+                ).toDouble(),
+              )
             : null,
         borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
       ),
@@ -265,7 +265,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
           if (component.children != null)
             ...component.children!.map(
-                  (child) => DynamicFormRenderer(
+              (child) => DynamicFormRenderer(
                 component: child,
                 page: widget.page,
                 onCompleted: widget.onCompleted,

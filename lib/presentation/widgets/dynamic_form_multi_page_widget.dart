@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -86,11 +87,11 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
-      final validate = button?.validation;
-      if (validate != null && validate['condition'] is List) {
-        for (final cond in validate['condition']) {
-          if (cond['is_required'] == true && cond['id_component'] != null) {
-            requiredIds.add(cond['id_component']);
+      final compositeValidation = button?.validation as CompositeValidation?;
+      if (compositeValidation?.buttonCondition?.conditions != null) {
+        for (final cond in compositeValidation!.buttonCondition!.conditions) {
+          if (cond.isRequired == true && cond.idComponent.isNotEmpty) {
+            requiredIds.add(cond.idComponent);
           }
         }
       }
@@ -221,9 +222,16 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           return;
                         }
 
-                        final validate = previousButton.validation;
-                        final targetPage =
-                            validate?['previous_page'] as String?;
+                        final compositeValidation =
+                            previousButton.validation as CompositeValidation?;
+                        final targetPage = compositeValidation
+                            ?.buttonCondition
+                            ?.conditions
+                            .firstWhere(
+                              (c) => c.idComponent == 'previous_page',
+                              orElse: () => ButtonCondition(idComponent: ''),
+                            )
+                            .idComponent;
 
                         if (targetPage != null) {
                           final targetIndex = state.formModel?.pages.indexWhere(
@@ -318,35 +326,31 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context, {
     bool showDialogOnError = true,
   }) {
-    final validate = button.validation;
-    final conditions = (validate != null && validate['condition'] is List)
-        ? validate['condition'] as List
-        : [];
+    final compositeValidation = button.validation as CompositeValidation?;
+    final conditions = compositeValidation?.buttonCondition?.conditions ?? [];
     debugPrint(
       'Validating button: ${button.id}, conditions: ${conditions.length}',
     );
     final List<String> errors = [];
     for (final cond in conditions) {
-      final id = cond['id_component'];
+      final id = cond.idComponent;
       final value = allComponentValues[id];
       debugPrint(
         'Checking condition for component: $id, value: $value, cond: $cond',
       );
-      if (cond['is_required'] == true &&
+      if (cond.isRequired == true &&
           (value == null ||
               (value is bool
                   ? value == false
                   : value.toString().trim().isEmpty))) {
-        errors.add(cond['error_message']?.toString() ?? 'Required');
-      } else if ((cond['regex'] ?? '').toString().isNotEmpty) {
-        final regex = RegExp(cond['regex']);
+        errors.add(cond.errorMessage ?? 'Required');
+      } else if (cond.regex?.isNotEmpty == true) {
+        final regex = RegExp(cond.regex!);
         if (value != null &&
             value.toString().isNotEmpty &&
             !regex.hasMatch(value.toString())) {
           errors.add(
-            cond['regex_error']?.toString() ??
-                cond['error_message']?.toString() ??
-                'Invalid format',
+            cond.regexError ?? cond.errorMessage ?? 'Invalid format',
           );
         }
       }
