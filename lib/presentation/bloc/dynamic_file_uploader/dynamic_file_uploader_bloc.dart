@@ -401,7 +401,8 @@ class DynamicFileUploaderBloc
       component.states,
       currentState,
     );
-    final Map<String, dynamic> stateStyle = stateStyleStatesModel?.toJson() ?? {};
+    final Map<String, dynamic> stateStyle =
+        stateStyleStatesModel?.toJson() ?? {};
     final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute config

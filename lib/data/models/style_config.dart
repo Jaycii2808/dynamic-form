@@ -45,9 +45,9 @@ class StyleConfig {
           ? FontStyle.italic
           : FontStyle.normal,
       contentVerticalPadding:
-      (map['content_vertical_padding'] as num?)?.toDouble() ?? 12.0,
+          (map['content_vertical_padding'] as num?)?.toDouble() ?? 12.0,
       contentHorizontalPadding:
-      (map['content_horizontal_padding'] as num?)?.toDouble() ?? 12.0,
+          (map['content_horizontal_padding'] as num?)?.toDouble() ?? 12.0,
       fillColor: _parseColor(map['background_color']) ?? Colors.transparent,
       helperText: map['helper_text']?.toString(),
       helperTextColor: _parseColor(map['helper_text_color']) ?? Colors.grey,

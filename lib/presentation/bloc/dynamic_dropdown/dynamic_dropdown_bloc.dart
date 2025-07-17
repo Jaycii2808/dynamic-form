@@ -455,7 +455,10 @@ class DynamicDropdownBloc
     );
   }
 
-  ComponentStateEnum _computeFormState(DynamicFormModel component, String? value) {
+  ComponentStateEnum _computeFormState(
+    DynamicFormModel component,
+    String? value,
+  ) {
     // Same logic as other components - value exists = success
     if (value != null && value.isNotEmpty) {
       return ComponentStateEnum.success;
@@ -488,7 +491,8 @@ class DynamicDropdownBloc
       component.states,
       currentState,
     );
-    final Map<String, dynamic> stateStyle = stateStyleStatesModel?.toJson() ?? {};
+    final Map<String, dynamic> stateStyle =
+        stateStyleStatesModel?.toJson() ?? {};
     final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
 
     // Compute display label (from original _computeDisplayLabel)
