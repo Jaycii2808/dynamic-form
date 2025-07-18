@@ -6,7 +6,6 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
-import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_state.dart';
 import 'package:flutter/material.dart';
@@ -433,21 +432,23 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
 
       // Fast path: Check max selections first (most common case)
       if (component.config['multiple'] == true) {
-        final compositeValidation =
-            component.validation as CompositeValidation?;
-        if (compositeValidation?.maxSelections != null) {
-          final maxSelectionsValidation = compositeValidation!.maxSelections!;
-          final max = maxSelectionsValidation.max;
-          if (values.length > max) {
-            return maxSelectionsValidation.errorMessage ??
-                'Exceeds maximum allowed quantity';
+        final validationConfig = component.validation;
+        if (validationConfig != null) {
+          final maxSelectionsValidation =
+              validationConfig['max_selections'] as Map<String, dynamic>?;
+          if (maxSelectionsValidation != null) {
+            final max = maxSelectionsValidation['max'];
+            if (max != null && values.length > max) {
+              return maxSelectionsValidation['error_message'] as String? ??
+                  'Exceeds maximum allowed quantity';
+            }
           }
         }
       }
 
       // Only validate individual values if there are multiple validation rules
-      final compositeValidation = component.validation as CompositeValidation?;
-      final hasComplexValidation = compositeValidation?.hasValidation == true;
+      final hasComplexValidation =
+          component.validation != null && component.validation!.length > 1;
 
       if (hasComplexValidation) {
         for (String val in values) {
