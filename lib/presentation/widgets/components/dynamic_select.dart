@@ -1,10 +1,12 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -264,7 +266,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
         return Text(
           state.component!.config['placeholder'] ?? 'Select option',
           style: textStyle.copyWith(
-            color: StyleUtils.parseColor(style['color']).withValues(alpha:0.6),
+            color: StyleUtils.parseColor(style['color']).withValues(alpha: 0.6),
           ),
         );
       }
@@ -330,27 +332,39 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
 
     // Apply state styles
     final currentStateKey = _getStateKey(state.formState);
-    if (state.component!.states != null &&
-        state.component!.states!.containsKey(currentStateKey)) {
-      final stateStyle =
-          state.component!.states![currentStateKey]['style']
-              as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
-    }
-
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+      state.component!.states,
+      currentStateKey,
+    );
+    if (stateStyle != null) style.addAll(stateStyle.toJson());
     return style;
   }
 
-  String _getStateKey(FormStateEnum? formState) {
+  String _getStateKey(ComponentStateEnum? formState) {
     switch (formState) {
-      case FormStateEnum.error:
+      case ComponentStateEnum.error:
         return 'error';
-      case FormStateEnum.success:
+      case ComponentStateEnum.success:
         return 'success';
-      case FormStateEnum.focused:
+      case ComponentStateEnum.focused:
         return 'focused';
       default:
         return 'base';
+    }
+  }
+
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
     }
   }
 

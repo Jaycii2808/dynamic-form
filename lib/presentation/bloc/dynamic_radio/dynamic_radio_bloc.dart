@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_event.dart';
@@ -86,7 +86,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
 
       // Validate the new value
       final validationResult = _validateValue(updatedComponent, event.value);
-      final formState = validationResult['state'] as FormStateEnum;
+      final formState = validationResult['state'] as ComponentStateEnum;
       final errorText = validationResult['error'] as String?;
 
       debugPrint(
@@ -151,12 +151,12 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
     }
   }
 
-  FormStateEnum _getCurrentFormState(DynamicFormModel component) {
+  ComponentStateEnum _getCurrentFormState(DynamicFormModel component) {
     final currentState = component.config['current_state'];
     if (currentState != null) {
-      return FormStateEnum.fromString(currentState) ?? FormStateEnum.base;
+      return ComponentStateEnum.fromString(currentState) ;
     }
-    return FormStateEnum.base;
+    return ComponentStateEnum.base;
   }
 
   String? _getErrorText(DynamicFormModel component) {
@@ -170,18 +170,18 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
 
       if (isRequired && !value) {
         return {
-          'state': FormStateEnum.error,
+          'state': ComponentStateEnum.error,
           'error': 'This option is required',
         };
       }
 
       return {
-        'state': FormStateEnum.success,
+        'state': ComponentStateEnum.success,
         'error': null,
       };
     } catch (e) {
       return {
-        'state': FormStateEnum.error,
+        'state': ComponentStateEnum.error,
         'error': 'Validation error: $e',
       };
     }

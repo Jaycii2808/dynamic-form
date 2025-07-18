@@ -3,8 +3,8 @@ import 'package:dynamic_form_bi/core/enums/config_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
@@ -229,7 +229,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                             ?.conditions
                             .firstWhere(
                               (c) => c.idComponent == 'previous_page',
-                              orElse: () => ButtonCondition(idComponent: ''),
+                              orElse: () =>
+                                  const ButtonCondition(idComponent: ''),
                             )
                             .idComponent;
 

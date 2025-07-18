@@ -1,7 +1,10 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 
 class ComponentUtils {
   /// Create updated DynamicFormModel with new config - clean and safe
@@ -41,7 +44,7 @@ class ComponentUtils {
           ? Map<String, dynamic>.from(component.states!)
           : null,
       validation: component.validation != null
-          ? Map<String, dynamic>.from(component.validation!)
+          ? ValidationFactory.fromJson(component.validation!.toJson())
           : null,
       children: component.children,
     );
@@ -68,13 +71,10 @@ class ComponentUtils {
     }
 
     // Apply state style if exists (higher priority)
-    if (state != null &&
-        component.states != null &&
-        component.states!.containsKey(state)) {
-      final stateStyle =
-          component.states![state]['style'] as Map<String, dynamic>?;
+    if (state != null && component.states != null) {
+      final stateStyle = getStateStyle(component.states, state);
       if (stateStyle != null) {
-        style.addAll(stateStyle);
+        style.addAll(stateStyle.toJson());
       }
     }
 
@@ -92,14 +92,12 @@ class ComponentUtils {
     if (inputTypes == null || inputTypes.isEmpty) return TextInputType.text;
 
     // Priority order for keyboard types
-    if (inputTypes.containsKey('email')) return TextInputType.emailAddress;
-    if (inputTypes.containsKey('tel')) return TextInputType.phone;
-    if (inputTypes.containsKey('password')) {
+    if (inputTypes.email != null) return TextInputType.emailAddress;
+    if (inputTypes.tel != null) return TextInputType.phone;
+    if (inputTypes.password != null) {
       return TextInputType.visiblePassword;
     }
-    if (inputTypes.containsKey('number')) return TextInputType.number;
-    if (inputTypes.containsKey('url')) return TextInputType.url;
-
+    // No number/url in model, fallback to text
     return TextInputType.text;
   }
 
@@ -287,11 +285,10 @@ class ComponentUtils {
     }
 
     // Apply state styles (highest priority)
-    if (component.states != null && component.states!.containsKey(state)) {
-      final stateStyle =
-          component.states![state]['style'] as Map<String, dynamic>?;
+    if (component.states != null) {
+      final stateStyle = getStateStyle(component.states, state);
       if (stateStyle != null) {
-        style.addAll(stateStyle);
+        style.addAll(stateStyle.toJson());
       }
     }
 

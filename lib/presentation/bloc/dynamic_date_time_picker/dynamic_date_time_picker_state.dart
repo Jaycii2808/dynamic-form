@@ -1,5 +1,5 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:equatable/equatable.dart';
@@ -9,7 +9,7 @@ abstract class DynamicDateTimePickerState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleConfig? styleConfig;
-  final FormStateEnum? formState;
+  final ComponentStateEnum? formState;
   final String? errorText;
   final TextEditingController? textController;
   final FocusNode? focusNode;

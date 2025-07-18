@@ -1,10 +1,12 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -154,7 +156,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     StyleConfig styleConfig,
     InputConfig inputConfig,
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     String? errorText,
     FocusNode focusNode,
   ) {
@@ -185,7 +187,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
 
   Widget _buildRadioControl(
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
     bool isSelected,
   ) {
     // Get state-specific style
@@ -274,7 +276,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
 
   Map<String, dynamic> _getStateStyle(
     DynamicFormModel component,
-    FormStateEnum currentState,
+    ComponentStateEnum currentState,
   ) {
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
 
@@ -286,16 +288,31 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
       stateKey = 'selected';
     }
 
-    // Apply state-specific styles from remote config
-    if (component.states != null && component.states!.containsKey(stateKey)) {
-      final stateStyle =
-          component.states![stateKey]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) {
-        style.addAll(stateStyle);
-      }
+    // Apply state-specific styles from strongly-typed StatesModel
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+      component.states,
+      stateKey,
+    );
+    if (stateStyle != null) {
+      style.addAll(stateStyle.toJson());
     }
 
     return style;
+  }
+
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 
   List<Widget> _buildHintText(DynamicFormModel component) {

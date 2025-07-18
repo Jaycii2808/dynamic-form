@@ -1,12 +1,12 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicCheckboxState extends Equatable {
-  final FormStateEnum? formState;
+  final ComponentStateEnum? formState;
   final String? errorText;
   final DynamicFormModel? component;
 
@@ -88,7 +88,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
 
   DynamicCheckboxSuccess copyWith({
     DynamicFormModel? component,
-    FormStateEnum? formState,
+    ComponentStateEnum? formState,
     String? errorText,
     StyleConfig? styleConfig,
     InputConfig? inputConfig,

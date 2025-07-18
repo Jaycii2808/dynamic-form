@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:flutter/material.dart';
@@ -60,9 +60,9 @@ class DynamicDateTimePickerBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-              FormStateEnum.fromString(initialComponent.config['currentState']) ??
-              FormStateEnum.base,
+          formState: ComponentStateEnum.fromString(
+            initialComponent.config['currentState']?.toString() ?? 'base',
+          ),
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -70,7 +70,12 @@ class DynamicDateTimePickerBloc
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to initialize DateTimePicker: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
-      emit(DynamicDateTimePickerError(errorMessage: errorMessage, component: state.component));
+      emit(
+        DynamicDateTimePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
     }
   }
 
@@ -99,18 +104,23 @@ class DynamicDateTimePickerBloc
     DynamicDateTimePickerSuccess currentState,
     Emitter<DynamicDateTimePickerState> emit,
   ) {
-    final validationError = ValidationUtils.validateForm(currentState.component!, value);
+    final validationError = ValidationUtils.validateForm(
+      currentState.component!,
+      value,
+    );
 
-    FormStateEnum newState = FormStateEnum.base;
+    ComponentStateEnum newState = ComponentStateEnum.base;
     if (validationError != null) {
-      newState = FormStateEnum.error;
+      newState = ComponentStateEnum.error;
     } else if (value.isNotEmpty) {
-      newState = FormStateEnum.success;
+      newState = ComponentStateEnum.success;
     }
     if (_textController.text != value) {
       _textController.text = value;
     }
-    final updatedConfig = Map<String, dynamic>.from(currentState.component!.config);
+    final updatedConfig = Map<String, dynamic>.from(
+      currentState.component!.config,
+    );
     updatedConfig[ValueKeyEnum.value.key] = value;
     updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
     updatedConfig[ValueKeyEnum.errorText.key] = validationError;

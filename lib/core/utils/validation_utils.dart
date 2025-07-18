@@ -1,7 +1,9 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 import 'package:flutter/material.dart';
 
 /// Result class for button validation operations
@@ -75,34 +77,29 @@ class ValidationUtils {
 
   /// Auto-detect input type with null safety
   static String? detectInputType(
-    Map<String, dynamic>? inputTypes,
+    InputTypesModel? inputTypes,
     String? value,
     String? configuredType,
   ) {
-    // Null safety checks
     if (inputTypes == null || inputTypes.isEmpty) return null;
     if (configuredType != null) return configuredType;
-    if (value == null || value.trim().isEmpty) return inputTypes.keys.first;
-
-    // Check email pattern
-    if (inputTypes.containsKey('email') &&
+    if (value == null || value.trim().isEmpty) {
+      if (inputTypes.email != null) return 'email';
+      if (inputTypes.tel != null) return 'tel';
+      if (inputTypes.password != null) return 'password';
+      if (inputTypes.multiline != null) return 'multiline';
+      return null;
+    }
+    if (inputTypes.email != null &&
         RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) {
       return 'email';
     }
-
-    // Check tel pattern
-    if (inputTypes.containsKey('tel') &&
-        RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
+    if (inputTypes.tel != null && RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
       return 'tel';
     }
-
-    // Fallback order
-    const fallbackOrder = ['password', 'text'];
-    for (final type in fallbackOrder) {
-      if (inputTypes.containsKey(type)) return type;
-    }
-
-    return inputTypes.keys.isNotEmpty ? inputTypes.keys.first : null;
+    if (inputTypes.password != null) return 'password';
+    if (inputTypes.multiline != null) return 'multiline';
+    return null;
   }
 
   /// Determine component state with null safety
@@ -120,67 +117,94 @@ class ValidationUtils {
   /// Centralized form validation with comprehensive error handling
   static String? validateForm(DynamicFormModel component, String? value) {
     try {
-      // Null safety for value
       final safeValue = value ?? '';
-
-      // Required field check
       if ((component.config['isRequired'] ?? false) &&
           safeValue.trim().isEmpty) {
         return component.config['requiredMessage'] ?? 'Trường này là bắt buộc';
       }
-
       if (safeValue.trim().isEmpty) return null;
-
       final inputTypes = component.inputTypes;
       if (inputTypes == null || inputTypes.isEmpty) return null;
-
-      final selectedType = detectInputType(
+      String? selectedType = detectInputType(
         inputTypes,
         safeValue,
         component.config['inputType'],
       );
-
-      if (selectedType == null || !inputTypes.containsKey(selectedType)) {
-        return null;
+      // Fallback for textAreaFormType: if multiline is missing, use text
+      if (component.type.toString().contains('textAreaFormType')) {
+        if (selectedType == null && inputTypes.text != null) {
+          selectedType = 'text';
+        }
       }
-
-      final validation =
-          inputTypes[selectedType]?['validation'] as Map<String, dynamic>?;
-      if (validation == null) return null;
-
-      return _validateByRules(safeValue, validation);
+      debugPrint(
+        'validateForm: id=${component.id}, selectedType=$selectedType, value="$safeValue"',
+      );
+      InputTypeValidationModel? validation;
+      if (selectedType == 'text') {
+        validation = inputTypes.text;
+      } else if (selectedType == 'multiline') {
+        validation = inputTypes.multiline ?? inputTypes.text;
+      } else if (selectedType == 'email') {
+        validation = inputTypes.email;
+      } else if (selectedType == 'tel') {
+        validation = inputTypes.tel;
+      } else if (selectedType == 'password') {
+        validation = inputTypes.password;
+      }
+      if (validation != null) {
+        debugPrint('validateForm: using validation=${validation.toJson()}');
+        if (validation.minLength != null &&
+            safeValue.length < validation.minLength!) {
+          return validation.errorMessage ?? 'Too short';
+        }
+        if (validation.maxLength != null &&
+            safeValue.length > validation.maxLength!) {
+          return validation.errorMessage ?? 'Too long';
+        }
+        if (validation.regex != null) {
+          final regex = RegExp(validation.regex!);
+          final matches = regex.hasMatch(safeValue);
+          debugPrint(
+            'validateForm: regex=${validation.regex}, value="$safeValue", matches=$matches',
+          );
+          if (!matches) {
+            return validation.errorMessage ?? 'Incorrect format';
+          }
+        }
+      }
+      return null;
     } catch (e) {
       debugPrint('Form validation error for ${component.id}: $e');
       return 'Validation error occurred';
     }
   }
 
-  static String? _validateByRules(
-    String value,
-    Map<String, dynamic> validation,
-  ) {
-    final minLength = validation['min_length'] ?? 0;
-    final maxLength = validation['max_length'] ?? 9999;
-    final regexStr = validation['regex'] ?? '';
-    final errorMsg = validation['error_message'] ?? 'Invalid input';
-
-    // Length validation
-    if (value.length < minLength || value.length > maxLength) {
-      return errorMsg;
-    }
-
-    // Regex validation
-    if (regexStr.isNotEmpty) {
-      try {
-        if (!RegExp(regexStr).hasMatch(value)) return errorMsg;
-      } catch (e) {
-        debugPrint('Invalid regex pattern: $regexStr');
-        return 'Invalid format';
-      }
-    }
-
-    return null;
-  }
+  // static String? _validateByRules(
+  //   String value,
+  //   Map<String, dynamic> validation,
+  // ) {
+  //   final minLength = validation['min_length'] ?? 0;
+  //   final maxLength = validation['max_length'] ?? 9999;
+  //   final regexStr = validation['regex'] ?? '';
+  //   final errorMsg = validation['error_message'] ?? 'Invalid input';
+  //
+  //   // Length validation
+  //   if (value.length < minLength || value.length > maxLength) {
+  //     return errorMsg;
+  //   }
+  //
+  //   // Regex validation
+  //   if (regexStr.isNotEmpty) {
+  //     try {
+  //       if (!RegExp(regexStr).hasMatch(value)) return errorMsg;
+  //     } catch (e) {
+  //       debugPrint('Invalid regex pattern: $regexStr');
+  //       return 'Invalid format';
+  //     }
+  //   }
+  //
+  //   return null;
+  // }
 
   /// Centralized button conditions validation - eliminates duplicated if-else logic
   static ButtonValidationResult validateButtonConditions(

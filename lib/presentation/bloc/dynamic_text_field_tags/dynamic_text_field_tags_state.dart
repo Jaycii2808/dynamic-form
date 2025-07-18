@@ -1,21 +1,23 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 
 abstract class DynamicTextFieldTagsState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleConfig? styleConfig;
-  final FormStateEnum? formState;
+  final ComponentStateEnum? formState;
   final String? errorText;
   final List<String> selectedTags;
   final TextEditingController? textController;
   final FocusNode? focusNode;
   final bool isEditing;
   final List<String> availableTags;
+  final StatesModel? states;
 
   const DynamicTextFieldTagsState({
     this.component,
@@ -28,6 +30,7 @@ abstract class DynamicTextFieldTagsState extends Equatable {
     this.focusNode,
     this.isEditing = false,
     this.availableTags = const [],
+    this.states,
   });
 
   @override
@@ -42,6 +45,7 @@ abstract class DynamicTextFieldTagsState extends Equatable {
     focusNode,
     isEditing,
     availableTags,
+    states,
   ];
 }
 
@@ -50,6 +54,7 @@ class DynamicTextFieldTagsInitial extends DynamicTextFieldTagsState {
     super.component,
     super.isEditing,
     super.availableTags,
+    super.states,
   });
 }
 
@@ -67,6 +72,7 @@ class DynamicTextFieldTagsLoading extends DynamicTextFieldTagsState {
          focusNode: state.focusNode,
          isEditing: state.isEditing,
          availableTags: state.availableTags,
+         states: state.states,
        );
 }
 
@@ -82,6 +88,7 @@ class DynamicTextFieldTagsSuccess extends DynamicTextFieldTagsState {
     super.focusNode,
     super.isEditing,
     super.availableTags,
+    super.states,
   });
 }
 
@@ -93,6 +100,7 @@ class DynamicTextFieldTagsError extends DynamicTextFieldTagsState {
     super.component,
     super.isEditing,
     super.availableTags,
+    super.states,
   });
 
   @override
@@ -101,5 +109,6 @@ class DynamicTextFieldTagsError extends DynamicTextFieldTagsState {
     component,
     isEditing,
     availableTags,
+    states,
   ];
 }

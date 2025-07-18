@@ -1,6 +1,8 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
@@ -92,12 +94,27 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
 
     // Apply state styles
-    if (_currentComponent.states != null &&
-        _currentComponent.states!.containsKey(_currentState)) {
-      final stateStyle =
-          _currentComponent.states![_currentState]['style']
-              as Map<String, dynamic>?;
-      if (stateStyle != null) _style.addAll(stateStyle);
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+      _currentComponent.states,
+      _currentState,
+    );
+    if (stateStyle != null) {
+      _style.addAll(stateStyle.toJson());
+    }
+  }
+
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
     }
   }
 
@@ -169,7 +186,7 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
     final isIconRightPosition =
         widget.component.config['is_icon_right_position'] == true ||
-            widget.component.config['is_icon_right_position'] == 'true';
+        widget.component.config['is_icon_right_position'] == 'true';
 
     if (_iconData != null) {
       if (isIconRightPosition) {

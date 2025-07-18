@@ -1,14 +1,15 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
-import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextFieldTagsBloc
     extends Bloc<DynamicTextFieldTagsEvent, DynamicTextFieldTagsState> {
@@ -48,19 +49,60 @@ class DynamicTextFieldTagsBloc
 
   List<String> _getInitialTags(Map<String, dynamic> config) {
     final value = config[ValueKeyEnum.value.key];
+    debugPrint('DEBUG: _getInitialTags value = $value');
     if (value is List) {
-      return value.cast<String>();
+      // Filter out nulls and non-strings, and print debug info if any nulls found
+      final filtered = value
+          .whereType<String>()
+          .cast<String>()
+          .toList();
+      if (filtered.length != value.length) {
+        debugPrint('Warning: value list contains non-strings or nulls: $value');
+      }
+      return filtered;
+    }
+    if (value is String && value.isNotEmpty) {
+      // If value is a comma-separated string, split it
+      debugPrint('DEBUG: _getInitialTags value is a non-empty String: $value');
+      return value
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
     final initialTags = config['initial_tags'] ?? config['initialTags'];
+    debugPrint(
+      'DEBUG: _getInitialTags initialTags = $initialTags',
+    );
     if (initialTags is List) {
-      return initialTags.cast<String>();
+      final filtered = initialTags
+          .whereType<String>()
+          .cast<String>()
+          .toList();
+      if (filtered.length != initialTags.length) {
+        debugPrint(
+          'Warning: initial_tags contains non-strings or nulls: $initialTags',
+        );
+      }
+      return filtered;
     }
     return [];
   }
 
   List<String> _getAvailableTags(Map<String, dynamic> config) {
-    final tags = config['initial_tags'] ?? config['initialTags'];
-    return (tags is List) ? tags.cast<String>() : [];
+    if (config['initial_tags'] ?? config['initialTags'] case final List tags) {
+      final filtered = tags
+          .whereType<String>()
+          .cast<String>()
+          .toList();
+      if (filtered.length != tags.length) {
+        debugPrint(
+          'Warning: availableTags contains non-strings or nulls: $tags',
+        );
+      }
+      return filtered;
+    }
+    return [];
   }
 
   Future<void> _onInitialize(
@@ -69,26 +111,56 @@ class DynamicTextFieldTagsBloc
   ) async {
     emit(DynamicTextFieldTagsLoading.fromState(state: state));
     try {
+      debugPrint(
+        'DEBUG: _onInitialize called with config: ${initialComponent.config}',
+      );
       final initialTags = _getInitialTags(initialComponent.config);
       final availableTags = _getAvailableTags(initialComponent.config);
+      debugPrint(
+        'DEBUG: _onInitialize initialTags: $initialTags, availableTags: $availableTags',
+      );
+      debugPrint(
+        'DEBUG: _onInitialize about to parse InputConfig.fromJson with config: ${initialComponent.config}',
+      );
+      initialComponent.config.forEach((k, v) {
+        debugPrint(
+          'DEBUG: config key: $k, value: $v',
+        );
+      });
+      InputConfig inputConfig;
+      try {
+        inputConfig = InputConfig.fromJson(initialComponent.config);
+        debugPrint('DEBUG: InputConfig.fromJson succeeded');
+      } catch (e, stack) {
+        debugPrint('DEBUG: InputConfig.fromJson error: $e');
+        debugPrint(stack.toString());
+        rethrow;
+      }
+      debugPrint(
+        'DEBUG: About to parse formState: ${initialComponent.config['current_state'] ??
+                    initialComponent.config['currentState']}',
+      );
+      final formState = ComponentStateEnum.fromString(
+        initialComponent.config['current_state'] ??
+            initialComponent.config['currentState'],
+      );
+      debugPrint('DEBUG: Parsed formState: $formState');
       emit(
         DynamicTextFieldTagsSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(initialComponent.config),
+          inputConfig: inputConfig,
           styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-              FormStateEnum.fromString(
-                initialComponent.config['currentState'],
-              ) ??
-              FormStateEnum.base,
+          formState: formState,
           selectedTags: initialTags,
           textController: _textController,
           focusNode: _focusNode,
           isEditing: false,
           availableTags: availableTags,
+          states: initialComponent.states,
         ),
       );
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('DEBUG: _onInitialize error: $e\n$stack');
       emit(
         DynamicTextFieldTagsError(
           errorMessage: 'Failed to initialize TextFieldTags: $e',
@@ -285,8 +357,8 @@ class DynamicTextFieldTagsBloc
     bool isFinalizing = false,
   }) {
     final newState = newTags.isNotEmpty
-        ? FormStateEnum.success
-        : FormStateEnum.base;
+        ? ComponentStateEnum.success
+        : ComponentStateEnum.base;
 
     final updatedConfig = Map<String, dynamic>.from(
       currentState.component!.config,

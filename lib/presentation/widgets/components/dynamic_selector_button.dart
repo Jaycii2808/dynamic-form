@@ -1,8 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
@@ -65,6 +67,21 @@ class DynamicSelectorButton extends StatelessWidget {
     );
   }
 
+  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
+  }
+
   Widget _buildBody(
     BuildContext context,
     StyleConfig styleConfig,
@@ -78,11 +95,12 @@ class DynamicSelectorButton extends StatelessWidget {
         config['selected'] == true || config[ValueKeyEnum.value.key] == true;
     final isDisabled = config['disabled'] == true;
     final currentState =
-        FormStateEnum.fromString(inputConfig.currentState) ??
-        FormStateEnum.base;
+        ComponentStateEnum.fromString(inputConfig.currentState) ??
+        ComponentStateEnum.base;
 
-    if (component.states?.containsKey(currentState.value) == true) {
-      style.addAll(component.states![currentState.value]['style']);
+    final stateStyle = _getStateStyle(component.states, currentState.value);
+    if (stateStyle != null) {
+      style.addAll(stateStyle.toJson());
     }
 
     return Container(

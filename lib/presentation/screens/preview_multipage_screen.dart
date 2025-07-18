@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:flutter/material.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:dynamic_form_bi/core/enums/remote_button_config_key_enum.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';

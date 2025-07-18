@@ -1,5 +1,5 @@
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:equatable/equatable.dart';
@@ -9,7 +9,7 @@ abstract class DynamicTextFieldState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleConfig? styleConfig;
-  final FormStateEnum? formState;
+  final ComponentStateEnum? formState;
   final String? errorText;
   final String? errorMessage;
 
@@ -71,7 +71,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
     required DynamicFormModel super.component,
     required InputConfig super.inputConfig,
     required StyleConfig super.styleConfig,
-    required FormStateEnum super.formState,
+    required ComponentStateEnum super.formState,
     required TextEditingController super.textController,
     required FocusNode super.focusNode,
     super.errorText,
@@ -81,7 +81,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
     DynamicFormModel? component,
     InputConfig? inputConfig,
     StyleConfig? styleConfig,
-    FormStateEnum? formState,
+    ComponentStateEnum? formState,
     String? errorText,
   }) {
     return DynamicTextFieldSuccess(

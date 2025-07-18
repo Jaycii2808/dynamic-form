@@ -1,15 +1,15 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/form_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicCheckboxBloc
     extends Bloc<DynamicCheckboxEvent, DynamicCheckboxState> {
@@ -77,13 +77,14 @@ class DynamicCheckboxBloc
           isSelected: isSelected,
           isEditable: isEditable,
           focusNode: focusNode,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -127,13 +128,14 @@ class DynamicCheckboxBloc
           isSelected: event.value,
           formState: formState,
           errorText: errorText,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -189,13 +191,14 @@ class DynamicCheckboxBloc
           errorText: errorText,
           isSelected: isSelected,
           isEditable: isEditable,
-          backgroundColor: computedStyles['backgroundColor'],
-          borderColor: computedStyles['borderColor'],
-          borderWidth: computedStyles['borderWidth'],
-          iconColor: computedStyles['iconColor'],
-          controlWidth: computedStyles['controlWidth'],
-          controlHeight: computedStyles['controlHeight'],
-          controlBorderRadius: computedStyles['controlBorderRadius'],
+          backgroundColor:
+              computedStyles['backgroundColor'] ?? Colors.transparent,
+          borderColor: computedStyles['borderColor'] ?? Colors.grey,
+          borderWidth: computedStyles['borderWidth'] ?? 1.0,
+          iconColor: computedStyles['iconColor'] ?? Colors.white,
+          controlWidth: computedStyles['controlWidth'] ?? 40.0,
+          controlHeight: computedStyles['controlHeight'] ?? 40.0,
+          controlBorderRadius: computedStyles['controlBorderRadius'] ?? 8.0,
           leadingIconData: computedStyles['leadingIconData'],
         ),
       );
@@ -230,9 +233,12 @@ class DynamicCheckboxBloc
     );
   }
 
-  FormStateEnum _computeFormState(DynamicFormModel component, bool isSelected) {
+  ComponentStateEnum _computeFormState(
+    DynamicFormModel component,
+    bool isSelected,
+  ) {
     // Checkbox state logic: selected = success, unselected = base
-    return isSelected ? FormStateEnum.success : FormStateEnum.base;
+    return isSelected ? ComponentStateEnum.success : ComponentStateEnum.base;
   }
 
   String? _validateCheckbox(DynamicFormModel component, bool isSelected) {
@@ -244,43 +250,33 @@ class DynamicCheckboxBloc
     bool isSelected,
   ) {
     // Determine current state
-    final currentState = isSelected ? 'selected' : 'base';
+    final currentState = isSelected ? 'success' : 'base';
 
     // Build combined style
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
 
-    if (component.states != null &&
-        component.states!.containsKey(currentState)) {
-      final stateStyle =
-          component.states![currentState]['style'] as Map<String, dynamic>?;
-      if (stateStyle != null) style.addAll(stateStyle);
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+      component.states,
+      currentState,
+    );
+    if (stateStyle != null) {
+      style.addAll(stateStyle.toJson());
     }
+    return style;
+  }
 
-    // Compute style values
-    final backgroundColor = StyleUtils.parseColor(style['background_color']);
-    final borderColor = StyleUtils.parseColor(style['border_color']);
-    final borderWidth = (style['border_width'] as num?)?.toDouble() ?? 1.0;
-    final iconColor = StyleUtils.parseColor(style['icon_color']);
-    final controlWidth = (style['width'] as num?)?.toDouble() ?? 28;
-    final controlHeight = (style['height'] as num?)?.toDouble() ?? 28;
-    final controlBorderRadius =
-        (style['border_radius'] as num?)?.toDouble() ?? 4.0;
-
-    // Compute icon data
-    final String? iconName = component.config['icon'];
-    final IconData? leadingIconData = iconName != null
-        ? IconTypeEnum.fromString(iconName).toIconData()
-        : null;
-
-    return {
-      'backgroundColor': backgroundColor,
-      'borderColor': borderColor,
-      'borderWidth': borderWidth,
-      'iconColor': iconColor,
-      'controlWidth': controlWidth,
-      'controlHeight': controlHeight,
-      'controlBorderRadius': controlBorderRadius,
-      'leadingIconData': leadingIconData,
-    };
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 }
