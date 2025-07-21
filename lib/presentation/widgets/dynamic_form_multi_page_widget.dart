@@ -5,7 +5,6 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
-import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -57,41 +56,43 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     DynamicFormModel? nextButton = page.components
         .where(
           (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
-                  ButtonAction.nextPage.value,
-        )
+      component.type == FormTypeEnum.buttonFormType &&
+          component.config[ConfigEnum.action.value] ==
+              ButtonAction.nextPage.value,
+    )
         .map((component) => _toDynamicFormModel(component))
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
     DynamicFormModel? previousButton = page.components
         .where(
           (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
-                  ButtonAction.previousPage.value,
-        )
+      component.type == FormTypeEnum.buttonFormType &&
+          component.config[ConfigEnum.action.value] ==
+              ButtonAction.previousPage.value,
+    )
         .map((component) => _toDynamicFormModel(component))
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
     DynamicFormModel? previewButton = page.components
         .where(
           (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
-                  ButtonAction.previewForm.value,
-        )
+      component.type == FormTypeEnum.buttonFormType &&
+          component.config[ConfigEnum.action.value] ==
+              ButtonAction.previewForm.value,
+    )
         .map((component) => _toDynamicFormModel(component))
         .cast<DynamicFormModel?>()
         .firstWhere((b) => b != null, orElse: () => null);
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
-      final compositeValidation = button?.validation as CompositeValidation?;
-      if (compositeValidation?.buttonCondition?.conditions != null) {
-        for (final cond in compositeValidation!.buttonCondition!.conditions) {
-          if (cond.isRequired == true && cond.idComponent.isNotEmpty) {
-            requiredIds.add(cond.idComponent);
+      final validate = button?.config['validate'];
+      if (validate != null &&
+          validate is Map<String, dynamic> &&
+          validate['condition'] is List) {
+        for (final cond in validate['condition']) {
+          if (cond['is_required'] == true && cond['id_component'] != null) {
+            requiredIds.add(cond['id_component']);
           }
         }
       }
@@ -101,22 +102,22 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     final otherComponents = page.components
         .where(
           (component) =>
-              !(component.type == FormTypeEnum.buttonFormType &&
-                  (component.config[ConfigEnum.action.value] ==
-                          ButtonAction.submitForm.value ||
-                      component.config[ConfigEnum.action.value] ==
-                          ButtonAction.previousPage.value ||
-                      component.config[ConfigEnum.action.value] ==
-                          ButtonAction.nextPage.value ||
-                      component.config[ConfigEnum.action.value] ==
-                          ButtonAction.previewForm.value)),
-        )
+      !(component.type == FormTypeEnum.buttonFormType &&
+          (component.config[ConfigEnum.action.value] ==
+              ButtonAction.submitForm.value ||
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.previousPage.value ||
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.nextPage.value ||
+              component.config[ConfigEnum.action.value] ==
+                  ButtonAction.previewForm.value)),
+    )
         .map((component) {
-          final model = _toDynamicFormModel(component);
-          // Set is_required flag cho widget con
-          model.config['is_required'] = requiredIds.contains(model.id);
-          return model;
-        })
+      final model = _toDynamicFormModel(component);
+      // Set is_required flag cho widget con
+      model.config['is_required'] = requiredIds.contains(model.id);
+      return model;
+    })
         .toList();
 
     return Scaffold(
@@ -137,23 +138,23 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   }
 
   Widget _buildListViewWidget(
-    BuildContext context,
-    List<DynamicFormModel> otherComponents,
-    MultiPageFormState state,
-  ) {
+      BuildContext context,
+      List<DynamicFormModel> otherComponents,
+      MultiPageFormState state,
+      ) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 100.0),
       itemCount: otherComponents.length,
       itemBuilder: (context, index) {
         final componentModel = otherComponents[index];
         componentModel.config[ValueKeyEnum.value.key] =
-            allComponentValues[componentModel.id];
+        allComponentValues[componentModel.id];
 
         return DynamicFormRenderer(
           component: componentModel,
           onFieldChanged: (componentId, value) {
             final newValue =
-                value is Map && value.containsKey(ValueKeyEnum.value.key)
+            value is Map && value.containsKey(ValueKeyEnum.value.key)
                 ? value[ValueKeyEnum.value.key]
                 : value;
             context.read<MultiPageFormBloc>().add(
@@ -171,13 +172,13 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   }
 
   Widget _buildButtonsRowWidget(
-    BuildContext context,
-    DynamicFormModel? previousButton,
-    DynamicFormModel? nextButton,
-    DynamicFormModel? previewButton,
-    List<DynamicFormModel> otherComponents,
-    MultiPageFormState state,
-  ) {
+      BuildContext context,
+      DynamicFormModel? previousButton,
+      DynamicFormModel? nextButton,
+      DynamicFormModel? previewButton,
+      List<DynamicFormModel> otherComponents,
+      MultiPageFormState state,
+      ) {
     final multiPageBloc = context.read<MultiPageFormBloc>();
     if (previousButton == null && nextButton == null && previewButton == null) {
       return const SizedBox.shrink();
@@ -186,17 +187,17 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     bool isNextValid = nextButton == null
         ? true
         : _validateButtonConditions(
-            nextButton,
-            context,
-            showDialogOnError: false,
-          );
+      nextButton,
+      context,
+      showDialogOnError: false,
+    );
     bool isPreviousValid = previousButton == null
         ? true
         : _validateButtonConditions(
-            previousButton,
-            context,
-            showDialogOnError: false,
-          );
+      previousButton,
+      context,
+      showDialogOnError: false,
+    );
     // Removed isSubmitValid and submitButton logic
     return Positioned(
       bottom: 0,
@@ -222,21 +223,14 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           return;
                         }
 
-                        final compositeValidation =
-                            previousButton.validation as CompositeValidation?;
-                        final targetPage = compositeValidation
-                            ?.buttonCondition
-                            ?.conditions
-                            .firstWhere(
-                              (c) => c.idComponent == 'previous_page',
-                              orElse: () =>
-                                  const ButtonCondition(idComponent: ''),
-                            )
-                            .idComponent;
+                        final validate = previousButton.config['validate'];
+                        final targetPage = (validate is Map<String, dynamic>)
+                            ? validate['previous_page'] as String?
+                            : null;
 
                         if (targetPage != null) {
                           final targetIndex = state.formModel?.pages.indexWhere(
-                            (p) => p.pageId == targetPage,
+                                (p) => p.pageId == targetPage,
                           );
                           if (targetIndex != null && targetIndex >= 0) {
                             multiPageBloc.add(
@@ -290,14 +284,14 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                       List<DynamicFormPageModel> dynamicPages = allPages
                           .map(
                             (page) => DynamicFormPageModel(
-                              pageId: page.pageId,
-                              title: page.title,
-                              order: page.order,
-                              components: page.components
-                                  .map((comp) => _toDynamicFormModel(comp))
-                                  .toList(),
-                            ),
-                          )
+                          pageId: page.pageId,
+                          title: page.title,
+                          order: page.order,
+                          components: page.components
+                              .map((comp) => _toDynamicFormModel(comp))
+                              .toList(),
+                        ),
+                      )
                           .toList();
                       await Navigator.push(
                         context,
@@ -323,35 +317,42 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   }
 
   bool _validateButtonConditions(
-    DynamicFormModel button,
-    BuildContext context, {
-    bool showDialogOnError = true,
-  }) {
-    final compositeValidation = button.validation as CompositeValidation?;
-    final conditions = compositeValidation?.buttonCondition?.conditions ?? [];
+      DynamicFormModel button,
+      BuildContext context, {
+        bool showDialogOnError = true,
+      }) {
+    final validate = button.config['validate'];
+    final conditions =
+    (validate != null &&
+        validate is Map<String, dynamic> &&
+        validate['condition'] is List)
+        ? validate['condition'] as List
+        : [];
     debugPrint(
       'Validating button: ${button.id}, conditions: ${conditions.length}',
     );
     final List<String> errors = [];
     for (final cond in conditions) {
-      final id = cond.idComponent;
+      final id = cond['id_component'];
       final value = allComponentValues[id];
       debugPrint(
         'Checking condition for component: $id, value: $value, cond: $cond',
       );
-      if (cond.isRequired == true &&
+      if (cond['is_required'] == true &&
           (value == null ||
               (value is bool
                   ? value == false
                   : value.toString().trim().isEmpty))) {
-        errors.add(cond.errorMessage ?? 'Required');
-      } else if (cond.regex?.isNotEmpty == true) {
-        final regex = RegExp(cond.regex!);
+        errors.add(cond['error_message']?.toString() ?? 'Required');
+      } else if ((cond['regex'] ?? '').toString().isNotEmpty) {
+        final regex = RegExp(cond['regex']);
         if (value != null &&
             value.toString().isNotEmpty &&
             !regex.hasMatch(value.toString())) {
           errors.add(
-            cond.regexError ?? cond.errorMessage ?? 'Invalid format',
+            cond['regex_error']?.toString() ??
+                cond['error_message']?.toString() ??
+                'Invalid format',
           );
         }
       }
@@ -384,24 +385,23 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   }
 
   DynamicFormModel _toDynamicFormModel(
-    FormComponentMultiPageModel componentModel,
-  ) {
+      FormComponentMultiPageModel componentModel,
+      ) {
     return DynamicFormModel(
       id: componentModel.id,
       type: componentModel.type,
       order: componentModel.order,
       config: Map<String, dynamic>.from(componentModel.config),
       style: componentModel.style,
-      validation:
-          componentModel.validation ?? componentModel.config['validate'],
+      validation: null, // Set to null for now, handle validation separately
       children: const [],
     );
   }
 
   void _handlePreviewFormAction(
-    BuildContext context,
-    MultiPageFormState state,
-  ) async {
+      BuildContext context,
+      MultiPageFormState state,
+      ) async {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

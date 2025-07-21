@@ -122,7 +122,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                     order: comp.order,
                     config: Map<String, dynamic>.from(comp.config),
                     style: Map<String, dynamic>.from(comp.style),
-                    validation: ValidationFactory.fromJson(comp.validation),
+                    validation: null,
                     children: const [],
                   );
                 }).toList(),
