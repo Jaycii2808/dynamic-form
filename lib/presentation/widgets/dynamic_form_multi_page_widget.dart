@@ -5,7 +5,6 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
-import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -87,11 +86,13 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
-      final compositeValidation = button?.validation as CompositeValidation?;
-      if (compositeValidation?.buttonCondition?.conditions != null) {
-        for (final cond in compositeValidation!.buttonCondition!.conditions) {
-          if (cond.isRequired == true && cond.idComponent.isNotEmpty) {
-            requiredIds.add(cond.idComponent);
+      final validate = button?.config['validate'];
+      if (validate != null &&
+          validate is Map<String, dynamic> &&
+          validate['condition'] is List) {
+        for (final cond in validate['condition']) {
+          if (cond['is_required'] == true && cond['id_component'] != null) {
+            requiredIds.add(cond['id_component']);
           }
         }
       }
@@ -222,17 +223,10 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           return;
                         }
 
-                        final compositeValidation =
-                            previousButton.validation as CompositeValidation?;
-                        final targetPage = compositeValidation
-                            ?.buttonCondition
-                            ?.conditions
-                            .firstWhere(
-                              (c) => c.idComponent == 'previous_page',
-                              orElse: () =>
-                                  const ButtonCondition(idComponent: ''),
-                            )
-                            .idComponent;
+                        final validate = previousButton.config['validate'];
+                        final targetPage = (validate is Map<String, dynamic>)
+                            ? validate['previous_page'] as String?
+                            : null;
 
                         if (targetPage != null) {
                           final targetIndex = state.formModel?.pages.indexWhere(
@@ -327,31 +321,38 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context, {
     bool showDialogOnError = true,
   }) {
-    final compositeValidation = button.validation as CompositeValidation?;
-    final conditions = compositeValidation?.buttonCondition?.conditions ?? [];
+    final validate = button.config['validate'];
+    final conditions =
+        (validate != null &&
+            validate is Map<String, dynamic> &&
+            validate['condition'] is List)
+        ? validate['condition'] as List
+        : [];
     debugPrint(
       'Validating button: ${button.id}, conditions: ${conditions.length}',
     );
     final List<String> errors = [];
     for (final cond in conditions) {
-      final id = cond.idComponent;
+      final id = cond['id_component'];
       final value = allComponentValues[id];
       debugPrint(
         'Checking condition for component: $id, value: $value, cond: $cond',
       );
-      if (cond.isRequired == true &&
+      if (cond['is_required'] == true &&
           (value == null ||
               (value is bool
                   ? value == false
                   : value.toString().trim().isEmpty))) {
-        errors.add(cond.errorMessage ?? 'Required');
-      } else if (cond.regex?.isNotEmpty == true) {
-        final regex = RegExp(cond.regex!);
+        errors.add(cond['error_message']?.toString() ?? 'Required');
+      } else if ((cond['regex'] ?? '').toString().isNotEmpty) {
+        final regex = RegExp(cond['regex']);
         if (value != null &&
             value.toString().isNotEmpty &&
             !regex.hasMatch(value.toString())) {
           errors.add(
-            cond.regexError ?? cond.errorMessage ?? 'Invalid format',
+            cond['regex_error']?.toString() ??
+                cond['error_message']?.toString() ??
+                'Invalid format',
           );
         }
       }
@@ -392,8 +393,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       order: componentModel.order,
       config: Map<String, dynamic>.from(componentModel.config),
       style: componentModel.style,
-      validation:
-          componentModel.validation ?? componentModel.config['validate'],
+      validation: null, // Set to null for now, handle validation separately
       children: const [],
     );
   }
