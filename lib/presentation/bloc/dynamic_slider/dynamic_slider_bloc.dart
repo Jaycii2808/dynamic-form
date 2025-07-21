@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_state.dart';
 import 'package:flutter/material.dart';
@@ -349,25 +350,19 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     final bool isDisabled = config['disabled'] == true;
 
     // Apply variants to style
-    if (component.variants != null) {
-      if (hint != null && component.variants!.containsKey('with_hint')) {
-        final variantStyle =
-            component.variants!['with_hint']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (iconName != null && component.variants!.containsKey('with_icon')) {
-        final variantStyle =
-            component.variants!['with_icon']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-      if (thumbIconName != null &&
-          component.variants!.containsKey('with_thumb_icon')) {
-        final variantStyle =
-            component.variants!['with_thumb_icon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
-      }
-    }
+    final withHintStyle =
+        component.variants?.getByKey('with_hint')?.style
+            as Map<String, dynamic>?;
+    final withIconStyle =
+        component.variants?.getByKey('with_icon')?.style
+            as Map<String, dynamic>?;
+    final withThumbIconStyle =
+        component.variants?.getByKey('with_thumb_icon')?.style
+            as Map<String, dynamic>?;
+
+    if (withHintStyle != null) style.addAll(withHintStyle);
+    if (withIconStyle != null) style.addAll(withIconStyle);
+    if (withThumbIconStyle != null) style.addAll(withThumbIconStyle);
 
     // Compute thumb icon
     final IconData? thumbIcon = thumbIconName != null
@@ -416,7 +411,10 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     );
   }
 
-  ComponentStateEnum _computeFormState(DynamicFormModel component, dynamic value) {
+  ComponentStateEnum _computeFormState(
+    DynamicFormModel component,
+    dynamic value,
+  ) {
     final validationError = _validateSlider(component, value);
 
     if (validationError != null && validationError.isNotEmpty) {

@@ -12,6 +12,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropd
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {
@@ -533,21 +534,20 @@ class DynamicDropdownBloc
     Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
 
     // Always apply variant with_icon if icon exists
+    final withIconStyle =
+        component.variants?.getByKey('with_icon')?.style
+            as Map<String, dynamic>?;
     if ((triggerIcon != null || style['icon'] != null) &&
-        component.variants != null &&
-        component.variants!.containsKey('with_icon')) {
-      final variantStyle =
-          component.variants!['with_icon']['style'] as Map<String, dynamic>?;
-      if (variantStyle != null) style.addAll(variantStyle);
+        withIconStyle != null) {
+      style.addAll(withIconStyle);
     }
 
     // Apply variant with_avatar if avatar exists
-    if (triggerAvatar != null &&
-        component.variants != null &&
-        component.variants!.containsKey('with_avatar')) {
-      final variantStyle =
-          component.variants!['with_avatar']['style'] as Map<String, dynamic>?;
-      if (variantStyle != null) style.addAll(variantStyle);
+    final withAvatarStyle =
+        component.variants?.getByKey('with_avatar')?.style
+            as Map<String, dynamic>?;
+    if (triggerAvatar != null && withAvatarStyle != null) {
+      style.addAll(withAvatarStyle);
     }
 
     // Apply state style if available

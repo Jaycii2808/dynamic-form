@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
@@ -85,12 +86,13 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     BuildContext context,
   ) {
     final combinedStyle = Map<String, dynamic>.from(component.style);
-    if (component.variants?.containsKey('range') == true) {
-      combinedStyle.addAll(component.variants!['range']['style']);
+    if (component.variants?.getByKey('range')?.style != null) {
+      combinedStyle.addAll(component.variants!.getByKey('range')!.style!);
     }
 
-    final currentState =
-        ComponentStateEnum.fromString(inputConfig.currentState) ;
+    final currentState = ComponentStateEnum.fromString(
+      inputConfig.currentState,
+    );
     final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
       currentState.value,

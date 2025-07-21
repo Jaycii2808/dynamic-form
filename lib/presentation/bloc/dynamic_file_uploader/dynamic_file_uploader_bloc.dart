@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_state.dart';
 import 'package:file_picker/file_picker.dart';
@@ -394,26 +395,30 @@ class DynamicFileUploaderBloc
 
     // Compute styles
     final Map<String, dynamic> baseStyle = Map.from(component.style);
-    final Map<String, dynamic> variantStyle = isDragging
-        ? Map.from(component.variants?['dragging']?['style'] ?? {})
-        : {};
+    final Map<String, dynamic>? variantStyle = isDragging
+        ? component.variants?.getByKey('dragging')?.style
+        : null;
     final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
       currentState,
     );
     final Map<String, dynamic> stateStyle =
         stateStyleStatesModel?.toJson() ?? {};
-    final computedStyle = {...baseStyle, ...variantStyle, ...stateStyle};
+    final computedStyle = {
+      ...baseStyle,
+      if (variantStyle != null) ...variantStyle,
+      ...stateStyle,
+    };
 
     // Compute config
     final Map<String, dynamic> baseConfig = Map.from(component.config);
-    final Map<String, dynamic> variantConfig = isDragging
-        ? Map.from(component.variants?['dragging']?['config'] ?? {})
-        : {};
+    final Map<String, dynamic>? variantConfig = isDragging
+        ? component.variants?.getByKey('dragging')?.config
+        : null;
     // Remove stateConfig from states as a map
     final Map<String, dynamic> computedConfig = {
       ...baseConfig,
-      ...variantConfig,
+      if (variantConfig != null) ...variantConfig,
     };
 
     // Compute event handler flags

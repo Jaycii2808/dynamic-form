@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
@@ -85,12 +86,10 @@ class _DynamicButtonState extends State<DynamicButton> {
     // Apply variant styles
     if (_currentComponent.variants != null) {
       final variant = _config['variant']?.toString() ?? 'primary';
-      if (_currentComponent.variants!.containsKey(variant)) {
-        final variantStyle =
-            _currentComponent.variants![variant]['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) _style.addAll(variantStyle);
-      }
+      final variantStyle =
+          _currentComponent.variants?.getByKey(variant)?.style
+              as Map<String, dynamic>?;
+      if (variantStyle != null) _style.addAll(variantStyle);
     }
 
     // Apply state styles

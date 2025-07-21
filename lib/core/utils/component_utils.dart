@@ -5,6 +5,9 @@ import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+
+// XÓA extension VariantsModelExt ở đây, chỉ giữ ở variants_model.dart
 
 class ComponentUtils {
   /// Create updated DynamicFormModel with new config - clean and safe
@@ -35,9 +38,7 @@ class ComponentUtils {
       config: Map<String, dynamic>.from(component.config),
       style: Map<String, dynamic>.from(component.style),
       inputTypes: component.inputTypes, // just reference, since it's immutable
-      variants: component.variants != null
-          ? Map<String, dynamic>.from(component.variants!)
-          : null,
+      variants: component.variants, // Đúng kiểu VariantsModel
       states: component.states, // assign as is, do not clone as Map
       validation: component.validation != null
           ? ValidationFactory.fromJson(component.validation!.toJson())
@@ -71,11 +72,8 @@ class ComponentUtils {
     final style = Map<String, dynamic>.from(component.style);
 
     // Apply variant style if exists
-    if (variant != null &&
-        component.variants != null &&
-        component.variants!.containsKey(variant)) {
-      final variantStyle =
-          component.variants![variant]['style'] as Map<String, dynamic>?;
+    if (variant != null && component.variants != null) {
+      final variantStyle = component.variants!.getByKey(variant)?.style;
       if (variantStyle != null) {
         style.addAll(variantStyle);
       }
@@ -244,12 +242,9 @@ class ComponentUtils {
     // Apply conditional variants based on component configuration
     if (component.variants != null && conditionalVariants != null) {
       for (final variantKey in conditionalVariants) {
-        if (component.variants!.containsKey(variantKey)) {
-          final variantStyle =
-              component.variants![variantKey]['style'] as Map<String, dynamic>?;
-          if (variantStyle != null) {
-            style.addAll(variantStyle);
-          }
+        final variantStyle = component.variants!.getByKey(variantKey)?.style;
+        if (variantStyle != null) {
+          style.addAll(variantStyle);
         }
       }
     }
@@ -258,40 +253,29 @@ class ComponentUtils {
     if (component.variants != null) {
       // Icon variants
       if ((config['icon'] != null || style['icon'] != null) &&
-          component.variants!.containsKey('with_icon')) {
-        final variantStyle =
-            component.variants!['with_icon']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          component.variants!.withIcon?.style != null) {
+        style.addAll(component.variants!.withIcon!.style!);
       }
 
       // Label variants
       final hasLabel =
           config['label'] != null && config['label'].toString().isNotEmpty;
-      if (hasLabel && component.variants!.containsKey('with_label')) {
-        final variantStyle =
-            component.variants!['with_label']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+      if (hasLabel && component.variants!.withLabel?.style != null) {
+        style.addAll(component.variants!.withLabel!.style!);
       } else if (!hasLabel &&
-          component.variants!.containsKey('without_label')) {
-        final variantStyle =
-            component.variants!['without_label']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          component.variants!.getByKey('without_label')?.style != null) {
+        style.addAll(component.variants!.getByKey('without_label')!.style!);
       }
 
       // Multiple/searchable variants for select/dropdown
       if (config['multiple'] == true &&
-          component.variants!.containsKey('multiple')) {
-        final variantStyle =
-            component.variants!['multiple']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          component.variants!.multiple?.style != null) {
+        style.addAll(component.variants!.multiple!.style!);
       }
 
       if (config['searchable'] == true &&
-          component.variants!.containsKey('searchable')) {
-        final variantStyle =
-            component.variants!['searchable']['style'] as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          component.variants!.searchable?.style != null) {
+        style.addAll(component.variants!.searchable!.style!);
       }
     }
 

@@ -148,7 +148,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             'background_color': '#000000',
           },
           inputTypes: InputTypesModel(),
-          variants: {},
+          variants: null,
           states: null, // Do not assign a Map here
           validation: null,
           children: null,

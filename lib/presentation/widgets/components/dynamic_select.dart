@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -301,32 +302,20 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
     // Apply variant styles
     if (state.component!.variants != null) {
       if (state.component!.config['label'] != null &&
-          state.component!.variants!.containsKey('with_label')) {
-        final variantStyle =
-            state.component!.variants!['with_label']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          state.component!.variants?.withLabel?.style != null) {
+        style.addAll(state.component!.variants!.withLabel!.style!);
       }
       if (state.component!.config['icon'] != null &&
-          state.component!.variants!.containsKey('with_icon')) {
-        final variantStyle =
-            state.component!.variants!['with_icon']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          state.component!.variants?.withIcon?.style != null) {
+        style.addAll(state.component!.variants!.withIcon!.style!);
       }
       if (state.isMultiple &&
-          state.component!.variants!.containsKey('multiple')) {
-        final variantStyle =
-            state.component!.variants!['multiple']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          state.component!.variants?.multiple?.style != null) {
+        style.addAll(state.component!.variants!.multiple!.style!);
       }
       if (state.isSearchable &&
-          state.component!.variants!.containsKey('searchable')) {
-        final variantStyle =
-            state.component!.variants!['searchable']['style']
-                as Map<String, dynamic>?;
-        if (variantStyle != null) style.addAll(variantStyle);
+          state.component!.variants?.searchable?.style != null) {
+        style.addAll(state.component!.variants!.searchable!.style!);
       }
     }
 
