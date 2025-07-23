@@ -303,19 +303,19 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
     if (state.component!.variants != null) {
       if (state.component!.config['label'] != null &&
           state.component!.variants?.withLabel?.style != null) {
-        style.addAll(state.component!.variants!.withLabel!.style!);
+        style.addAll(state.component!.variants!.withLabel!.style!.toJson());
       }
       if (state.component!.config['icon'] != null &&
           state.component!.variants?.withIcon?.style != null) {
-        style.addAll(state.component!.variants!.withIcon!.style!);
+        style.addAll(state.component!.variants!.withIcon!.style!.toJson());
       }
       if (state.isMultiple &&
           state.component!.variants?.multiple?.style != null) {
-        style.addAll(state.component!.variants!.multiple!.style!);
+        style.addAll(state.component!.variants!.multiple!.style!.toJson());
       }
       if (state.isSearchable &&
           state.component!.variants?.searchable?.style != null) {
-        style.addAll(state.component!.variants!.searchable!.style!);
+        style.addAll(state.component!.variants!.searchable!.style!.toJson());
       }
     }
 

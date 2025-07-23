@@ -1,20 +1,27 @@
+import '../states/style_states_model.dart';
+import '../input_types/input_types_model.dart';
+
 class VariantItemModel {
-  final Map<String, dynamic>? style;
-  final Map<String, dynamic>? config;
+  final StyleStatesModel? style;
+  final InputTypesModel? config;
 
   VariantItemModel({this.style, this.config});
 
   factory VariantItemModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return VariantItemModel();
     return VariantItemModel(
-      style: json['style'] as Map<String, dynamic>?,
-      config: json['config'] as Map<String, dynamic>?,
+      style: json['style'] != null
+          ? StyleStatesModel.fromJson(json['style'] as Map<String, dynamic>?)
+          : null,
+      config: json['config'] != null
+          ? InputTypesModel.fromJson(json['config'] as Map<String, dynamic>?)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    if (style != null) 'style': style,
-    if (config != null) 'config': config,
+    if (style != null) 'style': style!.toJson(),
+    if (config != null) 'config': config!.toJson(),
   };
 }
 

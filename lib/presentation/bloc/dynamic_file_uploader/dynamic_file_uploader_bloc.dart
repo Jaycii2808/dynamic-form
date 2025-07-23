@@ -396,7 +396,7 @@ class DynamicFileUploaderBloc
     // Compute styles
     final Map<String, dynamic> baseStyle = Map.from(component.style);
     final Map<String, dynamic>? variantStyle = isDragging
-        ? component.variants?.getByKey('dragging')?.style
+        ? component.variants?.getByKey('dragging')?.style?.toJson()
         : null;
     final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
@@ -413,7 +413,7 @@ class DynamicFileUploaderBloc
     // Compute config
     final Map<String, dynamic> baseConfig = Map.from(component.config);
     final Map<String, dynamic>? variantConfig = isDragging
-        ? component.variants?.getByKey('dragging')?.config
+        ? component.variants?.getByKey('dragging')?.config?.toJson()
         : null;
     // Remove stateConfig from states as a map
     final Map<String, dynamic> computedConfig = {

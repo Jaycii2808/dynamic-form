@@ -87,7 +87,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   ) {
     final combinedStyle = Map<String, dynamic>.from(component.style);
     if (component.variants?.getByKey('range')?.style != null) {
-      combinedStyle.addAll(component.variants!.getByKey('range')!.style!);
+      combinedStyle.addAll(
+        component.variants!.getByKey('range')!.style!.toJson(),
+      );
     }
 
     final currentState = ComponentStateEnum.fromString(

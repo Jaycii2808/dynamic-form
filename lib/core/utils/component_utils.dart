@@ -75,7 +75,7 @@ class ComponentUtils {
     if (variant != null && component.variants != null) {
       final variantStyle = component.variants!.getByKey(variant)?.style;
       if (variantStyle != null) {
-        style.addAll(variantStyle);
+        style.addAll(variantStyle.toJson());
       }
     }
 
@@ -244,7 +244,7 @@ class ComponentUtils {
       for (final variantKey in conditionalVariants) {
         final variantStyle = component.variants!.getByKey(variantKey)?.style;
         if (variantStyle != null) {
-          style.addAll(variantStyle);
+          style.addAll(variantStyle.toJson());
         }
       }
     }
@@ -254,28 +254,30 @@ class ComponentUtils {
       // Icon variants
       if ((config['icon'] != null || style['icon'] != null) &&
           component.variants!.withIcon?.style != null) {
-        style.addAll(component.variants!.withIcon!.style!);
+        style.addAll(component.variants!.withIcon!.style!.toJson());
       }
 
       // Label variants
       final hasLabel =
           config['label'] != null && config['label'].toString().isNotEmpty;
       if (hasLabel && component.variants!.withLabel?.style != null) {
-        style.addAll(component.variants!.withLabel!.style!);
+        style.addAll(component.variants!.withLabel!.style!.toJson());
       } else if (!hasLabel &&
           component.variants!.getByKey('without_label')?.style != null) {
-        style.addAll(component.variants!.getByKey('without_label')!.style!);
+        style.addAll(
+          component.variants!.getByKey('without_label')!.style!.toJson(),
+        );
       }
 
       // Multiple/searchable variants for select/dropdown
       if (config['multiple'] == true &&
           component.variants!.multiple?.style != null) {
-        style.addAll(component.variants!.multiple!.style!);
+        style.addAll(component.variants!.multiple!.style!.toJson());
       }
 
       if (config['searchable'] == true &&
           component.variants!.searchable?.style != null) {
-        style.addAll(component.variants!.searchable!.style!);
+        style.addAll(component.variants!.searchable!.style!.toJson());
       }
     }
 
