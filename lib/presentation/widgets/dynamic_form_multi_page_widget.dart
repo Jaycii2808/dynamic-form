@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -116,7 +117,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .map((component) {
           final model = _toDynamicFormModel(component);
           // Set is_required flag cho widget con
-          model.config['is_required'] = requiredIds.contains(model.id);
+          model.config[ValueKeyEnum.value.key] = allComponentValues[model.id];
           return model;
         })
         .toList();
@@ -388,19 +389,21 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   DynamicFormModel _toDynamicFormModel(
     FormComponentMultiPageModel componentModel,
   ) {
+    dynamic styleData = componentModel.style;
+    if (styleData is StyleStatesModel) {
+      styleData = styleData.toJson();
+    }
     return DynamicFormModel(
       id: componentModel.id,
       type: componentModel.type,
       order: componentModel.order,
       config: Map<String, dynamic>.from(componentModel.config),
-      style: componentModel.style == null
+      style: styleData == null
           ? StyleModel()
-          : (componentModel.style is StyleModel
-                ? componentModel.style as StyleModel
-                : (componentModel.style is Map<String, dynamic>
-                      ? StyleModel.fromJson(
-                          componentModel.style as Map<String, dynamic>,
-                        )
+          : (styleData is StyleModel
+                ? styleData as StyleModel
+                : (styleData is Map<String, dynamic>
+                      ? StyleModel.fromJson(styleData as Map<String, dynamic>)
                       : StyleModel())),
       validation: null, // Set to null for now, handle validation separately
       children: const [],

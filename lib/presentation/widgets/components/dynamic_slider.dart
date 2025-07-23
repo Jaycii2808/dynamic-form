@@ -11,6 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:collection/collection.dart';
 
 class DynamicSlider extends StatefulWidget {
   final DynamicFormModel component;
@@ -24,7 +25,9 @@ class DynamicSlider extends StatefulWidget {
 class _DynamicSliderState extends State<DynamicSlider> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
+    // Use a unique key for BlocProvider to avoid unnecessary rebuilds
+    return BlocProvider<DynamicSliderBloc>(
+      key: ValueKey(widget.component.id),
       create: (context) =>
           DynamicSliderBloc(initialComponent: widget.component)
             ..add(const InitializeSliderEvent()),
@@ -52,17 +55,21 @@ class DynamicSliderWidget extends StatelessWidget {
             orElse: () => component,
           );
 
-          // Check if component changed from external source
-          if (updatedComponent.config['value'] != component.config['value'] ||
-              updatedComponent.config['values'] != component.config['values'] ||
+          // Use deep equality for lists
+          final listEquals = const DeepCollectionEquality().equals;
+          final oldValues = component.config['values'];
+          final newValues = updatedComponent.config['values'];
+
+          final shouldUpdate =
+              updatedComponent.config['value'] != component.config['value'] ||
+              (!listEquals(newValues, oldValues)) ||
               updatedComponent.config['disabled'] !=
                   component.config['disabled'] ||
               updatedComponent.config['error_text'] !=
-                  component.config['error_text']) {
-            debugPrint(
-              '🔄 [Slider] External change detected',
-            );
+                  component.config['error_text'];
 
+          if (shouldUpdate) {
+            debugPrint('🔄 [Slider] External change detected');
             context.read<DynamicSliderBloc>().add(
               UpdateSliderFromExternalEvent(component: updatedComponent),
             );

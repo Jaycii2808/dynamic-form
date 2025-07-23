@@ -28,6 +28,21 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     on<ComputeSliderThemeEvent>(_onComputeTheme);
   }
 
+  double? _parseDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  int? _parseInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   @override
   Future<void> close() {
     focusNode.dispose();
@@ -55,8 +70,8 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
         final values = initialComponent.config['values'];
         if (values is List && values.length == 2) {
           sliderRangeValues = RangeValues(
-            (values[0] as num).toDouble(),
-            (values[1] as num).toDouble(),
+            _parseDouble(values[0]) ?? computedData['min'] as double,
+            _parseDouble(values[1]) ?? computedData['max'] as double,
           );
         } else {
           sliderRangeValues = RangeValues(
@@ -66,9 +81,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
         }
       } else {
         final value = initialComponent.config['value'];
-        sliderValue = value is num
-            ? value.toDouble()
-            : computedData['min'] as double;
+        sliderValue = _parseDouble(value) ?? computedData['min'] as double;
       }
 
       final formState = _computeFormState(
@@ -246,15 +259,13 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
         final values = event.component.config['values'];
         if (values is List && values.length == 2) {
           sliderRangeValues = RangeValues(
-            (values[0] as num).toDouble(),
-            (values[1] as num).toDouble(),
+            _parseDouble(values[0]) ?? computedData['min'] as double,
+            _parseDouble(values[1]) ?? computedData['max'] as double,
           );
         }
       } else {
         final value = event.component.config['value'];
-        if (value is num) {
-          sliderValue = value.toDouble();
-        }
+        sliderValue = _parseDouble(value) ?? computedData['min'] as double;
       }
 
       final formState = _computeFormState(
@@ -340,9 +351,9 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     Map<String, dynamic> style = component.style.toJson();
 
     final bool isRange = config['range'] == true;
-    final double min = (config['min'] as num?)?.toDouble() ?? 0;
-    final double max = (config['max'] as num?)?.toDouble() ?? 100;
-    final int? divisions = (config['divisions'] as num?)?.toInt();
+    final double min = _parseDouble(config['min']) ?? 0;
+    final double max = _parseDouble(config['max']) ?? 100;
+    final int? divisions = _parseInt(config['divisions']);
     final String prefix = config['prefix']?.toString() ?? '';
     final String? hint = config['hint'] as String?;
     final String? iconName = config['icon'] as String?;
