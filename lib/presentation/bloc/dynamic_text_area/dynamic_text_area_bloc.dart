@@ -72,7 +72,7 @@ class DynamicTextAreaBloc
         DynamicTextAreaSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(configState),
           textController: _textController,
           focusNode: _focusNode,
@@ -139,7 +139,7 @@ class DynamicTextAreaBloc
           component: updatedComponent,
           errorText: validationError,
           inputConfig: InputConfig.fromJson(updatedComponent.config),
-          styleConfig: StyleConfig.fromJson(updatedComponent.style),
+          styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(configState),
           textController: _textController,
           focusNode: _focusNode,

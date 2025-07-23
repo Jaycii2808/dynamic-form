@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynami
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicTextFieldTags extends StatelessWidget {
   final DynamicFormModel component;
@@ -70,14 +71,16 @@ class DynamicTextFieldTags extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(
           color: StyleUtils.parseColor(
-            state.component!.style['border_color'] ?? '#6979F8',
+            state.component!.style.toJson()['border_color'] ?? '#6979F8',
           ),
           width:
-              (state.component!.style['border_width'] as num?)?.toDouble() ??
+              (state.component!.style.toJson()['border_width'] as num?)
+                  ?.toDouble() ??
               1.5,
         ),
         borderRadius: StyleUtils.parseBorderRadius(
-          state.component!.style['border_radius'] as int?,
+          (state.component!.style.toJson()['border_radius'] as num?)
+              ?.toDouble(),
         ),
         color: style.fillColor,
       ),
@@ -229,10 +232,11 @@ class DynamicTextFieldTags extends StatelessWidget {
   Widget _buildTagChip(
     BuildContext context,
     String tag,
-    Map<String, dynamic> style,
+    StyleModel styleModel,
     bool isDisabled, {
     bool allowRemoval = true,
   }) {
+    final style = styleModel.toJson();
     return Chip(
       label: Text(
         tag,

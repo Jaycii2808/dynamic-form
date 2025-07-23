@@ -86,7 +86,7 @@ class DynamicSwitch extends StatelessWidget {
     InputConfig inputConfig,
     DynamicFormModel component,
   ) {
-    final style = Map<String, dynamic>.from(component.style);
+    final style = component.style.toJson();
     final config = component.config;
 
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;

@@ -242,26 +242,19 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
     final containerContent = Container(
       key: Key(component.id),
-      margin: StyleUtils.parsePadding(style['margin']),
-      padding: StyleUtils.parsePadding(style['padding']),
+      margin: StyleUtils.parsePadding(style.margin),
+      padding: StyleUtils.parsePadding(style.padding),
       decoration: BoxDecoration(
-        color: StyleUtils.parseColor(style['background_color']),
-        border: style['border_color'] != null
-            ? Border.all(
-                color: StyleUtils.parseColor(style['border_color']),
-                width: ComponentUtils.getStyleValue<num>(
-                  style,
-                  'border_width',
-                  1.0,
-                ).toDouble(),
-              )
+        color: StyleUtils.parseColor(style.backgroundColor),
+        border: style.borderColor != null
+            ? Border.all(color: StyleUtils.parseColor(style.borderColor))
             : null,
-        borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
+        borderRadius: StyleUtils.parseBorderRadius(style.borderRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (label.isNotEmpty) _buildLabel(label, style),
+          if (label.isNotEmpty) _buildLabel(label, style.toJson()),
 
           if (component.children != null)
             ...component.children!.map(
@@ -294,8 +287,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: Text(
         label,
         style: TextStyle(
-          color: StyleUtils.parseColor(style['label_color']),
-          fontSize: StyleUtils.parseFontSize(style['font_size']),
+          color: StyleUtils.parseColor(style['labelColor']),
+          fontSize: style['labelTextSize'] ?? 16,
           fontWeight: FontWeight.bold,
         ),
       ),

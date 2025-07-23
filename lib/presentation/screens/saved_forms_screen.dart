@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_mult
 import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class SavedFormsScreen extends StatefulWidget {
   const SavedFormsScreen({super.key});
@@ -121,7 +122,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                     type: comp.type,
                     order: comp.order,
                     config: Map<String, dynamic>.from(comp.config),
-                    style: Map<String, dynamic>.from(comp.style),
+                    style: StyleModel.fromJson(comp.style),
                     validation: null,
                     children: const [],
                   );

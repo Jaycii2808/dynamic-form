@@ -44,11 +44,10 @@ class DynamicSelectorButtonBloc
         DynamicSelectorButtonSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
-          formState:
-              ComponentStateEnum.fromString(
-                initialComponent.config['currentState'],
-              ) ,
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
+          formState: ComponentStateEnum.fromString(
+            initialComponent.config['currentState'],
+          ),
         ),
       );
     } catch (e, stackTrace) {
@@ -103,7 +102,7 @@ class DynamicSelectorButtonBloc
       DynamicSelectorButtonSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style),
+        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
         formState: newState,
       ),
     );

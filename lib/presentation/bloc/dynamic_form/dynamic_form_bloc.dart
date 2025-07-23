@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -139,14 +140,14 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
                 ? (event.value as Map)['error_text']
                 : null,
           },
-          style: {
+          style: StyleModel.fromJson({
             'padding': '10px 12px',
             'border_color': '#888888',
             'border_radius': 6,
             'font_size': 15,
             'color': '#e0e0e0',
             'background_color': '#000000',
-          },
+          }),
           inputTypes: InputTypesModel(),
           variants: null,
           states: null, // Do not assign a Map here

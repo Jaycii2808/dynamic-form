@@ -4,15 +4,17 @@ import 'package:equatable/equatable.dart';
 import '../validation/validation_models.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicFormModel extends Equatable {
   final String id;
   final FormTypeEnum type;
   final int order;
   final Map<String, dynamic> config;
-  final Map<String, dynamic> style;
+  final StyleModel style;
   final InputTypesModel? inputTypes; // changed
-  final VariantsModel? variants;
+  final VariantsModel?
+  variants; //use style and config from inputTypes and States
   final StatesModel? states; // changed
   final BaseValidation? validation;
   final List<DynamicFormModel>? children;
@@ -36,7 +38,7 @@ class DynamicFormModel extends Equatable {
       type: FormTypeEnum.fromJson(json['type']),
       order: json['order'] ?? 0,
       config: json['config'] ?? {},
-      style: json['style'] ?? {},
+      style: StyleModel.fromJson(json['style']),
       inputTypes: InputTypesModel.fromJson(
         json['input_types'],
       ),
@@ -71,7 +73,7 @@ class DynamicFormModel extends Equatable {
       'type': type.toJson(),
       'order': order,
       'config': config,
-      'style': style,
+      'style': style.toJson(),
     };
 
     if (inputTypes != null) result['input_types'] = inputTypes!.toJson();
@@ -88,7 +90,7 @@ class DynamicFormModel extends Equatable {
   factory DynamicFormModel.empty() => const DynamicFormModel(
     id: '',
     config: {},
-    style: {},
+    style: StyleModel(),
     type: FormTypeEnum.unknown,
     order: 0,
     validation: null,

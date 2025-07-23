@@ -243,14 +243,14 @@ class DynamicDateTimePicker extends StatelessWidget {
     final style = component.style; // Using simplified style from component
     final pickedDate = await _showDatePicker(
       context,
-      style,
+      style.toJson(),
       styleConfig,
     );
     if (pickedDate == null || !context.mounted) return;
 
     TimeOfDay? pickedTime;
     if (pickerMode != PickerModeEnum.dateOnly) {
-      pickedTime = await _showTimePicker(context, style, styleConfig);
+      pickedTime = await _showTimePicker(context, style.toJson(), styleConfig);
       if (pickedTime == null || !context.mounted) return;
     }
 

@@ -85,7 +85,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     String? errorText,
     BuildContext context,
   ) {
-    final combinedStyle = Map<String, dynamic>.from(component.style);
+    final combinedStyle = component.style.toJson();
     if (component.variants?.getByKey('range')?.style != null) {
       combinedStyle.addAll(
         component.variants!.getByKey('range')!.style!.toJson(),
@@ -156,7 +156,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
               );
             }
           },
-          style: component.style,
+          style: component.style.toJson(),
         );
       },
     );

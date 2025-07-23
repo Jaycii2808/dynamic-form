@@ -59,7 +59,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style);
+      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Extract options and configuration
@@ -321,7 +321,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     if (currentState is! DynamicSelectSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style);
+      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Extract updated configuration
@@ -391,7 +391,10 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     );
   }
 
-  ComponentStateEnum _computeFormState(DynamicFormModel component, dynamic value) {
+  ComponentStateEnum _computeFormState(
+    DynamicFormModel component,
+    dynamic value,
+  ) {
     final validationError = _validateSelect(component, value);
 
     if (validationError != null && validationError.isNotEmpty) {
@@ -577,11 +580,13 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     return Container(
       decoration: BoxDecoration(
         color: StyleUtils.parseColor(
-          state.component!.style['background_color'],
+          state.component!.style.backgroundColor,
         ),
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: StyleUtils.parseColor(state.component!.style['border_color']),
+          color: StyleUtils.parseColor(
+            state.component!.style.borderColor,
+          ),
         ),
       ),
       child: listContainer,

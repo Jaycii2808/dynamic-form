@@ -41,7 +41,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     try {
       emit(DynamicSliderLoading(component: initialComponent));
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style);
+      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Compute all values from component
@@ -232,7 +232,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     if (currentState.isUserSliding) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style);
+      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Compute all values from updated component
@@ -337,7 +337,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
   // Helper methods
   Map<String, dynamic> _computeSliderData(DynamicFormModel component) {
     final config = component.config;
-    Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+    Map<String, dynamic> style = component.style.toJson();
 
     final bool isRange = config['range'] == true;
     final double min = (config['min'] as num?)?.toDouble() ?? 0;

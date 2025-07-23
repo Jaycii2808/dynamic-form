@@ -81,7 +81,7 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeStyles() {
-    _style = Map<String, dynamic>.from(_currentComponent.style);
+    _style = _currentComponent.style.toJson();
 
     // Apply variant styles
     if (_currentComponent.variants != null) {
@@ -238,7 +238,7 @@ class _DynamicButtonState extends State<DynamicButton> {
     );
     final borderWidth = _parseDouble(_style['borderWidth']) ?? 1.0;
     final borderRadius = StyleUtils.parseBorderRadius(
-      _parseInt(_style['borderRadius']) ?? 8,
+      (_parseDouble(_style['borderRadius']) ?? 8.0),
     );
     final padding = StyleUtils.parsePadding(
       _style['padding']?.toString() ?? '12px 24px',

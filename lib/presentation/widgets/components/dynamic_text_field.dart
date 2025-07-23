@@ -319,15 +319,13 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
 
   Widget? _buildPrefixIcon(DynamicFormModel component) {
     // Get icon from component style or config
+    final style = component.style.toJson();
     final iconName =
-        component.style['icon']?.toString() ??
-        component.config['icon']?.toString();
+        style['icon']?.toString() ?? component.config['icon']?.toString();
 
     if (iconName != null && iconName.isNotEmpty) {
-      final iconColor =
-          _parseColor(component.style['icon_color']) ?? Colors.grey;
-      final iconSize =
-          (component.style['icon_size'] as num?)?.toDouble() ?? 20.0;
+      final iconColor = _parseColor(style['icon_color']) ?? Colors.grey;
+      final iconSize = (style['icon_size'] as num?)?.toDouble() ?? 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
         return Icon(iconData, color: iconColor, size: iconSize);

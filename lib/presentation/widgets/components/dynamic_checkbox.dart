@@ -208,9 +208,7 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
               label,
               style: TextStyle(
                 fontSize: state.styleConfig?.labelTextSize.toDouble() ?? 16,
-                color: StyleUtils.parseColor(
-                  state.component!.style['label_color'],
-                ),
+                color: StyleUtils.parseColor(state.component!.style.labelColor),
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
@@ -223,7 +221,7 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
                   style: TextStyle(
                     fontSize: 12,
                     color: StyleUtils.parseColor(
-                      state.component!.style['hint_color'],
+                      state.component!.style.hintColor,
                     ),
                     fontStyle: FontStyle.italic,
                   ),
@@ -242,8 +240,8 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
         onTap: () => _handleTap(state),
         child: Container(
           key: Key(state.component!.id),
-          margin: StyleUtils.parsePadding(state.component!.style['margin']),
-          padding: StyleUtils.parsePadding(state.component!.style['padding']),
+          margin: StyleUtils.parsePadding(state.component!.style.margin),
+          padding: StyleUtils.parsePadding(state.component!.style.padding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -254,7 +252,7 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
                   state.leadingIconData,
                   size: 20,
                   color: StyleUtils.parseColor(
-                    state.component!.style['icon_color'],
+                    state.component!.style.iconColor,
                   ),
                 ),
                 const SizedBox(width: 8),

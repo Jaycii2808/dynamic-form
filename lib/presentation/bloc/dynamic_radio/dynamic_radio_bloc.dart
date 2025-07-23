@@ -36,7 +36,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       emit(DynamicRadioLoading(component: initialComponent));
 
       // Parse configurations
-      final styleConfig = StyleConfig.fromJson(initialComponent.style);
+      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Determine initial form state
@@ -124,7 +124,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       debugPrint('🔄 [RadioBloc] External update received');
 
       // Parse updated configurations
-      final styleConfig = StyleConfig.fromJson(event.component.style);
+      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Get current form state from component
@@ -154,7 +154,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
   ComponentStateEnum _getCurrentFormState(DynamicFormModel component) {
     final currentState = component.config['current_state'];
     if (currentState != null) {
-      return ComponentStateEnum.fromString(currentState) ;
+      return ComponentStateEnum.fromString(currentState);
     }
     return ComponentStateEnum.base;
   }

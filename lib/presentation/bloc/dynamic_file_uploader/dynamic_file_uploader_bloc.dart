@@ -394,7 +394,7 @@ class DynamicFileUploaderBloc
         [];
 
     // Compute styles
-    final Map<String, dynamic> baseStyle = Map.from(component.style);
+    final Map<String, dynamic> baseStyle = component.style.toJson();
     final Map<String, dynamic>? variantStyle = isDragging
         ? component.variants?.getByKey('dragging')?.style?.toJson()
         : null;

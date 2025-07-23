@@ -52,10 +52,7 @@ class DynamicTextFieldTagsBloc
     debugPrint('DEBUG: _getInitialTags value = $value');
     if (value is List) {
       // Filter out nulls and non-strings, and print debug info if any nulls found
-      final filtered = value
-          .whereType<String>()
-          .cast<String>()
-          .toList();
+      final filtered = value.whereType<String>().cast<String>().toList();
       if (filtered.length != value.length) {
         debugPrint('Warning: value list contains non-strings or nulls: $value');
       }
@@ -75,10 +72,7 @@ class DynamicTextFieldTagsBloc
       'DEBUG: _getInitialTags initialTags = $initialTags',
     );
     if (initialTags is List) {
-      final filtered = initialTags
-          .whereType<String>()
-          .cast<String>()
-          .toList();
+      final filtered = initialTags.whereType<String>().cast<String>().toList();
       if (filtered.length != initialTags.length) {
         debugPrint(
           'Warning: initial_tags contains non-strings or nulls: $initialTags',
@@ -91,10 +85,7 @@ class DynamicTextFieldTagsBloc
 
   List<String> _getAvailableTags(Map<String, dynamic> config) {
     if (config['initial_tags'] ?? config['initialTags'] case final List tags) {
-      final filtered = tags
-          .whereType<String>()
-          .cast<String>()
-          .toList();
+      final filtered = tags.whereType<String>().cast<String>().toList();
       if (filtered.length != tags.length) {
         debugPrint(
           'Warning: availableTags contains non-strings or nulls: $tags',
@@ -137,8 +128,7 @@ class DynamicTextFieldTagsBloc
         rethrow;
       }
       debugPrint(
-        'DEBUG: About to parse formState: ${initialComponent.config['current_state'] ??
-                    initialComponent.config['currentState']}',
+        'DEBUG: About to parse formState: ${initialComponent.config['current_state'] ?? initialComponent.config['currentState']}',
       );
       final formState = ComponentStateEnum.fromString(
         initialComponent.config['current_state'] ??
@@ -149,7 +139,7 @@ class DynamicTextFieldTagsBloc
         DynamicTextFieldTagsSuccess(
           component: initialComponent,
           inputConfig: inputConfig,
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
           formState: formState,
           selectedTags: initialTags,
           textController: _textController,
@@ -377,7 +367,7 @@ class DynamicTextFieldTagsBloc
       DynamicTextFieldTagsSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style),
+        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
         formState: newState,
         selectedTags: newTags,
         textController: _textController,

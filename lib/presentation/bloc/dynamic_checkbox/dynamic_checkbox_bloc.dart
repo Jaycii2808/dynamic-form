@@ -42,7 +42,7 @@ class DynamicCheckboxBloc
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style);
+      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Get initial value
@@ -160,7 +160,7 @@ class DynamicCheckboxBloc
     if (currentState is! DynamicCheckboxSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style);
+      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Get updated value
@@ -253,7 +253,7 @@ class DynamicCheckboxBloc
     final currentState = isSelected ? 'success' : 'base';
 
     // Build combined style
-    Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+    Map<String, dynamic> style = component.style.toJson();
 
     final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,

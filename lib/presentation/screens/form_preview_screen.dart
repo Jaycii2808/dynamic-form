@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -244,7 +245,9 @@ class FormPreviewScreen extends StatelessWidget {
         });
 
         // Enhanced preview styles with visual indicators
-        final previewStyle = Map<String, dynamic>.from(updatedComponent.style);
+        final previewStyle = Map<String, dynamic>.from(
+          updatedComponent.style.toJson(),
+        );
         previewStyle.addAll({
           'opacity': 0.7, // Fade to indicate disabled
           'pointer_events': 'none', // Block all pointer events
@@ -271,7 +274,7 @@ class FormPreviewScreen extends StatelessWidget {
           type: updatedComponent.type,
           order: updatedComponent.order,
           config: disabledConfig, // ✅ Now uses updated config with user values
-          style: previewStyle,
+          style: StyleModel.fromJson(previewStyle),
           inputTypes: updatedComponent.inputTypes,
           variants: updatedComponent.variants,
           states: updatedComponent.states,
@@ -405,7 +408,7 @@ class FormPreviewScreen extends StatelessWidget {
         }
 
         // Get button styles from Remote Config
-        final style = Map<String, dynamic>.from(saveButton.style);
+        final style = Map<String, dynamic>.from(saveButton.style.toJson());
         final config = Map<String, dynamic>.from(saveButton.config);
 
         debugPrint('💾 Rendering Save button with canSave: $canSave');

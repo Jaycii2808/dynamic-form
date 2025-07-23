@@ -11,12 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
 
-class DynamicSwitchBloc
-    extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
+class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
   final DynamicFormModel initialComponent;
 
   DynamicSwitchBloc({required this.initialComponent})
-      : super(DynamicSwitchInitial(component: DynamicFormModel.empty())) {
+    : super(DynamicSwitchInitial(component: DynamicFormModel.empty())) {
     on<InitializeSwitchEvent>(_onInitialize);
     on<SwitchToggledEvent>(_onToggled);
 
@@ -24,9 +23,9 @@ class DynamicSwitchBloc
   }
 
   Future<void> _onInitialize(
-      InitializeSwitchEvent event,
-      Emitter<DynamicSwitchState> emit,
-      ) async {
+    InitializeSwitchEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) async {
     emit(DynamicSwitchLoading.fromState(state: state));
     try {
       if (initialComponent.id.isEmpty) {
@@ -36,7 +35,7 @@ class DynamicSwitchBloc
         DynamicSwitchSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(
             initialComponent.config['currentState']?.toString() ?? 'base',
           ),
@@ -45,15 +44,19 @@ class DynamicSwitchBloc
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to initialize Switch: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
-      emit(DynamicSwitchError(
-          errorMessage: errorMessage, component: state.component));
+      emit(
+        DynamicSwitchError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
     }
   }
 
   Future<void> _onToggled(
-      SwitchToggledEvent event,
-      Emitter<DynamicSwitchState> emit,
-      ) async {
+    SwitchToggledEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) async {
     if (state is! DynamicSwitchSuccess) return;
     final successState = state as DynamicSwitchSuccess;
 
@@ -63,8 +66,9 @@ class DynamicSwitchBloc
       selected: event.value, // for boolean-like components
     );
 
-    final updatedConfig = Map<String, dynamic>.from(successState.component!.config)
-      ..addAll(updateData);
+    final updatedConfig = Map<String, dynamic>.from(
+      successState.component!.config,
+    )..addAll(updateData);
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       successState.component!,
@@ -75,8 +79,10 @@ class DynamicSwitchBloc
       DynamicSwitchSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style),
-        formState: ComponentStateEnum.fromString(updateData[ValueKeyEnum.currentState.key]),
+        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+        formState: ComponentStateEnum.fromString(
+          updateData[ValueKeyEnum.currentState.key],
+        ),
       ),
     );
   }

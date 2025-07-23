@@ -67,7 +67,7 @@ class DynamicDropdownBloc
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style);
+      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Compute all values like in original _computeValues()
@@ -274,7 +274,7 @@ class DynamicDropdownBloc
     if (currentState is! DynamicDropdownSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style);
+      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       final formState = _computeFormState(
@@ -486,7 +486,7 @@ class DynamicDropdownBloc
     final items = config['items'] as List<dynamic>? ?? [];
 
     // Compute styles
-    final Map<String, dynamic> baseStyle = Map.from(component.style);
+    final Map<String, dynamic> baseStyle = component.style.toJson();
     final Map<String, dynamic> variantStyle = {};
     final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
@@ -531,7 +531,7 @@ class DynamicDropdownBloc
     String? triggerAvatar,
     String currentState,
   ) {
-    Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+    Map<String, dynamic> style = component.style.toJson();
 
     // Always apply variant with_icon if icon exists
     final withIconStyle =

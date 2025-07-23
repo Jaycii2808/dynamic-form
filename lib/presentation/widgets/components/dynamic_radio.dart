@@ -190,14 +190,13 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     ComponentStateEnum currentState,
     bool isSelected,
   ) {
-    // Get state-specific style
     final style = _getStateStyle(component, currentState);
 
-    final controlWidth = (style['width'] as num?)?.toDouble() ?? 28.0;
-    final controlHeight = (style['height'] as num?)?.toDouble() ?? 28.0;
+    final controlWidth = style['width'] ?? 28.0;
+    final controlHeight = style['height'] ?? 28.0;
     final backgroundColor = StyleUtils.parseColor(style['background_color']);
     final borderColor = StyleUtils.parseColor(style['border_color']);
-    final borderWidth = (style['border_width'] as num?)?.toDouble() ?? 1.0;
+    final borderWidth = style['border_width'] ?? 1.0;
     final iconColor = StyleUtils.parseColor(style['icon_color']);
     final controlBorderRadius = controlWidth / 2; // Always circular for radio
 
@@ -239,7 +238,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
           Icon(
             iconData,
             size: 20,
-            color: StyleUtils.parseColor(component.style['icon_color']),
+            color: StyleUtils.parseColor(component.style.iconColor),
           ),
           const SizedBox(width: 8),
         ]);
@@ -257,9 +256,8 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
               Text(
                 inputConfig.label!,
                 style: TextStyle(
-                  fontSize:
-                      component.style['label_text_size']?.toDouble() ?? 16,
-                  color: StyleUtils.parseColor(component.style['label_color']),
+                  fontSize: component.style.labelTextSize ?? 16,
+                  color: StyleUtils.parseColor(component.style.labelColor),
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -278,7 +276,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     DynamicFormModel component,
     ComponentStateEnum currentState,
   ) {
-    Map<String, dynamic> style = Map<String, dynamic>.from(component.style);
+    Map<String, dynamic> style = component.style.toJson();
 
     // Determine state key based on validation state and selection
     String stateKey = 'base';
@@ -325,7 +323,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
             hint,
             style: TextStyle(
               fontSize: 12,
-              color: StyleUtils.parseColor(component.style['hint_color']),
+              color: StyleUtils.parseColor(component.style.hintColor),
               fontStyle: FontStyle.italic,
             ),
             maxLines: 2,

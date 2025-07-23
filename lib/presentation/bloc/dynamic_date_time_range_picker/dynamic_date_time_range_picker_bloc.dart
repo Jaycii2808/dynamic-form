@@ -13,18 +13,20 @@ import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
 
-class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEvent,
-    DynamicDateTimeRangePickerState> {
+class DynamicDateTimeRangePickerBloc
+    extends
+        Bloc<DynamicDateTimeRangePickerEvent, DynamicDateTimeRangePickerState> {
   final TextEditingController _textController;
   final FocusNode _focusNode;
   final DynamicFormModel initialComponent;
   final String _displayFormat = DateFormatCustomPattern.mmmDyyyy.pattern;
 
   DynamicDateTimeRangePickerBloc({required this.initialComponent})
-      : _textController = TextEditingController(),
-        _focusNode = FocusNode(),
-        super(DynamicDateTimeRangePickerInitial(
-          component: DynamicFormModel.empty())) {
+    : _textController = TextEditingController(),
+      _focusNode = FocusNode(),
+      super(
+        DynamicDateTimeRangePickerInitial(component: DynamicFormModel.empty()),
+      ) {
     _focusNode.addListener(_onFocusChange);
 
     on<InitializeDateTimeRangePickerEvent>(_onInitialize);
@@ -57,7 +59,7 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
         final startDate = DateFormat(_displayFormat).parse(value['start']);
         final endDate = DateFormat(_displayFormat).parse(value['end']);
         _textController.text =
-        '${DateFormat(_displayFormat).format(startDate)} - ${DateFormat(_displayFormat).format(endDate)}';
+            '${DateFormat(_displayFormat).format(startDate)} - ${DateFormat(_displayFormat).format(endDate)}';
       } catch (e) {
         _textController.text = '';
       }
@@ -65,9 +67,9 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
   }
 
   Future<void> _onInitialize(
-      InitializeDateTimeRangePickerEvent event,
-      Emitter<DynamicDateTimeRangePickerState> emit,
-      ) async {
+    InitializeDateTimeRangePickerEvent event,
+    Emitter<DynamicDateTimeRangePickerState> emit,
+  ) async {
     emit(DynamicDateTimeRangePickerLoading.fromState(state: state));
     try {
       if (initialComponent.id.isEmpty) {
@@ -78,7 +80,7 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
         DynamicDateTimeRangePickerSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(
             initialComponent.config['currentState']?.toString() ?? 'base',
           ),
@@ -89,23 +91,27 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to initialize DateTimeRangePicker: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
-      emit(DynamicDateTimeRangePickerError(
-          errorMessage: errorMessage, component: state.component));
+      emit(
+        DynamicDateTimeRangePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
     }
   }
 
   Future<void> _onRangePicked(
-      DateTimeRangePickedEvent event,
-      Emitter<DynamicDateTimeRangePickerState> emit,
-      ) async {
+    DateTimeRangePickedEvent event,
+    Emitter<DynamicDateTimeRangePickerState> emit,
+  ) async {
     if (state is! DynamicDateTimeRangePickerSuccess) return;
     _updateState(event.value, state as DynamicDateTimeRangePickerSuccess, emit);
   }
 
   Future<void> _onFocusLost(
-      DateTimeRangePickerFocusLostEvent event,
-      Emitter<DynamicDateTimeRangePickerState> emit,
-      ) async {
+    DateTimeRangePickerFocusLostEvent event,
+    Emitter<DynamicDateTimeRangePickerState> emit,
+  ) async {
     if (state is! DynamicDateTimeRangePickerSuccess) return;
     final successState = state as DynamicDateTimeRangePickerSuccess;
 
@@ -128,13 +134,15 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
   }
 
   void _updateState(
-      DateTimeRange? range,
-      DynamicDateTimeRangePickerSuccess currentState,
-      Emitter<DynamicDateTimeRangePickerState> emit,
-      ) {
+    DateTimeRange? range,
+    DynamicDateTimeRangePickerSuccess currentState,
+    Emitter<DynamicDateTimeRangePickerState> emit,
+  ) {
     // Treat null range as empty for validation purposes
     final validationError = ValidationUtils.validateForm(
-        currentState.component!, range == null ? '' : 'hasValue');
+      currentState.component!,
+      range == null ? '' : 'hasValue',
+    );
 
     ComponentStateEnum newState = ComponentStateEnum.base;
     if (validationError != null) {
@@ -146,7 +154,7 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
     final Map<String, dynamic>? valueToStore;
     if (range != null) {
       _textController.text =
-      '${DateFormat(_displayFormat).format(range.start)} - ${DateFormat(_displayFormat).format(range.end)}';
+          '${DateFormat(_displayFormat).format(range.start)} - ${DateFormat(_displayFormat).format(range.end)}';
       valueToStore = {
         'start': DateFormat(_displayFormat).format(range.start),
         'end': DateFormat(_displayFormat).format(range.end),
@@ -156,8 +164,9 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
       valueToStore = null;
     }
 
-    final updatedConfig =
-    Map<String, dynamic>.from(currentState.component!.config);
+    final updatedConfig = Map<String, dynamic>.from(
+      currentState.component!.config,
+    );
     updatedConfig[ValueKeyEnum.value.key] = valueToStore;
     updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
     updatedConfig[ValueKeyEnum.errorText.key] = validationError;
@@ -172,7 +181,7 @@ class DynamicDateTimeRangePickerBloc extends Bloc<DynamicDateTimeRangePickerEven
         component: updatedComponent,
         errorText: validationError,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style),
+        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
         formState: newState,
         textController: _textController,
         focusNode: _focusNode,

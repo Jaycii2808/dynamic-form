@@ -149,7 +149,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   Widget _buildBody(DynamicSelectSuccess state) {
     return Container(
       key: Key(state.component!.id),
-      margin: StyleUtils.parsePadding(state.component!.style['margin']),
+      margin: StyleUtils.parsePadding(state.component!.style.margin),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -176,8 +176,8 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
       child: Text(
         state.component!.config['label'],
         style: TextStyle(
-          fontSize: state.component!.style['label_text_size']?.toDouble() ?? 14,
-          color: StyleUtils.parseColor(state.component!.style['label_color']),
+          fontSize: state.component!.style.labelTextSize?.toDouble() ?? 14,
+          color: StyleUtils.parseColor(state.component!.style.labelColor),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -295,9 +295,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
 
   // Helper methods
   Map<String, dynamic> _getAppliedStyle(DynamicSelectSuccess state) {
-    Map<String, dynamic> style = Map<String, dynamic>.from(
-      state.component!.style,
-    );
+    Map<String, dynamic> style = state.component!.style.toJson();
 
     // Apply variant styles
     if (state.component!.variants != null) {

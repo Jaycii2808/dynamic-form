@@ -60,7 +60,7 @@ class DynamicTextFieldBloc
         DynamicTextFieldSuccess(
           component: component,
           inputConfig: InputConfig.fromJson(component.config),
-          styleConfig: StyleConfig.fromJson(component.style),
+          styleConfig: StyleConfig.fromJson(component.style.toJson()),
           formState: ComponentStateEnum.fromString(
             component.config['current_state']?.toString() ?? 'base',
           ),
@@ -154,7 +154,7 @@ class DynamicTextFieldBloc
           component: updatedComponent,
           errorText: validationError,
           inputConfig: InputConfig.fromJson(updatedComponent.config),
-          styleConfig: StyleConfig.fromJson(updatedComponent.style),
+          styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
           formState: newState,
           textController: _textController,
           focusNode: _focusNode,
@@ -190,7 +190,7 @@ class DynamicTextFieldBloc
         DynamicTextFieldSuccess(
           component: event.component,
           inputConfig: InputConfig.fromJson(event.component.config),
-          styleConfig: StyleConfig.fromJson(event.component.style),
+          styleConfig: StyleConfig.fromJson(event.component.style.toJson()),
           formState: ComponentStateEnum.fromString(
             event.component.config['current_state']?.toString() ?? 'base',
           ),

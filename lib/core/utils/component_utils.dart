@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 // XÓA extension VariantsModelExt ở đây, chỉ giữ ở variants_model.dart
 
@@ -36,7 +37,7 @@ class ComponentUtils {
       type: component.type,
       order: component.order,
       config: Map<String, dynamic>.from(component.config),
-      style: Map<String, dynamic>.from(component.style),
+      style: StyleModel.fromJson(component.style.toJson()),
       inputTypes: component.inputTypes, // just reference, since it's immutable
       variants: component.variants, // Đúng kiểu VariantsModel
       states: component.states, // assign as is, do not clone as Map
@@ -69,7 +70,7 @@ class ComponentUtils {
     String? state,
     Map<String, dynamic>? additionalStyle,
   }) {
-    final style = Map<String, dynamic>.from(component.style);
+    final style = component.style.toJson();
 
     // Apply variant style if exists
     if (variant != null && component.variants != null) {
@@ -235,7 +236,7 @@ class ComponentUtils {
     String? currentState,
     List<String>? conditionalVariants,
   }) {
-    final style = Map<String, dynamic>.from(component.style);
+    final style = component.style.toJson();
     final config = component.config;
     final state = currentState ?? getCurrentState(component);
 

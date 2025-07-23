@@ -59,7 +59,7 @@ class DynamicDateTimePickerBloc
         DynamicDateTimePickerSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style),
+          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(
             initialComponent.config['currentState']?.toString() ?? 'base',
           ),
@@ -135,7 +135,7 @@ class DynamicDateTimePickerBloc
         component: updatedComponent,
         errorText: validationError,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style),
+        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
         formState: newState,
         textController: _textController,
         focusNode: _focusNode,
