@@ -13,6 +13,7 @@ abstract class DynamicDateTimePickerState extends Equatable {
   final String? errorText;
   final TextEditingController? textController;
   final FocusNode? focusNode;
+  final Map<String, dynamic>? computedStyle;
 
   const DynamicDateTimePickerState({
     this.component,
@@ -22,6 +23,7 @@ abstract class DynamicDateTimePickerState extends Equatable {
     this.errorText,
     this.textController,
     this.focusNode,
+    this.computedStyle,
   });
 
   @override
@@ -43,6 +45,7 @@ class DynamicDateTimePickerInitial extends DynamicDateTimePickerState {
     super.errorText,
     super.textController,
     super.focusNode,
+    super.computedStyle,
   });
 }
 
@@ -55,18 +58,21 @@ class DynamicDateTimePickerLoading extends DynamicDateTimePickerState {
     super.errorText,
     super.textController,
     super.focusNode,
+    super.computedStyle,
   });
 
-  DynamicDateTimePickerLoading.fromState({required DynamicDateTimePickerState state})
-    : super(
-        component: state.component,
-        inputConfig: state.inputConfig,
-        styleConfig: state.styleConfig,
-        formState: state.formState,
-        errorText: state.errorText,
-        textController: state.textController,
-        focusNode: state.focusNode,
-      );
+  DynamicDateTimePickerLoading.fromState({
+    required DynamicDateTimePickerState state,
+  }) : super(
+         component: state.component,
+         inputConfig: state.inputConfig,
+         styleConfig: state.styleConfig,
+         formState: state.formState,
+         errorText: state.errorText,
+         textController: state.textController,
+         focusNode: state.focusNode,
+         computedStyle: state.computedStyle,
+       );
 }
 
 class DynamicDateTimePickerSuccess extends DynamicDateTimePickerState {
@@ -78,6 +84,7 @@ class DynamicDateTimePickerSuccess extends DynamicDateTimePickerState {
     super.errorText,
     super.textController,
     super.focusNode,
+    super.computedStyle,
   });
 }
 
@@ -87,6 +94,7 @@ class DynamicDateTimePickerError extends DynamicDateTimePickerState {
   const DynamicDateTimePickerError({
     required this.errorMessage,
     super.component,
+    super.computedStyle,
   });
 
   @override

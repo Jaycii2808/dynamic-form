@@ -11,6 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicSwitch extends StatelessWidget {
   final DynamicFormModel component;
@@ -86,7 +87,7 @@ class DynamicSwitch extends StatelessWidget {
     InputConfig inputConfig,
     DynamicFormModel component,
   ) {
-    final style = component.style.toJson();
+    final styleModel = StyleModel.fromJson(component.style.toJson());
     final config = component.config;
 
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
@@ -97,27 +98,24 @@ class DynamicSwitch extends StatelessWidget {
       component.states,
       inputConfig.currentState,
     );
-    if (stateStyle != null) {
-      style.addAll(stateStyle.toJson());
-    }
+    // If you want to merge stateStyle, you can create a merged StyleModel if needed
 
     final activeColor = StyleUtils.parseColor(
-      style['active_color'] ?? style['activeColor'] ?? '#6979F8',
+      styleModel.activeColor ?? '#6979F8',
     );
     final inactiveThumbColor = StyleUtils.parseColor(
-      style['inactive_color'] ?? style['inactiveColor'] ?? '#CCCCCC',
+      styleModel.inactiveColor ?? '#CCCCCC',
     );
     final inactiveTrackColor = StyleUtils.parseColor(
-      style['inactive_track_color'] ?? style['inactiveTrackColor'] ?? '#E5E5E5',
+      styleModel.inactiveTrackColor ?? '#E5E5E5',
     );
 
     return Container(
       key: ValueKey(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+      padding: StyleUtils.parsePadding(styleModel.padding),
+      margin: StyleUtils.parsePadding(styleModel.margin ?? '0 0 10 0'),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //mainAxisSize: MainAxisSize.min,
         children: [
           if (hasLabel)
             Padding(
@@ -128,9 +126,8 @@ class DynamicSwitch extends StatelessWidget {
                   Text(
                     config['label'],
                     style: TextStyle(
-                      fontSize:
-                          (style['label_text_size'] as num?)?.toDouble() ?? 16,
-                      // color: StyleUtils.parseColor(style['label_color'] ?? style['color']),
+                      fontSize: styleModel.labelTextSize ?? 16,
+                      // color: StyleUtils.parseColor(styleModel.labelColor),
                     ),
                   ),
                   if (component.config['is_required'] == true)

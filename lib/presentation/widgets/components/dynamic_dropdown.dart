@@ -3,6 +3,7 @@
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_state.dart';
@@ -139,7 +140,7 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
             debugPrint(
               '🎯 [Dropdown] Success state - formState: ${state.formState}, currentState: ${state.component?.config['current_state']}',
             );
-            return _buildDropdown(state);
+            return _buildDropdown(context, state);
           }
 
           return const SizedBox.shrink();
@@ -148,7 +149,8 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
     );
   }
 
-  Widget _buildDropdown(DynamicDropdownSuccess state) {
+  Widget _buildDropdown(BuildContext context, DynamicDropdownSuccess state) {
+    final styleModel = StyleModel.fromJson(state.computedStyle);
     return Focus(
       focusNode: state.focusNode,
       child: MouseRegion(
@@ -156,22 +158,20 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
           key: dropdownKey,
           onTap: state.isDisabled ? null : () => _handleTap(state),
           child: Container(
-            padding: StyleUtils.parsePadding(state.computedStyle['padding']),
-            margin: StyleUtils.parsePadding(state.computedStyle['margin']),
+            padding: StyleUtils.parsePadding(styleModel.padding),
+            margin: StyleUtils.parsePadding(styleModel.margin),
             decoration: BoxDecoration(
               color: StyleUtils.parseColor(
-                state.computedStyle['background_color'],
+                styleModel.backgroundColor,
               ),
               border: Border.all(
                 color: StyleUtils.parseColor(
-                  state.computedStyle['border_color'],
+                  styleModel.borderColor,
                 ),
-                width:
-                    (state.computedStyle['border_width'] as num?)?.toDouble() ??
-                    1.0,
+                width: (styleModel.borderWidth as num?)?.toDouble() ?? 1.0,
               ),
               borderRadius: StyleUtils.parseBorderRadius(
-                state.computedStyle['border_radius'],
+                styleModel.borderRadius,
               ),
             ),
             child: state.triggerContent,

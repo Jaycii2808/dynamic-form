@@ -3,6 +3,7 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -152,21 +153,16 @@ class DynamicSliderWidget extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, DynamicSliderSuccess state) {
-    // Use provided theme or fallback to default with computed colors
+    // Parse computedStyle map to StyleModel for OOP access
+    final styleModel = StyleModel.fromJson(state.computedStyle);
     final sliderTheme =
         state.sliderTheme ??
         SliderTheme.of(context).copyWith(
-          activeTrackColor: StyleUtils.parseColor(
-            state.computedStyle['active_color'],
-          ),
-          inactiveTrackColor: StyleUtils.parseColor(
-            state.computedStyle['inactive_color'],
-          ),
-          thumbColor: StyleUtils.parseColor(
-            state.computedStyle['thumb_color'],
-          ),
+          activeTrackColor: StyleUtils.parseColor(styleModel.activeColor),
+          inactiveTrackColor: StyleUtils.parseColor(styleModel.inactiveColor),
+          thumbColor: StyleUtils.parseColor(styleModel.thumbColor),
           overlayColor: StyleUtils.parseColor(
-            state.computedStyle['active_color'],
+            styleModel.activeColor,
           ).withValues(alpha: 0.2),
           trackHeight: 6.0,
         );
@@ -177,24 +173,16 @@ class DynamicSliderWidget extends StatelessWidget {
           thumbRadius: 14,
           valuePrefix: state.prefix,
           values: state.sliderRangeValues ?? RangeValues(state.min, state.max),
-          iconColor: StyleUtils.parseColor(
-            state.computedStyle['thumb_icon_color'],
-          ),
-          labelColor: StyleUtils.parseColor(
-            state.computedStyle['value_label_color'],
-          ),
+          iconColor: StyleUtils.parseColor(styleModel.thumbIconColor),
+          labelColor: StyleUtils.parseColor(styleModel.valueLabelColor),
           thumbIcon: state.thumbIcon,
         ),
         thumbShape: CustomSliderThumbShape(
           thumbRadius: 14,
           valuePrefix: state.prefix,
           displayValue: state.sliderValue ?? state.min,
-          iconColor: StyleUtils.parseColor(
-            state.computedStyle['thumb_icon_color'],
-          ),
-          labelColor: StyleUtils.parseColor(
-            state.computedStyle['value_label_color'],
-          ),
+          iconColor: StyleUtils.parseColor(styleModel.thumbIconColor),
+          labelColor: StyleUtils.parseColor(styleModel.valueLabelColor),
           thumbIcon: state.thumbIcon,
         ),
       ),
@@ -267,8 +255,8 @@ class DynamicSliderWidget extends StatelessWidget {
       if (iconData != null) {
         iconWidget = Icon(
           iconData,
-          color: StyleUtils.parseColor(state.computedStyle['icon_color']),
-          size: (state.computedStyle['icon_size'] as num?)?.toDouble() ?? 24.0,
+          color: StyleUtils.parseColor(styleModel.iconColor),
+          size: styleModel.iconSize ?? 24.0,
         );
       }
     }
@@ -281,7 +269,7 @@ class DynamicSliderWidget extends StatelessWidget {
         },
         child: Container(
           key: Key(state.component!.id),
-          margin: StyleUtils.parsePadding(state.computedStyle['margin']),
+          margin: StyleUtils.parsePadding(styleModel.margin),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -300,9 +288,7 @@ class DynamicSliderWidget extends StatelessWidget {
                   child: Text(
                     state.hint!,
                     style: TextStyle(
-                      color: StyleUtils.parseColor(
-                        state.computedStyle['hint_color'],
-                      ),
+                      color: StyleUtils.parseColor(styleModel.hintColor),
                       fontSize: 12,
                     ),
                   ),

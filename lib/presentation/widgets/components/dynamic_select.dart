@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -137,7 +138,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
             debugPrint(
               '🎯 [Select] Success state - formState: ${state.formState}',
             );
-            return _buildBody(state);
+            return _buildBody(context, state);
           }
 
           return const SizedBox.shrink();
@@ -146,10 +147,11 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
     );
   }
 
-  Widget _buildBody(DynamicSelectSuccess state) {
+  Widget _buildBody(BuildContext context, DynamicSelectSuccess state) {
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
     return Container(
       key: Key(state.component!.id),
-      margin: StyleUtils.parsePadding(state.component!.style.margin),
+      margin: StyleUtils.parsePadding(styleModel.margin),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -171,13 +173,14 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   Widget _buildLabel(DynamicSelectSuccess state) {
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         state.component!.config['label'],
         style: TextStyle(
-          fontSize: state.component!.style.labelTextSize?.toDouble() ?? 14,
-          color: StyleUtils.parseColor(state.component!.style.labelColor),
+          fontSize: styleModel.labelTextSize?.toDouble() ?? 14,
+          color: StyleUtils.parseColor(styleModel.labelColor),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -185,17 +188,17 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   Widget _buildSelectField(DynamicSelectSuccess state) {
-    final style = _getAppliedStyle(state);
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
 
     return Container(
-      padding: StyleUtils.parsePadding(style['padding']),
+      padding: StyleUtils.parsePadding(styleModel.padding),
       decoration: BoxDecoration(
-        color: StyleUtils.parseColor(style['background_color']),
+        color: StyleUtils.parseColor(styleModel.backgroundColor),
         border: Border.all(
-          color: StyleUtils.parseColor(style['border_color']),
+          color: StyleUtils.parseColor(styleModel.borderColor),
           width: 1.0,
         ),
-        borderRadius: StyleUtils.parseBorderRadius(style['border_radius']),
+        borderRadius: StyleUtils.parseBorderRadius(styleModel.borderRadius),
       ),
       child: Row(
         children: [
@@ -203,7 +206,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
             _getPrefixIcon(state)!,
             const SizedBox(width: 8),
           ],
-          Expanded(child: _buildDisplayContent(state, style)),
+          Expanded(child: _buildDisplayContent(state, styleModel)),
           if (_getSuffixIcon(state) != null) ...[
             const SizedBox(width: 8),
             _getSuffixIcon(state)!,
@@ -215,12 +218,12 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
 
   Widget _buildDisplayContent(
     DynamicSelectSuccess state,
-    Map<String, dynamic> style,
+    StyleModel styleModel,
   ) {
     final textStyle = TextStyle(
-      fontSize: style['font_size']?.toDouble() ?? 16,
-      color: StyleUtils.parseColor(style['color']),
-      fontStyle: style['font_style'] == 'italic'
+      fontSize: styleModel.fontSize?.toDouble() ?? 16,
+      color: StyleUtils.parseColor(styleModel.color),
+      fontStyle: styleModel.fontStyle == 'italic'
           ? FontStyle.italic
           : FontStyle.normal,
     );
@@ -267,7 +270,9 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
         return Text(
           state.component!.config['placeholder'] ?? 'Select option',
           style: textStyle.copyWith(
-            color: StyleUtils.parseColor(style['color']).withValues(alpha: 0.6),
+            color: StyleUtils.parseColor(
+              styleModel.color,
+            ).withValues(alpha: 0.6),
           ),
         );
       }
@@ -278,7 +283,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
     final helperText = _getHelperText(state);
     if (helperText == null || helperText.isEmpty) return null;
 
-    final style = _getAppliedStyle(state);
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
 
     return Padding(
       padding: const EdgeInsets.only(top: 4.0),
@@ -286,7 +291,7 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
         helperText,
         style: TextStyle(
           fontSize: 12,
-          color: StyleUtils.parseColor(style['helper_text_color']),
+          color: StyleUtils.parseColor(styleModel.helperTextColor),
           fontStyle: FontStyle.italic,
         ),
       ),
@@ -295,36 +300,8 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
 
   // Helper methods
   Map<String, dynamic> _getAppliedStyle(DynamicSelectSuccess state) {
-    Map<String, dynamic> style = state.component!.style.toJson();
-
-    // Apply variant styles
-    if (state.component!.variants != null) {
-      if (state.component!.config['label'] != null &&
-          state.component!.variants?.withLabel?.style != null) {
-        style.addAll(state.component!.variants!.withLabel!.style!.toJson());
-      }
-      if (state.component!.config['icon'] != null &&
-          state.component!.variants?.withIcon?.style != null) {
-        style.addAll(state.component!.variants!.withIcon!.style!.toJson());
-      }
-      if (state.isMultiple &&
-          state.component!.variants?.multiple?.style != null) {
-        style.addAll(state.component!.variants!.multiple!.style!.toJson());
-      }
-      if (state.isSearchable &&
-          state.component!.variants?.searchable?.style != null) {
-        style.addAll(state.component!.variants!.searchable!.style!.toJson());
-      }
-    }
-
-    // Apply state styles
-    final currentStateKey = _getStateKey(state.formState);
-    final StyleStatesModel? stateStyle = _getTypedStateStyle(
-      state.component!.states,
-      currentStateKey,
-    );
-    if (stateStyle != null) style.addAll(stateStyle.toJson());
-    return style;
+    // This method can be refactored to return a StyleModel if all merging logic is handled in model or utility
+    return state.component!.style.toJson();
   }
 
   String _getStateKey(ComponentStateEnum? formState) {
@@ -356,15 +333,15 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   Widget? _getPrefixIcon(DynamicSelectSuccess state) {
-    final style = _getAppliedStyle(state);
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
 
-    if ((state.component!.config['icon'] != null || style['icon'] != null) &&
-        style['icon_position'] != 'right') {
-      final iconName = (style['icon'] ?? state.component!.config['icon'] ?? '')
-          .toString();
-      final iconColor = StyleUtils.parseColor(style['icon_color']);
-      final iconSize = (style['icon_size'] is num)
-          ? (style['icon_size'] as num).toDouble()
+    if ((state.component!.config['icon'] != null || styleModel.icon != null) &&
+        styleModel.iconPosition != 'right') {
+      final iconName =
+          (styleModel.icon ?? state.component!.config['icon'] ?? '').toString();
+      final iconColor = StyleUtils.parseColor(styleModel.iconColor);
+      final iconSize = (styleModel.iconSize is num)
+          ? (styleModel.iconSize as num).toDouble()
           : 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
@@ -375,15 +352,15 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   Widget? _getSuffixIcon(DynamicSelectSuccess state) {
-    final style = _getAppliedStyle(state);
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
 
-    if ((state.component!.config['icon'] != null || style['icon'] != null) &&
-        style['icon_position'] == 'right') {
-      final iconName = (style['icon'] ?? state.component!.config['icon'] ?? '')
-          .toString();
-      final iconColor = StyleUtils.parseColor(style['icon_color']);
-      final iconSize = (style['icon_size'] is num)
-          ? (style['icon_size'] as num).toDouble()
+    if ((state.component!.config['icon'] != null || styleModel.icon != null) &&
+        styleModel.iconPosition == 'right') {
+      final iconName =
+          (styleModel.icon ?? state.component!.config['icon'] ?? '').toString();
+      final iconColor = StyleUtils.parseColor(styleModel.iconColor);
+      final iconSize = (styleModel.iconSize is num)
+          ? (styleModel.iconSize as num).toDouble()
           : 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
@@ -394,8 +371,8 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   String? _getHelperText(DynamicSelectSuccess state) {
-    final style = _getAppliedStyle(state);
-    return style['helper_text']?.toString();
+    final styleModel = StyleModel.fromJson(state.component!.style.toJson());
+    return styleModel.helperText?.toString();
   }
 
   // Event handlers

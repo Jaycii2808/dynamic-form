@@ -13,6 +13,7 @@ abstract class DynamicDateTimeRangePickerState extends Equatable {
   final String? errorText;
   final TextEditingController? textController;
   final FocusNode? focusNode;
+  final Map<String, dynamic>? combinedStyle;
 
   const DynamicDateTimeRangePickerState({
     this.component,
@@ -22,6 +23,7 @@ abstract class DynamicDateTimeRangePickerState extends Equatable {
     this.errorText,
     this.textController,
     this.focusNode,
+    this.combinedStyle,
   });
 
   @override
@@ -34,30 +36,37 @@ abstract class DynamicDateTimeRangePickerState extends Equatable {
   ];
 }
 
-class DynamicDateTimeRangePickerInitial extends DynamicDateTimeRangePickerState {
+class DynamicDateTimeRangePickerInitial
+    extends DynamicDateTimeRangePickerState {
   const DynamicDateTimeRangePickerInitial({
     super.component,
+    super.combinedStyle,
   });
 }
 
-class DynamicDateTimeRangePickerLoading extends DynamicDateTimeRangePickerState {
+class DynamicDateTimeRangePickerLoading
+    extends DynamicDateTimeRangePickerState {
   const DynamicDateTimeRangePickerLoading({
     super.component,
+    super.combinedStyle,
   });
 
-  DynamicDateTimeRangePickerLoading.fromState({required DynamicDateTimeRangePickerState state})
-      : super(
-    component: state.component,
-    inputConfig: state.inputConfig,
-    styleConfig: state.styleConfig,
-    formState: state.formState,
-    errorText: state.errorText,
-    textController: state.textController,
-    focusNode: state.focusNode,
-  );
+  DynamicDateTimeRangePickerLoading.fromState({
+    required DynamicDateTimeRangePickerState state,
+  }) : super(
+         component: state.component,
+         inputConfig: state.inputConfig,
+         styleConfig: state.styleConfig,
+         formState: state.formState,
+         errorText: state.errorText,
+         textController: state.textController,
+         focusNode: state.focusNode,
+         combinedStyle: state.combinedStyle,
+       );
 }
 
-class DynamicDateTimeRangePickerSuccess extends DynamicDateTimeRangePickerState {
+class DynamicDateTimeRangePickerSuccess
+    extends DynamicDateTimeRangePickerState {
   const DynamicDateTimeRangePickerSuccess({
     super.component,
     super.inputConfig,
@@ -66,6 +75,7 @@ class DynamicDateTimeRangePickerSuccess extends DynamicDateTimeRangePickerState 
     super.errorText,
     super.textController,
     super.focusNode,
+    super.combinedStyle,
   });
 }
 
@@ -75,6 +85,7 @@ class DynamicDateTimeRangePickerError extends DynamicDateTimeRangePickerState {
   const DynamicDateTimeRangePickerError({
     required this.errorMessage,
     super.component,
+    super.combinedStyle,
   });
 
   @override

@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_state.dart';
@@ -323,18 +324,19 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     if (currentState is! DynamicSliderSuccess) return;
 
     try {
+      final styleModel = StyleModel.fromJson(currentState.computedStyle);
       final sliderTheme = SliderTheme.of(event.context).copyWith(
         activeTrackColor: StyleUtils.parseColor(
-          currentState.computedStyle['active_color'],
+          styleModel.activeColor,
         ),
         inactiveTrackColor: StyleUtils.parseColor(
-          currentState.computedStyle['inactive_color'],
+          styleModel.inactiveColor,
         ),
         thumbColor: StyleUtils.parseColor(
-          currentState.computedStyle['thumb_color'],
+          styleModel.thumbColor,
         ),
         overlayColor: StyleUtils.parseColor(
-          currentState.computedStyle['active_color'],
+          styleModel.activeColor,
         ).withValues(alpha: 0.2),
         trackHeight: 6.0,
       );

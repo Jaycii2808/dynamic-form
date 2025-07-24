@@ -27,6 +27,19 @@ class StyleModel {
   final String? inactiveTrackColor;
   final String? tagBackgroundColor;
   final String? tagRemoveIconColor;
+  final String? thumbColor;
+  final String? thumbIconColor;
+  final String? valueLabelColor;
+  final double? iconSize;
+  final String? textColor;
+  final String? buttonBackgroundColor;
+  final double? buttonBorderRadius;
+  final String? buttonTextColor;
+  final String? icon;
+  final String? iconPosition;
+  final String? fontWeight;
+  final double? elevation;
+  final String? shadowColor;
 
   const StyleModel({
     this.fontSize,
@@ -56,6 +69,19 @@ class StyleModel {
     this.inactiveTrackColor,
     this.tagBackgroundColor,
     this.tagRemoveIconColor,
+    this.thumbColor,
+    this.thumbIconColor,
+    this.valueLabelColor,
+    this.iconSize,
+    this.textColor,
+    this.buttonBackgroundColor,
+    this.buttonBorderRadius,
+    this.buttonTextColor,
+    this.icon,
+    this.iconPosition,
+    this.fontWeight,
+    this.elevation,
+    this.shadowColor,
   });
 
   factory StyleModel.fromJson(Map<String, dynamic>? map) {
@@ -103,6 +129,19 @@ class StyleModel {
       inactiveTrackColor: map['inactive_track_color'] as String?,
       tagBackgroundColor: map['tag_background_color'] as String?,
       tagRemoveIconColor: map['tag_remove_icon_color'] as String?,
+      thumbColor: map['thumb_color'] as String?,
+      thumbIconColor: map['thumb_icon_color'] as String?,
+      valueLabelColor: map['value_label_color'] as String?,
+      iconSize: parseDouble(map['icon_size']),
+      textColor: map['text_color'] as String?,
+      buttonBackgroundColor: map['button_background_color'] as String?,
+      buttonBorderRadius: parseDouble(map['button_border_radius']),
+      buttonTextColor: map['button_text_color'] as String?,
+      icon: map['icon'] as String?,
+      iconPosition: map['icon_position'] as String?,
+      fontWeight: map['fontWeight'] as String?,
+      elevation: parseDouble(map['elevation']),
+      shadowColor: map['shadowColor'] as String?,
     );
   }
 
@@ -136,5 +175,19 @@ class StyleModel {
     if (inactiveTrackColor != null) 'inactive_track_color': inactiveTrackColor,
     if (tagBackgroundColor != null) 'tag_background_color': tagBackgroundColor,
     if (tagRemoveIconColor != null) 'tag_remove_icon_color': tagRemoveIconColor,
+    if (thumbColor != null) 'thumb_color': thumbColor,
+    if (thumbIconColor != null) 'thumb_icon_color': thumbIconColor,
+    if (valueLabelColor != null) 'value_label_color': valueLabelColor,
+    if (iconSize != null) 'icon_size': iconSize,
+    if (textColor != null) 'text_color': textColor,
+    if (buttonBackgroundColor != null)
+      'button_background_color': buttonBackgroundColor,
+    if (buttonBorderRadius != null) 'button_border_radius': buttonBorderRadius,
+    if (buttonTextColor != null) 'button_text_color': buttonTextColor,
+    if (icon != null) 'icon': icon,
+    if (iconPosition != null) 'icon_position': iconPosition,
+    if (fontWeight != null) 'fontWeight': fontWeight,
+    if (elevation != null) 'elevation': elevation,
+    if (shadowColor != null) 'shadowColor': shadowColor,
   };
 }

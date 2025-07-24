@@ -17,6 +17,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_tex
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 
 class DynamicTextField extends StatefulWidget {
   final DynamicFormModel component;
@@ -319,13 +320,13 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
 
   Widget? _buildPrefixIcon(DynamicFormModel component) {
     // Get icon from component style or config
-    final style = component.style.toJson();
-    final iconName =
-        style['icon']?.toString() ?? component.config['icon']?.toString();
-
+    final iconName = component.style.iconColor != null
+        ? component.style.iconColor
+        : component.config['icon']?.toString();
     if (iconName != null && iconName.isNotEmpty) {
-      final iconColor = _parseColor(style['icon_color']) ?? Colors.grey;
-      final iconSize = (style['icon_size'] as num?)?.toDouble() ?? 20.0;
+      final iconColor =
+          StyleUtils.parseColor(component.style.iconColor) ?? Colors.grey;
+      final iconSize = 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
         return Icon(iconData, color: iconColor, size: iconSize);

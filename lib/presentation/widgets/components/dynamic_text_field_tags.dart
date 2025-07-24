@@ -71,16 +71,12 @@ class DynamicTextFieldTags extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(
           color: StyleUtils.parseColor(
-            state.component!.style.toJson()['border_color'] ?? '#6979F8',
+            state.component!.style.borderColor ?? '#6979F8',
           ),
-          width:
-              (state.component!.style.toJson()['border_width'] as num?)
-                  ?.toDouble() ??
-              1.5,
+          width: state.component!.style.borderWidth ?? 1.5,
         ),
         borderRadius: StyleUtils.parseBorderRadius(
-          (state.component!.style.toJson()['border_radius'] as num?)
-              ?.toDouble(),
+          state.component!.style.borderRadius,
         ),
         color: style.fillColor,
       ),
@@ -241,7 +237,7 @@ class DynamicTextFieldTags extends StatelessWidget {
       label: Text(
         tag,
       ),
-      backgroundColor: StyleUtils.parseColor(style['tag_background_color']),
+      backgroundColor: StyleUtils.parseColor(styleModel.tagBackgroundColor),
       onDeleted: (allowRemoval && !isDisabled)
           ? () => context.read<DynamicTextFieldTagsBloc>().add(
               TagRemovedEvent(tag: tag),
@@ -252,7 +248,7 @@ class DynamicTextFieldTags extends StatelessWidget {
         width: 14,
         height: 14,
         colorFilter: ColorFilter.mode(
-          StyleUtils.parseColor(style['tag_remove_icon_color'] ?? '#F44336'),
+          StyleUtils.parseColor(styleModel.tagRemoveIconColor ?? '#F44336'),
           BlendMode.srcIn,
         ),
       ),

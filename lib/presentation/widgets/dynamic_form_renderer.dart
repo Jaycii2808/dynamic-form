@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -254,7 +255,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (label.isNotEmpty) _buildLabel(label, style.toJson()),
+          if (label.isNotEmpty) _buildLabel(label, style),
 
           if (component.children != null)
             ...component.children!.map(
@@ -281,14 +282,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     return containerContent;
   }
 
-  Widget _buildLabel(String label, Map<String, dynamic> style) {
+  Widget _buildLabel(String label, StyleModel styleModel) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         label,
         style: TextStyle(
-          color: StyleUtils.parseColor(style['labelColor']),
-          fontSize: style['labelTextSize'] ?? 16,
+          color: StyleUtils.parseColor(styleModel.labelColor),
+          fontSize: styleModel.labelTextSize ?? 16,
           fontWeight: FontWeight.bold,
         ),
       ),

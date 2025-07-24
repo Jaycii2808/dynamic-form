@@ -248,6 +248,7 @@ class FormPreviewScreen extends StatelessWidget {
         final previewStyle = Map<String, dynamic>.from(
           updatedComponent.style.toJson(),
         );
+        final styleModel = StyleModel.fromJson(previewStyle);
         previewStyle.addAll({
           'opacity': 0.7, // Fade to indicate disabled
           'pointer_events': 'none', // Block all pointer events
@@ -262,7 +263,7 @@ class FormPreviewScreen extends StatelessWidget {
           'selectFormType',
         ].contains(updatedComponent.type.toString().split('.').last)) {
           previewStyle.addAll({
-            'background_color': previewStyle['background_color'] ?? '#f5f5f5',
+            'background_color': styleModel.backgroundColor ?? '#f5f5f5',
             'border_color': '#d1d5db', // Gray border for disabled look
             'color': '#6b7280', // Gray text for disabled look
           });

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {
@@ -486,7 +487,8 @@ class DynamicDropdownBloc
     final items = config['items'] as List<dynamic>? ?? [];
 
     // Compute styles
-    final Map<String, dynamic> baseStyle = component.style.toJson();
+    final styleModel = StyleModel.fromJson(component.style.toJson());
+    final Map<String, dynamic> baseStyle = styleModel.toJson();
     final Map<String, dynamic> variantStyle = {};
     final StyleStatesModel? stateStyleStatesModel = _getTypedStateStyle(
       component.states,
@@ -531,7 +533,8 @@ class DynamicDropdownBloc
     String? triggerAvatar,
     String currentState,
   ) {
-    Map<String, dynamic> style = component.style.toJson();
+    final styleModel = StyleModel.fromJson(component.style.toJson());
+    Map<String, dynamic> style = styleModel.toJson();
 
     // Always apply variant with_icon if icon exists
     final withIconStyle =

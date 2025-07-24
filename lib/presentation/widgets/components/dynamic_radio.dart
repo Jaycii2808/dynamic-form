@@ -17,6 +17,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_ev
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicRadio extends StatefulWidget {
   final DynamicFormModel component;
@@ -190,14 +191,13 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     ComponentStateEnum currentState,
     bool isSelected,
   ) {
-    final style = _getStateStyle(component, currentState);
-
-    final controlWidth = style['width'] ?? 28.0;
-    final controlHeight = style['height'] ?? 28.0;
-    final backgroundColor = StyleUtils.parseColor(style['background_color']);
-    final borderColor = StyleUtils.parseColor(style['border_color']);
-    final borderWidth = style['border_width'] ?? 1.0;
-    final iconColor = StyleUtils.parseColor(style['icon_color']);
+    final styleModel = StyleModel.fromJson(component.style.toJson());
+    final controlWidth = styleModel.width ?? 28.0;
+    final controlHeight = styleModel.height ?? 28.0;
+    final backgroundColor = StyleUtils.parseColor(styleModel.backgroundColor);
+    final borderColor = StyleUtils.parseColor(styleModel.borderColor);
+    final borderWidth = styleModel.borderWidth ?? 1.0;
+    final iconColor = StyleUtils.parseColor(styleModel.iconColor);
     final controlBorderRadius = controlWidth / 2; // Always circular for radio
 
     return Container(

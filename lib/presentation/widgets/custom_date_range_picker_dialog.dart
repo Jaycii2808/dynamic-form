@@ -2,23 +2,27 @@ import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class CustomDateRangePickerDialog extends StatefulWidget {
   final DateTimeRange? initialDateRange;
   final Function(DateTimeRange?) onConfirm;
   final Map<String, dynamic> style;
 
-  const CustomDateRangePickerDialog({super.key,
+  const CustomDateRangePickerDialog({
+    super.key,
     required this.initialDateRange,
     required this.onConfirm,
     required this.style,
   });
 
   @override
-  State<CustomDateRangePickerDialog> createState() => _CustomDateRangePickerDialogState();
+  State<CustomDateRangePickerDialog> createState() =>
+      _CustomDateRangePickerDialogState();
 }
 
-class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialog> {
+class _CustomDateRangePickerDialogState
+    extends State<CustomDateRangePickerDialog> {
   late DateTime? _startDate;
   late DateTime? _endDate;
 
@@ -70,10 +74,19 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = StyleUtils.parseColor(widget.style['icon_color'] ?? '#6979F8');
-    final surfaceColor = StyleUtils.parseColor(widget.style['background_color'] ?? '#FFFFFF');
-    final textColor = StyleUtils.parseColor(widget.style['color'] ?? '#333333');
-    final labelColor = StyleUtils.parseColor(widget.style['label_color'] ?? '#FFFFFF');
+    final styleModel = widget.style is StyleModel
+        ? widget.style as StyleModel
+        : StyleModel.fromJson(widget.style);
+    final primaryColor = StyleUtils.parseColor(
+      styleModel.iconColor ?? '#6979F8',
+    );
+    final surfaceColor = StyleUtils.parseColor(
+      styleModel.backgroundColor ?? '#FFFFFF',
+    );
+    final textColor = StyleUtils.parseColor(styleModel.color ?? '#333333');
+    final labelColor = StyleUtils.parseColor(
+      styleModel.labelColor ?? '#FFFFFF',
+    );
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -116,7 +129,9 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
         Expanded(
           child: _buildDateSelectionBox(
             label: _startDate != null
-                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).format(_startDate!)
+                ? DateFormat(
+                    DateFormatCustomPattern.mmmDyyyy.pattern,
+                  ).format(_startDate!)
                 : 'Start Date',
             onTap: _selectStartDate,
             borderColor: primaryColor,
@@ -127,10 +142,14 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
         Expanded(
           child: _buildDateSelectionBox(
             label: _endDate != null
-                ? DateFormat(DateFormatCustomPattern.mmmDyyyy.pattern).format(_endDate!)
+                ? DateFormat(
+                    DateFormatCustomPattern.mmmDyyyy.pattern,
+                  ).format(_endDate!)
                 : 'End Date',
             onTap: _startDate != null ? _selectEndDate : null,
-            borderColor: _startDate != null ? primaryColor : primaryColor.withValues(alpha: 0.3),
+            borderColor: _startDate != null
+                ? primaryColor
+                : primaryColor.withValues(alpha: 0.3),
             textColor: textColor,
             isActive: _startDate != null,
           ),
@@ -156,7 +175,9 @@ class _CustomDateRangePickerDialogState extends State<CustomDateRangePickerDialo
           text: 'Confirm',
           onPressed: isConfirmEnabled
               ? () {
-                  widget.onConfirm(DateTimeRange(start: _startDate!, end: _endDate!));
+                  widget.onConfirm(
+                    DateTimeRange(start: _startDate!, end: _endDate!),
+                  );
                   Navigator.pop(context);
                 }
               : null,
@@ -237,9 +258,14 @@ Future<DateTime?> _showConfiguredDatePicker({
   required Map<String, dynamic> style,
   bool Function(DateTime)? selectableDayPredicate,
 }) {
-  final primaryColor = StyleUtils.parseColor(style['icon_color'] ?? '#6979F8');
-  final surfaceColor = StyleUtils.parseColor(style['background_color'] ?? '#FFFFFF');
-  final onSurfaceColor = StyleUtils.parseColor(style['color'] ?? '#333333');
+  final styleModel = style is StyleModel
+      ? style as StyleModel
+      : StyleModel.fromJson(style);
+  final primaryColor = StyleUtils.parseColor(styleModel.iconColor ?? '#6979F8');
+  final surfaceColor = StyleUtils.parseColor(
+    styleModel.backgroundColor ?? '#FFFFFF',
+  );
+  final onSurfaceColor = StyleUtils.parseColor(styleModel.color ?? '#333333');
 
   return showDatePicker(
     context: context,

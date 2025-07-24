@@ -5,6 +5,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -140,6 +141,7 @@ class DynamicFileUploaderWidget extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, DynamicFileUploaderSuccess state) {
+    final styleModel = StyleModel.fromJson(state.computedStyle);
     return Focus(
       focusNode: state.focusNode,
       child: DragTarget<List<XFile>>(
@@ -173,45 +175,29 @@ class DynamicFileUploaderWidget extends StatelessWidget {
                 : null,
             child: Container(
               key: Key(state.component!.id),
-              margin: StyleUtils.parsePadding(state.computedStyle['margin']),
+              margin: StyleUtils.parsePadding(styleModel.margin),
               child: DottedBorder(
                 options: RoundedRectDottedBorderOptions(
-                  color: StyleUtils.parseColor(
-                    state.computedStyle['border_color'],
-                  ),
-                  strokeWidth:
-                      (state.computedStyle['border_width'] as num?)
-                          ?.toDouble() ??
-                      1,
-                  radius: Radius.circular(
-                    (state.computedStyle['border_radius'] as num?)
-                            ?.toDouble() ??
-                        0,
-                  ),
+                  color: StyleUtils.parseColor(styleModel.borderColor),
+                  strokeWidth: styleModel.borderWidth ?? 1,
+                  radius: Radius.circular(styleModel.borderRadius ?? 0),
                   dashPattern: const [6, 6],
                   padding: const EdgeInsets.all(0),
                 ),
                 child: Container(
-                  width:
-                      (state.computedStyle['width'] as num?)?.toDouble() ?? 300,
-                  height:
-                      (state.computedStyle['height'] as num?)?.toDouble() ??
-                      200,
+                  width: styleModel.width ?? 300,
+                  height: styleModel.height ?? 200,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
                     vertical: 8.0,
                   ),
                   decoration: BoxDecoration(
-                    color: StyleUtils.parseColor(
-                      state.computedStyle['background_color'],
-                    ),
+                    color: StyleUtils.parseColor(styleModel.backgroundColor),
                     borderRadius: BorderRadius.circular(
-                      (state.computedStyle['border_radius'] as num?)
-                              ?.toDouble() ??
-                          0,
+                      styleModel.borderRadius ?? 0,
                     ),
                   ),
-                  child: _buildStateContent(context, state),
+                  child: _buildStateContent(context, state, styleModel),
                 ),
               ),
             ),
@@ -224,30 +210,34 @@ class DynamicFileUploaderWidget extends StatelessWidget {
   Widget _buildStateContent(
     BuildContext context,
     DynamicFileUploaderSuccess state,
+    StyleModel styleModel,
   ) {
     switch (state.currentState) {
       case 'loading':
-        return _buildLoadingWidget(state);
+        return _buildLoadingWidget(state, styleModel);
       case 'success':
-        return _buildSuccessWidget(context, state);
+        return _buildSuccessWidget(context, state, styleModel);
       case 'error':
-        return _buildErrorWidget(context, state);
+        return _buildErrorWidget(context, state, styleModel);
       default:
-        return _buildBaseWidget(context, state);
+        return _buildBaseWidget(context, state, styleModel);
     }
   }
 
-  Widget _buildLoadingWidget(DynamicFileUploaderSuccess state) {
+  Widget _buildLoadingWidget(
+    DynamicFileUploaderSuccess state,
+    StyleModel styleModel,
+  ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (state.computedStyle['icon'] != null)
+          if (styleModel.iconColor != null)
             Icon(
               DynamicFileUploaderBloc.mapIconNameToIconData(
-                state.computedStyle['icon'],
+                styleModel.iconColor!,
               ),
-              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
+              color: StyleUtils.parseColor(styleModel.iconColor),
               size: 48,
             ),
           const SizedBox(height: 16),
@@ -257,7 +247,7 @@ class DynamicFileUploaderWidget extends StatelessWidget {
                 : 'Uploading... ${state.progress}%',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: StyleUtils.parseColor(state.computedStyle['text_color']),
+              color: StyleUtils.parseColor(styleModel.textColor),
             ),
           ),
           const SizedBox(height: 16),
@@ -270,17 +260,18 @@ class DynamicFileUploaderWidget extends StatelessWidget {
   Widget _buildSuccessWidget(
     BuildContext context,
     DynamicFileUploaderSuccess state,
+    StyleModel styleModel,
   ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (state.computedStyle['icon'] != null)
+          if (styleModel.iconColor != null)
             Icon(
               DynamicFileUploaderBloc.mapIconNameToIconData(
-                state.computedStyle['icon'],
+                styleModel.iconColor!,
               ),
-              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
+              color: StyleUtils.parseColor(styleModel.iconColor),
               size: 48,
             ),
           const SizedBox(height: 16),
@@ -296,9 +287,7 @@ class DynamicFileUploaderWidget extends StatelessWidget {
                       )
                     : Icon(
                         Icons.insert_drive_file,
-                        color: StyleUtils.parseColor(
-                          state.computedStyle['icon_color'],
-                        ),
+                        color: StyleUtils.parseColor(styleModel.iconColor),
                       ),
                 title: Text(entry.value.split('/').last),
                 subtitle: FutureBuilder<String>(
@@ -332,17 +321,18 @@ class DynamicFileUploaderWidget extends StatelessWidget {
   Widget _buildErrorWidget(
     BuildContext context,
     DynamicFileUploaderSuccess state,
+    StyleModel styleModel,
   ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (state.computedStyle['icon'] != null)
+          if (styleModel.iconColor != null)
             Icon(
               DynamicFileUploaderBloc.mapIconNameToIconData(
-                state.computedStyle['icon'],
+                styleModel.iconColor!,
               ),
-              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
+              color: StyleUtils.parseColor(styleModel.iconColor),
               size: 48,
             ),
           const SizedBox(height: 16),
@@ -367,17 +357,18 @@ class DynamicFileUploaderWidget extends StatelessWidget {
   Widget _buildBaseWidget(
     BuildContext context,
     DynamicFileUploaderSuccess state,
+    StyleModel styleModel,
   ) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (state.computedStyle['icon'] != null)
+          if (styleModel.iconColor != null)
             Icon(
               DynamicFileUploaderBloc.mapIconNameToIconData(
-                state.computedStyle['icon'],
+                styleModel.iconColor!,
               ),
-              color: StyleUtils.parseColor(state.computedStyle['icon_color']),
+              color: StyleUtils.parseColor(styleModel.iconColor),
               size: 48,
             ),
           const SizedBox(height: 8),
@@ -385,7 +376,7 @@ class DynamicFileUploaderWidget extends StatelessWidget {
             state.computedConfig['title'] ?? '',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: StyleUtils.parseColor(state.computedStyle['text_color']),
+              color: StyleUtils.parseColor(styleModel.textColor),
             ),
           ),
           if (state.computedConfig['subtitle'] != null)
@@ -395,9 +386,7 @@ class DynamicFileUploaderWidget extends StatelessWidget {
                 state.computedConfig['subtitle'] ?? '',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: StyleUtils.parseColor(
-                    state.computedStyle['text_color'],
-                  ),
+                  color: StyleUtils.parseColor(styleModel.textColor),
                 ),
               ),
             ),
@@ -414,22 +403,18 @@ class DynamicFileUploaderWidget extends StatelessWidget {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: StyleUtils.parseColor(
-                  state.computedStyle['button_background_color'],
+                  styleModel.buttonBackgroundColor,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    (state.computedStyle['button_border_radius'] as num?)
-                            ?.toDouble() ??
-                        8,
+                    styleModel.buttonBorderRadius ?? 8,
                   ),
                 ),
               ),
               child: Text(
                 state.computedConfig['button_text'] ?? 'Browse',
                 style: TextStyle(
-                  color: StyleUtils.parseColor(
-                    state.computedStyle['button_text_color'],
-                  ),
+                  color: StyleUtils.parseColor(styleModel.buttonTextColor),
                 ),
               ),
             ),

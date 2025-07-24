@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_state.dart';
@@ -88,7 +89,7 @@ class DynamicSelectorButton extends StatelessWidget {
     InputConfig inputConfig,
     DynamicFormModel component,
   ) {
-    final style = component.style.toJson();
+    final styleModel = StyleModel.fromJson(component.style.toJson());
     final config = component.config;
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
     final selected =
@@ -99,14 +100,12 @@ class DynamicSelectorButton extends StatelessWidget {
         ComponentStateEnum.base;
 
     final stateStyle = _getStateStyle(component.states, currentState.value);
-    if (stateStyle != null) {
-      style.addAll(stateStyle.toJson());
-    }
+    // If you want to merge stateStyle, you can create a merged StyleModel if needed
 
     return Container(
       key: Key(component.id),
-      padding: StyleUtils.parsePadding(style['padding']),
-      margin: StyleUtils.parsePadding(style['margin'] ?? '0 0 10 0'),
+      padding: StyleUtils.parsePadding(styleModel.padding),
+      margin: StyleUtils.parsePadding(styleModel.margin ?? '0 0 10 0'),
       child: GestureDetector(
         onTap: isDisabled
             ? null
@@ -119,22 +118,20 @@ class DynamicSelectorButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: (style['icon_size'] as num?)?.toDouble() ?? 20.0,
-              height: (style['icon_size'] as num?)?.toDouble() ?? 20.0,
+              width: styleModel.iconSize ?? 20.0,
+              height: styleModel.iconSize ?? 20.0,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: StyleUtils.parseColor(style['background_color']),
+                color: StyleUtils.parseColor(styleModel.backgroundColor),
                 border: Border.all(
-                  color: StyleUtils.parseColor(style['border_color']),
-                  width: (style['border_width'] as num?)?.toDouble() ?? 2.0,
+                  color: StyleUtils.parseColor(styleModel.borderColor),
+                  width: styleModel.borderWidth ?? 2.0,
                 ),
               ),
               child: selected
                   ? Icon(
                       Icons.check,
-                      size:
-                          ((style['icon_size'] as num?)?.toDouble() ?? 20.0) *
-                          0.6,
+                      size: (styleModel.iconSize ?? 20.0) * 0.6,
                       color: Colors.white,
                     )
                   : null,
@@ -148,8 +145,8 @@ class DynamicSelectorButton extends StatelessWidget {
                     Text(
                       config['label'],
                       style: TextStyle(
-                        fontSize: style['label_text_size']?.toDouble() ?? 16,
-                        //color: StyleUtils.parseColor(style['label_color']),
+                        fontSize: styleModel.labelTextSize ?? 16,
+                        // color: StyleUtils.parseColor(styleModel.labelColor),
                       ),
                     ),
                     if (component.config['is_required'] == true)

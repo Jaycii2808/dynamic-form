@@ -160,25 +160,28 @@ class ComponentUtils {
   }
 
   /// Get safe style value with fallback and null safety
-  static T getStyleValue<T>(
-    Map<String, dynamic> style,
-    String key,
-    T defaultValue, {
-    String? fallbackKey,
-  }) {
-    // Try primary key
-    if (style.containsKey(key) && style[key] is T) {
-      return style[key] as T;
+  static T? getStyleValue<T>(dynamic style, String key, {String? fallbackKey}) {
+    if (style is StyleModel) {
+      // Use property access if possible
+      final value = style.toJson()[key];
+      if (value is T) return value;
+      if (fallbackKey != null) {
+        final fallbackValue = style.toJson()[fallbackKey];
+        if (fallbackValue is T) return fallbackValue;
+      }
+      return null;
+    } else if (style is Map<String, dynamic>) {
+      if (style.containsKey(key) && style[key] is T) {
+        return style[key] as T;
+      }
+      if (fallbackKey != null &&
+          style.containsKey(fallbackKey) &&
+          style[fallbackKey] is T) {
+        return style[fallbackKey] as T;
+      }
+      return null;
     }
-
-    // Try fallback key (for camelCase/snake_case compatibility)
-    if (fallbackKey != null &&
-        style.containsKey(fallbackKey) &&
-        style[fallbackKey] is T) {
-      return style[fallbackKey] as T;
-    }
-
-    return defaultValue;
+    return null;
   }
 
   /// Create form field update event data with validation

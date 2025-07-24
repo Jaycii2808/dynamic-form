@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +82,8 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeStyles() {
-    _style = _currentComponent.style.toJson();
+    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
+    _style = styleModel.toJson();
 
     // Apply variant styles
     if (_currentComponent.variants != null) {
@@ -128,7 +130,8 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeIcon() {
-    final iconName = _config['icon']?.toString() ?? _style['icon']?.toString();
+    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
+    final iconName = _config['icon']?.toString() ?? styleModel.icon;
     if (iconName != null && iconName.isNotEmpty) {
       _iconData = IconTypeEnum.fromString(iconName).toIconData();
     } else {
@@ -154,9 +157,10 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   Widget _buildButtonContent() {
-    final fontSize = _parseDouble(_style['fontSize']) ?? 16.0;
+    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
+    final fontSize = styleModel.fontSize ?? 16.0;
     final fontWeight = _parseFontWeight(
-      _style['fontWeight']?.toString() ?? 'normal',
+      styleModel.fontWeight?.toString() ?? 'normal',
     );
 
     if (_isLoading) {
@@ -170,7 +174,7 @@ class _DynamicButtonState extends State<DynamicButton> {
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
                 StyleUtils.parseColor(
-                  _style['color']?.toString() ?? '#ffffff',
+                  styleModel.color ?? '#ffffff',
                 ),
               ),
             ),
@@ -226,34 +230,34 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   Widget _buildButtonWidget() {
-    // Parse style properties
+    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
     final backgroundColor = StyleUtils.parseColor(
-      _style['backgroundColor']?.toString() ?? '#2196f3',
+      styleModel.backgroundColor ?? '#2196f3',
     );
     final textColor = StyleUtils.parseColor(
-      _style['color']?.toString() ?? '#ffffff',
+      styleModel.color ?? '#ffffff',
     );
     final borderColor = StyleUtils.parseColor(
-      _style['borderColor']?.toString() ?? 'transparent',
+      styleModel.borderColor ?? 'transparent',
     );
-    final borderWidth = _parseDouble(_style['borderWidth']) ?? 1.0;
+    final borderWidth = styleModel.borderWidth ?? 1.0;
     final borderRadius = StyleUtils.parseBorderRadius(
-      (_parseDouble(_style['borderRadius']) ?? 8.0),
+      styleModel.borderRadius ?? 8.0,
     );
     final padding = StyleUtils.parsePadding(
-      _style['padding']?.toString() ?? '12px 24px',
+      styleModel.padding ?? '12px 24px',
     );
     final margin = StyleUtils.parsePadding(
-      _style['margin']?.toString() ?? '8px 4px',
+      styleModel.margin ?? '8px 4px',
     );
-    final elevation = _parseDouble(_style['elevation']) ?? 2.0;
+    final elevation = styleModel.elevation ?? 2.0;
 
     return Container(
       key: Key(_currentComponent.id),
       margin: margin,
       child: SizedBox(
-        width: _parseDouble(_style['width']),
-        height: _parseDouble(_style['height']) ?? 48.0,
+        width: styleModel.width,
+        height: styleModel.height ?? 48.0,
         child: ElevatedButton(
           onPressed: _onPressedHandler,
           style: ElevatedButton.styleFrom(
@@ -268,7 +272,7 @@ class _DynamicButtonState extends State<DynamicButton> {
             padding: padding,
             elevation: elevation,
             shadowColor: StyleUtils.parseColor(
-              _style['shadowColor']?.toString() ?? '#000000',
+              styleModel.shadowColor ?? '#000000',
             ),
           ),
           child: _buttonContent,
