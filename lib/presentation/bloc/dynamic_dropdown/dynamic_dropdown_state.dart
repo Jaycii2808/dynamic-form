@@ -1,20 +1,20 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicDropdownState extends Equatable {
   final DynamicFormModel? component;
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final InputConfig? inputConfig;
   final ComponentStateEnum? formState;
   final String? errorText;
 
   const DynamicDropdownState({
     this.component,
-    this.styleConfig,
+    this.styleModel,
     this.inputConfig,
     this.formState,
     this.errorText,
@@ -23,7 +23,7 @@ abstract class DynamicDropdownState extends Equatable {
   @override
   List<Object?> get props => [
     component,
-    styleConfig,
+    styleModel,
     inputConfig,
     formState,
     errorText,
@@ -77,7 +77,7 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
 
   const DynamicDropdownSuccess({
     super.component,
-    super.styleConfig,
+    super.styleModel,
     super.inputConfig,
     super.formState,
     super.errorText,
@@ -105,7 +105,7 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
 
   DynamicDropdownSuccess copyWith({
     DynamicFormModel? component,
-    StyleConfig? styleConfig,
+    StyleModel? styleModel,
     InputConfig? inputConfig,
     ComponentStateEnum? formState,
     String? errorText,
@@ -132,7 +132,7 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
   }) {
     return DynamicDropdownSuccess(
       component: component ?? this.component,
-      styleConfig: styleConfig ?? this.styleConfig,
+      styleModel: styleModel ?? this.styleModel,
       inputConfig: inputConfig ?? this.inputConfig,
       formState: formState ?? this.formState,
       errorText: errorText ?? this.errorText,

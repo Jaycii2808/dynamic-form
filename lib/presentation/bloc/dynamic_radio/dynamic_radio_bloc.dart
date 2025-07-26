@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_state.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +36,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       emit(DynamicRadioLoading(component: initialComponent));
 
       // Parse configurations
-      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
+      final styleModel = StyleModel.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Determine initial form state
@@ -48,7 +48,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       emit(
         DynamicRadioSuccess(
           component: initialComponent,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: currentState,
           errorText: errorText,
@@ -96,7 +96,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       emit(
         DynamicRadioSuccess(
           component: updatedComponent,
-          styleConfig: currentState.styleConfig,
+          styleModel: currentState.styleModel,
           inputConfig: currentState.inputConfig,
           formState: formState,
           errorText: errorText,
@@ -124,7 +124,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       debugPrint('🔄 [RadioBloc] External update received');
 
       // Parse updated configurations
-      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
+      final styleModel = StyleModel.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Get current form state from component
@@ -134,7 +134,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       emit(
         DynamicRadioSuccess(
           component: event.component,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,

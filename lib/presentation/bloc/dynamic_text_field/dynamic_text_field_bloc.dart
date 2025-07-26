@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_event.dart';
@@ -60,7 +60,7 @@ class DynamicTextFieldBloc
         DynamicTextFieldSuccess(
           component: component,
           inputConfig: InputConfig.fromJson(component.config),
-          styleConfig: StyleConfig.fromJson(component.style.toJson()),
+          styleModel: StyleModel.fromJson(component.style.toJson()),
           formState: ComponentStateEnum.fromString(
             component.config['current_state']?.toString() ?? 'base',
           ),
@@ -154,7 +154,7 @@ class DynamicTextFieldBloc
           component: updatedComponent,
           errorText: validationError,
           inputConfig: InputConfig.fromJson(updatedComponent.config),
-          styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
           formState: newState,
           textController: _textController,
           focusNode: _focusNode,
@@ -190,7 +190,7 @@ class DynamicTextFieldBloc
         DynamicTextFieldSuccess(
           component: event.component,
           inputConfig: InputConfig.fromJson(event.component.config),
-          styleConfig: StyleConfig.fromJson(event.component.style.toJson()),
+          styleModel: StyleModel.fromJson(event.component.style.toJson()),
           formState: ComponentStateEnum.fromString(
             event.component.config['current_state']?.toString() ?? 'base',
           ),

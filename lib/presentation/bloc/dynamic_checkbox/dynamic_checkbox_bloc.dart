@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +42,7 @@ class DynamicCheckboxBloc
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
+      final styleModel = StyleModel.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Get initial value
@@ -70,7 +70,7 @@ class DynamicCheckboxBloc
       emit(
         DynamicCheckboxSuccess(
           component: initialComponent,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,
@@ -160,7 +160,7 @@ class DynamicCheckboxBloc
     if (currentState is! DynamicCheckboxSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
+      final styleModel = StyleModel.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Get updated value
@@ -185,7 +185,7 @@ class DynamicCheckboxBloc
       emit(
         currentState.copyWith(
           component: event.component,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,

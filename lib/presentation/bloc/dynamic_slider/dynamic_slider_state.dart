@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class DynamicSliderLoading extends DynamicSliderState {
 }
 
 class DynamicSliderSuccess extends DynamicSliderState {
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final InputConfig? inputConfig;
 
   // Slider values
@@ -69,7 +69,7 @@ class DynamicSliderSuccess extends DynamicSliderState {
     super.formState,
     super.errorText,
     super.component,
-    this.styleConfig,
+    this.styleModel,
     this.inputConfig,
     this.sliderValue,
     this.sliderRangeValues,
@@ -94,7 +94,7 @@ class DynamicSliderSuccess extends DynamicSliderState {
     ComponentStateEnum? formState,
     String? errorText,
     DynamicFormModel? component,
-    StyleConfig? styleConfig,
+    StyleModel? styleModel,
     InputConfig? inputConfig,
     double? sliderValue,
     RangeValues? sliderRangeValues,
@@ -118,7 +118,7 @@ class DynamicSliderSuccess extends DynamicSliderState {
       formState: formState ?? this.formState,
       errorText: errorText ?? this.errorText,
       component: component ?? this.component,
-      styleConfig: styleConfig ?? this.styleConfig,
+      styleModel: styleModel ?? this.styleModel,
       inputConfig: inputConfig ?? this.inputConfig,
       sliderValue: sliderValue ?? this.sliderValue,
       sliderRangeValues: sliderRangeValues ?? this.sliderRangeValues,
@@ -143,7 +143,7 @@ class DynamicSliderSuccess extends DynamicSliderState {
   @override
   List<Object?> get props => [
     ...super.props,
-    styleConfig,
+    styleModel,
     inputConfig,
     sliderValue,
     sliderRangeValues,

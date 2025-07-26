@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
@@ -9,7 +9,7 @@ import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 abstract class DynamicTextFieldTagsState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final ComponentStateEnum? formState;
   final String? errorText;
   final List<String> selectedTags;
@@ -22,7 +22,7 @@ abstract class DynamicTextFieldTagsState extends Equatable {
   const DynamicTextFieldTagsState({
     this.component,
     this.inputConfig,
-    this.styleConfig,
+    this.styleModel,
     this.formState,
     this.errorText,
     this.selectedTags = const [],
@@ -37,7 +37,7 @@ abstract class DynamicTextFieldTagsState extends Equatable {
   List<Object?> get props => [
     component,
     inputConfig,
-    styleConfig,
+    styleModel,
     formState,
     errorText,
     selectedTags,
@@ -64,7 +64,7 @@ class DynamicTextFieldTagsLoading extends DynamicTextFieldTagsState {
   }) : super(
          component: state.component,
          inputConfig: state.inputConfig,
-         styleConfig: state.styleConfig,
+         styleModel: state.styleModel,
          formState: state.formState,
          errorText: state.errorText,
          selectedTags: state.selectedTags,
@@ -80,7 +80,7 @@ class DynamicTextFieldTagsSuccess extends DynamicTextFieldTagsState {
   const DynamicTextFieldTagsSuccess({
     super.component,
     super.inputConfig,
-    super.styleConfig,
+    super.styleModel,
     super.formState,
     super.errorText,
     super.selectedTags,

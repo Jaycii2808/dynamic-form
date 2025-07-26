@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_select/dynamic_select_state.dart';
@@ -59,7 +59,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
+      final styleModel = StyleModel.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Extract options and configuration
@@ -98,7 +98,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
       emit(
         DynamicSelectSuccess(
           component: initialComponent,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,
@@ -321,7 +321,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     if (currentState is! DynamicSelectSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
+      final styleModel = StyleModel.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Extract updated configuration
@@ -349,7 +349,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
       emit(
         currentState.copyWith(
           component: event.component,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,

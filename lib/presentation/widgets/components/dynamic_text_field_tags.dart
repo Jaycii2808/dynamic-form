@@ -60,14 +60,14 @@ class DynamicTextFieldTags extends StatelessWidget {
     BuildContext context,
     DynamicTextFieldTagsSuccess state,
   ) {
-    final style = state.styleConfig!;
+    final style = state.styleModel!;
     final config = state.inputConfig!;
     final isDisabled = config.disabled;
 
     return Container(
       key: Key(state.component!.id),
       padding: const EdgeInsets.all(8.0),
-      margin: style.margin,
+      margin: style.marginGeometry,
       decoration: BoxDecoration(
         border: Border.all(
           color: StyleUtils.parseColor(

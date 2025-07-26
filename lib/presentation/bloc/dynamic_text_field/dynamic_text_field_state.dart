@@ -1,14 +1,14 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicTextFieldState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final ComponentStateEnum? formState;
   final String? errorText;
   final String? errorMessage;
@@ -19,7 +19,7 @@ abstract class DynamicTextFieldState extends Equatable {
   const DynamicTextFieldState({
     this.component,
     this.inputConfig,
-    this.styleConfig,
+    this.styleModel,
     this.formState,
     this.errorText,
     this.errorMessage,
@@ -31,7 +31,7 @@ abstract class DynamicTextFieldState extends Equatable {
   List<Object?> get props => [
     component,
     inputConfig,
-    styleConfig,
+    styleModel,
     formState,
     errorText,
     errorMessage,
@@ -47,7 +47,7 @@ class DynamicTextFieldLoading extends DynamicTextFieldState {
   const DynamicTextFieldLoading({
     super.component,
     super.inputConfig,
-    super.styleConfig,
+    super.styleModel,
     super.formState,
     super.errorText,
     super.textController,
@@ -58,7 +58,7 @@ class DynamicTextFieldLoading extends DynamicTextFieldState {
     : super(
         component: state.component,
         inputConfig: state.inputConfig,
-        styleConfig: state.styleConfig,
+        styleModel: state.styleModel,
         formState: state.formState,
         errorText: state.errorText,
         textController: state.textController,
@@ -70,7 +70,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
   const DynamicTextFieldSuccess({
     required DynamicFormModel super.component,
     required InputConfig super.inputConfig,
-    required StyleConfig super.styleConfig,
+    required StyleModel super.styleModel,
     required ComponentStateEnum super.formState,
     required TextEditingController super.textController,
     required FocusNode super.focusNode,
@@ -80,14 +80,14 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
   DynamicTextFieldSuccess copyWith({
     DynamicFormModel? component,
     InputConfig? inputConfig,
-    StyleConfig? styleConfig,
+    StyleModel? styleModel,
     ComponentStateEnum? formState,
     String? errorText,
   }) {
     return DynamicTextFieldSuccess(
       component: component ?? this.component!,
       inputConfig: inputConfig ?? this.inputConfig!,
-      styleConfig: styleConfig ?? this.styleConfig!,
+      styleModel: styleModel ?? this.styleModel!,
       formState: formState ?? this.formState!,
       errorText: errorText ?? this.errorText,
       textController: textController!,

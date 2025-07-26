@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
@@ -27,7 +27,7 @@ class DynamicTextAreaBloc
         DynamicTextAreaInitial(
           component: DynamicFormModel.empty(),
           inputConfig: null,
-          styleConfig: null,
+          styleModel: null,
           formState: null,
           errorText: null,
           textController: null,
@@ -72,7 +72,7 @@ class DynamicTextAreaBloc
         DynamicTextAreaSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(configState),
           textController: _textController,
           focusNode: _focusNode,
@@ -139,7 +139,7 @@ class DynamicTextAreaBloc
           component: updatedComponent,
           errorText: validationError,
           inputConfig: InputConfig.fromJson(updatedComponent.config),
-          styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(configState),
           textController: _textController,
           focusNode: _focusNode,

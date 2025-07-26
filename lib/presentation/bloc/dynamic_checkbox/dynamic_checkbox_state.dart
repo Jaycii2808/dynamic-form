@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class DynamicCheckboxLoading extends DynamicCheckboxState {
 }
 
 class DynamicCheckboxSuccess extends DynamicCheckboxState {
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final InputConfig? inputConfig;
   final bool isSelected;
   final bool isEditable;
@@ -53,7 +53,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
     super.component,
     super.formState,
     super.errorText,
-    this.styleConfig,
+    this.styleModel,
     this.inputConfig,
     required this.isSelected,
     required this.isEditable,
@@ -71,7 +71,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
   @override
   List<Object?> get props => [
     ...super.props,
-    styleConfig,
+    styleModel,
     inputConfig,
     isSelected,
     isEditable,
@@ -90,7 +90,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
     DynamicFormModel? component,
     ComponentStateEnum? formState,
     String? errorText,
-    StyleConfig? styleConfig,
+    StyleModel? styleModel,
     InputConfig? inputConfig,
     bool? isSelected,
     bool? isEditable,
@@ -108,7 +108,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
       component: component ?? this.component,
       formState: formState ?? this.formState,
       errorText: errorText ?? this.errorText,
-      styleConfig: styleConfig ?? this.styleConfig,
+      styleModel: styleModel ?? this.styleModel,
       inputConfig: inputConfig ?? this.inputConfig,
       isSelected: isSelected ?? this.isSelected,
       isEditable: isEditable ?? this.isEditable,

@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_state.dart';
 import 'package:flutter/material.dart';
@@ -139,7 +139,7 @@ class DynamicTextFieldTagsBloc
         DynamicTextFieldTagsSuccess(
           component: initialComponent,
           inputConfig: inputConfig,
-          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
           formState: formState,
           selectedTags: initialTags,
           textController: _textController,
@@ -175,7 +175,7 @@ class DynamicTextFieldTagsBloc
         DynamicTextFieldTagsSuccess(
           component: currentState.component,
           inputConfig: currentState.inputConfig,
-          styleConfig: currentState.styleConfig,
+          styleModel: currentState.styleModel,
           formState: currentState.formState,
           errorText: currentState.errorText,
           selectedTags: currentState.selectedTags,
@@ -214,7 +214,7 @@ class DynamicTextFieldTagsBloc
         DynamicTextFieldTagsSuccess(
           component: currentState.component,
           inputConfig: currentState.inputConfig,
-          styleConfig: currentState.styleConfig,
+          styleModel: currentState.styleModel,
           formState: currentState.formState,
           errorText: currentState.errorText,
           selectedTags: currentState.selectedTags,
@@ -367,7 +367,7 @@ class DynamicTextFieldTagsBloc
       DynamicTextFieldTagsSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+        styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
         formState: newState,
         selectedTags: newTags,
         textController: _textController,

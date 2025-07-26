@@ -7,7 +7,6 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -136,7 +135,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
               '🎯 [Radio] Success state - formState: ${state.formState}, currentState: ${state.component?.config['current_state']}',
             );
             return _buildRadioBody(
-              state.styleConfig!,
+              state.styleModel!,
               state.inputConfig!,
               state.component!,
               state.formState!,
@@ -152,7 +151,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
   }
 
   Widget _buildRadioBody(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -165,8 +164,8 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
 
     return Container(
       key: Key(component.id),
-      margin: styleConfig.margin,
-      padding: styleConfig.padding,
+      margin: styleModel.marginGeometry,
+      padding: styleModel.paddingGeometry,
       child: Focus(
         focusNode: focusNode,
         child: GestureDetector(

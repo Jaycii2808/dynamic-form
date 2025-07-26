@@ -4,7 +4,6 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
@@ -54,7 +53,7 @@ class DynamicSwitch extends StatelessWidget {
         if (state is DynamicSwitchSuccess) {
           return _buildBody(
             context,
-            state.styleConfig!,
+            state.styleModel!,
             state.inputConfig!,
             state.component!,
           );
@@ -81,7 +80,7 @@ class DynamicSwitch extends StatelessWidget {
 
   Widget _buildBody(
     BuildContext context,
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
   ) {

@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class DynamicRadioLoading extends DynamicRadioState {
 }
 
 class DynamicRadioSuccess extends DynamicRadioState {
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final InputConfig? inputConfig;
   final FocusNode? focusNode;
 
@@ -41,7 +41,7 @@ class DynamicRadioSuccess extends DynamicRadioState {
     super.component,
     super.formState,
     super.errorText,
-    this.styleConfig,
+    this.styleModel,
     this.inputConfig,
     this.focusNode,
   });
@@ -51,7 +51,7 @@ class DynamicRadioSuccess extends DynamicRadioState {
     component,
     formState,
     errorText,
-    styleConfig,
+    styleModel,
     inputConfig,
     focusNode,
   ];

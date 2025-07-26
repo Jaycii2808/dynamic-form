@@ -8,7 +8,6 @@ import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_state.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +66,7 @@ class DynamicDropdownBloc
         ),
       );
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
+      final styleModel =initialComponent.style;
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Compute all values like in original _computeValues()
@@ -97,7 +96,7 @@ class DynamicDropdownBloc
       emit(
         DynamicDropdownSuccess(
           component: initialComponent,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,
@@ -274,7 +273,7 @@ class DynamicDropdownBloc
     if (currentState is! DynamicDropdownSuccess) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
+      final styleModel = StyleModel.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       final formState = _computeFormState(
@@ -307,7 +306,7 @@ class DynamicDropdownBloc
       emit(
         currentState.copyWith(
           component: event.component,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,

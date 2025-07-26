@@ -207,7 +207,7 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
             Text(
               label,
               style: TextStyle(
-                fontSize: state.styleConfig?.labelTextSize.toDouble() ?? 16,
+                fontSize: state.styleModel?.labelTextSize?.toDouble() ?? 16,
                 color: StyleUtils.parseColor(state.component!.style.labelColor),
                 fontWeight: FontWeight.w500,
               ),

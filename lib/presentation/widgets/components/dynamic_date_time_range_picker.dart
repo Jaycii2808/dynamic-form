@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
@@ -61,7 +61,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
 
         if (state is DynamicDateTimeRangePickerSuccess) {
           return _buildBody(
-            state.styleConfig!,
+            state.styleModel!,
             state.inputConfig!,
             state.component!,
             state.textController!,
@@ -77,7 +77,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   }
 
   Widget _buildBody(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     TextEditingController textController,

@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_state.dart';
@@ -44,7 +44,7 @@ class DynamicSelectorButtonBloc
         DynamicSelectorButtonSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(
             initialComponent.config['currentState'],
           ),
@@ -102,7 +102,7 @@ class DynamicSelectorButtonBloc
       DynamicSelectorButtonSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+        styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
         formState: newState,
       ),
     );

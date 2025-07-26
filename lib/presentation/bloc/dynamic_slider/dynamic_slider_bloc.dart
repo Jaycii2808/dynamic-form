@@ -1,4 +1,3 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
@@ -6,12 +5,12 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_slider/dynamic_slider_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
   final DynamicFormModel initialComponent;
@@ -57,7 +56,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     try {
       emit(DynamicSliderLoading(component: initialComponent));
 
-      final styleConfig = StyleConfig.fromJson(initialComponent.style.toJson());
+      final styleModel = StyleModel.fromJson(initialComponent.style.toJson());
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Compute all values from component
@@ -101,7 +100,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
       emit(
         DynamicSliderSuccess(
           component: initialComponent,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,
@@ -246,7 +245,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     if (currentState.isUserSliding) return;
 
     try {
-      final styleConfig = StyleConfig.fromJson(event.component.style.toJson());
+      final styleModel = StyleModel.fromJson(event.component.style.toJson());
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Compute all values from updated component
@@ -285,7 +284,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
       emit(
         currentState.copyWith(
           component: event.component,
-          styleConfig: styleConfig,
+          styleModel: styleModel,
           inputConfig: inputConfig,
           formState: formState,
           errorText: errorText,

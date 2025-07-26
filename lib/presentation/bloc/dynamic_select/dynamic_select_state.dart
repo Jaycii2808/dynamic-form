@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class DynamicSelectLoading extends DynamicSelectState {
 }
 
 class DynamicSelectSuccess extends DynamicSelectState {
-  final StyleConfig? styleConfig;
+  final StyleModel? styleModel;
   final InputConfig? inputConfig;
   final bool isDropdownOpen;
   final List<dynamic> options;
@@ -55,7 +55,7 @@ class DynamicSelectSuccess extends DynamicSelectState {
     super.formState,
     super.errorText,
     super.component,
-    this.styleConfig,
+    this.styleModel,
     this.inputConfig,
     this.isDropdownOpen = false,
     this.options = const [],
@@ -74,7 +74,7 @@ class DynamicSelectSuccess extends DynamicSelectState {
     ComponentStateEnum? formState,
     String? errorText,
     DynamicFormModel? component,
-    StyleConfig? styleConfig,
+    StyleModel? styleModel,
     InputConfig? inputConfig,
     bool? isDropdownOpen,
     List<dynamic>? options,
@@ -92,7 +92,7 @@ class DynamicSelectSuccess extends DynamicSelectState {
       formState: formState ?? this.formState,
       errorText: errorText ?? this.errorText,
       component: component ?? this.component,
-      styleConfig: styleConfig ?? this.styleConfig,
+      styleModel: styleModel ?? this.styleModel,
       inputConfig: inputConfig ?? this.inputConfig,
       isDropdownOpen: isDropdownOpen ?? this.isDropdownOpen,
       options: options ?? this.options,
@@ -111,7 +111,7 @@ class DynamicSelectSuccess extends DynamicSelectState {
   @override
   List<Object?> get props => [
     ...super.props,
-    styleConfig,
+    styleModel,
     inputConfig,
     isDropdownOpen,
     options,

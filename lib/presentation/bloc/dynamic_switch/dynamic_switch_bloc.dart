@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
@@ -35,7 +35,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
         DynamicSwitchSuccess(
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
-          styleConfig: StyleConfig.fromJson(initialComponent.style.toJson()),
+          styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
           formState: ComponentStateEnum.fromString(
             initialComponent.config['currentState']?.toString() ?? 'base',
           ),
@@ -79,7 +79,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
       DynamicSwitchSuccess(
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
-        styleConfig: StyleConfig.fromJson(updatedComponent.style.toJson()),
+        styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
         formState: ComponentStateEnum.fromString(
           updateData[ValueKeyEnum.currentState.key],
         ),

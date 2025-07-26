@@ -3,12 +3,11 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
-import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -152,7 +151,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
               '🎯 [TextField] Success state - formState: ${state.formState}, currentState: ${state.component?.config['current_state']}',
             );
             return _buildBody(
-              state.styleConfig!,
+              state.styleModel!,
               state.inputConfig!,
               state.component!,
               state.formState!,
@@ -169,7 +168,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   Widget _buildBody(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -179,8 +178,8 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   ) {
     return Container(
       key: Key(component.id),
-      padding: styleConfig.padding,
-      margin: styleConfig.margin,
+      padding: styleModel.paddingGeometry,
+      margin: styleModel.marginGeometry,
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(focusNode);
@@ -189,9 +188,9 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLabel(styleConfig, inputConfig),
+            _buildLabel(styleModel, inputConfig),
             _buildTextField(
-              styleConfig,
+              styleModel,
               inputConfig,
               component,
               currentState,
@@ -205,7 +204,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
-  Widget _buildLabel(StyleConfig styleConfig, InputConfig inputConfig) {
+  Widget _buildLabel(StyleModel styleModel, InputConfig inputConfig) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -214,8 +213,8 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       child: Text(
         inputConfig.label!,
         style: TextStyle(
-          fontSize: styleConfig.labelTextSize,
-          color: styleConfig.labelColor,
+          fontSize: styleModel.labelTextSize,
+          color: styleModel.labelTextColor,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -223,7 +222,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   Widget _buildTextField(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -246,13 +245,14 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       stateKey,
     );
 
-    // Determine text color from state or fallback to styleConfig
-    Color textColor = stateStyle?.textColor ?? styleConfig.textColor;
+    // Determine text color from state or fallback to styleModel
+    Color textColor = stateStyle?.textColor ?? styleModel.textColorValue;
 
     // Determine helper text and color from state
-    String? helperText = stateStyle?.helperText ?? styleConfig.helperText;
+    String? helperText = stateStyle?.helperText ?? styleModel.helperText;
     Color? helperTextColor =
-        stateStyle?.helperTextColor ?? styleConfig.helperTextColor;
+        stateStyle?.helperTextColor ??
+        StyleUtils.parseColor(styleModel.helperTextColor);
 
     debugPrint(
       '🎨 [TextField] State: $enabledBorderState, textColor: $textColor, helperText: $helperText',
@@ -278,33 +278,17 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
           minWidth: 40,
           minHeight: 0,
         ),
-        border: _buildBorder(
-          styleConfig.borderConfig,
-          enabledBorderState,
-          component,
-        ),
-        enabledBorder: _buildBorder(
-          styleConfig.borderConfig,
-          enabledBorderState,
-          component,
-        ),
-        focusedBorder: _buildBorder(
-          styleConfig.borderConfig,
-          ComponentStateEnum.focused,
-          component,
-        ),
-        errorBorder: _buildBorder(
-          styleConfig.borderConfig,
-          ComponentStateEnum.error,
-          component,
-        ),
+        border: _buildBorder(styleModel, enabledBorderState),
+        enabledBorder: _buildBorder(styleModel, enabledBorderState),
+        focusedBorder: _buildBorder(styleModel, ComponentStateEnum.focused),
+        errorBorder: _buildBorder(styleModel, ComponentStateEnum.error),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: styleConfig.contentVerticalPadding,
-          horizontal: styleConfig.contentHorizontalPadding,
+          vertical: styleModel.contentVerticalPaddingValue,
+          horizontal: styleModel.contentHorizontalPaddingValue,
         ),
-        filled: styleConfig.fillColor != Colors.transparent,
-        fillColor: styleConfig.fillColor,
+        filled: styleModel.fillColor != Colors.transparent,
+        fillColor: styleModel.fillColor,
         helperText: helperText,
         helperStyle: TextStyle(
           color: helperTextColor,
@@ -312,7 +296,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         ),
       ),
       style: TextStyle(
-        fontSize: styleConfig.fontSize,
+        fontSize: styleModel.fontSizeValue,
         color: textColor,
       ),
     );
@@ -320,10 +304,10 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
 
   Widget? _buildPrefixIcon(DynamicFormModel component) {
     // Get icon from component style or config
-    final iconName = component.style.iconColor ?? component.config['icon']?.toString();
+    final iconName =
+        component.style.iconColor ?? component.config['icon']?.toString();
     if (iconName != null && iconName.isNotEmpty) {
-      final iconColor =
-          StyleUtils.parseColor(component.style.iconColor) ;
+      final iconColor = StyleUtils.parseColor(component.style.iconColor);
       final iconSize = 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
@@ -363,44 +347,22 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   OutlineInputBorder _buildBorder(
-    BorderConfig borderConfig,
-    ComponentStateEnum? state,
-    DynamicFormModel component,
+    StyleModel styleModel,
+    ComponentStateEnum state,
   ) {
-    double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withValues(
-      alpha: borderConfig.borderOpacity,
-    );
+    double width = styleModel.borderWidthValue;
+    Color color = styleModel.borderColorValue;
 
-    // Get border color from component states if available
-    if (state != null && component.states != null) {
-      final String stateKey = _ComponentStateEnumToKey(state);
-      final StyleStatesModel? stateStyle = _getTypedStateStyle(
-        component.states,
-        stateKey,
-      );
-      if (stateStyle?.borderColor != null) {
-        color = stateStyle!.borderColor!;
-        width = 2; // Use thicker border for state styles
-      }
-    }
-
-    // Special handling for focused state
     if (state == ComponentStateEnum.focused) {
       width += 1;
-      // Only use theme color if no state style is defined
-      final StyleStatesModel? focusedStyle = component.states?.focused;
-      if (focusedStyle?.borderColor == null) {
-        color = Theme.of(context).primaryColor;
-      }
+      color = styleModel.focusedBorderColorValue;
+    } else if (state == ComponentStateEnum.error) {
+      color = styleModel.errorBorderColorValue;
+      width = 2;
     }
 
-    debugPrint(
-      '🎨 [TextField] Border - state: $state, color: $color, width: $width',
-    );
-
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(borderConfig.borderRadius),
+      borderRadius: BorderRadius.circular(styleModel.borderRadiusValue),
       borderSide: BorderSide(color: color, width: width),
     );
   }

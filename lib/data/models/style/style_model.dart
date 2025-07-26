@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class StyleModel {
   final double? fontSize;
   final String? color;
@@ -40,6 +42,9 @@ class StyleModel {
   final String? fontWeight;
   final double? elevation;
   final String? shadowColor;
+  // Add missing properties
+  final String? focusedBorderColor;
+  final String? errorBorderColor;
 
   const StyleModel({
     this.fontSize,
@@ -82,6 +87,8 @@ class StyleModel {
     this.fontWeight,
     this.elevation,
     this.shadowColor,
+    this.focusedBorderColor,
+    this.errorBorderColor,
   });
 
   factory StyleModel.fromJson(Map<String, dynamic>? map) {
@@ -142,6 +149,8 @@ class StyleModel {
       fontWeight: map['fontWeight'] as String?,
       elevation: parseDouble(map['elevation']),
       shadowColor: map['shadowColor'] as String?,
+      focusedBorderColor: map['focused_border_color'] as String?,
+      errorBorderColor: map['error_border_color'] as String?,
     );
   }
 
@@ -189,5 +198,64 @@ class StyleModel {
     if (fontWeight != null) 'fontWeight': fontWeight,
     if (elevation != null) 'elevation': elevation,
     if (shadowColor != null) 'shadowColor': shadowColor,
+    if (focusedBorderColor != null) 'focused_border_color': focusedBorderColor,
+    if (errorBorderColor != null) 'error_border_color': errorBorderColor,
   };
+
+  // Make parsing methods public
+  static Color? parseColor(dynamic value) {
+    if (value is int) return Color(value);
+    if (value is String) {
+      if (value.startsWith('#')) {
+        final hex = value.replaceAll('#', '');
+        if (hex.length == 6) {
+          return Color(int.parse('FF$hex', radix: 16));
+        } else if (hex.length == 8) {
+          return Color(int.parse(hex, radix: 16));
+        }
+      }
+    }
+    return null;
+  }
+
+  static EdgeInsets? parseEdgeInsets(dynamic value) {
+    if (value is String) {
+      final parts = value.split(' ');
+      if (parts.length == 2) {
+        final horizontal = double.tryParse(parts[0].replaceAll('px', '')) ?? 0;
+        final vertical = double.tryParse(parts[1].replaceAll('px', '')) ?? 0;
+        return EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical);
+      } else if (parts.length == 4) {
+        final top = double.tryParse(parts[0].replaceAll('px', '')) ?? 0;
+        final right = double.tryParse(parts[1].replaceAll('px', '')) ?? 0;
+        final bottom = double.tryParse(parts[2].replaceAll('px', '')) ?? 0;
+        final left = double.tryParse(parts[3].replaceAll('px', '')) ?? 0;
+        return EdgeInsets.fromLTRB(left, top, right, bottom);
+      } else {
+        final valueNum = double.tryParse(parts[0].replaceAll('px', '')) ?? 0;
+        return EdgeInsets.all(valueNum);
+      }
+    }
+    return null;
+  }
+
+  // Helper methods for common style properties
+  Color get fillColor => parseColor(backgroundColor) ?? Colors.transparent;
+  Color get textColorValue => parseColor(color) ?? Colors.black;
+  Color get labelTextColor => parseColor(labelColor) ?? Colors.black;
+  Color get borderColorValue => parseColor(borderColor) ?? Colors.grey;
+  Color get focusedBorderColorValue =>
+      parseColor(focusedBorderColor) ?? parseColor(iconColor) ?? Colors.blue;
+  Color get errorBorderColorValue => parseColor(errorBorderColor) ?? Colors.red;
+  EdgeInsetsGeometry get paddingGeometry =>
+      parseEdgeInsets(padding) ?? EdgeInsets.zero;
+  EdgeInsetsGeometry get marginGeometry =>
+      parseEdgeInsets(margin) ?? EdgeInsets.zero;
+  double get borderWidthValue => borderWidth ?? 1.0;
+  double get borderRadiusValue => borderRadius ?? 8.0;
+  double get fontSizeValue => fontSize ?? 14.0;
+  double get contentVerticalPaddingValue => contentVerticalPadding ?? 16.0;
+  double get contentHorizontalPaddingValue => contentHorizontalPadding ?? 16.0;
+  FontStyle get fontStyleValue =>
+      fontStyle == 'italic' ? FontStyle.italic : FontStyle.normal;
 }

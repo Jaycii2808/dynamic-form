@@ -1,17 +1,17 @@
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 
 class DynamicTextArea extends StatelessWidget {
   final DynamicFormModel component;
@@ -60,7 +60,7 @@ class DynamicTextArea extends StatelessWidget {
         //   return const Center(child: Text("CC"),);
         // }
         // return _buildBody(
-        //   state.styleConfig!,
+        //   state.styleModel!,
         //   state.inputConfig!,
         //   state.component!,
         //   state.formState!,
@@ -72,7 +72,7 @@ class DynamicTextArea extends StatelessWidget {
 
         if (state is DynamicTextAreaSuccess) {
           return _buildBody(
-            state.styleConfig!,
+            state.styleModel!,
             state.inputConfig!,
             state.component!,
             state.formState!,
@@ -89,7 +89,7 @@ class DynamicTextArea extends StatelessWidget {
   }
 
   Widget _buildBody(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -104,14 +104,14 @@ class DynamicTextArea extends StatelessWidget {
         _getComponentStateEnumFromKey(stateKey) ?? currentState;
     return Container(
       key: Key(component.id),
-      padding: styleConfig.padding,
-      margin: styleConfig.margin,
+      padding: styleModel.paddingGeometry,
+      margin: styleModel.marginGeometry,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(styleConfig, inputConfig),
+          _buildLabel(styleModel, inputConfig),
           _buildTextField(
-            styleConfig,
+            styleModel,
             inputConfig,
             component,
             effectiveState,
@@ -141,7 +141,7 @@ class DynamicTextArea extends StatelessWidget {
     }
   }
 
-  Widget _buildLabel(StyleConfig styleConfig, InputConfig inputConfig) {
+  Widget _buildLabel(StyleModel styleModel, InputConfig inputConfig) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -153,8 +153,8 @@ class DynamicTextArea extends StatelessWidget {
           Text(
             inputConfig.label!,
             style: TextStyle(
-              fontSize: styleConfig.labelTextSize,
-              color: styleConfig.labelColor,
+              fontSize: styleModel.labelTextSize,
+              color: styleModel.labelTextColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -172,7 +172,7 @@ class DynamicTextArea extends StatelessWidget {
   }
 
   Widget _buildTextField(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -183,10 +183,14 @@ class DynamicTextArea extends StatelessWidget {
   ) {
     // Get state key
     final String stateKey = _componentStateEnumToKey(currentState);
-    final StyleStatesModel? stateStyle = _getStateStyle(component.states, stateKey);
-    final String? helperText = stateStyle?.helperText ?? styleConfig.helperText;
+    final StyleStatesModel? stateStyle = _getStateStyle(
+      component.states,
+      stateKey,
+    );
+    final String? helperText = stateStyle?.helperText ?? styleModel.helperText;
     final Color helperTextColor =
-        stateStyle?.helperTextColor ?? styleConfig.helperTextColor;
+        stateStyle?.helperTextColor ??
+        StyleUtils.parseColor(styleModel.helperTextColor);
 
     return TextField(
       controller: textController,
@@ -198,51 +202,31 @@ class DynamicTextArea extends StatelessWidget {
           TextAreaFocusLostEvent(value: value),
         );
       },
-      maxLines: styleConfig.maxLines,
-      minLines: styleConfig.minLines,
+      maxLines: styleModel.maxLines,
+      minLines: styleModel.minLines,
       decoration: InputDecoration(
         isDense: true,
         hintText: inputConfig.placeholder ?? '',
-        border: _buildBorder(
-          styleConfig.borderConfig,
-          currentState,
-          component,
-          context,
-        ),
-        enabledBorder: _buildBorder(
-          styleConfig.borderConfig,
-          currentState,
-          component,
-          context,
-        ),
-        focusedBorder: _buildBorder(
-          styleConfig.borderConfig,
-          ComponentStateEnum.focused,
-          component,
-          context,
-        ),
-        errorBorder: _buildBorder(
-          styleConfig.borderConfig,
-          ComponentStateEnum.error,
-          component,
-          context,
-        ),
+        border: _buildBorder(styleModel, currentState),
+        enabledBorder: _buildBorder(styleModel, currentState),
+        focusedBorder: _buildBorder(styleModel, ComponentStateEnum.focused),
+        errorBorder: _buildBorder(styleModel, ComponentStateEnum.error),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: styleConfig.contentVerticalPadding,
-          horizontal: styleConfig.contentHorizontalPadding,
+          vertical: styleModel.contentVerticalPaddingValue,
+          horizontal: styleModel.contentHorizontalPaddingValue,
         ),
-        filled: styleConfig.fillColor != Colors.transparent,
-        fillColor: styleConfig.fillColor,
+        filled: styleModel.fillColor != Colors.transparent,
+        fillColor: styleModel.fillColor,
         helperText: helperText,
         helperStyle: TextStyle(
-          color: helperTextColor ,
+          color: helperTextColor,
           fontSize: 12,
         ),
       ),
       style: TextStyle(
-        fontSize: styleConfig.fontSize,
-        color: styleConfig.textColor,
+        fontSize: styleModel.fontSizeValue,
+        color: styleModel.textColorValue,
       ),
     );
   }
@@ -263,42 +247,22 @@ class DynamicTextArea extends StatelessWidget {
   }
 
   OutlineInputBorder _buildBorder(
-    BorderConfig borderConfig,
-    ComponentStateEnum? state,
-    DynamicFormModel component,
-    BuildContext? context,
+    StyleModel styleModel,
+    ComponentStateEnum state,
   ) {
-    double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withValues(
-      alpha: borderConfig.borderOpacity,
-    );
+    double width = styleModel.borderWidthValue;
+    Color color = styleModel.borderColorValue;
 
-    // Get border color from component states if available
-    if (state != null && component.states != null) {
-      final stateKey = _componentStateEnumToKey(state);
-      final StyleStatesModel? stateStyle = _getStateStyle(component.states, stateKey);
-      if (stateStyle?.borderColor != null) {
-        color = stateStyle!.borderColor!;
-        width = 2; // Use thicker border for state styles
-      }
-    }
-
-    // Special handling for focused state
     if (state == ComponentStateEnum.focused) {
       width += 1;
-      // Only use theme color if no state style is defined
-      final StyleStatesModel? focusedStyle = component.states?.focused;
-      if (focusedStyle?.borderColor == null && context != null) {
-        color = Theme.of(context).primaryColor;
-      }
+      color = styleModel.focusedBorderColorValue;
+    } else if (state == ComponentStateEnum.error) {
+      color = styleModel.errorBorderColorValue;
+      width = 2;
     }
 
-    debugPrint(
-      '[DynamicTextArea] _buildBorder: state=$state, color=$color, width=$width',
-    );
-
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(borderConfig.borderRadius),
+      borderRadius: BorderRadius.circular(styleModel.borderRadiusValue),
       borderSide: BorderSide(color: color, width: width),
     );
   }

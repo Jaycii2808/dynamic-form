@@ -3,10 +3,9 @@ import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/style_color_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/data/models/border_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
@@ -63,7 +62,7 @@ class DynamicDateTimePicker extends StatelessWidget {
 
         if (state is DynamicDateTimePickerSuccess) {
           return _buildBody(
-            state.styleConfig!,
+            state.styleModel!,
             state.inputConfig!,
             state.component!,
             state.formState!,
@@ -80,7 +79,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   }
 
   Widget _buildBody(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     ComponentStateEnum currentState,
@@ -91,14 +90,14 @@ class DynamicDateTimePicker extends StatelessWidget {
   ) {
     return Container(
       key: Key(component.id),
-      padding: styleConfig.padding,
-      margin: styleConfig.margin,
+      padding: styleModel.paddingGeometry,
+      margin: styleModel.marginGeometry,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel(styleConfig, inputConfig, component),
+          _buildLabel(styleModel, inputConfig, component),
           _buildDateTimeField(
-            styleConfig,
+            styleModel,
             inputConfig,
             component,
             textController,
@@ -112,7 +111,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   }
 
   Widget _buildLabel(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
   ) {
@@ -128,8 +127,8 @@ class DynamicDateTimePicker extends StatelessWidget {
           Text(
             inputConfig.label!,
             style: TextStyle(
-              fontSize: styleConfig.labelTextSize,
-              color: styleConfig.labelColor,
+              fontSize: styleModel.labelTextSize,
+              color: styleModel.labelTextColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -147,7 +146,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   }
 
   Widget _buildDateTimeField(
-    StyleConfig styleConfig,
+    StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
     TextEditingController textController,
@@ -163,66 +162,67 @@ class DynamicDateTimePicker extends StatelessWidget {
       decoration: InputDecoration(
         isDense: true,
         hintText: inputConfig.placeholder,
-        border: _buildBorder(styleConfig.borderConfig, ComponentStateEnum.base),
+        border: _buildBorder(styleModel, ComponentStateEnum.base),
         enabledBorder: _buildBorder(
-          styleConfig.borderConfig,
+          styleModel,
           ComponentStateEnum.base,
         ),
         focusedBorder: _buildBorder(
-          styleConfig.borderConfig,
+          styleModel,
           ComponentStateEnum.focused,
         ),
         errorBorder: _buildBorder(
-          styleConfig.borderConfig,
+          styleModel,
           ComponentStateEnum.error,
         ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
-          vertical: styleConfig.contentVerticalPadding,
-          horizontal: styleConfig.contentHorizontalPadding,
+          vertical: styleModel.contentVerticalPaddingValue,
+          horizontal: styleModel.contentHorizontalPaddingValue,
         ),
-        filled: styleConfig.fillColor != Colors.transparent,
-        fillColor: styleConfig.fillColor,
+        filled: styleModel.fillColor != Colors.transparent,
+        fillColor: styleModel.fillColor,
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SvgPicture.asset(
             'assets/svg/SelectDate.svg',
             colorFilter: ColorFilter.mode(
-              styleConfig.textColor,
+              styleModel.textColorValue,
               BlendMode.srcIn,
             ),
-            width: styleConfig.fontSize,
-            height: styleConfig.fontSize,
+            width: styleModel.fontSizeValue,
+            height: styleModel.fontSizeValue,
           ),
         ),
       ),
       style: TextStyle(
-        fontSize: styleConfig.fontSize,
-        color: styleConfig.textColor,
-        fontStyle: styleConfig.fontStyle,
+        fontSize: styleModel.fontSizeValue,
+        color: styleModel.textColorValue,
+        fontStyle: styleModel.fontStyleValue,
       ),
       onTap: (inputConfig.disabled || inputConfig.readOnly)
           ? null
-          : () => _pickDateTime(context, component, styleConfig),
+          : () => _pickDateTime(context, component, styleModel),
     );
   }
 
   OutlineInputBorder _buildBorder(
-    BorderConfig borderConfig,
+    StyleModel styleModel,
     ComponentStateEnum? state,
   ) {
-    double width = borderConfig.borderWidth;
-    Color color = borderConfig.borderColor.withValues(
-      alpha: borderConfig.borderOpacity,
-    );
+    double width = styleModel.borderWidthValue;
+    Color color = styleModel.borderColorValue;
+
     if (state == ComponentStateEnum.focused) {
       width += 1;
+      color = styleModel.focusedBorderColorValue;
     } else if (state == ComponentStateEnum.error) {
-      color = const Color(0xFFFF4D4F);
+      color = styleModel.errorBorderColorValue;
       width = 2;
     }
+
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(borderConfig.borderRadius),
+      borderRadius: BorderRadius.circular(styleModel.borderRadiusValue),
       borderSide: BorderSide(color: color, width: width),
     );
   }
@@ -235,7 +235,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   Future<void> _pickDateTime(
     BuildContext context,
     DynamicFormModel component,
-    StyleConfig styleConfig,
+    StyleModel styleModel,
   ) async {
     final pickerMode = _determinePickerMode(component.config);
     final selectedFormat = pickerMode.dateFormat;
@@ -244,13 +244,13 @@ class DynamicDateTimePicker extends StatelessWidget {
     final pickedDate = await _showDatePicker(
       context,
       style.toJson(),
-      styleConfig,
+      styleModel,
     );
     if (pickedDate == null || !context.mounted) return;
 
     TimeOfDay? pickedTime;
     if (pickerMode != PickerModeEnum.dateOnly) {
-      pickedTime = await _showTimePicker(context, style.toJson(), styleConfig);
+      pickedTime = await _showTimePicker(context, style.toJson(), styleModel);
       if (pickedTime == null || !context.mounted) return;
     }
 
@@ -275,7 +275,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   Future<DateTime?> _showDatePicker(
     BuildContext context,
     Map<String, dynamic> style,
-    StyleConfig styleConfig,
+    StyleModel styleModel,
   ) async {
     return showDatePicker(
       context: context,
@@ -289,7 +289,7 @@ class DynamicDateTimePicker extends StatelessWidget {
               style['icon_color'],
             ).toColor(customHexValue: style['icon_color']),
             onPrimary: Colors.white,
-            surface: styleConfig.fillColor,
+            surface: styleModel.fillColor,
             onSurface: StyleColorEnum.fromString(
               style['color'],
             ).toColor(customHexValue: style['color']),
@@ -310,7 +310,7 @@ class DynamicDateTimePicker extends StatelessWidget {
   Future<TimeOfDay?> _showTimePicker(
     BuildContext context,
     Map<String, dynamic> style,
-    StyleConfig styleConfig,
+    StyleModel styleModel,
   ) async {
     return showTimePicker(
       context: context,
@@ -322,7 +322,7 @@ class DynamicDateTimePicker extends StatelessWidget {
               style['icon_color'],
             ).toColor(customHexValue: style['icon_color']),
             onPrimary: Colors.white,
-            surface: styleConfig.fillColor,
+            surface: styleModel.fillColor,
             onSurface: StyleColorEnum.fromString(
               style['color'],
             ).toColor(customHexValue: style['color']),
