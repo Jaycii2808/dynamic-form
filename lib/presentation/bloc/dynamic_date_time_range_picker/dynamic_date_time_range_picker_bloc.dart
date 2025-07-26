@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +50,7 @@ class DynamicDateTimeRangePickerBloc
   }
 
   void _initializeController(Map<String, dynamic> config) {
-    final value = config[ValueKeyEnum.value.key];
+    final value = config['value'];
     if (value is Map<String, dynamic> &&
         value.containsKey('start') &&
         value.containsKey('end')) {
@@ -81,9 +80,7 @@ class DynamicDateTimeRangePickerBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            initialComponent.config['currentState']?.toString() ?? 'base',
-          ),
+          formState: initialComponent.config['currentState'],
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -116,7 +113,7 @@ class DynamicDateTimeRangePickerBloc
     final successState = state as DynamicDateTimeRangePickerSuccess;
 
     // Re-validate the current state on focus lost
-    final value = successState.component?.config[ValueKeyEnum.value.key];
+    final value = successState.component?.config['value'];
     DateTimeRange? range;
     if (value is Map<String, dynamic> &&
         value.containsKey('start') &&
@@ -144,11 +141,11 @@ class DynamicDateTimeRangePickerBloc
       range == null ? '' : 'hasValue',
     );
 
-    ComponentStateEnum newState = ComponentStateEnum.base;
+    String newState = 'base';
     if (validationError != null) {
-      newState = ComponentStateEnum.error;
+      newState = 'error';
     } else if (range != null) {
-      newState = ComponentStateEnum.success;
+      newState = 'success';
     }
 
     final Map<String, dynamic>? valueToStore;
@@ -167,9 +164,9 @@ class DynamicDateTimeRangePickerBloc
     final updatedConfig = Map<String, dynamic>.from(
       currentState.component!.config,
     );
-    updatedConfig[ValueKeyEnum.value.key] = valueToStore;
-    updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
-    updatedConfig[ValueKeyEnum.errorText.key] = validationError;
+    updatedConfig['value'] = valueToStore;
+    updatedConfig['current_state'] = newState;
+    updatedConfig['error_text'] = validationError;
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       currentState.component!,

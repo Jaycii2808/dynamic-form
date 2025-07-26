@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -48,7 +47,7 @@ class DynamicTextFieldTagsBloc
   }
 
   List<String> _getInitialTags(Map<String, dynamic> config) {
-    final value = config[ValueKeyEnum.value.key];
+    final value = config['value'];
     debugPrint('DEBUG: _getInitialTags value = $value');
     if (value is List) {
       // Filter out nulls and non-strings, and print debug info if any nulls found
@@ -130,10 +129,10 @@ class DynamicTextFieldTagsBloc
       debugPrint(
         'DEBUG: About to parse formState: ${initialComponent.config['current_state'] ?? initialComponent.config['currentState']}',
       );
-      final formState = ComponentStateEnum.fromString(
-        initialComponent.config['current_state'] ??
-            initialComponent.config['currentState'],
-      );
+      final formState =
+          initialComponent.config['current_state']?.toString() ??
+          initialComponent.config['currentState']?.toString() ??
+          'base';
       debugPrint('DEBUG: Parsed formState: $formState');
       emit(
         DynamicTextFieldTagsSuccess(
@@ -346,16 +345,14 @@ class DynamicTextFieldTagsBloc
     Emitter<DynamicTextFieldTagsState> emit, {
     bool isFinalizing = false,
   }) {
-    final newState = newTags.isNotEmpty
-        ? ComponentStateEnum.success
-        : ComponentStateEnum.base;
+    final newState = newTags.isNotEmpty ? 'success' : 'base';
 
     final updatedConfig = Map<String, dynamic>.from(
       currentState.component!.config,
     );
-    updatedConfig[ValueKeyEnum.value.key] = newTags;
-    updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
-    updatedConfig[ValueKeyEnum.errorText.key] = null;
+    updatedConfig['value'] = newTags;
+    updatedConfig['current_state'] = newState;
+    updatedConfig['error_text'] = null;
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       currentState.component!,

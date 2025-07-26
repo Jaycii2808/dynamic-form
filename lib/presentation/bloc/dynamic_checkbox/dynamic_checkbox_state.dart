@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -6,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicCheckboxState extends Equatable {
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
   final DynamicFormModel? component;
 
@@ -70,7 +69,9 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
 
   @override
   List<Object?> get props => [
-    ...super.props,
+    formState,
+    errorText,
+    component,
     styleModel,
     inputConfig,
     isSelected,
@@ -88,7 +89,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
 
   DynamicCheckboxSuccess copyWith({
     DynamicFormModel? component,
-    ComponentStateEnum? formState,
+    String? formState,
     String? errorText,
     StyleModel? styleModel,
     InputConfig? inputConfig,
@@ -131,10 +132,8 @@ class DynamicCheckboxError extends DynamicCheckboxState {
   const DynamicCheckboxError({
     required this.errorMessage,
     super.component,
-    super.formState,
-    super.errorText,
   });
 
   @override
-  List<Object?> get props => [...super.props, errorMessage];
+  List<Object?> get props => [errorMessage, component];
 }

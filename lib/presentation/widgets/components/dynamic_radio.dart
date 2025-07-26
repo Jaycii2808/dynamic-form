@@ -1,8 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -97,8 +96,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
         listener: (context, state) {
           if (state is DynamicRadioSuccess) {
             final valueMap = {
-              ValueKeyEnum.value.key:
-                  state.component!.config[ValueKeyEnum.value.key],
+              'value': state.component!.config['value'],
               'current_state': state.component!.config['current_state'],
               'error_text': state.errorText,
             };
@@ -154,7 +152,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     FocusNode focusNode,
   ) {
@@ -185,7 +183,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
 
   Widget _buildRadioControl(
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     bool isSelected,
   ) {
     final styleModel = StyleModel.fromJson(component.style.toJson());
@@ -271,7 +269,7 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
 
   // Map<String, dynamic> _getStateStyle(
   //   DynamicFormModel component,
-  //   ComponentStateEnum currentState,
+  //   StatesModel currentState,
   // ) {
   //   Map<String, dynamic> style = component.style.toJson();
   //

@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -8,7 +7,7 @@ abstract class DynamicSwitchState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleModel? styleModel;
-  final ComponentStateEnum? formState;
+  final String? formState;
 
   const DynamicSwitchState({
     this.component,
@@ -32,12 +31,12 @@ class DynamicSwitchInitial extends DynamicSwitchState {
 
 class DynamicSwitchLoading extends DynamicSwitchState {
   DynamicSwitchLoading.fromState({required DynamicSwitchState state})
-      : super(
-    component: state.component,
-    inputConfig: state.inputConfig,
-    styleModel: state.styleModel,
-    formState: state.formState,
-  );
+    : super(
+        component: state.component,
+        inputConfig: state.inputConfig,
+        styleModel: state.styleModel,
+        formState: state.formState,
+      );
 }
 
 class DynamicSwitchSuccess extends DynamicSwitchState {

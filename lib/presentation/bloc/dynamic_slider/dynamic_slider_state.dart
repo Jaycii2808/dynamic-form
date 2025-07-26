@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -6,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicSliderState extends Equatable {
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
   final DynamicFormModel? component;
 
@@ -91,7 +90,7 @@ class DynamicSliderSuccess extends DynamicSliderState {
   });
 
   DynamicSliderSuccess copyWith({
-    ComponentStateEnum? formState,
+    String? formState,
     String? errorText,
     DynamicFormModel? component,
     StyleModel? styleModel,
@@ -142,7 +141,9 @@ class DynamicSliderSuccess extends DynamicSliderState {
 
   @override
   List<Object?> get props => [
-    ...super.props,
+    formState,
+    errorText,
+    component,
     styleModel,
     inputConfig,
     sliderValue,
@@ -176,5 +177,5 @@ class DynamicSliderError extends DynamicSliderState {
   });
 
   @override
-  List<Object?> get props => [...super.props, errorMessage];
+  List<Object?> get props => [errorMessage, formState, errorText, component];
 }

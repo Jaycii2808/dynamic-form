@@ -1,9 +1,8 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
@@ -28,18 +27,14 @@ class DynamicTextArea extends StatelessWidget {
     return BlocConsumer<DynamicTextAreaBloc, DynamicTextAreaState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
-          ValueKeyEnum.errorText.key: state.errorText,
+          'value': state.component!.config['value'],
+          'current_state': state.component!.config['current_state'],
+          'error_text': state.errorText,
         };
         if (state is DynamicTextAreaSuccess) {
           onComplete(valueMap);
-          if (state.textController!.text !=
-              state.component!.config[ValueKeyEnum.value.key]) {
-            state.textController!.text =
-                state.component!.config[ValueKeyEnum.value.key] ?? '';
+          if (state.textController!.text != state.component!.config['value']) {
+            state.textController!.text = state.component!.config['value'] ?? '';
           }
         } else if (state is DynamicTextAreaError) {
           onComplete(valueMap);
@@ -47,7 +42,7 @@ class DynamicTextArea extends StatelessWidget {
         } else if (state is DynamicTextAreaInitial ||
             state is DynamicTextAreaLoading) {
           debugPrint(
-            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config['value']}',
           );
         } else {
           onComplete(valueMap);
@@ -92,7 +87,7 @@ class DynamicTextArea extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -100,8 +95,8 @@ class DynamicTextArea extends StatelessWidget {
   ) {
     // Determine state from config['current_state'] if available
     final String? stateKey = component.config['current_state']?.toString();
-    final ComponentStateEnum effectiveState =
-        _getComponentStateEnumFromKey(stateKey) ?? currentState;
+    final String effectiveState =
+        _getStatesModelFromKey(stateKey) ?? currentState;
     return Container(
       key: Key(component.id),
       padding: styleModel.paddingGeometry,
@@ -125,17 +120,17 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  // Helper to convert string to ComponentStateEnum
-  ComponentStateEnum? _getComponentStateEnumFromKey(String? key) {
+  // Helper to convert string to StatesModel
+  String? _getStatesModelFromKey(String? key) {
     switch (key) {
       case 'base':
-        return ComponentStateEnum.base;
+        return 'base';
       case 'error':
-        return ComponentStateEnum.error;
+        return 'error';
       case 'success':
-        return ComponentStateEnum.success;
+        return 'success';
       case 'focused':
-        return ComponentStateEnum.focused;
+        return 'focused';
       default:
         return null;
     }
@@ -175,14 +170,14 @@ class DynamicTextArea extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
     BuildContext context,
   ) {
     // Get state key
-    final String stateKey = _componentStateEnumToKey(currentState);
+    final String stateKey = currentState;
     final StyleStatesModel? stateStyle = _getStateStyle(
       component.states,
       stateKey,
@@ -209,8 +204,8 @@ class DynamicTextArea extends StatelessWidget {
         hintText: inputConfig.placeholder ?? '',
         border: _buildBorder(styleModel, currentState),
         enabledBorder: _buildBorder(styleModel, currentState),
-        focusedBorder: _buildBorder(styleModel, ComponentStateEnum.focused),
-        errorBorder: _buildBorder(styleModel, ComponentStateEnum.error),
+        focusedBorder: _buildBorder(styleModel, 'focused'),
+        errorBorder: _buildBorder(styleModel, 'error'),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleModel.contentVerticalPaddingValue,
@@ -226,13 +221,34 @@ class DynamicTextArea extends StatelessWidget {
       ),
       style: TextStyle(
         fontSize: styleModel.fontSizeValue,
-        color: styleModel.textColorValue,
+        color: stateStyle?.textColor ?? styleModel.textColorValue,
       ),
     );
   }
 
-  StyleStatesModel? _getStateStyle(StatesModel? states, String stateKey) {
-    switch (stateKey) {
+  OutlineInputBorder _buildBorder(
+    StyleModel styleModel,
+    String state,
+  ) {
+    double width = styleModel.borderWidthValue;
+    Color color = styleModel.borderColorValue;
+
+    if (state == 'focused') {
+      width += 1;
+      color = styleModel.focusedBorderColorValue;
+    } else if (state == 'error') {
+      color = styleModel.errorBorderColorValue;
+      width = 2;
+    }
+
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(styleModel.borderRadiusValue),
+      borderSide: BorderSide(color: color, width: width),
+    );
+  }
+
+  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
+    switch (key) {
       case 'base':
         return states?.base;
       case 'error':
@@ -246,41 +262,22 @@ class DynamicTextArea extends StatelessWidget {
     }
   }
 
-  OutlineInputBorder _buildBorder(
-    StyleModel styleModel,
-    ComponentStateEnum state,
-  ) {
-    double width = styleModel.borderWidthValue;
-    Color color = styleModel.borderColorValue;
-
-    if (state == ComponentStateEnum.focused) {
-      width += 1;
-      color = styleModel.focusedBorderColorValue;
-    } else if (state == ComponentStateEnum.error) {
-      color = styleModel.errorBorderColorValue;
-      width = 2;
-    }
-
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(styleModel.borderRadiusValue),
-      borderSide: BorderSide(color: color, width: width),
-    );
-  }
-
-  String _componentStateEnumToKey(ComponentStateEnum state) {
-    switch (state) {
-      case ComponentStateEnum.base:
-        return 'base';
-      case ComponentStateEnum.error:
-        return 'error';
-      case ComponentStateEnum.success:
-        return 'success';
-      case ComponentStateEnum.focused:
-        return 'focused';
-      case ComponentStateEnum.enabled:
-        return 'enabled';
-    }
-  }
+  // String _componentStateEnumToKey(String state) {
+  //   switch (state) {
+  //     case 'base':
+  //       return 'base';
+  //     case 'error':
+  //       return 'error';
+  //     case 'success':
+  //       return 'success';
+  //     case 'focused':
+  //       return 'focused';
+  //     case 'enabled':
+  //       return 'enabled';
+  //     default:
+  //       return 'base';
+  //   }
+  // }
 
   // Color? _parseColor(dynamic value) {
   //   if (value is int) return Color(value);

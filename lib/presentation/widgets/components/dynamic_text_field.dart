@@ -1,10 +1,9 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -104,8 +103,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         listener: (context, state) {
           if (state is DynamicTextFieldSuccess) {
             final valueMap = {
-              ValueKeyEnum.value.key:
-                  state.component!.config[ValueKeyEnum.value.key],
+              'value': state.component!.config['value'],
               'current_state': state.component!.config['current_state'],
               'error_text': state.errorText,
             };
@@ -119,11 +117,9 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
             );
 
             if (state.textController!.text !=
-                (state.component!.config[ValueKeyEnum.value.key]?.toString() ??
-                    '')) {
+                (state.component!.config['value']?.toString() ?? '')) {
               state.textController!.text =
-                  state.component!.config[ValueKeyEnum.value.key]?.toString() ??
-                  '';
+                  state.component!.config['value']?.toString() ?? '';
             }
           }
         },
@@ -171,7 +167,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -225,21 +221,21 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
     // Determine the appropriate border state based on current state and error
-    ComponentStateEnum enabledBorderState = ComponentStateEnum.base;
+    String enabledBorderState = 'base';
     if (errorText != null && errorText.isNotEmpty) {
-      enabledBorderState = ComponentStateEnum.error;
-    } else if (currentState == ComponentStateEnum.success) {
-      enabledBorderState = ComponentStateEnum.success;
+      enabledBorderState = 'error';
+    } else if (currentState == 'success') {
+      enabledBorderState = 'success';
     }
 
     // Get style from component states (as StyleStatesModel)
-    final String stateKey = _ComponentStateEnumToKey(enabledBorderState);
+    final String stateKey = enabledBorderState;
     final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
       stateKey,
@@ -280,8 +276,8 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         ),
         border: _buildBorder(styleModel, enabledBorderState),
         enabledBorder: _buildBorder(styleModel, enabledBorderState),
-        focusedBorder: _buildBorder(styleModel, ComponentStateEnum.focused),
-        errorBorder: _buildBorder(styleModel, ComponentStateEnum.error),
+        focusedBorder: _buildBorder(styleModel, 'focused'),
+        errorBorder: _buildBorder(styleModel, 'error'),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleModel.contentVerticalPaddingValue,
@@ -348,15 +344,15 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
 
   OutlineInputBorder _buildBorder(
     StyleModel styleModel,
-    ComponentStateEnum state,
+    String state,
   ) {
     double width = styleModel.borderWidthValue;
     Color color = styleModel.borderColorValue;
 
-    if (state == ComponentStateEnum.focused) {
+    if (state == 'focused') {
       width += 1;
       color = styleModel.focusedBorderColorValue;
-    } else if (state == ComponentStateEnum.error) {
+    } else if (state == 'error') {
       color = styleModel.errorBorderColorValue;
       width = 2;
     }
@@ -382,18 +378,20 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   //   return null;
   // }
 
-  String _ComponentStateEnumToKey(ComponentStateEnum state) {
-    switch (state) {
-      case ComponentStateEnum.base:
-        return 'base';
-      case ComponentStateEnum.error:
-        return 'error';
-      case ComponentStateEnum.success:
-        return 'success';
-      case ComponentStateEnum.focused:
-        return 'focused';
-      case ComponentStateEnum.enabled:
-        return 'enabled';
-    }
-  }
+  // String _StatesModelToKey(String state) {
+  //   switch (state) {
+  //     case 'base':
+  //       return 'base';
+  //     case 'error':
+  //       return 'error';
+  //     case 'success':
+  //       return 'success';
+  //     case 'focused':
+  //       return 'focused';
+  //     case 'enabled':
+  //       return 'enabled';
+  //     default:
+  //       return 'base';
+  //   }
+  // }
 }

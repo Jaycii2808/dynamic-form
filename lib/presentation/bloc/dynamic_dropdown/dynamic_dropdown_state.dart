@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -9,7 +8,7 @@ abstract class DynamicDropdownState extends Equatable {
   final DynamicFormModel? component;
   final StyleModel? styleModel;
   final InputConfig? inputConfig;
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
 
   const DynamicDropdownState({
@@ -107,7 +106,7 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
     DynamicFormModel? component,
     StyleModel? styleModel,
     InputConfig? inputConfig,
-    ComponentStateEnum? formState,
+    String? formState,
     String? errorText,
     FocusNode? focusNode,
     FocusNode? searchFocusNode,
@@ -161,7 +160,11 @@ class DynamicDropdownSuccess extends DynamicDropdownState {
 
   @override
   List<Object?> get props => [
-    ...super.props,
+    component,
+    styleModel,
+    inputConfig,
+    formState,
+    errorText,
     focusNode,
     searchFocusNode,
     currentValue,
@@ -191,10 +194,8 @@ class DynamicDropdownError extends DynamicDropdownState {
   const DynamicDropdownError({
     required this.errorMessage,
     super.component,
-    super.formState,
-    super.errorText,
   });
 
   @override
-  List<Object?> get props => [...super.props, errorMessage];
+  List<Object?> get props => [errorMessage, component];
 }

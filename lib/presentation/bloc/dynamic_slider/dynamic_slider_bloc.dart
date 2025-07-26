@@ -1,6 +1,5 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -407,7 +406,7 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
       updatedConfig['values'] = newValue;
     } else {
       // Single value
-      updatedConfig[ValueKeyEnum.value.key] = newValue;
+      updatedConfig['value'] = newValue;
     }
 
     return DynamicFormModel(
@@ -423,26 +422,26 @@ class DynamicSliderBloc extends Bloc<DynamicSliderEvent, DynamicSliderState> {
     );
   }
 
-  ComponentStateEnum _computeFormState(
+  String _computeFormState(
     DynamicFormModel component,
     dynamic value,
   ) {
     final validationError = _validateSlider(component, value);
 
     if (validationError != null && validationError.isNotEmpty) {
-      return ComponentStateEnum.error;
+      return 'error';
     }
 
     // Check if has value (success state)
     if (value != null) {
       if (value is RangeValues) {
-        return ComponentStateEnum.success;
+        return 'success';
       } else if (value is double) {
-        return ComponentStateEnum.success;
+        return 'success';
       }
     }
 
-    return ComponentStateEnum.base;
+    return 'base';
   }
 
   String? _validateSlider(DynamicFormModel component, dynamic value) {

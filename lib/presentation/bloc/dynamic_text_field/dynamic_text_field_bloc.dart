@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -17,7 +16,7 @@ class DynamicTextFieldBloc
 
   DynamicTextFieldBloc({required DynamicFormModel initialComponent})
     : _textController = TextEditingController(
-        text: initialComponent.config[ValueKeyEnum.value.key]?.toString() ?? '',
+        text: initialComponent.config['value']?.toString() ?? '',
       ),
       _focusNode = FocusNode(),
       super(
@@ -61,9 +60,7 @@ class DynamicTextFieldBloc
           component: component,
           inputConfig: InputConfig.fromJson(component.config),
           styleModel: StyleModel.fromJson(component.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            component.config['current_state']?.toString() ?? 'base',
-          ),
+          formState: component.config['current_state']?.toString() ?? 'base',
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -130,18 +127,18 @@ class DynamicTextFieldBloc
         event.value,
       );
 
-      ComponentStateEnum newState = ComponentStateEnum.base;
+      String newState = 'base';
       if (validationError != null) {
-        newState = ComponentStateEnum.error;
+        newState = 'error';
       } else if (event.value.isNotEmpty) {
-        newState = ComponentStateEnum.success;
+        newState = 'success';
       }
 
       final updatedConfig = Map<String, dynamic>.from(
         successState.component!.config,
       );
-      updatedConfig[ValueKeyEnum.value.key] = event.value;
-      updatedConfig['current_state'] = newState.value;
+      updatedConfig['value'] = event.value;
+      updatedConfig['current_state'] = newState;
       updatedConfig['error_text'] = validationError;
 
       final updatedComponent = ComponentUtils.updateComponentConfig(
@@ -180,8 +177,7 @@ class DynamicTextFieldBloc
 
     try {
       // Update text controller if value changed
-      final newValue =
-          event.component.config[ValueKeyEnum.value.key]?.toString() ?? '';
+      final newValue = event.component.config['value']?.toString() ?? '';
       if (_textController.text != newValue) {
         _textController.text = newValue;
       }
@@ -191,9 +187,8 @@ class DynamicTextFieldBloc
           component: event.component,
           inputConfig: InputConfig.fromJson(event.component.config),
           styleModel: StyleModel.fromJson(event.component.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            event.component.config['current_state']?.toString() ?? 'base',
-          ),
+          formState:
+              event.component.config['current_state']?.toString() ?? 'base',
           textController: _textController,
           focusNode: _focusNode,
           errorText: event.component.config['error_text']?.toString(),

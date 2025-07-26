@@ -1,5 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -46,7 +44,7 @@ class DynamicCheckboxBloc
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Get initial value
-      final value = initialComponent.config[ValueKeyEnum.value.key];
+      final value = initialComponent.config['value'];
       final isSelected = value == true;
 
       // Compute editable state
@@ -145,8 +143,6 @@ class DynamicCheckboxBloc
         DynamicCheckboxError(
           errorMessage: 'Failed to update value: ${e.toString()}',
           component: currentState.component,
-          formState: currentState.formState,
-          errorText: currentState.errorText,
         ),
       );
     }
@@ -164,7 +160,7 @@ class DynamicCheckboxBloc
       final inputConfig = InputConfig.fromJson(event.component.config);
 
       // Get updated value
-      final value = event.component.config[ValueKeyEnum.value.key];
+      final value = event.component.config['value'];
       final isSelected = value == true;
 
       // Compute editable state
@@ -218,7 +214,7 @@ class DynamicCheckboxBloc
     bool newValue,
   ) {
     final updatedConfig = Map<String, dynamic>.from(component.config);
-    updatedConfig[ValueKeyEnum.value.key] = newValue;
+    updatedConfig['value'] = newValue;
 
     return DynamicFormModel(
       id: component.id,
@@ -233,12 +229,12 @@ class DynamicCheckboxBloc
     );
   }
 
-  ComponentStateEnum _computeFormState(
+  String _computeFormState(
     DynamicFormModel component,
     bool isSelected,
   ) {
     // Checkbox state logic: selected = success, unselected = base
-    return isSelected ? ComponentStateEnum.success : ComponentStateEnum.base;
+    return isSelected ? 'success' : 'base';
   }
 
   String? _validateCheckbox(DynamicFormModel component, bool isSelected) {

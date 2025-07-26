@@ -1,16 +1,15 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 
 abstract class DynamicTextFieldTagsState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleModel? styleModel;
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
   final List<String> selectedTags;
   final TextEditingController? textController;
@@ -100,7 +99,6 @@ class DynamicTextFieldTagsError extends DynamicTextFieldTagsState {
     super.component,
     super.isEditing,
     super.availableTags,
-    super.states,
   });
 
   @override
@@ -109,6 +107,5 @@ class DynamicTextFieldTagsError extends DynamicTextFieldTagsState {
     component,
     isEditing,
     availableTags,
-    states,
   ];
 }

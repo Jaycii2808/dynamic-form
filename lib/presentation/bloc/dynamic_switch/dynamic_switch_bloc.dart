@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -36,9 +35,8 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            initialComponent.config['currentState']?.toString() ?? 'base',
-          ),
+          formState:
+              initialComponent.config['currentState']?.toString() ?? 'base',
         ),
       );
     } catch (e, stackTrace) {
@@ -80,9 +78,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
         component: updatedComponent,
         inputConfig: InputConfig.fromJson(updatedComponent.config),
         styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
-        formState: ComponentStateEnum.fromString(
-          updateData[ValueKeyEnum.currentState.key],
-        ),
+        formState: updateData['current_state']?.toString() ?? 'base',
       ),
     );
   }

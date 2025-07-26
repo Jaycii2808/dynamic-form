@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -25,11 +25,11 @@ class DynamicSwitch extends StatelessWidget {
     return BlocConsumer<DynamicSwitchBloc, DynamicSwitchState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
+          'value':
+              state.component!.config['value'],
           'selected': state.component!.config['selected'],
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
+          'current_state':
+              state.component!.config['current_state'],
         };
         if (state is DynamicSwitchSuccess) {
           onComplete(valueMap);
@@ -38,7 +38,7 @@ class DynamicSwitch extends StatelessWidget {
         } else if (state is DynamicSwitchLoading ||
             state is DynamicSwitchInitial) {
           debugPrint(
-            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config['value']}',
           );
         } else {
           onComplete(valueMap);

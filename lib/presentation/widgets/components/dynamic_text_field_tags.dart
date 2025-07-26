@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -25,10 +25,10 @@ class DynamicTextFieldTags extends StatelessWidget {
     return BlocConsumer<DynamicTextFieldTagsBloc, DynamicTextFieldTagsState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key: state.selectedTags,
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
-          ValueKeyEnum.errorText.key: state.errorText,
+          'value': state.selectedTags,
+          'current_state':
+              state.component!.config['current_state'],
+          'error_text': state.errorText,
         };
         if (state is DynamicTextFieldTagsSuccess) {
           onComplete(valueMap);

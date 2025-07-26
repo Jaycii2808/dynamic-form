@@ -1,7 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/style_color_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -29,20 +28,16 @@ class DynamicDateTimePicker extends StatelessWidget {
     return BlocConsumer<DynamicDateTimePickerBloc, DynamicDateTimePickerState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
-          ValueKeyEnum.errorText.key: state.errorText,
+          'value': state.component!.config['value'],
+          'current_state': state.component!.config['current_state'],
+          'error_text': state.errorText,
         };
         if (state is DynamicDateTimePickerSuccess) {
           onComplete(valueMap);
           // Sync controller if not focused
           if (state.focusNode?.hasFocus == false &&
-              state.textController!.text !=
-                  state.component!.config[ValueKeyEnum.value.key]) {
-            state.textController!.text =
-                state.component!.config[ValueKeyEnum.value.key] ?? '';
+              state.textController!.text != state.component!.config['value']) {
+            state.textController!.text = state.component!.config['value'] ?? '';
           }
         } else if (state is DynamicDateTimePickerError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
@@ -82,7 +77,7 @@ class DynamicDateTimePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    ComponentStateEnum currentState,
+    String currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -162,18 +157,18 @@ class DynamicDateTimePicker extends StatelessWidget {
       decoration: InputDecoration(
         isDense: true,
         hintText: inputConfig.placeholder,
-        border: _buildBorder(styleModel, ComponentStateEnum.base),
+        border: _buildBorder(styleModel, 'base'),
         enabledBorder: _buildBorder(
           styleModel,
-          ComponentStateEnum.base,
+          'base',
         ),
         focusedBorder: _buildBorder(
           styleModel,
-          ComponentStateEnum.focused,
+          'focused',
         ),
         errorBorder: _buildBorder(
           styleModel,
-          ComponentStateEnum.error,
+          'error',
         ),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
@@ -208,15 +203,15 @@ class DynamicDateTimePicker extends StatelessWidget {
 
   OutlineInputBorder _buildBorder(
     StyleModel styleModel,
-    ComponentStateEnum? state,
+    String? state,
   ) {
     double width = styleModel.borderWidthValue;
     Color color = styleModel.borderColorValue;
 
-    if (state == ComponentStateEnum.focused) {
+    if (state == 'focused') {
       width += 1;
       color = styleModel.focusedBorderColorValue;
-    } else if (state == ComponentStateEnum.error) {
+    } else if (state == 'error') {
       color = styleModel.errorBorderColorValue;
       width = 2;
     }

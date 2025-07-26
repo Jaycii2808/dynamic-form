@@ -1,7 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
-import 'package:dynamic_form_bi/core/enums/config_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
@@ -59,7 +58,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .where(
           (component) =>
               component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
+              component.config['action'] ==
                   ButtonAction.nextPage.value,
         )
         .map((component) => _toDynamicFormModel(component))
@@ -69,7 +68,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .where(
           (component) =>
               component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
+              component.config['action'] ==
                   ButtonAction.previousPage.value,
         )
         .map((component) => _toDynamicFormModel(component))
@@ -79,7 +78,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .where(
           (component) =>
               component.type == FormTypeEnum.buttonFormType &&
-              component.config[ConfigEnum.action.value] ==
+              component.config['action'] ==
                   ButtonAction.previewForm.value,
         )
         .map((component) => _toDynamicFormModel(component))
@@ -105,19 +104,19 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         .where(
           (component) =>
               !(component.type == FormTypeEnum.buttonFormType &&
-                  (component.config[ConfigEnum.action.value] ==
+                  (component.config['action'] ==
                           ButtonAction.submitForm.value ||
-                      component.config[ConfigEnum.action.value] ==
+                      component.config['action'] ==
                           ButtonAction.previousPage.value ||
-                      component.config[ConfigEnum.action.value] ==
+                      component.config['action'] ==
                           ButtonAction.nextPage.value ||
-                      component.config[ConfigEnum.action.value] ==
+                      component.config['action'] ==
                           ButtonAction.previewForm.value)),
         )
         .map((component) {
           final model = _toDynamicFormModel(component);
           // Set is_required flag cho widget con
-          model.config[ValueKeyEnum.value.key] = allComponentValues[model.id];
+          model.config['value'] = allComponentValues[model.id];
           return model;
         })
         .toList();
@@ -149,15 +148,15 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       itemCount: otherComponents.length,
       itemBuilder: (context, index) {
         final componentModel = otherComponents[index];
-        componentModel.config[ValueKeyEnum.value.key] =
+        componentModel.config['value'] =
             allComponentValues[componentModel.id];
 
         return DynamicFormRenderer(
           component: componentModel,
           onFieldChanged: (componentId, value) {
             final newValue =
-                value is Map && value.containsKey(ValueKeyEnum.value.key)
-                ? value[ValueKeyEnum.value.key]
+                value is Map && value.containsKey('value')
+                ? value['value']
                 : value;
             context.read<MultiPageFormBloc>().add(
               UpdateComponentValue(componentId, newValue),

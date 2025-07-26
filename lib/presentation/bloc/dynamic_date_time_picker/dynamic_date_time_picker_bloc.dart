@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -19,7 +18,7 @@ class DynamicDateTimePickerBloc
 
   DynamicDateTimePickerBloc({required this.initialComponent})
     : _textController = TextEditingController(
-        text: initialComponent.config[ValueKeyEnum.value.key] ?? '',
+        text: initialComponent.config['value'] ?? '',
       ),
       _focusNode = FocusNode(),
       super(DynamicDateTimePickerInitial(component: DynamicFormModel.empty())) {
@@ -60,9 +59,8 @@ class DynamicDateTimePickerBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            initialComponent.config['currentState']?.toString() ?? 'base',
-          ),
+          formState:
+              initialComponent.config['currentState']?.toString() ?? 'base',
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -109,11 +107,11 @@ class DynamicDateTimePickerBloc
       value,
     );
 
-    ComponentStateEnum newState = ComponentStateEnum.base;
+    String newState = 'base';
     if (validationError != null) {
-      newState = ComponentStateEnum.error;
+      newState = 'error';
     } else if (value.isNotEmpty) {
-      newState = ComponentStateEnum.success;
+      newState = 'success';
     }
     if (_textController.text != value) {
       _textController.text = value;
@@ -121,9 +119,9 @@ class DynamicDateTimePickerBloc
     final updatedConfig = Map<String, dynamic>.from(
       currentState.component!.config,
     );
-    updatedConfig[ValueKeyEnum.value.key] = value;
-    updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
-    updatedConfig[ValueKeyEnum.errorText.key] = validationError;
+    updatedConfig['value'] = value;
+    updatedConfig['current_state'] = newState;
+    updatedConfig['error_text'] = validationError;
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       currentState.component!,

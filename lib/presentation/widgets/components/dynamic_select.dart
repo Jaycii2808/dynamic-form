@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -98,8 +98,8 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
           if (state is DynamicSelectSuccess) {
             // Update main form with new value
             final valueMap = {
-              ValueKeyEnum.value.key: state.selectedValue,
-              'current_state': state.formState?.name ?? 'base',
+              'value': state.selectedValue,
+              'current_state': state.formState ?? 'base',
               'error_text': state.errorText,
             };
 
@@ -299,13 +299,13 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   //   return state.component!.style.toJson();
   // }
 
-  // String _getStateKey(ComponentStateEnum? formState) {
+  // String _getStateKey(StatesModel? formState) {
   //   switch (formState) {
-  //     case ComponentStateEnum.error:
+  //     case StatesModel.error:
   //       return 'error';
-  //     case ComponentStateEnum.success:
+  //     case StatesModel.success:
   //       return 'success';
-  //     case ComponentStateEnum.focused:
+  //     case StatesModel.focused:
   //       return 'focused';
   //     default:
   //       return 'base';

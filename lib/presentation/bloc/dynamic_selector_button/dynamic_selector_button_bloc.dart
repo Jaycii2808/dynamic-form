@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -45,9 +44,8 @@ class DynamicSelectorButtonBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(
-            initialComponent.config['currentState'],
-          ),
+          formState:
+              initialComponent.config['currentState']?.toString() ?? 'base',
         ),
       );
     } catch (e, stackTrace) {
@@ -77,17 +75,15 @@ class DynamicSelectorButtonBloc
     }
     final successState = state as DynamicSelectorButtonSuccess;
 
-    final newState = event.isSelected
-        ? ComponentStateEnum.success
-        : ComponentStateEnum.base;
+    final newState = event.isSelected ? 'success' : 'base';
 
     final updatedConfig = Map<String, dynamic>.from(
       successState.component!.config,
     );
-    updatedConfig[ValueKeyEnum.value.key] = event.isSelected;
+    updatedConfig['value'] = event.isSelected;
     updatedConfig['selected'] = event.isSelected; // For compatibility
-    updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
-    updatedConfig[ValueKeyEnum.errorText.key] =
+    updatedConfig['current_state'] = newState;
+    updatedConfig['error_text'] =
         null; // No validation error for this component
 
     final updatedComponent = ComponentUtils.updateComponentConfig(

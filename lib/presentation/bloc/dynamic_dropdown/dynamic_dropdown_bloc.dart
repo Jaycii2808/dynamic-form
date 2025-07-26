@@ -1,11 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_event.dart';
@@ -66,7 +65,7 @@ class DynamicDropdownBloc
         ),
       );
 
-      final styleModel =initialComponent.style;
+      final styleModel = initialComponent.style;
       final inputConfig = InputConfig.fromJson(initialComponent.config);
 
       // Compute all values like in original _computeValues()
@@ -199,8 +198,6 @@ class DynamicDropdownBloc
         DynamicDropdownError(
           errorMessage: 'Failed to update value: ${e.toString()}',
           component: currentState.component,
-          formState: currentState.formState,
-          errorText: currentState.errorText,
         ),
       );
     }
@@ -278,11 +275,11 @@ class DynamicDropdownBloc
 
       final formState = _computeFormState(
         event.component,
-        event.component.config[ValueKeyEnum.value.key]?.toString(),
+        event.component.config['value']?.toString(),
       );
       final errorText = _validateDropdown(
         event.component,
-        event.component.config[ValueKeyEnum.value.key]?.toString(),
+        event.component.config['value']?.toString(),
       );
 
       // Recompute all values with updated component
@@ -440,7 +437,7 @@ class DynamicDropdownBloc
     String newValue,
   ) {
     final updatedConfig = Map<String, dynamic>.from(component.config);
-    updatedConfig[ValueKeyEnum.value.key] = newValue;
+    updatedConfig['value'] = newValue;
 
     return DynamicFormModel(
       id: component.id,
@@ -455,15 +452,15 @@ class DynamicDropdownBloc
     );
   }
 
-  ComponentStateEnum _computeFormState(
+  String _computeFormState(
     DynamicFormModel component,
     String? value,
   ) {
     // Same logic as other components - value exists = success
     if (value != null && value.isNotEmpty) {
-      return ComponentStateEnum.success;
+      return 'success';
     }
-    return ComponentStateEnum.base;
+    return 'base';
   }
 
   String? _validateDropdown(DynamicFormModel component, String? value) {

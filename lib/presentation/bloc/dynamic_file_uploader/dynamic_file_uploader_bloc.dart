@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_file_uploader/dynamic_file_uploader_event.dart';
@@ -448,16 +447,16 @@ class DynamicFileUploaderBloc
     );
   }
 
-  ComponentStateEnum? _parseFormState(String state) {
+  String? _parseFormState(String state) {
     switch (state) {
       case 'error':
-        return ComponentStateEnum.error;
+        return 'error';
       case 'focused':
-        return ComponentStateEnum.focused;
+        return 'focused';
       case 'enabled':
-        return ComponentStateEnum.enabled;
+        return 'enabled';
       default:
-        return ComponentStateEnum.base;
+        return 'base';
     }
   }
 

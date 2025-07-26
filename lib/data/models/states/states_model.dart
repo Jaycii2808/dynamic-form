@@ -23,7 +23,9 @@ class StatesModel {
     if (json == null) return StatesModel(null, null, null, null);
     return StatesModel(
       json['base'] != null
-          ? StyleStatesModel.fromJson(json['base']['style'] as Map<String, dynamic>?)
+          ? StyleStatesModel.fromJson(
+              json['base']['style'] as Map<String, dynamic>?,
+            )
           : null,
       json['focused'] != null
           ? StyleStatesModel.fromJson(
@@ -31,7 +33,9 @@ class StatesModel {
             )
           : null,
       json['error'] != null
-          ? StyleStatesModel.fromJson(json['error']['style'] as Map<String, dynamic>?)
+          ? StyleStatesModel.fromJson(
+              json['error']['style'] as Map<String, dynamic>?,
+            )
           : null,
       json['success'] != null
           ? StyleStatesModel.fromJson(

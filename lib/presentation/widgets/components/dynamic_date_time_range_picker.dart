@@ -1,9 +1,8 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -35,11 +34,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     >(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
-          ValueKeyEnum.errorText.key: state.errorText,
+          'value': state.component!.config['value'],
+          'current_state': state.component!.config['current_state'],
+          'error_text': state.errorText,
         };
         if (state is DynamicDateTimeRangePickerSuccess) {
           onComplete(valueMap);
@@ -91,12 +88,10 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       combinedStyle.addAll(rangeVariant!.style!.toJson());
     }
 
-    final currentState = ComponentStateEnum.fromString(
-      inputConfig.currentState,
-    );
+    final currentState = inputConfig.currentState;
     final StyleStatesModel? stateStyle = _getTypedStateStyle(
       component.states,
-      currentState.value,
+      currentState,
     );
     if (stateStyle != null) {
       combinedStyle.addAll(stateStyle.toJson());

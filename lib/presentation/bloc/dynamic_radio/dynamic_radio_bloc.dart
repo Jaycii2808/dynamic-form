@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
@@ -77,7 +76,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
       final updatedConfig = Map<String, dynamic>.from(
         currentState.component!.config,
       );
-      updatedConfig[ValueKeyEnum.value.key] = event.value;
+      updatedConfig['value'] = event.value;
 
       final updatedComponent = ComponentUtils.updateComponentConfig(
         currentState.component!,
@@ -86,7 +85,7 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
 
       // Validate the new value
       final validationResult = _validateValue(updatedComponent, event.value);
-      final formState = validationResult['state'] as ComponentStateEnum;
+      final formState = validationResult['state'] as String;
       final errorText = validationResult['error'] as String?;
 
       debugPrint(
@@ -151,12 +150,12 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
     }
   }
 
-  ComponentStateEnum _getCurrentFormState(DynamicFormModel component) {
+  String _getCurrentFormState(DynamicFormModel component) {
     final currentState = component.config['current_state'];
     if (currentState != null) {
-      return ComponentStateEnum.fromString(currentState);
+      return currentState.toString();
     }
-    return ComponentStateEnum.base;
+    return 'base';
   }
 
   String? _getErrorText(DynamicFormModel component) {
@@ -170,18 +169,18 @@ class DynamicRadioBloc extends Bloc<DynamicRadioEvent, DynamicRadioState> {
 
       if (isRequired && !value) {
         return {
-          'state': ComponentStateEnum.error,
+          'state': 'error',
           'error': 'This option is required',
         };
       }
 
       return {
-        'state': ComponentStateEnum.success,
+        'state': 'success',
         'error': null,
       };
     } catch (e) {
       return {
-        'state': ComponentStateEnum.error,
+        'state': 'error',
         'error': 'Validation error: $e',
       };
     }

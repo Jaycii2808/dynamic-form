@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
@@ -40,9 +40,9 @@ class PreviewMultiPageScreen extends StatelessWidget {
             final value = allComponentValues[componentItem.id];
             final newConfig = Map<String, dynamic>.from(componentItem.config);
             if (value != null) {
-              newConfig[ValueKeyEnum.value.key] = value;
+              newConfig['value'] = value;
             } else {
-              newConfig.remove(ValueKeyEnum.value.key);
+              newConfig.remove('value');
             }
             return DynamicFormModel(
               id: componentItem.id,
@@ -199,9 +199,9 @@ List<DynamicFormModel> _buildPreviewComponents(
     final value = allComponentValues[componentItem.id];
     final newConfig = Map<String, dynamic>.from(componentItem.config);
     if (value != null) {
-      newConfig[ValueKeyEnum.value.key] = value;
+      newConfig['value'] = value;
     } else {
-      newConfig.remove(ValueKeyEnum.value.key);
+      newConfig.remove('value');
     }
     return DynamicFormModel(
       id: componentItem.id,

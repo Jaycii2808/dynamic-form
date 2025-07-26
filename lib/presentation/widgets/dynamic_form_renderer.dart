@@ -1,7 +1,7 @@
 ﻿import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -80,7 +80,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     dynamic value,
   ) {
     if (value != null) {
-      component.config[ValueKeyEnum.value.key] = value[ValueKeyEnum.value.key];
+      component.config['value'] = value['value'];
       if (widget.onFieldChanged != null) {
         widget.onFieldChanged!(component.id, value);
       } else {

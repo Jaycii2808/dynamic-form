@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -25,11 +25,11 @@ class DynamicSelectorButton extends StatelessWidget {
     return BlocConsumer<DynamicSelectorButtonBloc, DynamicSelectorButtonState>(
       listener: (context, state) {
         final valueMap = {
-          ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
+          'value':
+              state.component!.config['value'],
           'selected': state.component!.config['selected'],
-          ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
+          'current_state':
+              state.component!.config['current_state'],
         };
         if (state is DynamicSelectorButtonSuccess) {
           onComplete(valueMap);
@@ -38,7 +38,7 @@ class DynamicSelectorButton extends StatelessWidget {
         } else if (state is DynamicSelectorButtonLoading ||
             state is DynamicSelectorButtonInitial) {
           debugPrint(
-            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config['value']}',
           );
         } else {
           onComplete(valueMap);
@@ -89,11 +89,11 @@ class DynamicSelectorButton extends StatelessWidget {
     final config = component.config;
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
     final selected =
-        config['selected'] == true || config[ValueKeyEnum.value.key] == true;
+        config['selected'] == true || config['value'] == true;
     final isDisabled = config['disabled'] == true;
     // final currentState =
-    //     ComponentStateEnum.fromString(inputConfig.currentState) ??
-    //         ComponentStateEnum.base;
+    //     StatesModel.fromString(inputConfig.currentState) ??
+    //         StatesModel.base;
 
     // final stateStyle = _getStateStyle(component.states, currentState.value);
     // // If you want to merge stateStyle, you can create a merged StyleModel if needed

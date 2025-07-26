@@ -1,6 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -120,10 +119,8 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
             // CRITICAL FIX: Use state.isSelected directly instead of reading from config
             // because component config might not be fully updated yet
             final valueMap = {
-              ValueKeyEnum.value.key:
-                  state.isSelected, // ✅ Use confirmed state value
-              'current_state':
-                  state.formState?.name, // ✅ Use computed form state
+              'value': state.isSelected, // ✅ Use confirmed state value
+              'current_state': state.formState, // ✅ Use computed form state
               'error_text': state.errorText,
             };
 

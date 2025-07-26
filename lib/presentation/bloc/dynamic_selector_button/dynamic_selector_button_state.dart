@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -8,7 +7,7 @@ abstract class DynamicSelectorButtonState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleModel? styleModel;
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
 
   const DynamicSelectorButtonState({
@@ -34,14 +33,15 @@ class DynamicSelectorButtonInitial extends DynamicSelectorButtonState {
 }
 
 class DynamicSelectorButtonLoading extends DynamicSelectorButtonState {
-  DynamicSelectorButtonLoading.fromState({required DynamicSelectorButtonState state})
-      : super(
-    component: state.component,
-    inputConfig: state.inputConfig,
-    styleModel: state.styleModel,
-    formState: state.formState,
-    errorText: state.errorText,
-  );
+  DynamicSelectorButtonLoading.fromState({
+    required DynamicSelectorButtonState state,
+  }) : super(
+         component: state.component,
+         inputConfig: state.inputConfig,
+         styleModel: state.styleModel,
+         formState: state.formState,
+         errorText: state.errorText,
+       );
 }
 
 class DynamicSelectorButtonSuccess extends DynamicSelectorButtonState {

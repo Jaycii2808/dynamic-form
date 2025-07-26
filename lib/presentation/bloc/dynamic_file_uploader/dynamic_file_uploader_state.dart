@@ -1,11 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 abstract class DynamicFileUploaderState extends Equatable {
   final DynamicFormModel? component;
-  final ComponentStateEnum? formState;
+  final String? formState;
   final String? errorText;
   final int updateTimestamp;
 
@@ -51,7 +50,10 @@ class DynamicFileUploaderError extends DynamicFileUploaderState {
 
   @override
   List<Object?> get props => [
-    ...super.props,
+    component,
+    formState,
+    errorText,
+    updateTimestamp,
     errorMessage,
   ];
 }
@@ -100,51 +102,12 @@ class DynamicFileUploaderSuccess extends DynamicFileUploaderState {
     super.updateTimestamp,
   });
 
-  DynamicFileUploaderSuccess copyWith({
-    String? currentState,
-    List<String>? files,
-    int? progress,
-    bool? isProcessing,
-    bool? isDragging,
-    bool? isDisabled,
-    bool? isMultipleFiles,
-    List<String>? allowedExtensions,
-    Map<String, dynamic>? computedStyle,
-    Map<String, dynamic>? computedConfig,
-    FocusNode? focusNode,
-    bool? canTap,
-    bool? canAcceptDrop,
-    bool? canBrowse,
-    DynamicFormModel? component,
-    ComponentStateEnum? formState,
-    String? errorText,
-    int? updateTimestamp,
-  }) {
-    return DynamicFileUploaderSuccess(
-      currentState: currentState ?? this.currentState,
-      files: files ?? this.files,
-      progress: progress ?? this.progress,
-      isProcessing: isProcessing ?? this.isProcessing,
-      isDragging: isDragging ?? this.isDragging,
-      isDisabled: isDisabled ?? this.isDisabled,
-      isMultipleFiles: isMultipleFiles ?? this.isMultipleFiles,
-      allowedExtensions: allowedExtensions ?? this.allowedExtensions,
-      computedStyle: computedStyle ?? this.computedStyle,
-      computedConfig: computedConfig ?? this.computedConfig,
-      focusNode: focusNode ?? this.focusNode,
-      canTap: canTap ?? this.canTap,
-      canAcceptDrop: canAcceptDrop ?? this.canAcceptDrop,
-      canBrowse: canBrowse ?? this.canBrowse,
-      component: component ?? this.component,
-      formState: formState ?? this.formState,
-      errorText: errorText ?? this.errorText,
-      updateTimestamp: updateTimestamp ?? DateTime.now().millisecondsSinceEpoch,
-    );
-  }
-
   @override
   List<Object?> get props => [
-    ...super.props,
+    component,
+    formState,
+    errorText,
+    updateTimestamp,
     currentState,
     files,
     progress,
@@ -160,4 +123,46 @@ class DynamicFileUploaderSuccess extends DynamicFileUploaderState {
     canAcceptDrop,
     canBrowse,
   ];
+
+  DynamicFileUploaderSuccess copyWith({
+    DynamicFormModel? component,
+    String? formState,
+    String? errorText,
+    int? updateTimestamp,
+    String? currentState,
+    List<String>? files,
+    int? progress,
+    bool? isProcessing,
+    bool? isDragging,
+    bool? isDisabled,
+    bool? isMultipleFiles,
+    List<String>? allowedExtensions,
+    Map<String, dynamic>? computedStyle,
+    Map<String, dynamic>? computedConfig,
+    FocusNode? focusNode,
+    bool? canTap,
+    bool? canAcceptDrop,
+    bool? canBrowse,
+  }) {
+    return DynamicFileUploaderSuccess(
+      component: component ?? this.component,
+      formState: formState ?? this.formState,
+      errorText: errorText ?? this.errorText,
+      updateTimestamp: updateTimestamp ?? this.updateTimestamp,
+      currentState: currentState ?? this.currentState,
+      files: files ?? this.files,
+      progress: progress ?? this.progress,
+      isProcessing: isProcessing ?? this.isProcessing,
+      isDragging: isDragging ?? this.isDragging,
+      isDisabled: isDisabled ?? this.isDisabled,
+      isMultipleFiles: isMultipleFiles ?? this.isMultipleFiles,
+      allowedExtensions: allowedExtensions ?? this.allowedExtensions,
+      computedStyle: computedStyle ?? this.computedStyle,
+      computedConfig: computedConfig ?? this.computedConfig,
+      focusNode: focusNode ?? this.focusNode,
+      canTap: canTap ?? this.canTap,
+      canAcceptDrop: canAcceptDrop ?? this.canAcceptDrop,
+      canBrowse: canBrowse ?? this.canBrowse,
+    );
+  }
 }

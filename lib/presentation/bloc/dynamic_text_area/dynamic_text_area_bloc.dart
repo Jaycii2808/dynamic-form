@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -20,7 +19,7 @@ class DynamicTextAreaBloc
 
   DynamicTextAreaBloc({required this.initialComponent})
     : _textController = TextEditingController(
-        text: initialComponent.config[ValueKeyEnum.value.key] ?? '',
+        text: initialComponent.config['value'] ?? '',
       ),
       _focusNode = FocusNode(),
       super(
@@ -65,7 +64,7 @@ class DynamicTextAreaBloc
         throw Exception("Invalid initial component: ID or config is empty.");
       }
       final configState =
-          initialComponent.config[ValueKeyEnum.currentState.key]?.toString() ??
+          initialComponent.config['current_state']?.toString() ??
           initialComponent.config['current_state']?.toString() ??
           'base';
       emit(
@@ -73,7 +72,7 @@ class DynamicTextAreaBloc
           component: initialComponent,
           inputConfig: InputConfig.fromJson(initialComponent.config),
           styleModel: StyleModel.fromJson(initialComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(configState),
+          formState: configState,
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -109,19 +108,19 @@ class DynamicTextAreaBloc
         'DynamicTextAreaBloc: value="${event.value}", validationError=$validationError',
       );
 
-      ComponentStateEnum newState = ComponentStateEnum.base;
+      String newState = 'base';
       if (validationError != null) {
-        newState = ComponentStateEnum.error;
+        newState = 'error';
       } else if (event.value.isNotEmpty) {
-        newState = ComponentStateEnum.success;
+        newState = 'success';
       }
 
       final updatedConfig = Map<String, dynamic>.from(
         successState.component!.config,
       );
-      updatedConfig[ValueKeyEnum.value.key] = event.value;
-      updatedConfig[ValueKeyEnum.currentState.key] = newState.value;
-      updatedConfig[ValueKeyEnum.errorText.key] = validationError;
+      updatedConfig['value'] = event.value;
+      updatedConfig['current_state'] = newState;
+      updatedConfig['error_text'] = validationError;
 
       final updatedComponent = ComponentUtils.updateComponentConfig(
         successState.component!,
@@ -130,7 +129,7 @@ class DynamicTextAreaBloc
 
       // Always use config['current_state'] for formState
       final configState =
-          updatedConfig[ValueKeyEnum.currentState.key]?.toString() ??
+          updatedConfig['current_state']?.toString() ??
           updatedConfig['current_state']?.toString() ??
           'base';
 
@@ -140,7 +139,7 @@ class DynamicTextAreaBloc
           errorText: validationError,
           inputConfig: InputConfig.fromJson(updatedComponent.config),
           styleModel: StyleModel.fromJson(updatedComponent.style.toJson()),
-          formState: ComponentStateEnum.fromString(configState),
+          formState: configState,
           textController: _textController,
           focusNode: _focusNode,
         ),

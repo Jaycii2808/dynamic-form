@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
-import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
+
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -70,7 +69,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
       final isDisabled = initialComponent.config['disabled'] == true;
 
       // Get initial value
-      final value = initialComponent.config[ValueKeyEnum.value.key];
+      final value = initialComponent.config['value'];
       dynamic selectedValue;
       if (isMultiple) {
         selectedValue = value is List ? value : [];
@@ -331,7 +330,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
       final isDisabled = event.component.config['disabled'] == true;
 
       // Get updated value
-      final value = event.component.config[ValueKeyEnum.value.key];
+      final value = event.component.config['value'];
       dynamic selectedValue;
       if (isMultiple) {
         selectedValue = value is List ? value : [];
@@ -376,7 +375,7 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     dynamic newValue,
   ) {
     final updatedConfig = Map<String, dynamic>.from(component.config);
-    updatedConfig[ValueKeyEnum.value.key] = newValue;
+    updatedConfig['value'] = newValue;
 
     return DynamicFormModel(
       id: component.id,
@@ -391,28 +390,28 @@ class DynamicSelectBloc extends Bloc<DynamicSelectEvent, DynamicSelectState> {
     );
   }
 
-  ComponentStateEnum _computeFormState(
+  String _computeFormState(
     DynamicFormModel component,
     dynamic value,
   ) {
     final validationError = _validateSelect(component, value);
 
     if (validationError != null && validationError.isNotEmpty) {
-      return ComponentStateEnum.error;
+      return 'error';
     }
 
     // Check if has value (success state)
     if (component.config['multiple'] == true) {
       if (value is List && value.isNotEmpty) {
-        return ComponentStateEnum.success;
+        return 'success';
       }
     } else {
       if (value != null && value.toString().isNotEmpty) {
-        return ComponentStateEnum.success;
+        return 'success';
       }
     }
 
-    return ComponentStateEnum.base;
+    return 'base';
   }
 
   String? _validateSelect(DynamicFormModel component, dynamic value) {
