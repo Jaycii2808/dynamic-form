@@ -313,29 +313,29 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   // Helper methods
-  double? _parseDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) {
-      // Remove 'px' suffix if present
-      final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
-      return double.tryParse(cleanValue);
-    }
-    return null;
-  }
+  // double? _parseDouble(dynamic value) {
+  //   if (value == null) return null;
+  //   if (value is double) return value;
+  //   if (value is int) return value.toDouble();
+  //   if (value is String) {
+  //     // Remove 'px' suffix if present
+  //     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
+  //     return double.tryParse(cleanValue);
+  //   }
+  //   return null;
+  // }
 
-  int? _parseInt(dynamic value) {
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) {
-      // Remove any non-numeric characters
-      final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
-      return int.tryParse(cleanValue);
-    }
-    return null;
-  }
+  // int? _parseInt(dynamic value) {
+  //   if (value == null) return null;
+  //   if (value is int) return value;
+  //   if (value is double) return value.toInt();
+  //   if (value is String) {
+  //     // Remove any non-numeric characters
+  //     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
+  //     return int.tryParse(cleanValue);
+  //   }
+  //   return null;
+  // }
 
   FontWeight _parseFontWeight(String weight) {
     switch (weight.toLowerCase()) {

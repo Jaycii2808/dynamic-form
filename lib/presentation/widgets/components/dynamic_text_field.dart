@@ -320,12 +320,10 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
 
   Widget? _buildPrefixIcon(DynamicFormModel component) {
     // Get icon from component style or config
-    final iconName = component.style.iconColor != null
-        ? component.style.iconColor
-        : component.config['icon']?.toString();
+    final iconName = component.style.iconColor ?? component.config['icon']?.toString();
     if (iconName != null && iconName.isNotEmpty) {
       final iconColor =
-          StyleUtils.parseColor(component.style.iconColor) ?? Colors.grey;
+          StyleUtils.parseColor(component.style.iconColor) ;
       final iconSize = 20.0;
       final iconData = IconTypeEnum.fromString(iconName).toIconData();
       if (iconData != null) {
@@ -407,20 +405,20 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
-  Color? _parseColor(dynamic value) {
-    if (value is int) return Color(value);
-    if (value is String) {
-      if (value.startsWith('#')) {
-        final hex = value.replaceAll('#', '');
-        if (hex.length == 6) {
-          return Color(int.parse('FF$hex', radix: 16));
-        } else if (hex.length == 8) {
-          return Color(int.parse(hex, radix: 16));
-        }
-      }
-    }
-    return null;
-  }
+  // Color? _parseColor(dynamic value) {
+  //   if (value is int) return Color(value);
+  //   if (value is String) {
+  //     if (value.startsWith('#')) {
+  //       final hex = value.replaceAll('#', '');
+  //       if (hex.length == 6) {
+  //         return Color(int.parse('FF$hex', radix: 16));
+  //       } else if (hex.length == 8) {
+  //         return Color(int.parse(hex, radix: 16));
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
 
   String _ComponentStateEnumToKey(ComponentStateEnum state) {
     switch (state) {

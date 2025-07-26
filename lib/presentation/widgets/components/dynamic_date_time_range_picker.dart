@@ -1,9 +1,13 @@
+import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style_config.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
@@ -56,7 +60,15 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
         }
 
         if (state is DynamicDateTimeRangePickerSuccess) {
-          return _buildBody(context, state);
+          return _buildBody(
+            state.styleConfig!,
+            state.inputConfig!,
+            state.component!,
+            state.textController!,
+            state.focusNode!,
+            state.errorText,
+            context,
+          );
         }
 
         return const SizedBox.shrink();
@@ -65,43 +77,50 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   }
 
   Widget _buildBody(
+    StyleConfig styleConfig,
+    InputConfig inputConfig,
+    DynamicFormModel component,
+    TextEditingController textController,
+    FocusNode focusNode,
+    String? errorText,
     BuildContext context,
-    DynamicDateTimeRangePickerSuccess state,
   ) {
-    final styleMap = state.combinedStyle ?? <String, dynamic>{};
-    final styleModel = StyleModel.fromJson(styleMap);
+    final combinedStyle = Map<String, dynamic>.from(component.style.toJson());
+    final rangeVariant = component.variants?.getByKey('range');
+    if (rangeVariant?.style != null) {
+      combinedStyle.addAll(rangeVariant!.style!.toJson());
+    }
+
+    final currentState = ComponentStateEnum.fromString(
+      inputConfig.currentState,
+    );
+    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+      component.states,
+      currentState.value,
+    );
+    if (stateStyle != null) {
+      combinedStyle.addAll(stateStyle.toJson());
+    }
+
     return Container(
-      key: Key(state.component!.id),
-      padding: StyleUtils.parsePadding(styleModel.padding),
-      margin: StyleUtils.parsePadding(styleModel.margin),
-      decoration: BoxDecoration(
-        color: StyleUtils.parseColor(styleModel.backgroundColor),
-        border: Border.all(
-          color: StyleUtils.parseColor(styleModel.borderColor ?? '#CCCCCC'),
-          width: styleModel.borderWidth ?? 1.0,
-        ),
-        borderRadius: BorderRadius.circular(styleModel.borderRadius ?? 8.0),
-      ),
+      key: Key(component.id),
+      padding: StyleUtils.parsePadding(combinedStyle['padding']),
+      margin: StyleUtils.parsePadding(combinedStyle['margin']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (state.inputConfig!.label != null &&
-              state.inputConfig!.label!.isNotEmpty)
-            _buildLabelText(
-              label: state.inputConfig!.label!,
-              style: styleMap,
-            ),
+          if (inputConfig.label != null && inputConfig.label!.isNotEmpty)
+            _buildLabelText(label: inputConfig.label!, style: combinedStyle),
           _buildDatePickerTextField(
             context: context,
-            controller: state.textController!,
-            focusNode: state.focusNode!,
-            errorText: state.errorText,
-            hintText:
-                state.inputConfig!.placeholder ?? 'MMM d,yyyy - MMM d,yyyy',
-            style: styleMap,
-            onTap: state.inputConfig!.disabled
+            controller: textController,
+            focusNode: focusNode,
+            errorText: errorText,
+            hintText: inputConfig.placeholder ?? 'MMM d,yyyy - MMM d,yyyy',
+            style: combinedStyle,
+            onTap: inputConfig.disabled
                 ? () {}
-                : () => _showDateRangePickerDialog(context, state.component!),
+                : () => _showDateRangePickerDialog(context, component),
           ),
         ],
       ),
@@ -257,5 +276,20 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
             : FontStyle.normal,
       ),
     );
+  }
+
+  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+    switch (key) {
+      case 'base':
+        return states?.base;
+      case 'error':
+        return states?.error;
+      case 'success':
+        return states?.success;
+      case 'focused':
+        return states?.focused;
+      default:
+        return null;
+    }
   }
 }

@@ -5,9 +5,8 @@ import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -17,7 +16,6 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_ev
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicRadio extends StatefulWidget {
   final DynamicFormModel component;
@@ -272,46 +270,46 @@ class _DynamicRadioWidgetState extends State<DynamicRadioWidget> {
     return widgets;
   }
 
-  Map<String, dynamic> _getStateStyle(
-    DynamicFormModel component,
-    ComponentStateEnum currentState,
-  ) {
-    Map<String, dynamic> style = component.style.toJson();
+  // Map<String, dynamic> _getStateStyle(
+  //   DynamicFormModel component,
+  //   ComponentStateEnum currentState,
+  // ) {
+  //   Map<String, dynamic> style = component.style.toJson();
+  //
+  //   // Determine state key based on validation state and selection
+  //   String stateKey = 'base';
+  //   if (component.config['current_state'] != null) {
+  //     stateKey = component.config['current_state'];
+  //   } else if (component.config['value'] == true) {
+  //     stateKey = 'selected';
+  //   }
+  //
+  //   // Apply state-specific styles from strongly-typed StatesModel
+  //   final StyleStatesModel? stateStyle = _getTypedStateStyle(
+  //     component.states,
+  //     stateKey,
+  //   );
+  //   if (stateStyle != null) {
+  //     style.addAll(stateStyle.toJson());
+  //   }
+  //
+  //   return style;
+  // }
 
-    // Determine state key based on validation state and selection
-    String stateKey = 'base';
-    if (component.config['current_state'] != null) {
-      stateKey = component.config['current_state'];
-    } else if (component.config['value'] == true) {
-      stateKey = 'selected';
-    }
-
-    // Apply state-specific styles from strongly-typed StatesModel
-    final StyleStatesModel? stateStyle = _getTypedStateStyle(
-      component.states,
-      stateKey,
-    );
-    if (stateStyle != null) {
-      style.addAll(stateStyle.toJson());
-    }
-
-    return style;
-  }
-
-  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+  // StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+  //   switch (key) {
+  //     case 'base':
+  //       return states?.base;
+  //     case 'error':
+  //       return states?.error;
+  //     case 'success':
+  //       return states?.success;
+  //     case 'focused':
+  //       return states?.focused;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   List<Widget> _buildHintText(DynamicFormModel component) {
     final hint = component.config['hint'];

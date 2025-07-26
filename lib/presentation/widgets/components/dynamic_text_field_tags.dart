@@ -232,7 +232,7 @@ class DynamicTextFieldTags extends StatelessWidget {
     bool isDisabled, {
     bool allowRemoval = true,
   }) {
-    final style = styleModel.toJson();
+    //final style = styleModel.toJson();
     return Chip(
       label: Text(
         tag,

@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 import 'package:equatable/equatable.dart';
-import '../validation/validation_models.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_models.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';

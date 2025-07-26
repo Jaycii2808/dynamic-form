@@ -399,12 +399,12 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       order: componentModel.order,
       config: Map<String, dynamic>.from(componentModel.config),
       style: styleData == null
-          ? StyleModel()
+          ? const StyleModel()
           : (styleData is StyleModel
-                ? styleData as StyleModel
+                ? styleData
                 : (styleData is Map<String, dynamic>
-                      ? StyleModel.fromJson(styleData as Map<String, dynamic>)
-                      : StyleModel())),
+                      ? StyleModel.fromJson(styleData)
+                      : const StyleModel())),
       validation: null, // Set to null for now, handle validation separately
       children: const [],
     );

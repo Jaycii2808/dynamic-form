@@ -1,13 +1,10 @@
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_state.dart';
@@ -30,10 +27,10 @@ class DynamicSelectorButton extends StatelessWidget {
       listener: (context, state) {
         final valueMap = {
           ValueKeyEnum.value.key:
-              state.component!.config[ValueKeyEnum.value.key],
+          state.component!.config[ValueKeyEnum.value.key],
           'selected': state.component!.config['selected'],
           ValueKeyEnum.currentState.key:
-              state.component!.config[ValueKeyEnum.currentState.key],
+          state.component!.config[ValueKeyEnum.currentState.key],
         };
         if (state is DynamicSelectorButtonSuccess) {
           onComplete(valueMap);
@@ -42,7 +39,8 @@ class DynamicSelectorButton extends StatelessWidget {
         } else if (state is DynamicSelectorButtonLoading ||
             state is DynamicSelectorButtonInitial) {
           debugPrint(
-            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component
+                ?.id}, value: ${state.component?.config[ValueKeyEnum.value.key]}',
           );
         } else {
           onComplete(valueMap);
@@ -68,39 +66,37 @@ class DynamicSelectorButton extends StatelessWidget {
     );
   }
 
-  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+  // StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
+  //   switch (key) {
+  //     case 'base':
+  //       return states?.base;
+  //     case 'error':
+  //       return states?.error;
+  //     case 'success':
+  //       return states?.success;
+  //     case 'focused':
+  //       return states?.focused;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
-  Widget _buildBody(
-    BuildContext context,
-    StyleConfig styleConfig,
-    InputConfig inputConfig,
-    DynamicFormModel component,
-  ) {
+  Widget _buildBody(BuildContext context,
+      StyleConfig styleConfig,
+      InputConfig inputConfig,
+      DynamicFormModel component,) {
     final styleModel = StyleModel.fromJson(component.style.toJson());
     final config = component.config;
     final hasLabel = config['label'] != null && config['label'].isNotEmpty;
     final selected =
         config['selected'] == true || config[ValueKeyEnum.value.key] == true;
     final isDisabled = config['disabled'] == true;
-    final currentState =
-        ComponentStateEnum.fromString(inputConfig.currentState) ??
-        ComponentStateEnum.base;
+    // final currentState =
+    //     ComponentStateEnum.fromString(inputConfig.currentState) ??
+    //         ComponentStateEnum.base;
 
-    final stateStyle = _getStateStyle(component.states, currentState.value);
-    // If you want to merge stateStyle, you can create a merged StyleModel if needed
+    // final stateStyle = _getStateStyle(component.states, currentState.value);
+    // // If you want to merge stateStyle, you can create a merged StyleModel if needed
 
     return Container(
       key: Key(component.id),
@@ -110,10 +106,10 @@ class DynamicSelectorButton extends StatelessWidget {
         onTap: isDisabled
             ? null
             : () {
-                context.read<DynamicSelectorButtonBloc>().add(
-                  SelectorButtonToggledEvent(isSelected: !selected),
-                );
-              },
+          context.read<DynamicSelectorButtonBloc>().add(
+            SelectorButtonToggledEvent(isSelected: !selected),
+          );
+        },
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -130,10 +126,10 @@ class DynamicSelectorButton extends StatelessWidget {
               ),
               child: selected
                   ? Icon(
-                      Icons.check,
-                      size: (styleModel.iconSize ?? 20.0) * 0.6,
-                      color: Colors.white,
-                    )
+                Icons.check,
+                size: (styleModel.iconSize ?? 20.0) * 0.6,
+                color: Colors.white,
+              )
                   : null,
             ),
             if (hasLabel)

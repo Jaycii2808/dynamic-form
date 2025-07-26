@@ -1,8 +1,8 @@
-import 'base_validation.dart';
-import 'composite_validation.dart';
-import 'required_validation.dart';
-import 'max_selections_validation.dart';
-import 'button_condition_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/composite_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/max_selections_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
 
 class ValidationFactory {
   static BaseValidation? fromJson(Map<String, dynamic>? json) {

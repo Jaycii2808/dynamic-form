@@ -1,7 +1,7 @@
-import 'base_validation.dart';
-import 'required_validation.dart';
-import 'max_selections_validation.dart';
-import 'button_condition_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/max_selections_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
 
 class CompositeValidation extends BaseValidation {
   final RequiredValidation? required;
@@ -46,8 +46,9 @@ class CompositeValidation extends BaseValidation {
     final result = <String, dynamic>{};
 
     if (required != null) result['required'] = required!.toJson();
-    if (maxSelections != null)
+    if (maxSelections != null) {
       result['max_selections'] = maxSelections!.toJson();
+    }
     if (buttonCondition != null) result.addAll(buttonCondition!.toJson());
 
     return result;

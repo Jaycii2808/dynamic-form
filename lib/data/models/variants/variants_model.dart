@@ -1,5 +1,5 @@
-import '../states/style_states_model.dart';
-import '../input_types/input_types_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 
 class VariantItemModel {
   final StyleStatesModel? style;

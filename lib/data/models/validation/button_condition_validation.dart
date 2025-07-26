@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'base_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 
 class ButtonConditionValidation extends BaseValidation {
   final List<ButtonCondition> conditions;

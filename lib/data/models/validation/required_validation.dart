@@ -1,4 +1,4 @@
-import 'base_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 
 class RequiredValidation extends BaseValidation {
   final bool isRequired;

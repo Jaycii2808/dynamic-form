@@ -2,16 +2,14 @@ import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 
 class DynamicSwitch extends StatelessWidget {
   final DynamicFormModel component;
@@ -66,20 +64,20 @@ class DynamicSwitch extends StatelessWidget {
     );
   }
 
-  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+  // StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
+  //   switch (key) {
+  //     case 'base':
+  //       return states?.base;
+  //     case 'error':
+  //       return states?.error;
+  //     case 'success':
+  //       return states?.success;
+  //     case 'focused':
+  //       return states?.focused;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   Widget _buildBody(
     BuildContext context,
@@ -94,10 +92,10 @@ class DynamicSwitch extends StatelessWidget {
     final isSelected = config['selected'] == true || config['value'] == true;
     final isDisabled = config['disabled'] == true;
 
-    final stateStyle = _getStateStyle(
-      component.states,
-      inputConfig.currentState,
-    );
+    // final stateStyle = _getStateStyle(
+    //   component.states,
+    //   inputConfig.currentState,
+    // );
     // If you want to merge stateStyle, you can create a merged StyleModel if needed
 
     final activeColor = StyleUtils.parseColor(

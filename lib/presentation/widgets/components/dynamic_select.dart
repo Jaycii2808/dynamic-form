@@ -1,15 +1,10 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
 import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -299,38 +294,38 @@ class _DynamicSelectWidgetState extends State<DynamicSelectWidget> {
   }
 
   // Helper methods
-  Map<String, dynamic> _getAppliedStyle(DynamicSelectSuccess state) {
-    // This method can be refactored to return a StyleModel if all merging logic is handled in model or utility
-    return state.component!.style.toJson();
-  }
+  // Map<String, dynamic> _getAppliedStyle(DynamicSelectSuccess state) {
+  //   // This method can be refactored to return a StyleModel if all merging logic is handled in model or utility
+  //   return state.component!.style.toJson();
+  // }
 
-  String _getStateKey(ComponentStateEnum? formState) {
-    switch (formState) {
-      case ComponentStateEnum.error:
-        return 'error';
-      case ComponentStateEnum.success:
-        return 'success';
-      case ComponentStateEnum.focused:
-        return 'focused';
-      default:
-        return 'base';
-    }
-  }
-
-  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+  // String _getStateKey(ComponentStateEnum? formState) {
+  //   switch (formState) {
+  //     case ComponentStateEnum.error:
+  //       return 'error';
+  //     case ComponentStateEnum.success:
+  //       return 'success';
+  //     case ComponentStateEnum.focused:
+  //       return 'focused';
+  //     default:
+  //       return 'base';
+  //   }
+  // }
+  //
+  // StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
+  //   switch (key) {
+  //     case 'base':
+  //       return states?.base;
+  //     case 'error':
+  //       return states?.error;
+  //     case 'success':
+  //       return states?.success;
+  //     case 'focused':
+  //       return states?.focused;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   Widget? _getPrefixIcon(DynamicSelectSuccess state) {
     final styleModel = StyleModel.fromJson(state.component!.style.toJson());

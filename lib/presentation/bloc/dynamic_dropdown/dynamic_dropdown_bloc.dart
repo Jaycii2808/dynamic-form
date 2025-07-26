@@ -1,4 +1,3 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/component_state_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/value_key_enum.dart';
@@ -6,14 +5,14 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/style_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_dropdown/dynamic_dropdown_state.dart';
 import 'package:flutter/material.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {
@@ -527,40 +526,40 @@ class DynamicDropdownBloc
     };
   }
 
-  Map<String, dynamic> _computeStyles(
-    DynamicFormModel component,
-    String? triggerIcon,
-    String? triggerAvatar,
-    String currentState,
-  ) {
-    final styleModel = StyleModel.fromJson(component.style.toJson());
-    Map<String, dynamic> style = styleModel.toJson();
-
-    // Always apply variant with_icon if icon exists
-    final withIconStyle =
-        component.variants?.getByKey('with_icon')?.style
-            as Map<String, dynamic>?;
-    if ((triggerIcon != null || style['icon'] != null) &&
-        withIconStyle != null) {
-      style.addAll(withIconStyle);
-    }
-
-    // Apply variant with_avatar if avatar exists
-    final withAvatarStyle =
-        component.variants?.getByKey('with_avatar')?.style
-            as Map<String, dynamic>?;
-    if (triggerAvatar != null && withAvatarStyle != null) {
-      style.addAll(withAvatarStyle);
-    }
-
-    // Apply state style if available
-    if (component.states != null) {
-      final stateStyle = _getTypedStateStyle(component.states, currentState);
-      if (stateStyle != null) style.addAll(stateStyle.toJson());
-    }
-
-    return style;
-  }
+  // Map<String, dynamic> _computeStyles(
+  //   DynamicFormModel component,
+  //   String? triggerIcon,
+  //   String? triggerAvatar,
+  //   String currentState,
+  // ) {
+  //   final styleModel = StyleModel.fromJson(component.style.toJson());
+  //   Map<String, dynamic> style = styleModel.toJson();
+  //
+  //   // Always apply variant with_icon if icon exists
+  //   final withIconStyle =
+  //       component.variants?.getByKey('with_icon')?.style
+  //           as Map<String, dynamic>?;
+  //   if ((triggerIcon != null || style['icon'] != null) &&
+  //       withIconStyle != null) {
+  //     style.addAll(withIconStyle);
+  //   }
+  //
+  //   // Apply variant with_avatar if avatar exists
+  //   final withAvatarStyle =
+  //       component.variants?.getByKey('with_avatar')?.style
+  //           as Map<String, dynamic>?;
+  //   if (triggerAvatar != null && withAvatarStyle != null) {
+  //     style.addAll(withAvatarStyle);
+  //   }
+  //
+  //   // Apply state style if available
+  //   if (component.states != null) {
+  //     final stateStyle = _getTypedStateStyle(component.states, currentState);
+  //     if (stateStyle != null) style.addAll(stateStyle.toJson());
+  //   }
+  //
+  //   return style;
+  // }
 
   String? _computeDisplayLabel(
     Map<String, dynamic> config,
