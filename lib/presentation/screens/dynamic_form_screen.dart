@@ -55,7 +55,7 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
   /// Save buttons should only appear in preview page
   List<DynamicFormModel> _getMainFormComponents(DynamicFormPageModel page) {
     final mainComponents = page.components.where((component) {
-      final action = component.config['action'];
+      final action = component.config?.action;
       return action != 'submit_form';
     }).toList();
     return mainComponents;

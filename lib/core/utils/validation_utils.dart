@@ -40,10 +40,10 @@ class ValidationUtils {
   }
 
   static bool _getValidationResult(
-    String rule,
-    dynamic value,
-    dynamic expectedValue,
-  ) {
+      String rule,
+      dynamic value,
+      dynamic expectedValue,
+      ) {
     switch (rule) {
       case 'not_null':
         return _validateNotNull(value, expectedValue);
@@ -77,10 +77,10 @@ class ValidationUtils {
 
   /// Auto-detect input type with null safety
   static String? detectInputType(
-    InputTypesModel? inputTypes,
-    String? value,
-    String? configuredType,
-  ) {
+      InputTypesModel? inputTypes,
+      String? value,
+      String? configuredType,
+      ) {
     if (inputTypes == null || inputTypes.isEmpty) return null;
     if (configuredType != null) return configuredType;
     if (value == null || value.trim().isEmpty) {
@@ -104,10 +104,10 @@ class ValidationUtils {
 
   /// Determine component state with null safety
   static String determineComponentState(
-    String? value,
-    String? errorText, {
-    String? explicitState,
-  }) {
+      String? value,
+      String? errorText, {
+        String? explicitState,
+      }) {
     if (explicitState != null && explicitState.isNotEmpty) return explicitState;
     if (errorText != null && errorText.isNotEmpty) return 'error';
     if (value != null && value.toString().isNotEmpty) return 'success';
@@ -118,9 +118,10 @@ class ValidationUtils {
   static String? validateForm(DynamicFormModel component, String? value) {
     try {
       final safeValue = value ?? '';
-      if ((component.config['isRequired'] ?? false) &&
-          safeValue.trim().isEmpty) {
-        return component.config['requiredMessage'] ?? 'Trường này là bắt buộc';
+      final config = component.config;
+      if (config == null) return null;
+      if ((config.isRequired ?? false) && safeValue.trim().isEmpty) {
+        return config.errorText ?? 'Trường này là bắt buộc';
       }
       if (safeValue.trim().isEmpty) return null;
       final inputTypes = component.inputTypes;
@@ -128,7 +129,7 @@ class ValidationUtils {
       String? selectedType = detectInputType(
         inputTypes,
         safeValue,
-        component.config['inputType'],
+        config.toJson()['inputType'] as String?,
       );
       // Fallback for textAreaFormType: if multiline is missing, use text
       if (component.type.toString().contains('textAreaFormType')) {
@@ -179,41 +180,14 @@ class ValidationUtils {
     }
   }
 
-  // static String? _validateByRules(
-  //   String value,
-  //   Map<String, dynamic> validation,
-  // ) {
-  //   final minLength = validation['min_length'] ?? 0;
-  //   final maxLength = validation['max_length'] ?? 9999;
-  //   final regexStr = validation['regex'] ?? '';
-  //   final errorMsg = validation['error_message'] ?? 'Invalid input';
-  //
-  //   // Length validation
-  //   if (value.length < minLength || value.length > maxLength) {
-  //     return errorMsg;
-  //   }
-  //
-  //   // Regex validation
-  //   if (regexStr.isNotEmpty) {
-  //     try {
-  //       if (!RegExp(regexStr).hasMatch(value)) return errorMsg;
-  //     } catch (e) {
-  //       debugPrint('Invalid regex pattern: $regexStr');
-  //       return 'Invalid format';
-  //     }
-  //   }
-  //
-  //   return null;
-  // }
-
   /// Centralized button conditions validation - eliminates duplicated if-else logic
   static ButtonValidationResult validateButtonConditions(
-    List<ButtonCondition> conditions,
-    List<DynamicFormModel> components,
-  ) {
+      List<ButtonCondition> conditions,
+      List<DynamicFormModel> components,
+      ) {
     for (final condition in conditions) {
       final targetComponent = components.cast<DynamicFormModel?>().firstWhere(
-        (comp) => comp?.id == condition.componentId,
+            (comp) => comp?.id == condition.componentId,
         orElse: () => null,
       );
 
@@ -225,7 +199,7 @@ class ValidationUtils {
         );
       }
 
-      final value = targetComponent.config['value'];
+      final value = targetComponent.config?.value;
       if (!validateCondition(condition, value)) {
         return ButtonValidationResult(
           isValid: false,
@@ -240,11 +214,11 @@ class ValidationUtils {
 
   /// Centralized state determination - replaces multiple if-else chains
   static String determineFieldState(
-    String? value,
-    String? errorText, {
-    bool? boolValue,
-    List<dynamic>? listValue,
-  }) {
+      String? value,
+      String? errorText, {
+        bool? boolValue,
+        List<dynamic>? listValue,
+      }) {
     if (errorText != null && errorText.isNotEmpty) return 'error';
 
     // For boolean fields (checkbox, switch, radio)
@@ -275,12 +249,12 @@ class ValidationUtils {
   }) {
     final state =
         explicitState ??
-        determineFieldState(
-          value?.toString(),
-          errorText,
-          boolValue: selected,
-          listValue: value is List ? value : null,
-        );
+            determineFieldState(
+              value?.toString(),
+              errorText,
+              boolValue: selected,
+              listValue: value is List ? value : null,
+            );
 
     final data = <String, dynamic>{'value': value, 'current_state': state};
 

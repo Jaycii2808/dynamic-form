@@ -8,6 +8,9 @@ class StyleStatesModel {
   final Color? helperTextColor;
   final Color? textColor;
   final FontStyle? fontStyle;
+  final String? icon;
+  final Color? iconColor;
+  final double? iconSize;
   // Add more fields as needed
 
   StyleStatesModel({
@@ -17,6 +20,9 @@ class StyleStatesModel {
     this.helperTextColor,
     this.textColor,
     this.fontStyle,
+    this.icon,
+    this.iconColor,
+    this.iconSize,
   });
 
   factory StyleStatesModel.fromJson(Map<String, dynamic>? json) {
@@ -30,9 +36,11 @@ class StyleStatesModel {
       fontStyle: (json['font_style'] == 'italic')
           ? FontStyle.italic
           : FontStyle.normal,
+      icon: json['icon'] as String?,
+      iconColor: StyleStatesModel._parseColor(json['icon_color']),
+      iconSize: (json['icon_size'] as num?)?.toDouble(),
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'border_color': borderColor != null ? _colorToHex(borderColor!) : null,
@@ -43,50 +51,25 @@ class StyleStatesModel {
           : null,
       'color': textColor != null ? _colorToHex(textColor!) : null,
       'font_style': fontStyle == FontStyle.italic ? 'italic' : 'normal',
+      'icon': icon,
+      'icon_color': iconColor != null ? _colorToHex(iconColor!) : null,
+      'icon_size': iconSize,
     };
   }
-
   static String _colorToHex(Color color) {
-    // Returns #RRGGBB in uppercase
-    return '#${((color.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}'
-        '${((color.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}'
-        '${((color.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0').toUpperCase()}';
+    // Returns 0xFFRRGGBB in uppercase
+    return '0x${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
   }
 
+  // ✨ FIXED: Simplified to only handle "0x..." color strings
   static Color? _parseColor(dynamic value) {
-    debugPrint('[StyleStatesModel] _parseColor input: $value');
-    if (value is int) {
-      debugPrint('[StyleStatesModel] _parseColor int: $value');
-      return Color(value);
+    if (value is String && value.toUpperCase().startsWith('0X')) {
+      final intVal = int.tryParse(value.substring(2), radix: 16);
+      return intVal != null ? Color(intVal) : null;
     }
-    if (value is String) {
-      debugPrint('[StyleStatesModel] _parseColor string: $value');
-      if (value.startsWith('#')) {
-        final hex = value.replaceAll('#', '');
-        if (hex.length == 6) {
-          final color = Color(int.parse('FF$hex', radix: 16));
-          debugPrint('[StyleStatesModel] _parseColor HEX #$hex => $color');
-          return color;
-        } else if (hex.length == 8) {
-          final color = Color(int.parse(hex, radix: 16));
-          debugPrint('[StyleStatesModel] _parseColor HEX8 $hex => $color');
-          return color;
-        }
-      }
-      if (value.startsWith('0x') || value.startsWith('0X')) {
-        try {
-          final hex = value.replaceAll(RegExp(r'0[xX]'), '');
-          final color = Color(int.parse(hex, radix: 16));
-          debugPrint('[StyleStatesModel] _parseColor 0x => $color');
-          return color;
-        } catch (e) {
-          debugPrint('[StyleStatesModel] _parseColor ERROR: $e, value=$value');
-        }
-      }
-    }
-    debugPrint('[StyleStatesModel] _parseColor NULL for value=$value');
     return null;
   }
+
 
   @override
   String toString() => toJson().toString();

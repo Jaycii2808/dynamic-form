@@ -77,16 +77,10 @@ class _CustomDateRangePickerDialogState
     final styleModel = widget.style is StyleModel
         ? widget.style as StyleModel
         : StyleModel.fromJson(widget.style);
-    final primaryColor = StyleUtils.parseColor(
-      styleModel.iconColor ?? '#6979F8',
-    );
-    final surfaceColor = StyleUtils.parseColor(
-      styleModel.backgroundColor ?? '#FFFFFF',
-    );
-    final textColor = StyleUtils.parseColor(styleModel.color ?? '#333333');
-    final labelColor = StyleUtils.parseColor(
-      styleModel.labelColor ?? '#FFFFFF',
-    );
+    final primaryColor =  styleModel.iconColor;
+    final surfaceColor = styleModel.backgroundColor;
+    final textColor = styleModel.textColor;
+    final labelColor =  styleModel.labelColor;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -101,11 +95,11 @@ class _CustomDateRangePickerDialogState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTitle(labelColor),
+            _buildTitle(labelColor!),
             const SizedBox(height: 16),
-            _buildDateSelectionRow(primaryColor, textColor),
+            _buildDateSelectionRow(primaryColor!, textColor!),
             const SizedBox(height: 16),
-            _buildActionButtons(primaryColor, surfaceColor),
+            _buildActionButtons(primaryColor, surfaceColor!),
           ],
         ),
       ),
@@ -261,11 +255,9 @@ Future<DateTime?> _showConfiguredDatePicker({
   final styleModel = style is StyleModel
       ? style as StyleModel
       : StyleModel.fromJson(style);
-  final primaryColor = StyleUtils.parseColor(styleModel.iconColor ?? '#6979F8');
-  final surfaceColor = StyleUtils.parseColor(
-    styleModel.backgroundColor ?? '#FFFFFF',
-  );
-  final onSurfaceColor = StyleUtils.parseColor(styleModel.color ?? '#333333');
+  final primaryColor = styleModel.iconColor;
+  final surfaceColor =  styleModel.backgroundColor;
+  final onSurfaceColor = styleModel.textColor;
 
   return showDatePicker(
     context: context,
@@ -276,10 +268,10 @@ Future<DateTime?> _showConfiguredDatePicker({
       return Theme(
         data: Theme.of(context).copyWith(
           colorScheme: ColorScheme.light(
-            primary: primaryColor,
+            primary: primaryColor!,
             onPrimary: Colors.white,
-            surface: surfaceColor,
-            onSurface: onSurfaceColor,
+            surface: surfaceColor!,
+            onSurface: onSurfaceColor!,
           ),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(foregroundColor: primaryColor),

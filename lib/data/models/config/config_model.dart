@@ -1,0 +1,224 @@
+import 'package:equatable/equatable.dart';
+
+class Condition extends Equatable {
+  final String componentId;
+  final String type;
+  final String rule;
+  final dynamic expectedValue;
+  final String errorMessage;
+
+  const Condition({
+    required this.componentId,
+    required this.type,
+    required this.rule,
+    this.expectedValue,
+    required this.errorMessage,
+  });
+
+  factory Condition.fromJson(Map<String, dynamic> json) {
+    return Condition(
+      componentId: json['component_id'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      rule: json['rule'] as String? ?? '',
+      expectedValue: json['expected_value'],
+      errorMessage: json['error_message'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'component_id': componentId,
+      'type': type,
+      'rule': rule,
+      if (expectedValue != null) 'expected_value': expectedValue,
+      'error_message': errorMessage,
+    };
+  }
+
+  @override
+  List<Object?> get props => [componentId, type, rule, expectedValue, errorMessage];
+}
+
+class Option extends Equatable {
+  final String value;
+  final String label;
+
+  const Option({
+    required this.value,
+    required this.label,
+  });
+
+  factory Option.fromJson(Map<String, dynamic> json) {
+    return Option(
+      value: json['value'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value,
+      'label': label,
+    };
+  }
+
+  @override
+  List<Object?> get props => [value, label];
+}
+
+class ConfigModel extends Equatable {
+  final String? label;
+  final String? placeholder;
+  final bool? isRequired;
+  final dynamic value;
+  final String? currentState;
+  final String? errorText;
+  final String? defaultFormat;
+  final List<String>? initialTags;
+  final List<String>? textSeparators;
+  final String? pickerMode;
+  final bool? selected;
+  final bool? range;
+  final double? min;
+  final double? max;
+  final List<double>? values;
+  final String? prefix;
+  final String? icon;
+  final String? title;
+  final String? buttonText;
+  final List<String>? allowedExtensions;
+  final String? action;
+  final List<Condition>? conditions;
+  final List<Option>? options;
+  final String? hint;
+  final String? height;
+  final String? statusText;
+
+  const ConfigModel({
+    this.label,
+    this.placeholder,
+    this.isRequired,
+    this.value,
+    this.currentState,
+    this.errorText,
+    this.defaultFormat,
+    this.initialTags,
+    this.textSeparators,
+    this.pickerMode,
+    this.selected,
+    this.range,
+    this.min,
+    this.max,
+    this.values,
+    this.prefix,
+    this.icon,
+    this.title,
+    this.buttonText,
+    this.allowedExtensions,
+    this.action,
+    this.conditions,
+    this.options,
+    this.hint,
+    this.height,
+    this.statusText,
+  });
+
+  factory ConfigModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const ConfigModel();
+    }
+    return ConfigModel(
+      label: json['label'] as String?,
+      placeholder: json['placeholder'] as String?,
+      isRequired: json['is_required'] as bool?,
+      value: json['value'],
+      currentState: json['current_state'] as String?,
+      errorText: json['error_text'] as String?,
+      defaultFormat: json['default_format'] as String?,
+      initialTags: (json['initial_tags'] as List<dynamic>?)?.cast<String>(),
+      textSeparators: (json['text_separators'] as List<dynamic>?)?.cast<String>(),
+      pickerMode: json['picker_mode'] as String?,
+      selected: json['selected'] as bool?,
+      range: json['range'] as bool?,
+      min: (json['min'] as num?)?.toDouble(),
+      max: (json['max'] as num?)?.toDouble(),
+      values: (json['values'] as List<dynamic>?)?.cast<double>(),
+      prefix: json['prefix'] as String?,
+      icon: json['icon'] as String?,
+      title: json['title'] as String?,
+      buttonText: json['button_text'] as String?,
+      allowedExtensions: (json['allowed_extensions'] as List<dynamic>?)?.cast<String>(),
+      action: json['action'] as String?,
+      conditions: (json['conditions'] as List<dynamic>?)
+          ?.map((e) => Condition.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      options: (json['options'] as List<dynamic>?)
+          ?.map((e) => Option.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      hint: json['hint'] as String?,
+      height: json['height'] as String?,
+      statusText: json['status_text'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final result = <String, dynamic>{};
+    if (label != null) result['label'] = label;
+    if (placeholder != null) result['placeholder'] = placeholder;
+    if (isRequired != null) result['is_required'] = isRequired;
+    if (value != null) result['value'] = value;
+    if (currentState != null) result['current_state'] = currentState;
+    if (errorText != null) result['error_text'] = errorText;
+    if (defaultFormat != null) result['default_format'] = defaultFormat;
+    if (initialTags != null) result['initial_tags'] = initialTags;
+    if (textSeparators != null) result['text_separators'] = textSeparators;
+    if (pickerMode != null) result['picker_mode'] = pickerMode;
+    if (selected != null) result['selected'] = selected;
+    if (range != null) result['range'] = range;
+    if (min != null) result['min'] = min;
+    if (max != null) result['max'] = max;
+    if (values != null) result['values'] = values;
+    if (prefix != null) result['prefix'] = prefix;
+    if (icon != null) result['icon'] = icon;
+    if (title != null) result['title'] = title;
+    if (buttonText != null) result['button_text'] = buttonText;
+    if (allowedExtensions != null) result['allowed_extensions'] = allowedExtensions;
+    if (action != null) result['action'] = action;
+    if (conditions != null) result['conditions'] = conditions!.map((e) => e.toJson()).toList();
+    if (options != null) result['options'] = options!.map((e) => e.toJson()).toList();
+    if (hint != null) result['hint'] = hint;
+    if (height != null) result['height'] = height;
+    if (statusText != null) result['status_text'] = statusText;
+    return result;
+  }
+
+  @override
+  List<Object?> get props => [
+    label,
+    placeholder,
+    isRequired,
+    value,
+    currentState,
+    errorText,
+    defaultFormat,
+    initialTags,
+    textSeparators,
+    pickerMode,
+    selected,
+    range,
+    min,
+    max,
+    values,
+    prefix,
+    icon,
+    title,
+    buttonText,
+    allowedExtensions,
+    action,
+    conditions,
+    options,
+    hint,
+    height,
+    statusText,
+  ];
+}
