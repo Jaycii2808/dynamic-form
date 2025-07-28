@@ -36,7 +36,13 @@ class Condition extends Equatable {
   }
 
   @override
-  List<Object?> get props => [componentId, type, rule, expectedValue, errorMessage];
+  List<Object?> get props => [
+    componentId,
+    type,
+    rule,
+    expectedValue,
+    errorMessage,
+  ];
 }
 
 class Option extends Equatable {
@@ -93,6 +99,7 @@ class ConfigModel extends Equatable {
   final String? hint;
   final String? height;
   final String? statusText;
+  final dynamic validate;
 
   const ConfigModel({
     this.label,
@@ -121,6 +128,7 @@ class ConfigModel extends Equatable {
     this.hint,
     this.height,
     this.statusText,
+    this.validate,
   });
 
   factory ConfigModel.fromJson(Map<String, dynamic>? json) {
@@ -136,7 +144,8 @@ class ConfigModel extends Equatable {
       errorText: json['error_text'] as String?,
       defaultFormat: json['default_format'] as String?,
       initialTags: (json['initial_tags'] as List<dynamic>?)?.cast<String>(),
-      textSeparators: (json['text_separators'] as List<dynamic>?)?.cast<String>(),
+      textSeparators: (json['text_separators'] as List<dynamic>?)
+          ?.cast<String>(),
       pickerMode: json['picker_mode'] as String?,
       selected: json['selected'] as bool?,
       range: json['range'] as bool?,
@@ -147,7 +156,8 @@ class ConfigModel extends Equatable {
       icon: json['icon'] as String?,
       title: json['title'] as String?,
       buttonText: json['button_text'] as String?,
-      allowedExtensions: (json['allowed_extensions'] as List<dynamic>?)?.cast<String>(),
+      allowedExtensions: (json['allowed_extensions'] as List<dynamic>?)
+          ?.cast<String>(),
       action: json['action'] as String?,
       conditions: (json['conditions'] as List<dynamic>?)
           ?.map((e) => Condition.fromJson(e as Map<String, dynamic>))
@@ -158,6 +168,7 @@ class ConfigModel extends Equatable {
       hint: json['hint'] as String?,
       height: json['height'] as String?,
       statusText: json['status_text'] as String?,
+      validate: json['validate'],
     );
   }
 
@@ -182,14 +193,78 @@ class ConfigModel extends Equatable {
     if (icon != null) result['icon'] = icon;
     if (title != null) result['title'] = title;
     if (buttonText != null) result['button_text'] = buttonText;
-    if (allowedExtensions != null) result['allowed_extensions'] = allowedExtensions;
+    if (allowedExtensions != null)
+      result['allowed_extensions'] = allowedExtensions;
     if (action != null) result['action'] = action;
-    if (conditions != null) result['conditions'] = conditions!.map((e) => e.toJson()).toList();
-    if (options != null) result['options'] = options!.map((e) => e.toJson()).toList();
+    if (conditions != null)
+      result['conditions'] = conditions!.map((e) => e.toJson()).toList();
+    if (options != null)
+      result['options'] = options!.map((e) => e.toJson()).toList();
     if (hint != null) result['hint'] = hint;
     if (height != null) result['height'] = height;
     if (statusText != null) result['status_text'] = statusText;
+    if (validate != null) result['validate'] = validate;
     return result;
+  }
+
+  ConfigModel copyWith({
+    String? label,
+    String? placeholder,
+    bool? isRequired,
+    dynamic value,
+    String? currentState,
+    String? errorText,
+    String? defaultFormat,
+    List<String>? initialTags,
+    List<String>? textSeparators,
+    String? pickerMode,
+    bool? selected,
+    bool? range,
+    double? min,
+    double? max,
+    List<double>? values,
+    String? prefix,
+    String? icon,
+    String? title,
+    String? buttonText,
+    List<String>? allowedExtensions,
+    String? action,
+    List<Condition>? conditions,
+    List<Option>? options,
+    String? hint,
+    String? height,
+    String? statusText,
+    dynamic validate,
+  }) {
+    return ConfigModel(
+      label: label ?? this.label,
+      placeholder: placeholder ?? this.placeholder,
+      isRequired: isRequired ?? this.isRequired,
+      value: value ?? this.value,
+      currentState: currentState ?? this.currentState,
+      errorText: errorText ?? this.errorText,
+      defaultFormat: defaultFormat ?? this.defaultFormat,
+      initialTags: initialTags ?? this.initialTags,
+      textSeparators: textSeparators ?? this.textSeparators,
+      pickerMode: pickerMode ?? this.pickerMode,
+      selected: selected ?? this.selected,
+      range: range ?? this.range,
+      min: min ?? this.min,
+      max: max ?? this.max,
+      values: values ?? this.values,
+      prefix: prefix ?? this.prefix,
+      icon: icon ?? this.icon,
+      title: title ?? this.title,
+      buttonText: buttonText ?? this.buttonText,
+      allowedExtensions: allowedExtensions ?? this.allowedExtensions,
+      action: action ?? this.action,
+      conditions: conditions ?? this.conditions,
+      options: options ?? this.options,
+      hint: hint ?? this.hint,
+      height: height ?? this.height,
+      statusText: statusText ?? this.statusText,
+      validate: validate ?? this.validate,
+    );
   }
 
   @override
@@ -220,5 +295,6 @@ class ConfigModel extends Equatable {
     hint,
     height,
     statusText,
+    validate,
   ];
 }

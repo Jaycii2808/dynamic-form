@@ -31,6 +31,16 @@ class DynamicSelectorButtonBloc
     debugPrint(
       'DynamicSelectorButtonBloc: _onInitialize called for component: ${initialComponent.id}',
     );
+    debugPrint(
+      'DynamicSelectorButtonBloc: Initial config: ${initialComponent.config?.toJson()}',
+    );
+    debugPrint(
+      'DynamicSelectorButtonBloc: Initial value: ${initialComponent.config?.value}',
+    );
+    debugPrint(
+      'DynamicSelectorButtonBloc: Initial selected: ${initialComponent.config?.selected}',
+    );
+
     emit(DynamicSelectorButtonLoading.fromState(state: state));
     try {
       if (initialComponent.id.isEmpty) {

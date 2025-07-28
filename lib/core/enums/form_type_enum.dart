@@ -4,8 +4,8 @@ enum FormTypeEnum {
   textAreaFormType,
   dateTimePickerFormType,
   dateTimeRangePickerFormType,
-  // dropdownFormType,
-  checkboxFormType,
+  //dropdownFormType,
+  //checkboxFormType,
   //radioFormType,
 
   //sliderFormType,
@@ -13,7 +13,7 @@ enum FormTypeEnum {
   switchFormType,
   textFieldTagsFormType,
   //fileUploaderFormType,
- // buttonFormType,
+ buttonFormType,
   container,
   unknown;
 

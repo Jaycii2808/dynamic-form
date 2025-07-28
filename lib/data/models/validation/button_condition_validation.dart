@@ -3,9 +3,13 @@ import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 
 class ButtonConditionValidation extends BaseValidation {
   final List<ButtonCondition> conditions;
+  final String? nextPage;
+  final String? previousPage;
 
   const ButtonConditionValidation({
     this.conditions = const [],
+    this.nextPage,
+    this.previousPage,
   });
 
   factory ButtonConditionValidation.fromJson(Map<String, dynamic> json) {
@@ -17,27 +21,35 @@ class ButtonConditionValidation extends BaseValidation {
           .map((item) => ButtonCondition.fromJson(item as Map<String, dynamic>))
           .toList();
     }
-
+    // Không gán nhầm next_page/previous_page vào conditions
     return ButtonConditionValidation(
       conditions: conditions,
+      nextPage: json['next_page'] as String?,
+      previousPage: json['previous_page'] as String?,
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    return {
-      'condition': conditions.map((c) => c.toJson()).toList(),
-    };
+    final Map<String, dynamic> map = {};
+    map['condition'] = conditions.map((c) => c.toJson()).toList();
+    if (nextPage != null) map['next_page'] = nextPage;
+    if (previousPage != null) map['previous_page'] = previousPage;
+    return map;
   }
 
   @override
-  List<Object?> get props => [conditions];
+  List<Object?> get props => [conditions, nextPage, previousPage];
 
   ButtonConditionValidation copyWith({
     List<ButtonCondition>? conditions,
+    String? nextPage,
+    String? previousPage,
   }) {
     return ButtonConditionValidation(
       conditions: conditions ?? this.conditions,
+      nextPage: nextPage ?? this.nextPage,
+      previousPage: previousPage ?? this.previousPage,
     );
   }
 }

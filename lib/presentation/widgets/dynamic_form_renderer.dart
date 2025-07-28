@@ -20,6 +20,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 //import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
@@ -98,10 +99,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       if (widget.onFieldChanged != null) {
         widget.onFieldChanged!(component.id, value);
       } else {
-      context.read<DynamicFormBloc>().add(
-        UpdateFormFieldEvent(componentId: component.id, value: value),
-      );
-    }
+        context.read<DynamicFormBloc>().add(
+          UpdateFormFieldEvent(componentId: component.id, value: value),
+        );
+      }
     } else {
       debugPrint("Error: No value received");
     }
@@ -129,8 +130,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildDateTimeRangePickerBlocProvider(component);
       // case FormTypeEnum.dropdownFormType:
       //   return DynamicDropdown(component: component);
-      case FormTypeEnum.checkboxFormType:
-        return DynamicCheckbox(component: component);
+      // case FormTypeEnum.checkboxFormType:
+      //   return DynamicCheckbox(component: component);
       // case FormTypeEnum.radioFormType:
       //   return _buildRadioBlocProvider(component);
       // case FormTypeEnum.sliderFormType:
@@ -143,10 +144,11 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextFieldTagsBlocProvider(component);
       // case FormTypeEnum.fileUploaderFormType:
       //   return DynamicFileUploader(component: component);
-      // case FormTypeEnum.buttonFormType:
-      //   return DynamicButton(
-      //     component: component,
-      //   );
+      case FormTypeEnum.buttonFormType:
+        return DynamicButton(
+          component: component,
+          onAction: widget.onButtonAction,
+        );
       case FormTypeEnum.container:
         return _buildContainerComponent(component);
       case FormTypeEnum.unknown:
@@ -210,6 +212,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
+
   //
   Widget _buildDateTimePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
@@ -222,6 +225,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
+
   //
   Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
     return BlocProvider(
@@ -246,92 +250,5 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildContainerComponent(DynamicFormModel component) {
     return const Text("ABCCCCCCCCC");
-  }
-
-  Widget _buildLabel(String label, StyleModel styleModel) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: styleModel.labelColor,
-          fontSize: styleModel.labelTextSize ?? 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  void _handleButtonAction(String action, Map<String, dynamic>? data) {
-    try {
-      switch (ButtonAction.fromString(action)) {
-        case ButtonAction.previewForm:
-          _handlePreviewAction();
-          break;
-        case ButtonAction.submitForm:
-          _handleSubmitAction(data);
-          break;
-        case ButtonAction.resetForm:
-          _handleResetAction();
-        case ButtonAction.nextPage:
-        case ButtonAction.previousPage:
-          break;
-      }
-    } catch (e) {
-      debugPrint('Error handling button action $action: $e');
-    }
-  }
-
-  void _handlePreviewAction() {
-    final page = widget.page;
-    if (page == null) {
-      debugPrint('❌ No page available for preview');
-      return;
-    }
-
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => BlocProvider.value(
-    //       value: context.read<DynamicFormBloc>(),
-    //       child: FormPreviewScreen(
-    //         page: page,
-    //         title: page.title.isNotEmpty ? page.title : 'Form Preview',
-    //       ),
-    //     ),
-    //   ),
-    // );
-  }
-
-  void _handleSubmitAction(Map<String, dynamic>? data) {
-    if (_isFormComplete()) {
-      widget.onCompleted?.call();
-      debugPrint('✅ Form completed successfully');
-    } else {
-      debugPrint('❌ Form incomplete - missing required fields');
-    }
-  }
-
-  void _handleResetAction() {
-    debugPrint('🔄 Resetting form');
-  }
-
-  bool _isFormComplete() {
-    final page = widget.page;
-    if (page == null) return false;
-
-    for (final component in page.components) {
-      if (ComponentUtils.isRequired(component)) {
-        final value = component.config?.value;
-
-        if (value == null ||
-            (value is String && value.trim().isEmpty) ||
-            (value is List && value.isEmpty)) {
-          debugPrint('Component ${component.id} is required but has no value.');
-          return false;
-        }
-      }
-    }
-    return true;
   }
 }

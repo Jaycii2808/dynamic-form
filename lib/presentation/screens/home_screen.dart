@@ -56,12 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
             //   (jsonDecode(json) as Map<String, dynamic>),
             // );
             //if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //       builder: (context) => DynamicFormMultiScreen(configKey: configKey),
-            //     ),
-            //   );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DynamicFormMultiScreen(configKey: configKey),
+                ),
+              );
               return;
             //}
           }

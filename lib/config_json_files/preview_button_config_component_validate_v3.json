@@ -1,0 +1,24 @@
+{
+  "id": "form_preview_button",
+  "type": "buttonFormType",
+  "order": 9997,
+  "config": {
+    "label": "Preview",
+    "action": "preview_form",
+    "icon": "preview"
+  },
+  "style": {
+    "width": "120px",
+    "height": "40px",
+    "background_color": "0xFFFCD34D",
+    "text_color": "0xFF111827",
+    "border_color": "transparent",
+    "border_width": 0,
+    "border_radius": 8,
+    "font_size": 15,
+    "font_weight": "600",
+    "icon_size": 14,
+    "elevation": 4,
+    "shadow_color": "0xFF3B82F6"
+  }
+}

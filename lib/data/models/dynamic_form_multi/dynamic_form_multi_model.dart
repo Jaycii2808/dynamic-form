@@ -1,5 +1,9 @@
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:equatable/equatable.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 
 class DynamicMultiPageFormModel extends Equatable {
   final String formId;
@@ -99,9 +103,9 @@ class FormComponentMultiPageModel extends Equatable {
   final String id;
   final FormTypeEnum type;
   final int order;
-  final Map<String, dynamic> config;
-  final Map<String, dynamic> style;
-  final Map<String, dynamic>? validation;
+  final ConfigModel config;
+  final StyleModel style;
+  final BaseValidation? validation;
   final List<FormComponentMultiPageModel>? children;
 
   const FormComponentMultiPageModel({
@@ -119,9 +123,11 @@ class FormComponentMultiPageModel extends Equatable {
       id: json['id'] ?? '',
       type: FormTypeEnum.fromJson(json['type']),
       order: json['order'] ?? 0,
-      config: json['config'] ?? {},
-      style: json['style'] ?? {},
-      validation: json['validate'], // <-- fix đúng ánh xạ validate
+      config: ConfigModel.fromJson(json['config'] ?? {}),
+      style: StyleModel.fromJson(json['style'] ?? {}),
+      validation: json['validate'] != null
+          ? ValidationFactory.fromJson(json['validate'])
+          : null,
       children: (json['children'] as List<dynamic>?)
           ?.map(
             (child) => FormComponentMultiPageModel.fromJson(

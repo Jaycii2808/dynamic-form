@@ -145,4 +145,53 @@ class StyleModel {
     );
   }
 
+  // Convert color to hex string for JSON serialization
+  String? _colorToHex(Color? color) {
+    if (color == null) return null;
+    return '0x${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'font_size': fontSize,
+      'font_style': fontStyle,
+      'content_vertical_padding': contentVerticalPadding,
+      'content_horizontal_padding': contentHorizontalPadding,
+      'background_color': _colorToHex(backgroundColor),
+      'helper_text': helperText,
+      'helper_text_color': _colorToHex(helperTextColor),
+      'label_text_size': labelTextSize,
+      'label_color': _colorToHex(labelColor),
+      'max_lines': maxLines,
+      'min_lines': minLines,
+      'border_radius': borderRadius,
+      'border_color': _colorToHex(borderColor),
+      'border_width': borderWidth,
+      'border_opacity': borderOpacity,
+      'icon_color': _colorToHex(iconColor),
+      'hint_color': _colorToHex(hintColor),
+      'width': width,
+      'height': height,
+      'active_color': _colorToHex(activeColor),
+      'inactive_color': _colorToHex(inactiveColor),
+      'inactive_track_color': _colorToHex(inactiveTrackColor),
+      'tag_background_color': _colorToHex(tagBackgroundColor),
+      'tag_remove_icon_color': _colorToHex(tagRemoveIconColor),
+      'thumb_color': _colorToHex(thumbColor),
+      'thumb_icon_color': _colorToHex(thumbIconColor),
+      'value_label_color': _colorToHex(valueLabelColor),
+      'icon_size': iconSize,
+      'text_color': _colorToHex(textColor),
+      'button_background_color': _colorToHex(buttonBackgroundColor),
+      'button_border_radius': buttonBorderRadius,
+      'button_text_color': _colorToHex(buttonTextColor),
+      'icon': icon,
+      'icon_position': iconPosition,
+      'fontWeight': fontWeight,
+      'elevation': elevation,
+      'shadowColor': _colorToHex(shadowColor),
+      'focused_border_color': _colorToHex(focusedBorderColor),
+      'error_border_color': _colorToHex(errorBorderColor),
+    };
+  }
 }
