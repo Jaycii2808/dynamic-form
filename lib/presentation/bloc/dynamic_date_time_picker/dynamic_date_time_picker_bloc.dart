@@ -3,7 +3,6 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
 import 'package:flutter/material.dart';
@@ -146,7 +145,7 @@ class DynamicDateTimePickerBloc
     }
     final configMap =
         Map<String, dynamic>.from(
-            currentState!.component!.config?.toJson() ?? {},
+            currentState.component!.config?.toJson() ?? {},
           )
           ..['value'] = value
           ..['current_state'] = newState

@@ -3,7 +3,7 @@ enum FormTypeEnum {
   // selectFormType,
   textAreaFormType,
   dateTimePickerFormType,
-  // dateTimeRangePickerFormType,
+  dateTimeRangePickerFormType,
   // dropdownFormType,
   // checkboxFormType,
   // radioFormType,

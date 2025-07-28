@@ -1,0 +1,197 @@
+[
+  {
+    "id": "datetime_picker_date_only",
+    "type": "dateTimePickerFormType",
+    "config": {
+      "label": "Select date only",
+      "value": "",
+      "is_required": false,
+      "placeholder": "dd/MM/YYYY",
+      "picker_mode": "dateOnly",
+      "default_format": "dd/MM/YYYY"
+    },
+    "style": {
+      "border_color": "0xFFE4E4E4",
+      "border_radius": 8,
+      "font_size": 13,
+      "text_color": "0xFFe0e0e0",
+      "background_color": "0xFF000000",
+      "font_style": "italic",
+      "border_width": 1,
+      "border_opacity": 0.6,
+      "icon_color": "0xFF6979F8",
+      "icon_size": 20,
+      "label_color": "0xFFe0e0e0",
+      "label_text_size": 16
+    },
+    "validation": {
+      "required": {
+        "is_required": false,
+        "error_message": "Please select a date"
+      }
+    },
+    "variants": {
+      "single": {
+        "style": {
+          "background_color": "0xFF000000",
+          "border_color": "0xFFE4E4E4"
+        }
+      }
+    },
+    "states": {
+      "base": {
+        "style": {
+          "border_color": "0xFFE4E4E4",
+          "text_color": "0xFFe0e0e0"
+        }
+      },
+      "error": {
+        "style": {
+          "border_color": "0xFFFF0000",
+          "border_width": 2
+        }
+      },
+      "success": {
+        "style": {
+          "border_color": "0xFF00FF00"
+        }
+      },
+      "focused": {
+        "style": {
+          "border_color": "0xFF6979F8",
+          "border_width": 2
+        }
+      }
+    }
+  },
+  {
+    "id": "datetime_picker_hour_date",
+    "type": "dateTimePickerFormType",
+    "config": {
+      "label": "Select hour and date",
+      "value": "",
+      "is_required": false,
+      "placeholder": "HH dd/MM/YYYY",
+      "picker_mode": "hourDate",
+      "default_format": "HH dd/MM/YYYY"
+    },
+    "style": {
+      "border_color": "0xFFE4E4E4",
+      "border_radius": 8,
+      "font_size": 13,
+      "text_color": "0xFFe0e0e0",
+      "background_color": "0xFF000000",
+      "font_style": "italic",
+      "border_width": 1,
+      "border_opacity": 0.6,
+      "icon_color": "0xFF6979F8",
+      "icon_size": 20,
+      "label_color": "0xFFe0e0e0",
+      "label_text_size": 16
+    },
+    "validation": {
+      "required": {
+        "is_required": false,
+        "error_message": "Please select a date and hour"
+      }
+    },
+    "variants": {
+      "single": {
+        "style": {
+          "background_color": "0xFF000000",
+          "border_color": "0xFFE4E4E4"
+        }
+      }
+    },
+    "states": {
+      "base": {
+        "style": {
+          "border_color": "0xFFE4E4E4",
+          "text_color": "0xFFe0e0e0"
+        }
+      },
+      "error": {
+        "style": {
+          "border_color": "0xFFFF0000",
+          "border_width": 2
+        }
+      },
+      "success": {
+        "style": {
+          "border_color": "0xFF00FF00"
+        }
+      },
+      "focused": {
+        "style": {
+          "border_color": "0xFF6979F8",
+          "border_width": 2
+        }
+      }
+    }
+  },
+  {
+    "id": "datetime_picker_hour_minute_date",
+    "type": "dateTimePickerFormType",
+    "config": {
+      "label": "Select hour, minute, and date",
+      "value": "",
+      "is_required": false,
+      "placeholder": "HH:mm dd/MM/YYYY",
+      "picker_mode": "hourMinuteDate",
+      "default_format": "HH:mm dd/MM/YYYY"
+    },
+    "style": {
+      "border_color": "0xFFE4E4E4",
+      "border_radius": 8,
+      "font_size": 13,
+      "text_color": "0xFFe0e0e0",
+      "background_color": "0xFF000000",
+      "font_style": "italic",
+      "border_width": 1,
+      "border_opacity": 0.6,
+      "icon_color": "0xFF6979F8",
+      "icon_size": 20,
+      "label_color": "0xFFe0e0e0",
+      "label_text_size": 16
+    },
+    "validation": {
+      "required": {
+        "is_required": false,
+        "error_message": "Please select a date and time"
+      }
+    },
+    "variants": {
+      "single": {
+        "style": {
+          "background_color": "0xFF000000",
+          "border_color": "0xFFE4E4E4"
+        }
+      }
+    },
+    "states": {
+      "base": {
+        "style": {
+          "border_color": "0xFFE4E4E4",
+          "text_color": "0xFFe0e0e0"
+        }
+      },
+      "error": {
+        "style": {
+          "border_color": "0xFFFF0000",
+          "border_width": 2
+        }
+      },
+      "success": {
+        "style": {
+          "border_color": "0xFF00FF00"
+        }
+      },
+      "focused": {
+        "style": {
+          "border_color": "0xFF6979F8",
+          "border_width": 2
+        }
+      }
+    }
+  }
+]

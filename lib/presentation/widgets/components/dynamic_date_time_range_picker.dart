@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/form_style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -6,19 +5,19 @@ import 'package:dynamic_form_bi/data/models/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
-class DynamicDateTimePicker extends StatelessWidget {
+class DynamicDateTimeRangePicker extends StatelessWidget {
   final DynamicFormModel component;
   final Function(dynamic) onComplete;
 
-  const DynamicDateTimePicker({
+  const DynamicDateTimeRangePicker({
     super.key,
     required this.component,
     required this.onComplete,
@@ -26,25 +25,30 @@ class DynamicDateTimePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DynamicDateTimePickerBloc, DynamicDateTimePickerState>(
+    return BlocConsumer<
+      DynamicDateTimeRangePickerBloc,
+      DynamicDateTimeRangePickerState
+    >(
       listener: (context, state) {
         final valueMap = {
           'value': state.component?.config?.value ?? '',
           'current_state': state.component?.config?.currentState ?? 'base',
           'error_text': state.errorText,
         };
-        if (state is DynamicDateTimePickerSuccess) {
+        if (state is DynamicDateTimeRangePickerSuccess) {
           onComplete(valueMap);
           if (state.focusNode?.hasFocus == false &&
               state.textController!.text !=
-                  (state.component?.config?.value ?? '')) {
-            state.textController!.text = state.component?.config?.value ?? '';
+                  _formatRangeValue(state.component?.config?.value)) {
+            state.textController!.text = _formatRangeValue(
+              state.component?.config?.value,
+            );
           }
-        } else if (state is DynamicDateTimePickerError) {
+        } else if (state is DynamicDateTimeRangePickerError) {
           onComplete(valueMap);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        } else if (state is DynamicDateTimePickerInitial ||
-            state is DynamicDateTimePickerLoading) {
+        } else if (state is DynamicDateTimeRangePickerInitial ||
+            state is DynamicDateTimeRangePickerLoading) {
           debugPrint(
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
           );
@@ -54,7 +58,7 @@ class DynamicDateTimePicker extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        if (state is DynamicDateTimePickerSuccess) {
+        if (state is DynamicDateTimeRangePickerSuccess) {
           return _buildBody(
             context,
             state.styleModel!,
@@ -69,6 +73,15 @@ class DynamicDateTimePicker extends StatelessWidget {
         return const SizedBox.shrink();
       },
     );
+  }
+
+  String _formatRangeValue(dynamic value) {
+    if (value is Map<String, dynamic> &&
+        value.containsKey('start') &&
+        value.containsKey('end')) {
+      return '${value['start']} - ${value['end']}';
+    }
+    return '';
   }
 
   Widget _buildBody(
@@ -92,7 +105,7 @@ class DynamicDateTimePicker extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildLabel(styleModel, inputConfig, component),
-          _buildDateTimeField(
+          _buildDateTimeRangeField(
             context,
             styleModel,
             inputConfig,
@@ -125,7 +138,7 @@ class DynamicDateTimePicker extends StatelessWidget {
             inputConfig.label!,
             style: TextStyle(
               fontSize: styleModel.labelTextSize ?? 16,
-              color: styleModel.textColor ?? Colors.black,
+              color: styleModel.labelColor ?? Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -142,7 +155,7 @@ class DynamicDateTimePicker extends StatelessWidget {
     );
   }
 
-  Widget _buildDateTimeField(
+  Widget _buildDateTimeRangeField(
     BuildContext context,
     StyleModel styleModel,
     InputConfig inputConfig,
@@ -167,7 +180,7 @@ class DynamicDateTimePicker extends StatelessWidget {
       onTapOutside: (_) => focusNode.unfocus(),
       decoration: InputDecoration(
         isDense: true,
-        hintText: inputConfig.placeholder ?? '',
+        hintText: inputConfig.placeholder ?? 'MMM d, yyyy - MMM d, yyyy',
         hintStyle: FormStyleUtils.hintStyle(context),
         errorText: errorText,
         errorStyle: FormStyleUtils.errorStyle(context),
@@ -183,20 +196,17 @@ class DynamicDateTimePicker extends StatelessWidget {
         errorBorder: _buildBorder(styleModel, 'error'),
         disabledBorder: _buildBorder(styleModel, 'disabled'),
         prefixIcon: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SvgPicture.asset(
-                  'assets/svg/SelectDate.svg',
-                  colorFilter: ColorFilter.mode(
-                    stateStyle?.textColor ??
-                        styleModel.textColor ??
-                        Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                  width: styleModel.fontSize ?? 16,
-                  height: styleModel.fontSize ?? 16,
-                ),
-              )
-            ,
+          padding: const EdgeInsets.all(8.0),
+          child: SvgPicture.asset(
+            'assets/svg/SelectDate.svg',
+            colorFilter: ColorFilter.mode(
+              stateStyle?.textColor ?? styleModel.iconColor ?? Colors.black,
+              BlendMode.srcIn,
+            ),
+            width: styleModel.iconSize ?? 20,
+            height: styleModel.iconSize ?? 20,
+          ),
+        ),
         helperText: helperText,
         helperStyle: TextStyle(
           color: helperTextColor,
@@ -206,12 +216,11 @@ class DynamicDateTimePicker extends StatelessWidget {
       style: TextStyle(
         fontSize: styleModel.fontSize ?? 16,
         color: stateStyle?.textColor ?? styleModel.textColor ?? Colors.black,
-        //fontStyle: styleModel.fontStyle ?? FontStyle.normal,
       ),
       enabled: !(inputConfig.disabled || inputConfig.readOnly),
       onTap: (inputConfig.disabled || inputConfig.readOnly)
           ? null
-          : () => _pickDateTime(context, component, styleModel),
+          : () => _pickDateTimeRange(context, component, styleModel),
     );
   }
 
@@ -265,52 +274,32 @@ class DynamicDateTimePicker extends StatelessWidget {
     }
   }
 
-  PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
-    final pickerModeStr = config['picker_mode'] ?? 'fullDateTime';
-    return PickerModeEnum.fromString(pickerModeStr);
-  }
-
-  Future<void> _pickDateTime(
+  Future<void> _pickDateTimeRange(
     BuildContext context,
     DynamicFormModel component,
     StyleModel styleModel,
   ) async {
-    final pickerMode = _determinePickerMode(component.config?.toJson() ?? {});
-    final selectedFormat = pickerMode.dateFormat;
-
-    final pickedDate = await _showDatePicker(context, styleModel);
-    if (pickedDate == null || !context.mounted) return;
-
-    TimeOfDay? pickedTime;
-    if (pickerMode != PickerModeEnum.dateOnly) {
-      pickedTime = await _showTimePicker(context, styleModel);
-      if (pickedTime == null || !context.mounted) return;
+    // Parse current value if exists
+    DateTimeRange? initialRange;
+    final currentValue = component.config?.value;
+    if (currentValue is Map<String, dynamic> &&
+        currentValue.containsKey('start') &&
+        currentValue.containsKey('end')) {
+      try {
+        final startDate = DateFormat(
+          'MMM d, yyyy',
+        ).parse(currentValue['start']);
+        final endDate = DateFormat('MMM d, yyyy').parse(currentValue['end']);
+        initialRange = DateTimeRange(start: startDate, end: endDate);
+      } catch (e) {
+        debugPrint('Error parsing existing date range: $e');
+      }
     }
 
-    final dateTime = DateTime(
-      pickedDate.year,
-      pickedDate.month,
-      pickedDate.day,
-      pickerMode == PickerModeEnum.dateOnly ? 0 : pickedTime?.hour ?? 0,
-      pickerMode == PickerModeEnum.dateOnly ||
-              pickerMode == PickerModeEnum.hourDate
-          ? 0
-          : pickedTime?.minute ?? 0,
-    );
-
-    final formattedDateTime = DateFormat(selectedFormat).format(dateTime);
-    context.read<DynamicDateTimePickerBloc>().add(
-      DateTimePickedEvent(value: formattedDateTime),
-    );
-  }
-
-  Future<DateTime?> _showDatePicker(
-    BuildContext context,
-    StyleModel styleModel,
-  ) async {
-    return showDatePicker(
+    // Show date range picker
+    final pickedRange = await showDateRangePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDateRange: initialRange,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       builder: (context, child) => Theme(
@@ -330,31 +319,16 @@ class DynamicDateTimePicker extends StatelessWidget {
         child: child!,
       ),
     );
-  }
 
-  Future<TimeOfDay?> _showTimePicker(
-    BuildContext context,
-    StyleModel styleModel,
-  ) async {
-    return showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: styleModel.iconColor ?? Colors.blue,
-            onPrimary: Colors.white,
-            surface: styleModel.backgroundColor ?? Colors.white,
-            onSurface: styleModel.textColor ?? Colors.black,
-          ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: styleModel.iconColor ?? Colors.blue,
-            ),
-          ),
-        ),
-        child: child!,
-      ),
-    );
+    if (pickedRange != null && context.mounted) {
+      final formattedRange = {
+        'start': DateFormat('MMM d, yyyy').format(pickedRange.start),
+        'end': DateFormat('MMM d, yyyy').format(pickedRange.end),
+      };
+
+      context.read<DynamicDateTimeRangePickerBloc>().add(
+        DateTimeRangePickedEvent(value: formattedRange),
+      );
+    }
   }
 }
