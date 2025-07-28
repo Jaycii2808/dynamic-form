@@ -1,0 +1,172 @@
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class DynamicDateTimePickerBloc
+    extends Bloc<DynamicDateTimePickerEvent, DynamicDateTimePickerState> {
+  final TextEditingController _textController;
+  final FocusNode _focusNode;
+  final DynamicFormModel initialComponent;
+
+  DynamicDateTimePickerBloc({required this.initialComponent})
+    : _textController = TextEditingController(
+        text: initialComponent.config!.value!,
+      ),
+      _focusNode = FocusNode(),
+      super(DynamicDateTimePickerInitial(component: DynamicFormModel.empty())) {
+    _focusNode.addListener(_onFocusChange);
+
+    on<InitializeDateTimePickerEvent>(_onInitializeDateTimePicker);
+    on<DateTimePickedEvent>(_onDateTimePicked);
+    on<DateTimePickerFocusLostEvent>(_onFocusLost);
+
+    add(const InitializeDateTimePickerEvent());
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      add(DateTimePickerFocusLostEvent(value: _textController.text));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _focusNode.removeListener(_onFocusChange);
+    _textController.dispose();
+    _focusNode.dispose();
+    return super.close();
+  }
+
+  Future<void> _onInitializeDateTimePicker(
+    InitializeDateTimePickerEvent event,
+    Emitter<DynamicDateTimePickerState> emit,
+  ) async {
+    try {
+      if (initialComponent.id.isEmpty) {
+        throw Exception("Invalid initial component: ID or config is empty.");
+      }
+      final initialValue = initialComponent.config?.value?.toString() ?? '';
+      final validationError = ValidationUtils.validateForm(
+        initialComponent,
+        initialValue,
+      );
+      final configState = validationError != null
+          ? 'error'
+          : (initialValue.isNotEmpty ? 'success' : 'base');
+      emit(
+        DynamicDateTimePickerSuccess(
+          component: initialComponent,
+          inputConfig: InputConfig.fromJson(initialComponent.config?.toJson()),
+          styleModel: initialComponent.style,
+          formState: configState,
+          errorText: validationError,
+          textController: _textController,
+          focusNode: _focusNode,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to initialize DateTimePicker: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicDateTimePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDateTimePicked(
+    DateTimePickedEvent event,
+    Emitter<DynamicDateTimePickerState> emit,
+  ) async {
+    if (state is! DynamicDateTimePickerSuccess) return;
+    final successState = state as DynamicDateTimePickerSuccess;
+    try {
+      await Future.delayed(const Duration(milliseconds: 50));
+      _updateState(event.value, successState, emit);
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to handle date time picked: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicDateTimePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFocusLost(
+    DateTimePickerFocusLostEvent event,
+    Emitter<DynamicDateTimePickerState> emit,
+  ) async {
+    if (state is! DynamicDateTimePickerSuccess) return;
+    final successState = state as DynamicDateTimePickerSuccess;
+    try {
+      await Future.delayed(const Duration(milliseconds: 50));
+      _updateState(event.value, successState, emit);
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to handle focus lost for DateTimePicker: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicDateTimePickerError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+
+  void _updateState(
+    String value,
+    DynamicDateTimePickerSuccess currentState,
+    Emitter<DynamicDateTimePickerState> emit,
+  ) {
+    final validationError = ValidationUtils.validateForm(
+      currentState.component!,
+      value,
+    );
+    debugPrint(
+      'DynamicDateTimePickerBloc: value="$value", validationError=$validationError',
+    );
+
+    final newState = validationError != null
+        ? 'error'
+        : (value.isNotEmpty ? 'success' : 'base');
+    if (_textController.text != value) {
+      _textController.text = value;
+    }
+    final configMap =
+        Map<String, dynamic>.from(
+            currentState!.component!.config?.toJson() ?? {},
+          )
+          ..['value'] = value
+          ..['current_state'] = newState
+          ..['error_text'] = validationError;
+
+    final updatedComponent = ComponentUtils.updateComponentConfig(
+      currentState.component!,
+      ConfigModel.fromJson(configMap),
+    );
+
+    emit(
+      DynamicDateTimePickerSuccess(
+        component: updatedComponent,
+        errorText: validationError,
+        inputConfig: InputConfig.fromJson(updatedComponent.config?.toJson()),
+        styleModel: updatedComponent.style,
+        formState: newState,
+        textController: _textController,
+        focusNode: _focusNode,
+      ),
+    );
+  }
+}
