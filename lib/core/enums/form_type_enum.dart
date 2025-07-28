@@ -10,7 +10,7 @@ enum FormTypeEnum {
   //
   // sliderFormType,
   selectorButtonFormType,
-  // switchFormType,
+  switchFormType,
   // textFieldTagsFormType,
   // fileUploaderFormType,
   // buttonFormType,
