@@ -550,18 +550,58 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context,
     MultiPageFormState state,
   ) async {
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Preview Action"),
-        content: const Text("Preview logic would be handled here."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Close"),
+    if (state is MultiPageFormSuccess && state.formModel != null) {
+      // Convert FormForMultiPageModel to DynamicFormPageModel
+      final dynamicPages = state.formModel!.pages
+          .map(
+            (page) => DynamicFormPageModel(
+              pageId: page.pageId,
+              title: page.title,
+              order: page.order,
+              components: page.components
+                  .map(
+                    (c) => DynamicFormModel(
+                      id: c.id,
+                      type: c.type,
+                      order: c.order,
+                      config: c.config,
+                      style: c.style,
+                      inputTypes: null,
+                      variants: null,
+                      states: null,
+                      validation: c.validation,
+                      children: c.children != null
+                          ? c.children!
+                                .map(
+                                  (child) => DynamicFormModel(
+                                    id: child.id,
+                                    type: child.type,
+                                    order: child.order,
+                                    config: child.config,
+                                    style: child.style,
+                                    inputTypes: null,
+                                    variants: null,
+                                    states: null,
+                                    validation: child.validation,
+                                    children: null,
+                                  ),
+                                )
+                                .toList()
+                          : null,
+                    ),
+                  )
+                  .toList(),
+            ),
+          )
+          .toList();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (ctx) => PreviewMultiPageScreen(
+            pages: dynamicPages,
+            allComponentValues: state.componentValues,
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 }
