@@ -12,17 +12,20 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_radio/dynamic_radio_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
-// import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
+//import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector_button.dart';
+//import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_slider.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
@@ -42,6 +45,7 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_fie
 // import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_preview_screen.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -125,8 +129,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildDateTimeRangePickerBlocProvider(component);
       // case FormTypeEnum.dropdownFormType:
       //   return DynamicDropdown(component: component);
-      // case FormTypeEnum.checkboxFormType:
-      //   return DynamicCheckbox(component: component);
+      case FormTypeEnum.checkboxFormType:
+        return DynamicCheckbox(component: component);
       // case FormTypeEnum.radioFormType:
       //   return _buildRadioBlocProvider(component);
       // case FormTypeEnum.sliderFormType:
@@ -135,23 +139,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildSelectorButtonBlocProvider(component);
       case FormTypeEnum.switchFormType:
         return _buildSwitchBlocProvider(component);
-      // case FormTypeEnum.textFieldTagsFormType:
-      //   return _buildTextFieldTagsBlocProvider(component);
+      case FormTypeEnum.textFieldTagsFormType:
+        return _buildTextFieldTagsBlocProvider(component);
       // case FormTypeEnum.fileUploaderFormType:
       //   return DynamicFileUploader(component: component);
       // case FormTypeEnum.buttonFormType:
       //   return DynamicButton(
       //     component: component,
-      //     onAction: (action, data) {
-      //       if (widget.onButtonAction != null) {
-      //         widget.onButtonAction!(action, data);
-      //       } else {
-      //         _handleButtonAction(action, data);
-      //       }
-      //     },
       //   );
-      // case FormTypeEnum.container:
-      //   return _buildContainerComponent(component);
+      case FormTypeEnum.container:
+        return _buildContainerComponent(component);
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
     }
@@ -167,18 +164,18 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
     );
   }
 
-  // Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
-  //   return BlocProvider(
-  //     create: (context) =>
-  //         DynamicTextFieldTagsBloc(initialComponent: component),
-  //     child: DynamicTextFieldTags(
-  //       key: Key(component.id),
-  //       component: component,
-  //       onComplete: (value) => handleFormFieldUpdate(context, component, value),
-  //     ),
-  //   );
-  // }
-  //
+  Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) =>
+          DynamicTextFieldTagsBloc(initialComponent: component),
+      child: DynamicTextFieldTags(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
+
   Widget _buildSelectorButtonBlocProvider(DynamicFormModel component) {
     return BlocProvider(
       create: (context) =>
@@ -236,7 +233,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       ),
     );
   }
-  //
+
   // Widget _buildRadioBlocProvider(DynamicFormModel component) {
   //   return BlocProvider(
   //     create: (context) => DynamicRadioBloc(initialComponent: component),
@@ -246,51 +243,10 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   //     ),
   //   );
   // }
-  //
-  // Widget _buildContainerComponent(DynamicFormModel component) {
-  //   final style = component.style;
-  //   final label = ComponentUtils.getLabel(component);
-  //
-  //   final containerContent = Container(
-  //     key: Key(component.id),
-  //     margin: StyleUtils.parsePadding(style.margin),
-  //     padding: StyleUtils.parsePadding(style.padding),
-  //     decoration: BoxDecoration(
-  //       color: StyleUtils.parseColor(style.backgroundColor),
-  //       border: style.borderColor != null
-  //           ? Border.all(color: StyleUtils.parseColor(style.borderColor))
-  //           : null,
-  //       borderRadius: StyleUtils.parseBorderRadius(style.borderRadius),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         if (label.isNotEmpty) _buildLabel(label, style),
-  //
-  //         if (component.children != null)
-  //           ...component.children!.map(
-  //             (child) => DynamicFormRenderer(
-  //               component: child,
-  //               page: widget.page,
-  //               onCompleted: widget.onCompleted,
-  //               onFieldChanged: widget.onFieldChanged,
-  //             ),
-  //           ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   final action = component.config['onTapAction'];
-  //   if (action is String && action.isNotEmpty) {
-  //     return GestureDetector(
-  //       onTap: () => _handleButtonAction(action, component.config['data']),
-  //       behavior: HitTestBehavior.opaque,
-  //       child: containerContent,
-  //     );
-  //   }
-  //
-  //   return containerContent;
-  // }
+
+  Widget _buildContainerComponent(DynamicFormModel component) {
+    return const Text("ABCCCCCCCCC");
+  }
 
   Widget _buildLabel(String label, StyleModel styleModel) {
     return Padding(
