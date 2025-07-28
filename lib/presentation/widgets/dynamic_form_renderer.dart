@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -15,6 +16,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_even
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 // import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
 // import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 // import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_checkbox.dart';
@@ -107,8 +109,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         return _buildTextFieldBlocProvider(component);
       // case FormTypeEnum.selectFormType:
       //   return DynamicSelect(component: component);
-      // case FormTypeEnum.textAreaFormType:
-      //   return _buildTextAreaBlocProvider(component);
+      case FormTypeEnum.textAreaFormType:
+        return _buildTextAreaBlocProvider(component);
       // case FormTypeEnum.dateTimePickerFormType:
       //   return _buildDateTimePickerBlocProvider(component);
       // case FormTypeEnum.dateTimeRangePickerFormType:
@@ -216,16 +218,16 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   //   );
   // }
   //
-  // Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
-  //   return BlocProvider(
-  //     create: (context) => DynamicTextAreaBloc(initialComponent: component),
-  //     child: DynamicTextArea(
-  //       key: Key(component.id),
-  //       component: component,
-  //       onComplete: (value) => handleFormFieldUpdate(context, component, value),
-  //     ),
-  //   );
-  // }
+  Widget _buildTextAreaBlocProvider(DynamicFormModel component) {
+    return BlocProvider(
+      create: (context) => DynamicTextAreaBloc(initialComponent: component),
+      child: DynamicTextArea(
+        key: Key(component.id),
+        component: component,
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
+      ),
+    );
+  }
   //
   // Widget _buildRadioBlocProvider(DynamicFormModel component) {
   //   return BlocProvider(
