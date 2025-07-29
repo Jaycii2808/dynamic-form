@@ -54,7 +54,8 @@ class DynamicCheckboxBloc
       final isEditable = true; // Default to editable if properties don't exist
 
       // Compute form state
-      final formState = initialComponent.config?.currentState ?? StatesEnum.base;
+      final formState =
+          initialComponent.config?.currentState ?? StatesEnum.base;
 
       // Compute validation error
       final errorText = _validateCheckbox(initialComponent, value);
@@ -270,6 +271,4 @@ class DynamicCheckboxBloc
     }
     return style;
   }
-
-
 }

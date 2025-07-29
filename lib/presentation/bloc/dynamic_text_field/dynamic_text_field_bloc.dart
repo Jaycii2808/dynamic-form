@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
@@ -83,11 +83,40 @@ class DynamicTextFieldBloc
     if (state is! DynamicTextFieldSuccess) return;
     final successState = state as DynamicTextFieldSuccess;
     try {
-      final configMap = successState.component!.config?.toJson() ?? {};
-      configMap['value'] = event.value;
+      // Create new config model directly with updated value
+      final updatedConfig = ConfigModel(
+        label: successState.component!.config?.label,
+        placeholder: successState.component!.config?.placeholder,
+        isRequired: successState.component!.config?.isRequired,
+        value: event.value,
+        currentState: successState.component!.config?.currentState,
+        errorText: successState.component!.config?.errorText,
+        defaultFormat: successState.component!.config?.defaultFormat,
+        initialTags: successState.component!.config?.initialTags,
+        textSeparators: successState.component!.config?.textSeparators,
+        pickerMode: successState.component!.config?.pickerMode,
+        selected: successState.component!.config?.selected,
+        range: successState.component!.config?.range,
+        min: successState.component!.config?.min,
+        max: successState.component!.config?.max,
+        values: successState.component!.config?.values,
+        prefix: successState.component!.config?.prefix,
+        icon: successState.component!.config?.icon,
+        title: successState.component!.config?.title,
+        buttonText: successState.component!.config?.buttonText,
+        allowedExtensions: successState.component!.config?.allowedExtensions,
+        action: successState.component!.config?.action,
+        conditions: successState.component!.config?.conditions,
+        options: successState.component!.config?.options,
+        hint: successState.component!.config?.hint,
+        height: successState.component!.config?.height,
+        statusText: successState.component!.config?.statusText,
+        validate: successState.component!.config?.validate,
+      );
+
       final updatedComponent = ComponentUtils.updateComponentConfig(
         successState.component!,
-        ConfigModel.fromJson(configMap),
+        updatedConfig,
       );
 
       emit(
@@ -133,14 +162,40 @@ class DynamicTextFieldBloc
         newState = StatesEnum.success;
       }
 
-      final configMap = successState.component!.config?.toJson() ?? {};
-      configMap['value'] = event.value;
-      configMap['current_state'] = newState;
-      configMap['error_text'] = validationError;
+      // Create new config model directly with updated properties
+      final updatedConfig = ConfigModel(
+        label: successState.component!.config?.label,
+        placeholder: successState.component!.config?.placeholder,
+        isRequired: successState.component!.config?.isRequired,
+        value: event.value,
+        currentState: newState,
+        errorText: validationError,
+        defaultFormat: successState.component!.config?.defaultFormat,
+        initialTags: successState.component!.config?.initialTags,
+        textSeparators: successState.component!.config?.textSeparators,
+        pickerMode: successState.component!.config?.pickerMode,
+        selected: successState.component!.config?.selected,
+        range: successState.component!.config?.range,
+        min: successState.component!.config?.min,
+        max: successState.component!.config?.max,
+        values: successState.component!.config?.values,
+        prefix: successState.component!.config?.prefix,
+        icon: successState.component!.config?.icon,
+        title: successState.component!.config?.title,
+        buttonText: successState.component!.config?.buttonText,
+        allowedExtensions: successState.component!.config?.allowedExtensions,
+        action: successState.component!.config?.action,
+        conditions: successState.component!.config?.conditions,
+        options: successState.component!.config?.options,
+        hint: successState.component!.config?.hint,
+        height: successState.component!.config?.height,
+        statusText: successState.component!.config?.statusText,
+        validate: successState.component!.config?.validate,
+      );
 
       final updatedComponent = ComponentUtils.updateComponentConfig(
         successState.component!,
-        ConfigModel.fromJson(configMap),
+        updatedConfig,
       );
 
       emit(

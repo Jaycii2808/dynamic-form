@@ -98,17 +98,21 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         },
         listener: (context, state) {
           if (state is DynamicTextFieldSuccess) {
-            final valueMap = {
-              'value': state.component!.config?.value,
-              'current_state': state.component!.config?.currentState ?? StatesEnum.base,
+            debugPrint('📝 [TextField] Sending only necessary data');
+
+            // Only pass the necessary data: value, currentState, errorText
+            final valueData = {
+              'value': state.component!.config?.value?.toString(),
+              'current_state':
+                  state.component!.config?.currentState ?? StatesEnum.base,
               'error_text': state.errorText,
             };
 
-            // Update the main form bloc with new value
+            // Update the main form bloc with only necessary data
             context.read<DynamicFormBloc>().add(
               UpdateFormFieldEvent(
                 componentId: state.component!.id,
-                value: valueMap,
+                value: valueData,
               ),
             );
 
@@ -159,6 +163,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
+  //cho vao {{}, tuy cho
   Widget _buildBody({
     required StyleModel styleModel,
     required InputConfig inputConfig,
@@ -199,7 +204,9 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ✨ Label now uses state-based color
+            //add required
             _buildLabel(styleModel, inputConfig, stateStyle),
+            //add ReusedWidget.getStateStyle(component.states, state)required
             _buildTextField(
               styleModel,
               inputConfig,
@@ -244,7 +251,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -323,8 +330,14 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
-  Widget? _buildPrefixIcon(DynamicFormModel component, StatesEnum currentState) {
-    final stateStyle = ReusedWidget.getStateStyle(component.states, currentState);
+  Widget? _buildPrefixIcon(
+    DynamicFormModel component,
+    StatesEnum currentState,
+  ) {
+    final stateStyle = ReusedWidget.getStateStyle(
+      component.states,
+      currentState,
+    );
     final iconName = component.config?.icon?.toString();
     if (iconName != null && iconName.isNotEmpty && stateStyle != null) {
       final iconColor = stateStyle.iconColor;
@@ -351,13 +364,11 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     return TextInputType.text;
   }
 
-
-
   // ✨ UPDATED: This function now builds the border using the state-specific icon color
   OutlineInputBorder _buildBorder(
     StyleModel styleModel,
     DynamicFormModel component,
-      StatesEnum state,
+    StatesEnum state,
   ) {
     final stateStyle = ReusedWidget.getStateStyle(component.states, state);
 

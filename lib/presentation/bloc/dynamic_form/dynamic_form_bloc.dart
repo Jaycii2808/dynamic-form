@@ -8,6 +8,7 @@ import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/components/text_field_value_model.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
@@ -23,9 +24,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   DynamicFormBloc({
     required RemoteConfigService remoteConfigService,
     required FormTemplateService formTemplateService,
-  })  : _remoteConfigService = remoteConfigService,
-        _formTemplateService = formTemplateService,
-        super(const DynamicFormInitial()) {
+  }) : _remoteConfigService = remoteConfigService,
+       _formTemplateService = formTemplateService,
+       super(const DynamicFormInitial()) {
     on<LoadDynamicFormPageEvent>(_onLoadDynamicFormPage);
     on<UpdateFormFieldEvent>(_onUpdateFormField);
     on<RefreshDynamicFormEvent>(_onRefreshDynamicForm);
@@ -35,9 +36,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   Future<void> _onLoadDynamicFormPage(
-      LoadDynamicFormPageEvent event,
-      Emitter<DynamicFormState> emit,
-      ) async {
+    LoadDynamicFormPageEvent event,
+    Emitter<DynamicFormState> emit,
+  ) async {
     emit(DynamicFormLoading.fromState(state: state));
     await Future.delayed(const Duration(milliseconds: 500));
     try {
@@ -72,9 +73,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   void _onUpdateFormField(
-      UpdateFormFieldEvent event,
-      Emitter<DynamicFormState> emit,
-      ) {
+    UpdateFormFieldEvent event,
+    Emitter<DynamicFormState> emit,
+  ) {
     debugPrint(
       'UpdateFormFieldEvent: Component ${event.componentId}, Value: ${event.value}',
     );
@@ -93,7 +94,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
       // First search at root level
       targetIndex = currentPage.components.indexWhere(
-            (component) => component.id == event.componentId,
+        (component) => component.id == event.componentId,
       );
 
       if (targetIndex != -1) {
@@ -178,7 +179,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         '🔄 [FormBloc] Emitting updated state with ${finalPage.components.length} components',
       );
       final targetComp = finalPage.components.firstWhere(
-            (c) => c.id == event.componentId,
+        (c) => c.id == event.componentId,
         orElse: () => finalPage.components.first,
       );
       debugPrint(
@@ -194,9 +195,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   void _onValidateButtonConditions(
-      ValidateButtonConditionsEvent event,
-      Emitter<DynamicFormState> emit,
-      ) {
+    ValidateButtonConditionsEvent event,
+    Emitter<DynamicFormState> emit,
+  ) {
     if (state.page != null) {
       final updatedPage = _updateButtonStates(state.page!);
       emit(DynamicFormSuccess(page: updatedPage));
@@ -204,9 +205,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   void _onMarkPreviewValidated(
-      MarkPreviewValidatedEvent event,
-      Emitter<DynamicFormState> emit,
-      ) {
+    MarkPreviewValidatedEvent event,
+    Emitter<DynamicFormState> emit,
+  ) {
     if (state.page != null) {
       debugPrint(
         '🔍 Marking Save button as preview-validated: ${event.saveButtonId}',
@@ -248,9 +249,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   void _onValidateAllFormFields(
-      ValidateAllFormFieldsEvent event,
-      Emitter<DynamicFormState> emit,
-      ) {
+    ValidateAllFormFieldsEvent event,
+    Emitter<DynamicFormState> emit,
+  ) {
     if (state.page == null) {
       debugPrint('❌ No page found for validation');
       return;
@@ -331,44 +332,139 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   /// Update component with new value - JSON-driven validation
   DynamicFormModel _updateComponentWithValue(
-      DynamicFormModel component,
-      dynamic value,
-      ) {
+    DynamicFormModel component,
+    dynamic value,
+  ) {
     try {
-      final configMap = component.config?.toJson() ?? {};
-
       debugPrint(
         '🔧 [FormBloc] Updating component ${component.id} with value: $value',
       );
 
+      // Handle simple value data (Map with value, current_state, error_text)
       if (value is Map && value.containsKey('value')) {
-        final mapValue = value as Map<String, dynamic>;
+        final valueData = value as Map<String, dynamic>;
 
-        // Direct map-based update (for complex components)
-        configMap['value'] = mapValue['value'];
-
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.value = ${mapValue['value']} (was: ${component.config?.value})',
+        // Create new config model with only updated properties
+        final updatedConfig = ConfigModel(
+          label: component.config?.label,
+          placeholder: component.config?.placeholder,
+          isRequired: component.config?.isRequired,
+          value: valueData['value'],
+          currentState:
+              valueData['current_state'] ?? component.config?.currentState,
+          errorText: valueData['error_text'],
+          defaultFormat: component.config?.defaultFormat,
+          initialTags: component.config?.initialTags,
+          textSeparators: component.config?.textSeparators,
+          pickerMode: component.config?.pickerMode,
+          selected: component.config?.selected,
+          range: component.config?.range,
+          min: component.config?.min,
+          max: component.config?.max,
+          values: component.config?.values,
+          prefix: component.config?.prefix,
+          icon: component.config?.icon,
+          title: component.config?.title,
+          buttonText: component.config?.buttonText,
+          allowedExtensions: component.config?.allowedExtensions,
+          action: component.config?.action,
+          conditions: component.config?.conditions,
+          options: component.config?.options,
+          hint: component.config?.hint,
+          height: component.config?.height,
+          statusText: component.config?.statusText,
+          validate: component.config?.validate,
         );
 
-        if (mapValue.containsKey('error_text')) {
-          configMap['error_text'] = mapValue['error_text'];
-        }
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.value = ${valueData['value']}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.currentState = ${valueData['current_state']}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.errorText = ${valueData['error_text']}',
+        );
 
-        if (mapValue.containsKey('selected')) {
-          configMap['selected'] = mapValue['selected'];
-        }
+        final updatedComponent = ComponentUtils.updateComponentConfig(
+          component,
+          updatedConfig,
+        );
+        debugPrint(
+          '✅ [FormBloc] Component ${component.id} updated successfully',
+        );
 
-        if (mapValue.containsKey('current_state')) {
-          configMap['current_state'] = mapValue['current_state'];
-        } else {
-          configMap['current_state'] = ValidationUtils.determineComponentState(
-            mapValue['value']?.toString(),
-            mapValue['error_text']?.toString(),
-          );
-        }
+        return updatedComponent;
+      } else if (value is DynamicFormModel) {
+        debugPrint(
+          '📝 [FormBloc] Received component model directly for ${component.id}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Component value: ${value.config?.value}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Component state: ${value.config?.currentState}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Component errorText: ${value.config?.errorText}',
+        );
+
+        // Return the updated component model directly
+        return value;
+      } else if (value is TextFieldValueModel) {
+        // Create new config model directly with updated properties
+        final updatedConfig = ConfigModel(
+          label: component.config?.label,
+          placeholder: component.config?.placeholder,
+          isRequired: component.config?.isRequired,
+          value: value.value,
+          currentState: value.currentState,
+          errorText: value.errorText,
+          defaultFormat: component.config?.defaultFormat,
+          initialTags: component.config?.initialTags,
+          textSeparators: component.config?.textSeparators,
+          pickerMode: component.config?.pickerMode,
+          selected: component.config?.selected,
+          range: component.config?.range,
+          min: component.config?.min,
+          max: component.config?.max,
+          values: component.config?.values,
+          prefix: component.config?.prefix,
+          icon: component.config?.icon,
+          title: component.config?.title,
+          buttonText: component.config?.buttonText,
+          allowedExtensions: component.config?.allowedExtensions,
+          action: component.config?.action,
+          conditions: component.config?.conditions,
+          options: component.config?.options,
+          hint: component.config?.hint,
+          height: component.config?.height,
+          statusText: component.config?.statusText,
+          validate: component.config?.validate,
+        );
+
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.value = ${value.value}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.errorText = ${value.errorText}',
+        );
+        debugPrint(
+          '📝 [FormBloc] Setting ${component.id}.currentState = ${value.currentState}',
+        );
+
+        final updatedComponent = ComponentUtils.updateComponentConfig(
+          component,
+          updatedConfig,
+        );
+        debugPrint(
+          '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config?.toJson()}',
+        );
+
+        return updatedComponent;
       } else {
         // Special handling for range slider (array values)
+        final configMap = component.config?.toJson() ?? {};
         final isRangeSlider = component.config?.range == true;
 
         if (isRangeSlider && value is List && value.length == 2) {
@@ -406,17 +502,17 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         debugPrint(
           '📝 JSON Validation: ${component.id} = "$stringValue" -> ${validationError ?? "valid"} (state: ${configMap['current_state']})',
         );
+
+        final updatedComponent = ComponentUtils.updateComponentConfig(
+          component,
+          ConfigModel.fromJson(configMap),
+        );
+        debugPrint(
+          '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config?.toJson()}',
+        );
+
+        return updatedComponent;
       }
-
-      final updatedComponent = ComponentUtils.updateComponentConfig(
-        component,
-        ConfigModel.fromJson(configMap),
-      );
-      debugPrint(
-        '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config?.toJson()}',
-      );
-
-      return updatedComponent;
     } catch (e) {
       debugPrint('Error updating component ${component.id}: $e');
       return component;
@@ -447,7 +543,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         final conditions = component.config?.conditions;
 
         // Handle Save buttons (submit_form action)
-        if (action == ButtonAction.submitForm.value && conditions != null && conditions.isNotEmpty) {
+        if (action == ButtonAction.submitForm.value &&
+            conditions != null &&
+            conditions.isNotEmpty) {
           final buttonConditions = conditions
               .map((c) => ButtonCondition.fromJson(c.toJson()))
               .toList();
@@ -516,9 +614,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   Future<void> _onRefreshDynamicForm(
-      RefreshDynamicFormEvent event,
-      Emitter<DynamicFormState> emit,
-      ) async {
+    RefreshDynamicFormEvent event,
+    Emitter<DynamicFormState> emit,
+  ) async {
     emit(DynamicFormLoading.fromState(state: state));
     try {
       await _remoteConfigService.initialize();
@@ -539,9 +637,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   /// Recursively find a component by ID in nested children
   DynamicFormModel? _findComponentRecursive(
-      List<DynamicFormModel> components,
-      String targetId,
-      ) {
+    List<DynamicFormModel> components,
+    String targetId,
+  ) {
     for (final component in components) {
       if (component.id == targetId) {
         return component;
@@ -558,10 +656,10 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   /// Recursively update components in nested structure
   List<DynamicFormModel> _updateComponentsRecursive(
-      List<DynamicFormModel> components,
-      String targetId,
-      dynamic value,
-      ) {
+    List<DynamicFormModel> components,
+    String targetId,
+    dynamic value,
+  ) {
     return components.map((component) {
       if (component.id == targetId) {
         // Found target - update it
