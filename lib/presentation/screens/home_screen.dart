@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
@@ -22,14 +23,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadConfigKeys() async {
     final keys = RemoteConfigService().getAll().keys.toList();
-    setState(() => configKeys = keys);
+    setState(
+      () => configKeys = keys,
+    );
   }
 
   Future<void> _reloadConfig() async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
     await RemoteConfigService().initialize();
     await Future.delayed(const Duration(milliseconds: 50));
@@ -39,50 +44,56 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _navigateToForm(BuildContext context, String configKey) async {
+  Future<void> _navigateToForm(BuildContext context, String configKey) async {
+    // Show loading dialog while fetching config
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
     try {
+      // Fetch config string from RemoteConfigService
       final configString = RemoteConfigService().getAll()[configKey]?.asString() ?? '';
-      Navigator.of(context).pop(); // Close loading dialog
-      if (configString.isNotEmpty) {
-        try {
-          final json = configString.trim().startsWith('{') ? configString : null;
-          if (json != null) {
-            // final map = Map<String, dynamic>.from(
-            //   (jsonDecode(json) as Map<String, dynamic>),
-            // );
-            //if (map.containsKey('navigationType') && map['navigationType'] == 'sequential') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DynamicFormMultiScreen(configKey: configKey),
-                ),
-              );
-              return;
-            //}
-          }
-        } catch (e) {
-          // Ignore and fallback to single page
-        }
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DynamicFormScreen(configKey: configKey, title: configKey),
-        ),
-      );
-    } catch (e) {
+
+      // Close loading dialog
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load form config: $e')),
-      );
+
+      // Check if config string is valid and in JSON format
+      if (configString.isNotEmpty && configString.trim().startsWith('{')) {
+        try {
+          // Navigate to multi-page form if config is valid JSON
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DynamicFormMultiScreen(configKey: configKey),
+            ),
+          );
+        } catch (e) {
+          // Show error dialog if JSON parsing fails
+          DialogUtils.showErrorDialog(
+            context,
+            'Invalid JSON format in form config: $e',
+          );
+        }
+      } else {
+        // Navigate to single-page form if config is empty or not JSON
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DynamicFormScreen(
+              configKey: configKey,
+              title: configKey,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog and show error if config fetch fails
+      Navigator.of(context).pop();
+      DialogUtils.showErrorDialog(context, 'Failed to load form config: $e');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

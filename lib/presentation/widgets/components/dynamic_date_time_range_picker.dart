@@ -1,13 +1,13 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/form_style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -32,7 +32,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       listener: (context, state) {
         final valueMap = {
           'value': state.component?.config?.value ?? '',
-          'current_state': state.component?.config?.currentState ?? 'base',
+          'current_state': state.component?.config?.currentState ?? StatesEnum.base,
           'error_text': state.errorText,
         };
         if (state is DynamicDateTimeRangePickerSuccess) {
@@ -89,14 +89,13 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+      StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
-    final String? stateKey = component.config?.currentState;
-    final String effectiveState =
-        _getStatesModelFromKey(stateKey) ?? currentState;
+    final StatesEnum? stateKey = component.config?.currentState;
+    final StatesEnum effectiveState =stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
@@ -160,13 +159,13 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+      StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
-    final String stateKey = currentState;
-    final StyleStatesModel? stateStyle = _getStateStyle(
+    final StatesEnum stateKey = currentState;
+    final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       component.states,
       stateKey,
     );
@@ -191,10 +190,10 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
         filled: styleModel.backgroundColor != Colors.transparent,
         fillColor: styleModel.backgroundColor,
         border: _buildBorder(styleModel, currentState),
-        enabledBorder: _buildBorder(styleModel, 'base'),
-        focusedBorder: _buildBorder(styleModel, 'focused'),
-        errorBorder: _buildBorder(styleModel, 'error'),
-        disabledBorder: _buildBorder(styleModel, 'disabled'),
+        enabledBorder: _buildBorder(styleModel, StatesEnum.base),
+        focusedBorder: _buildBorder(styleModel, StatesEnum.focused),
+        errorBorder: _buildBorder(styleModel, StatesEnum.error),
+        disabledBorder: _buildBorder(styleModel, StatesEnum.disabled),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SvgPicture.asset(
@@ -224,17 +223,17 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
   }
 
-  OutlineInputBorder _buildBorder(StyleModel styleModel, String state) {
+  OutlineInputBorder _buildBorder(StyleModel styleModel, StatesEnum state) {
     double width = styleModel.borderWidth ?? 1.0;
     Color color = styleModel.borderColor ?? Colors.grey;
 
-    if (state == 'focused') {
+    if (state == StatesEnum.focused) {
       width += 1;
       color = styleModel.focusedBorderColor ?? Colors.blue;
-    } else if (state == 'error') {
+    } else if (state == StatesEnum.error) {
       color = styleModel.errorBorderColor ?? Colors.red;
       width = 2;
-    } else if (state == 'disabled') {
+    } else if (state == StatesEnum.disabled) {
       color = Colors.grey[400]!;
     }
 
@@ -244,35 +243,8 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
   }
 
-  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
 
-  String? _getStatesModelFromKey(String? key) {
-    switch (key) {
-      case 'base':
-        return 'base';
-      case 'error':
-        return 'error';
-      case 'success':
-        return 'success';
-      case 'focused':
-        return 'focused';
-      default:
-        return null;
-    }
-  }
+
 
   Future<void> _pickDateTimeRange(
     BuildContext context,

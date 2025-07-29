@@ -1,6 +1,8 @@
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+
 class InputConfig {
   final String? value;
-  final String currentState;
+  final StatesEnum currentState;
   final String? errorText;
   final String? label;
   final String? placeholder;
@@ -10,7 +12,7 @@ class InputConfig {
 
   const InputConfig({
     this.value,
-    this.currentState = 'base',
+    this.currentState = StatesEnum.base,
     this.errorText,
     this.label,
     this.placeholder,
@@ -30,6 +32,30 @@ class InputConfig {
       return v.toString();
     }
 
+    // Parse current_state as StatesEnum
+    StatesEnum parseCurrentState(dynamic value) {
+      if (value == null) return StatesEnum.base;
+      if (value is String) {
+        switch (value.toLowerCase()) {
+          case 'base':
+            return StatesEnum.base;
+          case 'error':
+            return StatesEnum.error;
+          case 'success':
+            return StatesEnum.success;
+          case 'focused':
+            return StatesEnum.focused;
+          case 'disabled':
+            return StatesEnum.disabled;
+          case 'loading':
+            return StatesEnum.loading;
+          default:
+            return StatesEnum.base;
+        }
+      }
+      return StatesEnum.base;
+    }
+
     dynamic valueField = map['value'];
     String? valueString;
     if (valueField is String) {
@@ -39,7 +65,8 @@ class InputConfig {
     } else if (valueField != null) {
       valueString = valueField.toString();
     }
-    final currentState = parseString(map['current_state'], 'base') ?? 'base';
+
+    final currentState = parseCurrentState(map['current_state']);
     final errorText = map['error_text'] != null
         ? parseString(map['error_text'])
         : null;

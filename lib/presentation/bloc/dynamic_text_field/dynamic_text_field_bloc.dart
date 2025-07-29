@@ -1,24 +1,26 @@
 import 'dart:async';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldState> {
+class DynamicTextFieldBloc
+    extends Bloc<DynamicTextFieldEvent, DynamicTextFieldState> {
   final TextEditingController _textController;
   final FocusNode _focusNode;
 
   DynamicTextFieldBloc({required DynamicFormModel initialComponent})
-      : _textController = TextEditingController(
-    text: initialComponent.config?.value?.toString() ?? '',
-  ),
-        _focusNode = FocusNode(),
-        super(DynamicTextFieldInitial(component: initialComponent)) {
+    : _textController = TextEditingController(
+        text: initialComponent.config?.value?.toString() ?? '',
+      ),
+      _focusNode = FocusNode(),
+      super(DynamicTextFieldInitial(component: initialComponent)) {
     _focusNode.addListener(_onFocusChange);
 
     on<InitializeTextFieldEvent>(_onInitializeTextField);
@@ -42,9 +44,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
   }
 
   Future<void> _onInitializeTextField(
-      InitializeTextFieldEvent event,
-      Emitter<DynamicTextFieldState> emit,
-      ) async {
+    InitializeTextFieldEvent event,
+    Emitter<DynamicTextFieldState> emit,
+  ) async {
     emit(DynamicTextFieldLoading.fromState(state: state));
     try {
       final component = state.component;
@@ -57,7 +59,7 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
           component: component,
           inputConfig: InputConfig.fromJson(component.config?.toJson() ?? {}),
           styleModel: component.style,
-          formState: component.config?.currentState ?? 'base',
+          formState: component.config?.currentState ?? StatesEnum.base,
           textController: _textController,
           focusNode: _focusNode,
         ),
@@ -75,9 +77,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
   }
 
   void _onTextFieldValueChanged(
-      TextFieldValueChangedEvent event,
-      Emitter<DynamicTextFieldState> emit,
-      ) {
+    TextFieldValueChangedEvent event,
+    Emitter<DynamicTextFieldState> emit,
+  ) {
     if (state is! DynamicTextFieldSuccess) return;
     final successState = state as DynamicTextFieldSuccess;
     try {
@@ -91,7 +93,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
       emit(
         successState.copyWith(
           component: updatedComponent,
-          inputConfig: InputConfig.fromJson(updatedComponent.config?.toJson() ?? {}),
+          inputConfig: InputConfig.fromJson(
+            updatedComponent.config?.toJson() ?? {},
+          ),
         ),
       );
     } catch (e, stackTrace) {
@@ -107,9 +111,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
   }
 
   Future<void> _onTextFieldFocusLost(
-      TextFieldFocusLostEvent event,
-      Emitter<DynamicTextFieldState> emit,
-      ) async {
+    TextFieldFocusLostEvent event,
+    Emitter<DynamicTextFieldState> emit,
+  ) async {
     if (state is! DynamicTextFieldSuccess) return;
     final successState = state as DynamicTextFieldSuccess;
     emit(DynamicTextFieldLoading.fromState(state: successState));
@@ -122,11 +126,11 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
         event.value,
       );
 
-      String newState = 'base';
+      StatesEnum newState = StatesEnum.base;
       if (validationError != null) {
-        newState = 'error';
+        newState = StatesEnum.error;
       } else if (event.value.isNotEmpty) {
-        newState = 'success';
+        newState = StatesEnum.success;
       }
 
       final configMap = successState.component!.config?.toJson() ?? {};
@@ -143,7 +147,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
         DynamicTextFieldSuccess(
           component: updatedComponent,
           errorText: validationError,
-          inputConfig: InputConfig.fromJson(updatedComponent.config?.toJson() ?? {}),
+          inputConfig: InputConfig.fromJson(
+            updatedComponent.config?.toJson() ?? {},
+          ),
           styleModel: updatedComponent.style,
           formState: newState,
           textController: _textController,
@@ -163,9 +169,9 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
   }
 
   Future<void> _onUpdateFromExternal(
-      UpdateTextFieldFromExternalEvent event,
-      Emitter<DynamicTextFieldState> emit,
-      ) async {
+    UpdateTextFieldFromExternalEvent event,
+    Emitter<DynamicTextFieldState> emit,
+  ) async {
     if (state is! DynamicTextFieldSuccess) return;
 
     try {
@@ -178,9 +184,11 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
       emit(
         DynamicTextFieldSuccess(
           component: event.component,
-          inputConfig: InputConfig.fromJson(event.component.config?.toJson() ?? {}),
+          inputConfig: InputConfig.fromJson(
+            event.component.config?.toJson() ?? {},
+          ),
           styleModel: event.component.style,
-          formState: event.component.config?.currentState ?? 'base',
+          formState: event.component.config?.currentState ?? StatesEnum.base,
           textController: _textController,
           focusNode: _focusNode,
           errorText: event.component.config?.errorText,
@@ -202,14 +210,17 @@ class DynamicTextFieldBloc extends Bloc<DynamicTextFieldEvent, DynamicTextFieldS
     final inputTypes = component.inputTypes;
     final validation = inputTypes?.text;
     if (validation != null) {
-      if (validation.minLength != null && value.length < validation.minLength!) {
-        return validation.errorMessage ?? 'Quá ngắn';
+      if (validation.minLength != null &&
+          value.length < validation.minLength!) {
+        return validation.errorMessage ?? 'Too short';
       }
-      if (validation.maxLength != null && value.length > validation.maxLength!) {
-        return validation.errorMessage ?? 'Quá dài';
+      if (validation.maxLength != null &&
+          value.length > validation.maxLength!) {
+        return validation.errorMessage ?? 'Too long';
       }
-      if (validation.regex != null && !RegExp(validation.regex!).hasMatch(value)) {
-        return validation.errorMessage ?? 'Sai định dạng';
+      if (validation.regex != null &&
+          !RegExp(validation.regex!).hasMatch(value)) {
+        return validation.errorMessage ?? 'Incorrect format';
       }
     }
     return null;

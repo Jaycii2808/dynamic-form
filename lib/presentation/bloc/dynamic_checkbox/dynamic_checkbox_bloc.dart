@@ -1,12 +1,13 @@
+import 'dart:async';
+
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -53,7 +54,7 @@ class DynamicCheckboxBloc
       final isEditable = true; // Default to editable if properties don't exist
 
       // Compute form state
-      final formState = initialComponent.config?.currentState ?? 'base';
+      final formState = initialComponent.config?.currentState ?? StatesEnum.base;
 
       // Compute validation error
       final errorText = _validateCheckbox(initialComponent, value);
@@ -228,12 +229,12 @@ class DynamicCheckboxBloc
     );
   }
 
-  String _computeFormState(
+  StatesEnum _computeFormState(
     DynamicFormModel component,
     bool isSelected,
   ) {
     // Checkbox state logic: selected = success, unselected = base
-    return isSelected ? 'success' : 'base';
+    return isSelected ? StatesEnum.success : StatesEnum.base;
   }
 
   String? _validateCheckbox(DynamicFormModel component, bool isSelected) {
@@ -245,7 +246,7 @@ class DynamicCheckboxBloc
     bool isSelected,
   ) {
     // Determine current state
-    final currentState = isSelected ? 'success' : 'base';
+    final currentState = isSelected ? StatesEnum.success : StatesEnum.base;
 
     // Build combined style - use direct properties instead of toJson()
     Map<String, dynamic> style = {
@@ -258,7 +259,7 @@ class DynamicCheckboxBloc
       'controlBorderRadius': component.style.borderRadius ?? 8.0,
     };
 
-    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       component.states,
       currentState,
     );
@@ -270,18 +271,5 @@ class DynamicCheckboxBloc
     return style;
   }
 
-  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+
 }

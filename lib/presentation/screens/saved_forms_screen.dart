@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
-import 'package:dynamic_form_bi/data/models/saved_form_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
 import 'package:flutter/material.dart';
@@ -93,8 +93,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
 
   void _loadSavedForm(SavedFormModel savedForm) {
     try {
-      if (savedForm.customFormData != null &&
-          savedForm.customFormData!.containsKey('pages')) {
+      if (savedForm.customFormData != null && savedForm.customFormData!.containsKey('pages')) {
         // New format with multiple pages
         final formJson = savedForm.customFormData!;
         final pagesJson = formJson['pages'] as List<dynamic>;
@@ -119,24 +118,22 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                 variants: null,
                 states: null,
                 validation: component.validation,
-                children: component.children != null
-                    ? component.children!
-                          .map(
-                            (child) => DynamicFormModel(
-                              id: child.id,
-                              type: child.type,
-                              order: child.order,
-                              config: child.config,
-                              style: child.style,
-                              inputTypes: null,
-                              variants: null,
-                              states: null,
-                              validation: child.validation,
-                              children: null,
-                            ),
-                          )
-                          .toList()
-                    : null,
+                children: component.children
+                    ?.map(
+                      (child) => DynamicFormModel(
+                        id: child.id,
+                        type: child.type,
+                        order: child.order,
+                        config: child.config,
+                        style: child.style,
+                        inputTypes: null,
+                        variants: null,
+                        states: null,
+                        validation: child.validation,
+                        children: null,
+                      ),
+                    )
+                    .toList(),
               );
             }).toList(),
           );
@@ -152,7 +149,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PreviewMultiPageScreen(
+            builder: (context) => PreviewPageScreen(
               pages: dynamicPages,
               allComponentValues: formJson['component_values'] ?? {},
             ),
@@ -164,7 +161,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PreviewMultiPageScreen(
+            builder: (context) => PreviewPageScreen(
               pages: [savedForm.formData!],
               allComponentValues: {},
             ),

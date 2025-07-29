@@ -476,8 +476,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                   'id': component.id,
                   'type': component.type.toJson(),
                   'order': component.order,
-                  'config': component.config?.toJson(),
-                  'style': component.style?.toJson(),
+                  'config': component.config.toJson(),
+                  'style': component.style.toJson(),
                   'validation': component.validation?.toJson(),
                   'children': component.children
                       ?.map(
@@ -485,8 +485,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           'id': child.id,
                           'type': child.type.toJson(),
                           'order': child.order,
-                          'config': child.config?.toJson(),
-                          'style': child.style?.toJson(),
+                          'config': child.config.toJson(),
+                          'style': child.style.toJson(),
                           'validation': child.validation?.toJson(),
                         },
                       )
@@ -572,11 +572,11 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               .firstWhere((b) => b != null, orElse: () => null)
         : null;
     // Submit button is not shown on finish page - it will be in preview screen
-    DynamicFormModel? submitButton = null;
+    DynamicFormModel? submitButton;
 
     debugPrint('🔍 [ButtonDetection] isLastPage: $isLastPage');
     debugPrint('🔍 [ButtonDetection] previewButton: ${previewButton?.id}');
-    debugPrint('🔍 [ButtonDetection] submitButton: ${submitButton?.id}');
+    //debugPrint('🔍 [ButtonDetection] submitButton: ${submitButton?.id}');
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
@@ -656,8 +656,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     debugPrint(
       '🔍 [ButtonValidation] Validating button  [33m${button.id} [0m: $validate',
     );
-    final conditions =
-        (validate != null && validate is Map && validate['condition'] is List)
+    final conditions = (validate != null && validate['condition'] is List)
         ? List<Map<String, dynamic>>.from(validate['condition'])
         : [];
     debugPrint('🔍 [ButtonValidation] Conditions: $conditions');
@@ -773,24 +772,22 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                       variants: null,
                       states: null,
                       validation: c.validation,
-                      children: c.children != null
-                          ? c.children!
-                                .map(
-                                  (child) => DynamicFormModel(
-                                    id: child.id,
-                                    type: child.type,
-                                    order: child.order,
-                                    config: child.config,
-                                    style: child.style,
-                                    inputTypes: null,
-                                    variants: null,
-                                    states: null,
-                                    validation: child.validation,
-                                    children: null,
-                                  ),
-                                )
-                                .toList()
-                          : null,
+                      children: c.children
+                          ?.map(
+                            (child) => DynamicFormModel(
+                              id: child.id,
+                              type: child.type,
+                              order: child.order,
+                              config: child.config,
+                              style: child.style,
+                              inputTypes: null,
+                              variants: null,
+                              states: null,
+                              validation: child.validation,
+                              children: null,
+                            ),
+                          )
+                          .toList(),
                     ),
                   )
                   .toList(),
@@ -799,7 +796,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
           .toList();
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (ctx) => PreviewMultiPageScreen(
+          builder: (ctx) => PreviewPageScreen(
             pages: dynamicPages,
             allComponentValues: state.componentValues,
           ),

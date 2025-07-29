@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +9,7 @@ abstract class DynamicTextFieldState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleModel? styleModel;
-  final String? formState;
+  final StatesEnum? formState;
   final String? errorText;
   final String? errorMessage;
 
@@ -70,7 +71,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
     required DynamicFormModel super.component,
     required InputConfig super.inputConfig,
     required StyleModel super.styleModel,
-    required String super.formState,
+    required StatesEnum super.formState,
     required TextEditingController super.textController,
     required FocusNode super.focusNode,
     super.errorText,
@@ -80,7 +81,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
     DynamicFormModel? component,
     InputConfig? inputConfig,
     StyleModel? styleModel,
-    String? formState,
+    StatesEnum? formState,
     String? errorText,
   }) {
     return DynamicTextFieldSuccess(

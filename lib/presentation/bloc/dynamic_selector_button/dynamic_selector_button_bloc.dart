@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicSelectorButtonBloc
     extends Bloc<DynamicSelectorButtonEvent, DynamicSelectorButtonState> {
@@ -57,7 +57,7 @@ class DynamicSelectorButtonBloc
             initialComponent.config?.toJson() ?? {},
           ),
           styleModel: initialComponent.style,
-          formState: initialComponent.config?.currentState ?? 'base',
+          formState: initialComponent.config?.currentState ?? StatesEnum.base,
         ),
       );
     } catch (e, stackTrace) {
@@ -87,7 +87,7 @@ class DynamicSelectorButtonBloc
     }
     final successState = state as DynamicSelectorButtonSuccess;
 
-    final newState = event.isSelected ? 'success' : 'base';
+    final newState = event.isSelected ? StatesEnum.success : StatesEnum.base;
 
     final updatedConfig = Map<String, dynamic>.from(
       successState.component!.config?.toJson() ?? {},

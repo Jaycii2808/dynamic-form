@@ -1,13 +1,14 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DynamicSwitchState extends Equatable {
   final DynamicFormModel? component;
   final InputConfig? inputConfig;
   final StyleModel? styleModel;
-  final String? formState;
+  final StatesEnum? formState;
 
   const DynamicSwitchState({
     this.component,

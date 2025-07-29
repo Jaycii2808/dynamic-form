@@ -1,12 +1,11 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
@@ -27,7 +26,7 @@ class _DynamicButtonState extends State<DynamicButton> {
 
   // State variables for computed values
   late DynamicFormModel _currentComponent;
-  String _currentState = 'base';
+  StatesEnum _currentState = StatesEnum.base;
   Map<String, dynamic> _style = {};
   Map<String, dynamic> _config = {};
   String _buttonText = 'Button';
@@ -249,7 +248,7 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
 
     // Apply state styles
-    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       _currentComponent.states,
       _currentState,
     );
@@ -258,28 +257,15 @@ class _DynamicButtonState extends State<DynamicButton> {
     }
   }
 
-  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+
 
   void _computeCurrentState() {
     if (_isDisabled) {
-      _currentState = 'disabled';
+      _currentState = StatesEnum.disabled;
     } else if (_isLoading) {
-      _currentState = 'loading';
+      _currentState = StatesEnum.loading;
     } else {
-      _currentState = 'base';
+      _currentState = StatesEnum.base;
     }
   }
 

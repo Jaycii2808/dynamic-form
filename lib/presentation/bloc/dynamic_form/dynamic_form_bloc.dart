@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
+import 'package:dynamic_form_bi/data/models/components/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
@@ -11,6 +12,7 @@ import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -128,8 +130,8 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
               ? (event.value as Map)['value']
               : event.value,
           'current_state': event.value is Map
-              ? (event.value as Map)['current_state'] ?? 'base'
-              : 'base',
+              ? (event.value as Map)['current_state'] ?? StatesEnum.base
+              : StatesEnum.base,
           if (event.value is Map && (event.value as Map)['error_text'] != null)
             'error_text': (event.value as Map)['error_text'],
         };
@@ -212,7 +214,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
       final updatedComponents = state.page!.components.map((component) {
         if (component.id == event.saveButtonId &&
-            component.config?.action == 'submit_form') {
+            component.config?.action == ButtonAction.submitForm.value) {
           final configMap = component.config?.toJson() ?? {};
           configMap['hasPreviewedAndValid'] = true;
 
@@ -280,7 +282,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         if (event.showErrorsImmediately) {
           final configMap = component.config?.toJson() ?? {};
           configMap['error_text'] = validationError;
-          configMap['current_state'] = 'error';
+          configMap['current_state'] = StatesEnum.error;
 
           updatedComponents.add(
             ComponentUtils.updateComponentConfig(
@@ -298,7 +300,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         if (currentValue.isNotEmpty) {
           final configMap = component.config?.toJson() ?? {};
           configMap['error_text'] = null;
-          configMap['current_state'] = 'success';
+          configMap['current_state'] = StatesEnum.success;
 
           updatedComponents.add(
             ComponentUtils.updateComponentConfig(
@@ -445,7 +447,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         final conditions = component.config?.conditions;
 
         // Handle Save buttons (submit_form action)
-        if (action == 'submit_form' && conditions != null && conditions.isNotEmpty) {
+        if (action == ButtonAction.submitForm.value && conditions != null && conditions.isNotEmpty) {
           final buttonConditions = conditions
               .map((c) => ButtonCondition.fromJson(c.toJson()))
               .toList();

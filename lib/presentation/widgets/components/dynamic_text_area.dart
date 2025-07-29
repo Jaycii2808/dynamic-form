@@ -1,16 +1,14 @@
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
-
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 
 class DynamicTextArea extends StatelessWidget {
   final DynamicFormModel component;
@@ -33,8 +31,10 @@ class DynamicTextArea extends StatelessWidget {
         };
         if (state is DynamicTextAreaSuccess) {
           onComplete(valueMap);
-          if (state.textController!.text != (state.component?.config?.value?.toString() ?? '')) {
-            state.textController!.text = state.component?.config?.value?.toString() ?? '';
+          if (state.textController!.text !=
+              (state.component?.config?.value?.toString() ?? '')) {
+            state.textController!.text =
+                state.component?.config?.value?.toString() ?? '';
           }
         } else if (state is DynamicTextAreaError) {
           onComplete(valueMap);
@@ -87,16 +87,15 @@ class DynamicTextArea extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+      StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
     BuildContext context,
   ) {
     // Determine state from config['current_state'] if available
-    final String? stateKey = component.config?.currentState;
-    final String effectiveState =
-        _getStatesModelFromKey(stateKey) ?? currentState;
+    final StatesEnum? stateKey = component.config?.currentState;
+    final StatesEnum effectiveState =stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(
@@ -127,20 +126,6 @@ class DynamicTextArea extends StatelessWidget {
   }
 
   // Helper to convert string to StatesModel
-  String? _getStatesModelFromKey(String? key) {
-    switch (key) {
-      case 'base':
-        return 'base';
-      case 'error':
-        return 'error';
-      case 'success':
-        return 'success';
-      case 'focused':
-        return 'focused';
-      default:
-        return null;
-    }
-  }
 
   Widget _buildLabel(StyleModel styleModel, InputConfig inputConfig) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
@@ -176,15 +161,15 @@ class DynamicTextArea extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-    String currentState,
+      StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
     BuildContext context,
   ) {
     // Get state key
-    final String stateKey = currentState;
-    final StyleStatesModel? stateStyle = _getStateStyle(
+    final StatesEnum stateKey = currentState;
+    final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       component.states,
       stateKey,
     );
@@ -208,8 +193,8 @@ class DynamicTextArea extends StatelessWidget {
         hintText: inputConfig.placeholder ?? '',
         border: _buildBorder(styleModel, currentState),
         enabledBorder: _buildBorder(styleModel, currentState),
-        focusedBorder: _buildBorder(styleModel, 'focused'),
-        errorBorder: _buildBorder(styleModel, 'error'),
+        focusedBorder: _buildBorder(styleModel, StatesEnum.focused),
+        errorBorder: _buildBorder(styleModel, StatesEnum.error),
         errorText: errorText,
         contentPadding: const EdgeInsets.symmetric(
           vertical: 10.0,
@@ -232,15 +217,15 @@ class DynamicTextArea extends StatelessWidget {
 
   OutlineInputBorder _buildBorder(
     StyleModel styleModel,
-    String state,
+      StatesEnum state,
   ) {
     double width = styleModel.borderWidth ?? 1.0;
     Color color = styleModel.borderColor ?? Colors.grey;
 
-    if (state == 'focused') {
+    if (state == StatesEnum.focused) {
       width += 1;
       color = styleModel.focusedBorderColor ?? Colors.blue;
-    } else if (state == 'error') {
+    } else if (state == StatesEnum.error) {
       color = styleModel.errorBorderColor ?? Colors.red;
       width = 2;
     }
@@ -251,35 +236,22 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  StyleStatesModel? _getStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+
 
   // String _componentStateEnumToKey(String state) {
   //   switch (state) {
-  //     case 'base':
-  //       return 'base';
-  //     case 'error':
-  //       return 'error';
-  //     case 'success':
-  //       return 'success';
-  //     case 'focused':
-  //       return 'focused';
+  //     case StatesEnum.base:
+  //       return StatesEnum.base;
+  //     case StatesEnum.error:
+  //       return StatesEnum.error;
+  //     case StatesEnum.success:
+  //       return StatesEnum.success;
+  //     case StatesEnum.focused:
+  //       return StatesEnum.focused;
   //     case 'enabled':
   //       return 'enabled';
   //     default:
-  //       return 'base';
+  //       return StatesEnum.base;
   //   }
   // }
 

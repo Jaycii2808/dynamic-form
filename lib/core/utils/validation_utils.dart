@@ -1,9 +1,10 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dynamic_form_bi/data/models/button_condition_model.dart';
+import 'package:dynamic_form_bi/data/models/components/button_condition_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 
 /// Result class for button validation operations
@@ -40,10 +41,10 @@ class ValidationUtils {
   }
 
   static bool _getValidationResult(
-      String rule,
-      dynamic value,
-      dynamic expectedValue,
-      ) {
+    String rule,
+    dynamic value,
+    dynamic expectedValue,
+  ) {
     switch (rule) {
       case 'not_null':
         return _validateNotNull(value, expectedValue);
@@ -77,10 +78,10 @@ class ValidationUtils {
 
   /// Auto-detect input type with null safety
   static String? detectInputType(
-      InputTypesModel? inputTypes,
-      String? value,
-      String? configuredType,
-      ) {
+    InputTypesModel? inputTypes,
+    String? value,
+    String? configuredType,
+  ) {
     if (inputTypes == null || inputTypes.isEmpty) return null;
     if (configuredType != null) return configuredType;
     if (value == null || value.trim().isEmpty) {
@@ -103,15 +104,15 @@ class ValidationUtils {
   }
 
   /// Determine component state with null safety
-  static String determineComponentState(
-      String? value,
-      String? errorText, {
-        String? explicitState,
-      }) {
+  static Object determineComponentState(
+    String? value,
+    String? errorText, {
+    String? explicitState,
+  }) {
     if (explicitState != null && explicitState.isNotEmpty) return explicitState;
-    if (errorText != null && errorText.isNotEmpty) return 'error';
-    if (value != null && value.toString().isNotEmpty) return 'success';
-    return 'base';
+    if (errorText != null && errorText.isNotEmpty) return StatesEnum.error;
+    if (value != null && value.toString().isNotEmpty) return StatesEnum.success;
+    return StatesEnum.base;
   }
 
   /// Centralized form validation with comprehensive error handling
@@ -121,7 +122,7 @@ class ValidationUtils {
       final config = component.config;
       if (config == null) return null;
       if ((config.isRequired ?? false) && safeValue.trim().isEmpty) {
-        return config.errorText ?? 'Trường này là bắt buộc';
+        return config.errorText ?? 'This field is required';
       }
       if (safeValue.trim().isEmpty) return null;
       final inputTypes = component.inputTypes;
@@ -182,12 +183,12 @@ class ValidationUtils {
 
   /// Centralized button conditions validation - eliminates duplicated if-else logic
   static ButtonValidationResult validateButtonConditions(
-      List<ButtonCondition> conditions,
-      List<DynamicFormModel> components,
-      ) {
+    List<ButtonCondition> conditions,
+    List<DynamicFormModel> components,
+  ) {
     for (final condition in conditions) {
       final targetComponent = components.cast<DynamicFormModel?>().firstWhere(
-            (comp) => comp?.id == condition.componentId,
+        (comp) => comp?.id == condition.componentId,
         orElse: () => null,
       );
 
@@ -213,30 +214,30 @@ class ValidationUtils {
   }
 
   /// Centralized state determination - replaces multiple if-else chains
-  static String determineFieldState(
-      String? value,
-      String? errorText, {
-        bool? boolValue,
-        List<dynamic>? listValue,
-      }) {
-    if (errorText != null && errorText.isNotEmpty) return 'error';
+  static Object determineFieldState(
+    String? value,
+    String? errorText, {
+    bool? boolValue,
+    List<dynamic>? listValue,
+  }) {
+    if (errorText != null && errorText.isNotEmpty) return StatesEnum.error;
 
     // For boolean fields (checkbox, switch, radio)
     if (boolValue != null) {
-      return boolValue ? 'success' : 'base';
+      return boolValue ? StatesEnum.success : StatesEnum.base;
     }
 
     // For list fields (multi-select, tags)
     if (listValue != null) {
-      return listValue.isNotEmpty ? 'success' : 'base';
+      return listValue.isNotEmpty ? StatesEnum.success : StatesEnum.base;
     }
 
     // For text fields
     if (value != null && value.toString().trim().isNotEmpty) {
-      return 'success';
+      return StatesEnum.success;
     }
 
-    return 'base';
+    return StatesEnum.base;
   }
 
   /// Smart field update data creation - reduces boilerplate
@@ -249,12 +250,12 @@ class ValidationUtils {
   }) {
     final state =
         explicitState ??
-            determineFieldState(
-              value?.toString(),
-              errorText,
-              boolValue: selected,
-              listValue: value is List ? value : null,
-            );
+        determineFieldState(
+          value?.toString(),
+          errorText,
+          boolValue: selected,
+          listValue: value is List ? value : null,
+        );
 
     final data = <String, dynamic>{'value': value, 'current_state': state};
 

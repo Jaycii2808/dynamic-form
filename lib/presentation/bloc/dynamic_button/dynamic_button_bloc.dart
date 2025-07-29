@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
   final DynamicFormBloc formBloc;
@@ -128,7 +127,7 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
     final buttonText = component.config?.label ?? 'Button';
 
     // Get button action
-    final actionString = component.config?.action ?? 'submit_form';
+    final actionString = component.config?.action ?? ButtonAction.submitForm.value;
     final action = ButtonAction.fromString(actionString);
 
     // Check visibility
@@ -234,50 +233,6 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
     }
 
     return false;
-  }
-
-  bool _checkConditions(
-    List<Condition> conditions,
-    List<DynamicFormModel> formComponents,
-  ) {
-    for (final condition in conditions) {
-      final componentId = condition.componentId;
-      if (componentId.isEmpty) continue;
-
-      final component = formComponents.firstWhere(
-        (comp) => comp.id == componentId,
-        orElse: () => DynamicFormModel.empty(),
-      );
-
-      if (component.id.isEmpty) continue; // Component not found
-
-      final rule = condition.rule;
-      final expectedValue = condition.expectedValue;
-
-      if (!_validateCondition(component, rule, expectedValue)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool _validateCondition(
-    DynamicFormModel component,
-    String? rule,
-    dynamic expectedValue,
-  ) {
-    final currentValue = component.config?.value;
-
-    switch (rule) {
-      case 'not_null':
-        return currentValue != null && currentValue.toString().isNotEmpty;
-      case 'equals':
-        return currentValue == expectedValue;
-      case 'not_equals':
-        return currentValue != expectedValue;
-      default:
-        return true;
-    }
   }
 
   Future<void> _handleButtonAction(ButtonAction action, String buttonId) async {

@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -216,7 +217,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         jsonEncode({
           'timestamp': DateTime.now().toIso8601String(),
           'form': formWithValue,
-          'success': true,
+          StatesEnum.success: true,
         }),
       );
 

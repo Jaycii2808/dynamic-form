@@ -1,26 +1,23 @@
 enum FormTypeEnum {
   textFieldFormType,
-  //selectFormType,
   textAreaFormType,
   dateTimePickerFormType,
   dateTimeRangePickerFormType,
-  //dropdownFormType,
-  //checkboxFormType,
-  //radioFormType,
-
-  //sliderFormType,
   selectorButtonFormType,
   switchFormType,
   textFieldTagsFormType,
-  //fileUploaderFormType,
- buttonFormType,
+  buttonFormType,
   container,
+  //dropdownFormType,
+  //checkboxFormType,
+  //radioFormType,
+  //selectFormType,
+  //sliderFormType,
+  //fileUploaderFormType,
   unknown;
 
   factory FormTypeEnum.fromJson(String? json) {
     try {
-
-
       return FormTypeEnum.values.firstWhere(
         (e) => e.toString().split('.').last == json,
         orElse: () => FormTypeEnum.unknown,

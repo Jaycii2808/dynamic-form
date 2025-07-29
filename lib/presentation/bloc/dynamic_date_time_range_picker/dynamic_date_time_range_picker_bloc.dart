@@ -2,9 +2,10 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -86,9 +87,9 @@ class DynamicDateTimeRangePickerBloc
         initialComponent,
         valueForValidation,
       );
-      final configState = validationError != null
-          ? 'error'
-          : (valueForValidation.isNotEmpty ? 'success' : 'base');
+      final StatesEnum configState = validationError != null
+          ? StatesEnum.error
+          : (valueForValidation.isNotEmpty ? StatesEnum.success : StatesEnum.base);
 
       emit(
         DynamicDateTimeRangePickerSuccess(
@@ -175,11 +176,11 @@ class DynamicDateTimeRangePickerBloc
     );
 
     // Determine state
-    String newState = 'base';
+    StatesEnum newState = StatesEnum.base;
     if (validationError != null) {
-      newState = 'error';
+      newState = StatesEnum.error;
     } else if (rangeValue != null) {
-      newState = 'success';
+      newState = StatesEnum.success;
     }
 
     // Update component config

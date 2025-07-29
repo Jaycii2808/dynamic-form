@@ -1,5 +1,4 @@
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -77,10 +76,10 @@ class _CustomDateRangePickerDialogState
     final styleModel = widget.style is StyleModel
         ? widget.style as StyleModel
         : StyleModel.fromJson(widget.style);
-    final primaryColor =  styleModel.iconColor;
+    final primaryColor = styleModel.iconColor;
     final surfaceColor = styleModel.backgroundColor;
     final textColor = styleModel.textColor;
-    final labelColor =  styleModel.labelColor;
+    final labelColor = styleModel.labelColor;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -256,7 +255,7 @@ Future<DateTime?> _showConfiguredDatePicker({
       ? style as StyleModel
       : StyleModel.fromJson(style);
   final primaryColor = styleModel.iconColor;
-  final surfaceColor =  styleModel.backgroundColor;
+  final surfaceColor = styleModel.backgroundColor;
   final onSurfaceColor = styleModel.textColor;
 
   return showDatePicker(

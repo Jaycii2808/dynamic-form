@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/saved_form_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

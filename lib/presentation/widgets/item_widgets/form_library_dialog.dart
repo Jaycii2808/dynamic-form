@@ -73,7 +73,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
               controller: _searchController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: 'Tìm kiếm template...',
+                hintText: 'Search templates...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -97,12 +97,12 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'Chưa có template nào',
+                      'No templates yet',
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Lưu form đầu tiên để bắt đầu!',
+                      'Save your first form to get started!',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -153,7 +153,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${template.formData.components.length} trường',
+                                  '${template.formData.components.length} fields',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -191,15 +191,15 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: const Text('Xác nhận xóa'),
+                                  title: const Text('Confirm Delete'),
                                   content: Text(
-                                    'Bạn có chắc muốn xóa template "${template.name}"?',
+                                    'Are you sure you want to delete template "${template.name}"?',
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(false),
-                                      child: const Text('Hủy'),
+                                      child: const Text('Cancel'),
                                     ),
                                     ElevatedButton(
                                       onPressed: () =>
@@ -207,7 +207,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.red,
                                       ),
-                                      child: const Text('Xóa'),
+                                      child: const Text('Delete'),
                                     ),
                                   ],
                                 ),
@@ -223,7 +223,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Template "${template.name}" đã được xóa',
+                                          'Template "${template.name}" has been deleted',
                                         ),
                                         backgroundColor: Colors.orange,
                                       ),
@@ -233,7 +233,9 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Lỗi khi xóa template'),
+                                        content: Text(
+                                          'Error deleting template',
+                                        ),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -287,7 +289,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
             ElevatedButton.icon(
               onPressed: () => Navigator.of(context).pop(),
               icon: const Icon(Icons.close),
-              label: const Text('Đóng'),
+              label: const Text('Close'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey.shade800,
                 foregroundColor: Colors.white,

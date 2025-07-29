@@ -148,7 +148,7 @@ class StyleModel {
   // Convert color to hex string for JSON serialization
   String? _colorToHex(Color? color) {
     if (color == null) return null;
-    return '0x${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+    return '0x${color.toARGB32().toRadixString(16).toUpperCase().padLeft(8, '0')}';
   }
 
   Map<String, dynamic> toJson() {

@@ -2,9 +2,10 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,7 +17,7 @@ class DynamicDateTimePickerBloc
 
   DynamicDateTimePickerBloc({required this.initialComponent})
     : _textController = TextEditingController(
-        text: initialComponent.config!.value!,
+        text: initialComponent.config?.value?.toString() ?? '',
       ),
       _focusNode = FocusNode(),
       super(DynamicDateTimePickerInitial(component: DynamicFormModel.empty())) {
@@ -57,8 +58,8 @@ class DynamicDateTimePickerBloc
         initialValue,
       );
       final configState = validationError != null
-          ? 'error'
-          : (initialValue.isNotEmpty ? 'success' : 'base');
+          ? StatesEnum.error
+          : (initialValue.isNotEmpty ? StatesEnum.success : StatesEnum.base);
       emit(
         DynamicDateTimePickerSuccess(
           component: initialComponent,
@@ -129,6 +130,18 @@ class DynamicDateTimePickerBloc
     DynamicDateTimePickerSuccess currentState,
     Emitter<DynamicDateTimePickerState> emit,
   ) {
+    // Check if component is null to prevent runtime error
+    if (currentState.component == null) {
+      debugPrint('❌ Error: Component is null in _updateState');
+      emit(
+        const DynamicDateTimePickerError(
+          errorMessage: 'Component is null',
+          component: null,
+        ),
+      );
+      return;
+    }
+
     final validationError = ValidationUtils.validateForm(
       currentState.component!,
       value,
@@ -138,8 +151,8 @@ class DynamicDateTimePickerBloc
     );
 
     final newState = validationError != null
-        ? 'error'
-        : (value.isNotEmpty ? 'success' : 'base');
+        ? StatesEnum.error
+        : (value.isNotEmpty ? StatesEnum.success : StatesEnum.base);
     if (_textController.text != value) {
       _textController.text = value;
     }

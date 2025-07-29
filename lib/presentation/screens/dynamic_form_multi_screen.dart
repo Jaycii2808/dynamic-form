@@ -2,10 +2,10 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_multi_page_widget.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_form_multi_page_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/step_progress_widget.dart';
+import 'package:dynamic_form_bi/presentation/widgets/item_widgets/step_progress_widget.dart';
 
 class DynamicFormMultiScreen extends StatefulWidget {
   final String configKey;
@@ -66,7 +66,7 @@ class _DynamicFormMultiScreenState extends State<DynamicFormMultiScreen> {
           if (pageController.hasClients &&
               state.formModel != null &&
               state.currentPageIndex < state.formModel!.pages.length) {
-            // Luôn animateToPage khi index đổi
+            // alway animateToPage when index changed
             pageController.animateToPage(
               state.currentPageIndex,
               duration: const Duration(milliseconds: 300),
@@ -98,12 +98,12 @@ class _DynamicFormMultiScreenState extends State<DynamicFormMultiScreen> {
                 Expanded(
                   child: PageView.builder(
                     controller: pageController,
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Disable swipe
+                    physics: const NeverScrollableScrollPhysics(), // Disable swipe
                     itemCount: state.formModel!.pages.length,
                     itemBuilder: (context, index) {
                       final page = state.formModel!.pages[index];
                       return DynamicFormMultiPageWidget(
+                        //easy recognition when have edit, delete on others platform
                         key: ValueKey(page.pageId),
                         page: page,
                         allComponentValues: state.componentValues,

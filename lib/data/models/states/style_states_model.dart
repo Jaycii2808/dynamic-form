@@ -55,9 +55,10 @@ class StyleStatesModel {
       'icon_size': iconSize,
     };
   }
+
   static String _colorToHex(Color color) {
     // Returns 0xFFRRGGBB in uppercase
-    return '0x${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+    return '0x${color.toARGB32().toRadixString(16).toUpperCase().padLeft(8, '0')}';
   }
 
   // ✨ FIXED: Simplified to only handle "0x..." color strings
@@ -68,7 +69,6 @@ class StyleStatesModel {
     }
     return null;
   }
-
 
   @override
   String toString() => toJson().toString();

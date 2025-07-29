@@ -1,22 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
-import 'package:dynamic_form_bi/core/enums/remote_button_config_key_enum.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
-import 'dart:convert';
-import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
+import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
+import 'package:flutter/material.dart';
 
-class PreviewMultiPageScreen extends StatelessWidget {
+class PreviewPageScreen extends StatelessWidget {
   final List<DynamicFormPageModel> pages;
   final Map<String, dynamic> allComponentValues;
   final VoidCallback? onSubmit;
   final VoidCallback? onPrevious;
 
-  const PreviewMultiPageScreen({
+  const PreviewPageScreen({
     super.key,
     required this.pages,
     required this.allComponentValues,
@@ -85,7 +83,8 @@ class PreviewMultiPageScreen extends StatelessWidget {
               (c) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: AbsorbPointer(
-                  absorbing: true, // ✅ chỉ chặn tương tác từng component
+                  absorbing:
+                      true, // ✅ Only block interaction for each component
                   child: DynamicFormRenderer(component: c),
                 ),
               ),
@@ -114,7 +113,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
       config: ConfigModel(
         label: 'Submit Form',
         icon: 'submit',
-        action: 'submit_form',
+        action: ButtonAction.submitForm.value,
       ),
       style: const StyleModel(),
       inputTypes: null,
@@ -131,7 +130,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
 
     return Stack(
       children: [
-        // ✅ Cuộn được
+        // ✅ Scrollable
         ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           physics: const AlwaysScrollableScrollPhysics(),
@@ -150,13 +149,13 @@ class PreviewMultiPageScreen extends StatelessWidget {
           ],
         ),
 
-        // ✅ Overlay báo chế độ preview
+        // ✅ Overlay showing preview mode
         Positioned(
           top: 0,
           left: 0,
           right: 0,
           child: Container(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             alignment: Alignment.topCenter,
             child: SafeArea(
               child: Padding(
@@ -167,11 +166,11 @@ class PreviewMultiPageScreen extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.5),
+                    color: Colors.red.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Chế độ xem trước (Read Only)',
+                    'Preview Mode (Read Only)',
                     style: TextStyle(
                       color: Colors.yellow,
                       fontWeight: FontWeight.bold,
@@ -185,7 +184,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
           ),
         ),
 
-        // ✅ Nút Submit & Previous
+        // ✅ Submit & Previous buttons
         _buildPreviewButtonsRow(
           previousButton: previousButton,
           submitButton: submitButton,
@@ -248,7 +247,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
                 'type': component.type.toJson(),
                 'order': component.order,
                 'config': component.config?.toJson(),
-                'style': component.style?.toJson(),
+                'style': component.style.toJson(),
                 'validation': component.validation?.toJson(),
                 'children': component.children
                     ?.map(
@@ -257,7 +256,7 @@ class PreviewMultiPageScreen extends StatelessWidget {
                         'type': child.type.toJson(),
                         'order': child.order,
                         'config': child.config?.toJson(),
-                        'style': child.style?.toJson(),
+                        'style': child.style.toJson(),
                         'validation': child.validation?.toJson(),
                       },
                     )
@@ -346,13 +345,13 @@ List<DynamicFormModel> _buildPreviewComponents(
   }).toList();
 }
 
-DynamicFormModel? buildRemoteButton(RemoteButtonConfigKey key) {
-  final jsonString = RemoteConfigService().getString(key.key);
-  if (jsonString.isNotEmpty) {
-    return DynamicFormModel.fromJson(jsonDecode(jsonString));
-  }
-  return null;
-}
+// DynamicFormModel? buildRemoteButton(RemoteButtonConfigKey key) {
+//   final jsonString = RemoteConfigService().getString(key.key);
+//   if (jsonString.isNotEmpty) {
+//     return DynamicFormModel.fromJson(jsonDecode(jsonString));
+//   }
+//   return null;
+// }
 
 bool isAllRequiredFilled(
   List<DynamicFormModel> components,

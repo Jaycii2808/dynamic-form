@@ -21,7 +21,7 @@ class ButtonConditionValidation extends BaseValidation {
           .map((item) => ButtonCondition.fromJson(item as Map<String, dynamic>))
           .toList();
     }
-    // Không gán nhầm next_page/previous_page vào conditions
+    // Don't assign next_page/previous_page to conditions by mistake
     return ButtonConditionValidation(
       conditions: conditions,
       nextPage: json['next_page'] as String?,

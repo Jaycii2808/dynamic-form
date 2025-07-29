@@ -2,21 +2,21 @@ import 'dart:async';
 
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextAreaBloc
     extends Bloc<DynamicTextAreaEvent, DynamicTextAreaState> {
   final TextEditingController _textController;
   final FocusNode _focusNode;
   final DynamicFormModel
-  initialComponent; // Lưu initialComponent để sử dụng trong _onInitializeTextArea
+  initialComponent; // Store initialComponent to use in _onInitializeTextArea
 
   DynamicTextAreaBloc({required this.initialComponent})
     : _textController = TextEditingController(
@@ -65,11 +65,13 @@ class DynamicTextAreaBloc
         throw Exception("Invalid initial component: ID or config is empty.");
       }
       final configState =
-          initialComponent.config?.currentState ?? 'base';
+          initialComponent.config?.currentState ?? StatesEnum.base;
       emit(
         DynamicTextAreaSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(initialComponent.config?.toJson() ?? {}),
+          inputConfig: InputConfig.fromJson(
+            initialComponent.config?.toJson() ?? {},
+          ),
           styleModel: initialComponent.style,
 
           formState: configState,
@@ -108,11 +110,11 @@ class DynamicTextAreaBloc
         'DynamicTextAreaBloc: value="${event.value}", validationError=$validationError',
       );
 
-      String newState = 'base';
+      StatesEnum newState = StatesEnum.base;
       if (validationError != null) {
-        newState = 'error';
+        newState = StatesEnum.error;
       } else if (event.value.isNotEmpty) {
-        newState = 'success';
+        newState = StatesEnum.success;
       }
 
       final configMap = successState.component!.config?.toJson() ?? {};
@@ -125,13 +127,16 @@ class DynamicTextAreaBloc
         ConfigModel.fromJson(configMap),
       );
 
-      final configState = updatedComponent.config?.currentState ?? 'base';
+      final configState =
+          updatedComponent.config?.currentState ?? StatesEnum.base;
 
       emit(
         DynamicTextAreaSuccess(
           component: updatedComponent,
           errorText: validationError,
-          inputConfig: InputConfig.fromJson(updatedComponent.config?.toJson() ?? {}),
+          inputConfig: InputConfig.fromJson(
+            updatedComponent.config?.toJson() ?? {},
+          ),
           styleModel: updatedComponent.style,
           formState: configState,
           textController: _textController,

@@ -1,10 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/core/utils/style_utils.dart';
-import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -13,6 +11,7 @@ import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_stat
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,7 +31,8 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => DynamicTextFieldBloc(initialComponent: widget.component),
+      create: (context) =>
+          DynamicTextFieldBloc(initialComponent: widget.component),
       child: DynamicTextFieldWidget(
         component: widget.component,
       ),
@@ -66,12 +66,13 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         // Listen to main form state changes and update text field bloc
         if (formState.page?.components != null) {
           final updatedComponent = formState.page!.components.firstWhere(
-                (c) => c.id == widget.component.id,
+            (c) => c.id == widget.component.id,
             orElse: () => widget.component,
           );
 
           // Check if component state changed from external source
-          if (updatedComponent.config?.currentState != widget.component.config?.currentState) {
+          if (updatedComponent.config?.currentState !=
+              widget.component.config?.currentState) {
             debugPrint(
               '🔄 [TextField] External state change detected: ${updatedComponent.config?.currentState}',
             );
@@ -85,19 +86,21 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       },
       child: BlocConsumer<DynamicTextFieldBloc, DynamicTextFieldState>(
         listenWhen: (previous, current) {
-          return previous is DynamicTextFieldLoading && current is DynamicTextFieldSuccess;
+          return previous is DynamicTextFieldLoading &&
+              current is DynamicTextFieldSuccess;
         },
         buildWhen: (previous, current) {
           // Rebuild when state, error, or form state changes
           return previous.formState != current.formState ||
               previous.errorText != current.errorText ||
-              (previous.component?.config?.currentState ?? '') != (current.component?.config?.currentState ?? '');
+              (previous.component?.config?.currentState ?? '') !=
+                  (current.component?.config?.currentState ?? '');
         },
         listener: (context, state) {
           if (state is DynamicTextFieldSuccess) {
             final valueMap = {
               'value': state.component!.config?.value,
-              'current_state': state.component!.config?.currentState ?? 'base',
+              'current_state': state.component!.config?.currentState ?? StatesEnum.base,
               'error_text': state.errorText,
             };
 
@@ -109,8 +112,10 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
               ),
             );
 
-            if (state.textController!.text != (state.component!.config?.value?.toString() ?? '')) {
-              state.textController!.text = state.component!.config?.value?.toString() ?? '';
+            if (state.textController!.text !=
+                (state.component!.config?.value?.toString() ?? '')) {
+              state.textController!.text =
+                  state.component!.config?.value?.toString() ?? '';
             }
           }
         },
@@ -119,7 +124,8 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
             '🔵 [TextField] Building with state: ${state.runtimeType}, formState: ${state.formState}, errorText: ${state.errorText}',
           );
 
-          if (state is DynamicTextFieldLoading || state is DynamicTextFieldInitial) {
+          if (state is DynamicTextFieldLoading ||
+              state is DynamicTextFieldInitial) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -154,23 +160,25 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   Widget _buildBody(
-      StyleModel styleModel,
-      InputConfig inputConfig,
-      DynamicFormModel component,
-      String currentState,
-      String? errorText,
-      TextEditingController textController,
-      FocusNode focusNode,
-      ) {
+    StyleModel styleModel,
+    InputConfig inputConfig,
+    DynamicFormModel component,
+      StatesEnum currentState,
+    String? errorText,
+    TextEditingController textController,
+    FocusNode focusNode,
+  ) {
     // Determine the current state for styling
-    String enabledBorderState = 'base';
+    StatesEnum enabledBorderState = StatesEnum.base;
     if (errorText != null && errorText.isNotEmpty) {
-      enabledBorderState = 'error';
-    } else if (currentState == 'success') {
-      enabledBorderState = 'success';
+      enabledBorderState = StatesEnum.error;
+    } else if (currentState == StatesEnum.success) {
+      enabledBorderState = StatesEnum.success;
     }
-    final stateStyle = _getTypedStateStyle(component.states, enabledBorderState);
-
+    final stateStyle = ReusedWidget.getStateStyle(
+      component.states,
+      enabledBorderState,
+    );
 
     return Container(
       key: Key(component.id),
@@ -181,7 +189,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
       margin: const EdgeInsets.symmetric(
         vertical: 10.0,
         horizontal: 12.0,
-      ) ,
+      ),
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).requestFocus(focusNode);
@@ -207,12 +215,17 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
-  Widget _buildLabel(StyleModel styleModel, InputConfig inputConfig, StyleStatesModel? stateStyle) {
+  Widget _buildLabel(
+    StyleModel styleModel,
+    InputConfig inputConfig,
+    StyleStatesModel? stateStyle,
+  ) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
     // ✨ Label color is now sourced from the state's iconColor
-    final Color labelColor = stateStyle?.iconColor ?? styleModel.labelColor ?? Colors.white;
+    final Color labelColor =
+        stateStyle?.iconColor ?? styleModel.labelColor ?? Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 7),
@@ -228,34 +241,35 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
   }
 
   Widget _buildTextField(
-      StyleModel styleModel,
-      InputConfig inputConfig,
-      DynamicFormModel component,
-      String currentState,
-      String? errorText,
-      TextEditingController textController,
-      FocusNode focusNode,
-      ) {
+    StyleModel styleModel,
+    InputConfig inputConfig,
+    DynamicFormModel component,
+      StatesEnum currentState,
+    String? errorText,
+    TextEditingController textController,
+    FocusNode focusNode,
+  ) {
     // Determine the appropriate border state based on current state and error
-    String enabledBorderState = 'base';
+    StatesEnum enabledBorderState = StatesEnum.base;
     if (errorText != null && errorText.isNotEmpty) {
-      enabledBorderState = 'error';
-    } else if (currentState == 'success') {
-      enabledBorderState = 'success';
+      enabledBorderState = StatesEnum.error;
+    } else if (currentState == StatesEnum.success) {
+      enabledBorderState = StatesEnum.success;
     }
 
     // Get style from component states (as StyleStatesModel)
-    final StyleStatesModel? stateStyle = _getTypedStateStyle(
+    final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       component.states,
       enabledBorderState,
     );
 
     // Determine text color from state or fallback to styleModel
-    Color? textColor = stateStyle?.textColor ;
+    Color? textColor = stateStyle?.textColor;
 
     // Determine helper text and color from state
     String? helperText = stateStyle?.helperText ?? styleModel.helperText;
-    Color? helperTextColor = stateStyle?.helperTextColor ?? styleModel.helperTextColor;
+    Color? helperTextColor =
+        stateStyle?.helperTextColor ?? styleModel.helperTextColor;
 
     debugPrint(
       '🎨 [TextField] State: $enabledBorderState, textColor: $textColor, helperText: $helperText',
@@ -286,8 +300,8 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
         // ✨ Borders now use state-based colors by passing the component
         border: _buildBorder(styleModel, component, enabledBorderState),
         enabledBorder: _buildBorder(styleModel, component, enabledBorderState),
-        focusedBorder: _buildBorder(styleModel, component, 'focused'),
-        errorBorder: _buildBorder(styleModel, component, 'error'),
+        focusedBorder: _buildBorder(styleModel, component, StatesEnum.focused),
+        errorBorder: _buildBorder(styleModel, component, StatesEnum.error),
         errorText: errorText,
         contentPadding: EdgeInsets.symmetric(
           vertical: styleModel.contentVerticalPadding ?? 12.0,
@@ -309,9 +323,9 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     );
   }
 
-  Widget? _buildPrefixIcon(DynamicFormModel component, String currentState) {
-    final stateStyle = _getTypedStateStyle(component.states, currentState);
-    final iconName =component.config?.icon?.toString();
+  Widget? _buildPrefixIcon(DynamicFormModel component, StatesEnum currentState) {
+    final stateStyle = ReusedWidget.getStateStyle(component.states, currentState);
+    final iconName = component.config?.icon?.toString();
     if (iconName != null && iconName.isNotEmpty && stateStyle != null) {
       final iconColor = stateStyle.iconColor;
       final iconSize = stateStyle.iconSize;
@@ -322,6 +336,7 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     }
     return null;
   }
+
   TextInputType _getKeyboardType(DynamicFormModel component) {
     final inputTypes = component.inputTypes;
     if (inputTypes != null) {
@@ -336,32 +351,21 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
     return TextInputType.text;
   }
 
-  StyleStatesModel? _getTypedStateStyle(StatesModel? states, String key) {
-    switch (key) {
-      case 'base':
-        return states?.base;
-      case 'error':
-        return states?.error;
-      case 'success':
-        return states?.success;
-      case 'focused':
-        return states?.focused;
-      default:
-        return null;
-    }
-  }
+
 
   // ✨ UPDATED: This function now builds the border using the state-specific icon color
   OutlineInputBorder _buildBorder(
-      StyleModel styleModel,
-      DynamicFormModel component,
-      String state,
-      ) {
-    final stateStyle = _getTypedStateStyle(component.states, state);
+    StyleModel styleModel,
+    DynamicFormModel component,
+      StatesEnum state,
+  ) {
+    final stateStyle = ReusedWidget.getStateStyle(component.states, state);
 
     // ✨ Border color now references the state's iconColor as requested
-    final Color color = stateStyle?.iconColor ?? styleModel.borderColor ?? Colors.grey;
-    final double width = stateStyle?.borderWidth ?? styleModel.borderWidth ?? 1.0;
+    final Color color =
+        stateStyle?.iconColor ?? styleModel.borderColor ?? Colors.grey;
+    final double width =
+        stateStyle?.borderWidth ?? styleModel.borderWidth ?? 1.0;
 
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(styleModel.borderRadius ?? 8.0),

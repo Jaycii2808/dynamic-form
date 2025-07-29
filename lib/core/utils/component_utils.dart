@@ -45,13 +45,13 @@ class ComponentUtils {
   //
   // static StyleStatesModel? getStateStyle(StatesModel? states, String? key) {
   //   switch (key) {
-  //     case 'base':
+  //     case StatesEnum.base:
   //       return states?.base;
-  //     case 'error':
+  //     case StatesEnum.error:
   //       return states?.error;
-  //     case 'success':
+  //     case StatesEnum.success:
   //       return states?.success;
-  //     case 'focused':
+  //     case StatesEnum.focused:
   //       return states?.focused;
   //     default:
   //       return null;
@@ -226,8 +226,8 @@ class ComponentUtils {
   // /// Get current state from component config
   // static String getCurrentState(DynamicFormModel component) {
   //   final config = component.config;
-  //   if (config == null) return 'base';
-  //   return config.currentState ?? config.toJson()['currentState'] as String? ?? 'base';
+  //   if (config == null) return StatesEnum.base;
+  //   return config.currentState ?? config.toJson()['currentState'] as String? ?? StatesEnum.base;
   // }
   //
   // /// Centralized style application - eliminates repetitive if-else chains

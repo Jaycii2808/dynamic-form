@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
 
 class Condition extends Equatable {
@@ -77,7 +78,7 @@ class ConfigModel extends Equatable {
   final String? placeholder;
   final bool? isRequired;
   final dynamic value;
-  final String? currentState;
+  final StatesEnum? currentState;
   final String? errorText;
   final String? defaultFormat;
   final List<String>? initialTags;
@@ -140,7 +141,7 @@ class ConfigModel extends Equatable {
       placeholder: json['placeholder'] as String?,
       isRequired: json['is_required'] as bool?,
       value: json['value'],
-      currentState: json['current_state'] as String?,
+      currentState: json['current_state'] as StatesEnum?,
       errorText: json['error_text'] as String?,
       defaultFormat: json['default_format'] as String?,
       initialTags: (json['initial_tags'] as List<dynamic>?)?.cast<String>(),
@@ -193,13 +194,16 @@ class ConfigModel extends Equatable {
     if (icon != null) result['icon'] = icon;
     if (title != null) result['title'] = title;
     if (buttonText != null) result['button_text'] = buttonText;
-    if (allowedExtensions != null)
+    if (allowedExtensions != null) {
       result['allowed_extensions'] = allowedExtensions;
+    }
     if (action != null) result['action'] = action;
-    if (conditions != null)
+    if (conditions != null) {
       result['conditions'] = conditions!.map((e) => e.toJson()).toList();
-    if (options != null)
+    }
+    if (options != null) {
       result['options'] = options!.map((e) => e.toJson()).toList();
+    }
     if (hint != null) result['hint'] = hint;
     if (height != null) result['height'] = height;
     if (statusText != null) result['status_text'] = statusText;
@@ -212,7 +216,7 @@ class ConfigModel extends Equatable {
     String? placeholder,
     bool? isRequired,
     dynamic value,
-    String? currentState,
+    StatesEnum? currentState,
     String? errorText,
     String? defaultFormat,
     List<String>? initialTags,

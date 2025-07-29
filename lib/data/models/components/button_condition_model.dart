@@ -20,7 +20,7 @@ class ButtonCondition {
       rule: json['rule'] as String,
       expectedValue: json['expected_value'],
       errorMessage:
-          json['error_message'] as String? ?? 'Điều kiện không thỏa mãn',
+          json['error_message'] as String? ?? 'Condition not satisfied',
     );
   }
 

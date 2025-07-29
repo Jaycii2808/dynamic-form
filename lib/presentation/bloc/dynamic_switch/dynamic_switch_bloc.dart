@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:flutter/material.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
   final DynamicFormModel initialComponent;
@@ -38,7 +38,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
             initialComponent.config?.toJson() ?? {},
           ),
           styleModel: initialComponent.style,
-          formState: initialComponent.config?.currentState ?? 'base',
+          formState: initialComponent.config?.currentState ?? StatesEnum.base,
         ),
       );
     } catch (e, stackTrace) {
@@ -82,7 +82,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style,
-        formState: updateData['current_state']?.toString() ?? 'base',
+        formState: updateData['current_state']?? StatesEnum.base,
       ),
     );
   }

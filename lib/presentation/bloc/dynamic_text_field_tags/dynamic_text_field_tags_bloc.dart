@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/input_config.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -137,10 +136,10 @@ class DynamicTextFieldTagsBloc
         'DEBUG: About to parse formState: ${configMap['current_state'] ?? configMap['currentState']}',
       );
 
-      final formState =
-          configMap['current_state']?.toString() ??
-          configMap['currentState']?.toString() ??
-          'base';
+      final StatesEnum formState =
+          configMap['current_state'] ??
+          configMap['currentState'] ??
+          StatesEnum.base;
       debugPrint('DEBUG: Parsed formState: $formState');
 
       emit(
@@ -354,7 +353,7 @@ class DynamicTextFieldTagsBloc
     Emitter<DynamicTextFieldTagsState> emit, {
     bool isFinalizing = false,
   }) {
-    final newState = newTags.isNotEmpty ? 'success' : 'base';
+    final newState = newTags.isNotEmpty ? StatesEnum.success : StatesEnum.base;
 
     final updatedConfig = currentState.component!.config?.toJson() ?? {};
     updatedConfig['value'] = newTags;

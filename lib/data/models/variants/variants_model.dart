@@ -30,7 +30,7 @@ class VariantsModel {
   final VariantItemModel? withIcon;
   final VariantItemModel? multiple;
   final VariantItemModel? searchable;
-  // Có thể bổ sung thêm các variant khác nếu cần
+  // Can add more variants if needed
 
   VariantsModel({
     this.withLabel,
