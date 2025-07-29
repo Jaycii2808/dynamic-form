@@ -29,7 +29,7 @@ class PreviewPageScreen extends StatelessWidget {
       body: _buildBody(context),
     );
   }
-
+//han che map, define ro rang ( dynamic value)
   Widget _buildBody(BuildContext context) {
     final pageBlocks = pages.asMap().entries.map((entry) {
       final pageIndex = entry.key;
@@ -71,7 +71,7 @@ class PreviewPageScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  'Trang ${pageIndex + 1}/${pages.length}: ${page.title}',
+                  'Page ${pageIndex + 1}/${pages.length}: ${page.title}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -116,11 +116,11 @@ class PreviewPageScreen extends StatelessWidget {
         action: ButtonAction.submitForm.value,
       ),
       style: const StyleModel(),
-      inputTypes: null,
-      variants: null,
-      states: null,
-      validation: null,
-      children: null,
+      // inputTypes: null,
+      // variants: null,
+      // states: null,
+      // validation: null,
+      // children: null,
     );
 
     final isFormValid = isAllRequiredFilled(
@@ -234,6 +234,7 @@ class PreviewPageScreen extends StatelessWidget {
       final savedFormsService = SavedFormsService();
 
       // Convert to custom format for multi-page forms
+      //form model
       final formData = {
         'form_id': 'preview_form_${DateTime.now().millisecondsSinceEpoch}',
         'pages': pages.map((page) {
