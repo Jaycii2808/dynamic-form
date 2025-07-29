@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.blue,
       foregroundColor: Colors.white,
       actions: [
-      //  _buildSavedFormsButton(),
+        _buildSavedFormsButton(),
         _buildReloadButton(onReload: _reloadConfig),
       ],
     );
@@ -110,10 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => const SavedFormsScreen()),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SavedFormsScreen()),
+          );
         },
         icon: const Icon(Icons.archive_outlined),
         tooltip: 'Saved Forms',

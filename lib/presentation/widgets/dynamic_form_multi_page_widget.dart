@@ -7,7 +7,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
+import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
@@ -48,115 +48,6 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         }
         return const SizedBox.shrink();
       },
-    );
-  }
-
-  Widget _bodyWidget(BuildContext context, MultiPageFormSuccess state) {
-    debugPrint(
-      '[UI] Building page. Total pages: ${state.formModel?.pages.length}, Current page index: ${state.currentPageIndex}, Current page ID: ${state.formModel?.pages[state.currentPageIndex].pageId}',
-    );
-    // final isFirstPage = state.currentPageIndex == 0;
-    // final isLastPage = state.formModel == null
-    //     ? true
-    //     : state.currentPageIndex == state.formModel!.pages.length - 1;
-
-    final showNext = page.showNextButton;
-    final showPrevious = page.showPreviousButton;
-
-    // Find navigation/submit buttons by action
-    DynamicFormModel? nextButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config.action == ButtonAction.nextPage.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-    DynamicFormModel? previousButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config.action == ButtonAction.previousPage.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-    DynamicFormModel? previewButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config.action == ButtonAction.previewForm.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-
-    final requiredIds = <String>{};
-    for (final button in [nextButton]) {
-      final validate = button?.config?.validate;
-      if (validate != null &&
-          validate is Map<String, dynamic> &&
-          validate['condition'] is List) {
-        for (final cond in validate['condition']) {
-          if (cond['is_required'] == true && cond['id_component'] != null) {
-            requiredIds.add(cond['id_component']);
-          }
-        }
-      }
-    }
-
-    // Filter out navigation/submit/preview buttons from main components
-    final otherComponents = page.components
-        .where(
-          (component) =>
-              !(component.type == FormTypeEnum.buttonFormType &&
-                  (component.config.action == ButtonAction.submitForm.value ||
-                      component.config.action ==
-                          ButtonAction.previousPage.value ||
-                      component.config.action == ButtonAction.nextPage.value ||
-                      component.config.action ==
-                          ButtonAction.previewForm.value)),
-        )
-        .map((component) {
-          final model = _toDynamicFormModel(component);
-          // Set value for the component
-          final oldValue = model.config?.value;
-          final newValue = allComponentValues[model.id];
-          debugPrint(
-            '🔍 [MultiPageWidget] Component ${model.id}: oldValue=$oldValue, newValue=$newValue',
-          );
-          final updatedConfig = model.config?.copyWith(value: newValue);
-          final updatedModel = DynamicFormModel(
-            id: model.id,
-            type: model.type,
-            order: model.order,
-            config: updatedConfig,
-            style: model.style,
-            inputTypes: model.inputTypes,
-            variants: model.variants,
-            states: model.states,
-            validation: model.validation,
-            children: model.children,
-          );
-          return updatedModel;
-        })
-        .toList();
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          _buildListViewWidget(context, otherComponents, state),
-          _buildButtonsRowWidget(
-            context,
-            showPrevious ? previousButton : null,
-            showNext ? nextButton : null,
-            previewButton,
-            otherComponents,
-            state,
-          ),
-        ],
-      ),
     );
   }
 
@@ -207,6 +98,42 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
             if (action == ButtonAction.previewForm.value) {
               _handlePreviewFormAction(context, state);
             }
+            // Handle submit form action
+            if (action == ButtonAction.submitForm.value) {
+              debugPrint('[UI] Submit form action triggered from ListView');
+              debugPrint(
+                '🔄 [Submit] Submit form action triggered from ListView',
+              );
+
+              // Save form data
+              if (state is MultiPageFormSuccess) {
+                debugPrint(
+                  '🔄 [Submit] State is MultiPageFormSuccess, calling save method from ListView',
+                );
+                await _saveFormData(context, state, allComponentValues);
+              } else {
+                debugPrint(
+                  '❌ [Submit] State is not MultiPageFormSuccess from ListView: ${state.runtimeType}',
+                );
+              }
+
+              // Show success message
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Form submitted and saved successfully!'),
+                    backgroundColor: Colors.green,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              }
+
+              // Navigate back
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+              return;
+            }
             // FIX: Handle next_page navigation from ListView button
             if (action == ButtonAction.nextPage.value) {
               String? targetPage = data != null && data['targetPage'] != null
@@ -253,11 +180,20 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     DynamicFormModel? previousButton,
     DynamicFormModel? nextButton,
     DynamicFormModel? previewButton,
+    DynamicFormModel? submitButton,
     List<DynamicFormModel> otherComponents,
     MultiPageFormState state,
   ) {
+    debugPrint('🔍 [ButtonsRow] previousButton: ${previousButton?.id}');
+    debugPrint('🔍 [ButtonsRow] nextButton: ${nextButton?.id}');
+    debugPrint('🔍 [ButtonsRow] previewButton: ${previewButton?.id}');
+    debugPrint('🔍 [ButtonsRow] submitButton: ${submitButton?.id}');
+
     final multiPageBloc = context.read<MultiPageFormBloc>();
-    if (previousButton == null && nextButton == null && previewButton == null) {
+    if (previousButton == null &&
+        nextButton == null &&
+        previewButton == null &&
+        submitButton == null) {
       return const SizedBox.shrink();
     }
 
@@ -272,6 +208,13 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         ? true
         : _validateButtonConditions(
             previousButton,
+            context,
+            showDialogOnError: false,
+          );
+    bool isSubmitValid = submitButton == null
+        ? true
+        : _validateButtonConditions(
+            submitButton,
             context,
             showDialogOnError: false,
           );
@@ -438,8 +381,268 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                   ),
                 ),
               ),
+            if (submitButton != null)
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Opacity(
+                    opacity: isSubmitValid ? 1.0 : 0.5,
+                    child: DynamicFormRenderer(
+                      component: submitButton,
+                      onButtonAction: (action, data) async {
+                        debugPrint(
+                          '[UI] Submit button pressed with action: $action, data: $data',
+                        );
+                        if (action == ButtonAction.submitForm.value) {
+                          debugPrint(
+                            '🔄 [Submit] Submit form action triggered from bottom buttons row',
+                          );
+
+                          // Save form data
+                          if (state is MultiPageFormSuccess) {
+                            debugPrint(
+                              '🔄 [Submit] State is MultiPageFormSuccess, calling save method',
+                            );
+                            await _saveFormData(
+                              context,
+                              state,
+                              allComponentValues,
+                            );
+                          } else {
+                            debugPrint(
+                              '❌ [Submit] State is not MultiPageFormSuccess: ${state.runtimeType}',
+                            );
+                          }
+
+                          // Show success message
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Form submitted and saved successfully!',
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
+
+                          // Navigate back
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _saveFormData(
+    BuildContext context,
+    MultiPageFormSuccess state,
+    Map<String, dynamic> componentValues,
+  ) async {
+    debugPrint('🔄 [SaveForm] Starting to save form data...');
+    debugPrint(
+      '🔄 [SaveForm] Component values count: ${componentValues.length}',
+    );
+    debugPrint(
+      '🔄 [SaveForm] Form model pages count: ${state.formModel?.pages.length}',
+    );
+
+    try {
+      final savedFormsService = SavedFormsService();
+
+      if (state.formModel != null) {
+        // Convert to custom format for multi-page forms
+        final formData = {
+          'form_id': 'multi_page_form_${DateTime.now().millisecondsSinceEpoch}',
+          'pages': state.formModel!.pages.map((page) {
+            return {
+              'pageId': page.pageId,
+              'title': page.title,
+              'order': page.order,
+              'show_next_button': page.showNextButton,
+              'show_previous_button': page.showPreviousButton,
+              'show_submit_button': page.showSubmitButton,
+              'components': page.components.map((component) {
+                return {
+                  'id': component.id,
+                  'type': component.type.toJson(),
+                  'order': component.order,
+                  'config': component.config?.toJson(),
+                  'style': component.style?.toJson(),
+                  'validation': component.validation?.toJson(),
+                  'children': component.children
+                      ?.map(
+                        (child) => {
+                          'id': child.id,
+                          'type': child.type.toJson(),
+                          'order': child.order,
+                          'config': child.config?.toJson(),
+                          'style': child.style?.toJson(),
+                          'validation': child.validation?.toJson(),
+                        },
+                      )
+                      .toList(),
+                };
+              }).toList(),
+            };
+          }).toList(),
+          'component_values': componentValues,
+        };
+
+        debugPrint('🔄 [SaveForm] Calling saveFormWithCustomFormat...');
+        await savedFormsService.saveFormWithCustomFormat(
+          formId: formData['form_id'] as String,
+          name:
+              'Multi-Page Form - ${DateTime.now().toString().substring(0, 19)}',
+          description:
+              'Form with ${state.formModel!.pages.length} pages and ${componentValues.length} filled fields',
+          formData: formData,
+          originalConfigKey: 'multi_page_form',
+        );
+
+        debugPrint(
+          '✅ [SaveForm] Form saved successfully with ${componentValues.length} component values',
+        );
+      } else {
+        debugPrint('❌ [SaveForm] Form model is null, cannot save');
+      }
+    } catch (e) {
+      debugPrint('❌ [SaveForm] Error saving form: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving form: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _bodyWidget(BuildContext context, MultiPageFormSuccess state) {
+    debugPrint(
+      '[UI] Building page. Total pages: ${state.formModel?.pages.length}, Current page index: ${state.currentPageIndex}, Current page ID: ${state.formModel?.pages[state.currentPageIndex].pageId}',
+    );
+
+    final isLastPage = state.formModel == null
+        ? true
+        : state.currentPageIndex == state.formModel!.pages.length - 1;
+
+    final showNext = page.showNextButton;
+    final showPrevious = page.showPreviousButton;
+
+    // Find navigation/submit buttons by action
+    DynamicFormModel? nextButton = page.components
+        .where(
+          (component) =>
+              component.type == FormTypeEnum.buttonFormType &&
+              component.config.action == ButtonAction.nextPage.value,
+        )
+        .map((component) => _toDynamicFormModel(component))
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
+    DynamicFormModel? previousButton = page.components
+        .where(
+          (component) =>
+              component.type == FormTypeEnum.buttonFormType &&
+              component.config.action == ButtonAction.previousPage.value,
+        )
+        .map((component) => _toDynamicFormModel(component))
+        .cast<DynamicFormModel?>()
+        .firstWhere((b) => b != null, orElse: () => null);
+    // Only show preview button on the last page (no submit button on finish page)
+    DynamicFormModel? previewButton = isLastPage
+        ? page.components
+              .where(
+                (component) =>
+                    component.type == FormTypeEnum.buttonFormType &&
+                    component.config.action == ButtonAction.previewForm.value,
+              )
+              .map((component) => _toDynamicFormModel(component))
+              .cast<DynamicFormModel?>()
+              .firstWhere((b) => b != null, orElse: () => null)
+        : null;
+    // Submit button is not shown on finish page - it will be in preview screen
+    DynamicFormModel? submitButton = null;
+
+    debugPrint('🔍 [ButtonDetection] isLastPage: $isLastPage');
+    debugPrint('🔍 [ButtonDetection] previewButton: ${previewButton?.id}');
+    debugPrint('🔍 [ButtonDetection] submitButton: ${submitButton?.id}');
+
+    final requiredIds = <String>{};
+    for (final button in [nextButton]) {
+      final validate = button?.config?.validate;
+      if (validate != null &&
+          validate is Map<String, dynamic> &&
+          validate['condition'] is List) {
+        for (final cond in validate['condition']) {
+          if (cond['is_required'] == true && cond['id_component'] != null) {
+            requiredIds.add(cond['id_component']);
+          }
+        }
+      }
+    }
+
+    // Filter out navigation/submit/preview buttons from main components
+    final otherComponents = page.components
+        .where(
+          (component) =>
+              !(component.type == FormTypeEnum.buttonFormType &&
+                  (component.config.action == ButtonAction.submitForm.value ||
+                      component.config.action ==
+                          ButtonAction.previousPage.value ||
+                      component.config.action == ButtonAction.nextPage.value ||
+                      component.config.action ==
+                          ButtonAction.previewForm.value)),
+        )
+        .map((component) {
+          final model = _toDynamicFormModel(component);
+          // Set value for the component
+          final oldValue = model.config?.value;
+          final newValue = allComponentValues[model.id];
+          debugPrint(
+            '🔍 [MultiPageWidget] Component ${model.id}: oldValue=$oldValue, newValue=$newValue',
+          );
+          final updatedConfig = model.config?.copyWith(value: newValue);
+          final updatedModel = DynamicFormModel(
+            id: model.id,
+            type: model.type,
+            order: model.order,
+            config: updatedConfig,
+            style: model.style,
+            inputTypes: model.inputTypes,
+            variants: model.variants,
+            states: model.states,
+            validation: model.validation,
+            children: model.children,
+          );
+          return updatedModel;
+        })
+        .toList();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          _buildListViewWidget(context, otherComponents, state),
+          _buildButtonsRowWidget(
+            context,
+            showPrevious ? previousButton : null,
+            showNext ? nextButton : null,
+            previewButton,
+            submitButton,
+            otherComponents,
+            state,
+          ),
+        ],
       ),
     );
   }

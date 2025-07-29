@@ -88,11 +88,13 @@ class _DynamicFormMultiScreenState extends State<DynamicFormMultiScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                StepProgressWidget(
-                  title: state.currentPage?.title ?? '',
-                  currentStep: state.currentPageIndex + 1, // 1-based
-                  totalSteps: state.formModel!.pages.length,
-                ),
+                // ✅ Only show progress when there's more than 1 page
+                if (state.formModel!.pages.length > 1)
+                  StepProgressWidget(
+                    title: state.currentPage?.title ?? '',
+                    currentStep: state.currentPageIndex + 1, // 1-based
+                    totalSteps: state.formModel!.pages.length,
+                  ),
                 Expanded(
                   child: PageView.builder(
                     controller: pageController,
