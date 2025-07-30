@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,7 +42,7 @@ class SavedFormsService {
     }
   }
 
-  /// Save a form with custom format (form_id and components)
+  /// Save form with custom format
   Future<void> saveFormWithCustomFormat({
     required String formId,
     required String name,
@@ -51,11 +54,14 @@ class SavedFormsService {
       final prefs = await SharedPreferences.getInstance();
       final savedForms = await getSavedForms();
 
+      // Convert formData to CustomFormDataModel
+      final customFormData = CustomFormDataModel.fromJson(formData);
+
       final newForm = SavedFormModel(
         id: formId,
         name: name,
         description: description,
-        customFormData: formData,
+        customFormData: customFormData,
         savedAt: DateTime.now(),
         originalConfigKey: originalConfigKey,
       );
@@ -66,7 +72,7 @@ class SavedFormsService {
       await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
       debugPrint('✅ Form saved successfully with custom format: $name');
-      debugPrint('📋 Custom form data: $formData');
+      debugPrint('📋 Custom form data: ${customFormData.toJson()}');
     } catch (e) {
       debugPrint('❌ Error saving form with custom format: $e');
       rethrow;

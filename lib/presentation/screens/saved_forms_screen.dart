@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
@@ -95,63 +94,120 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
 
   void _loadSavedForm(SavedFormModel savedForm) {
     try {
-      if (savedForm.customFormData != null &&
-          savedForm.customFormData!.containsKey('pages')) {
-        // New format with multiple pages - use SavedFormDataModel
-        final savedFormData = SavedFormDataModel.fromJson(
-          savedForm.customFormData!,
-        );
-
-        // Convert to DynamicFormPageModel format for PreviewPageScreen
-        final dynamicPages = savedFormData.pages.map((page) {
-          return DynamicFormPageModel(
-            pageId: page.pageId,
-            title: page.title,
-            order: page.order,
-            components: page.components.map((component) {
-              return component.toDynamicFormModel();
-            }).toList(),
-          );
-        }).toList();
-
-        debugPrint('🔄 Loading saved form with custom format');
-        debugPrint('📋 Form ID: ${savedFormData.formId}');
-        debugPrint('🔢 Pages loaded: ${dynamicPages.length}');
-
-        Navigator.pop(context); // Close saved forms screen
-
-        // Navigate to preview screen with loaded data using proper model
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PreviewPageScreen(
-              pages: dynamicPages,
-              allComponentValues: ComponentValuesModel.fromMap(
-                savedFormData.componentValues,
-              ),
-            ),
-          ),
-        );
+      if (savedForm.hasCustomData && savedForm.isMultiPage) {
+        // Load multi-page form with custom format
+        _loadMultiPageForm(savedForm);
       } else if (savedForm.formData != null) {
-        // Legacy format support - convert single page to multi-page format
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PreviewPageScreen(
-              pages: [savedForm.formData!],
-              allComponentValues: ComponentValuesModel.empty(),
-            ),
-          ),
-        );
+        // Load legacy single-page form
+        _loadLegacyForm(savedForm);
       } else {
         throw Exception('No form data available');
       }
     } catch (e) {
       debugPrint('❌ Error loading saved form: $e');
+      _showErrorSnackBar('Failed to load form: $e');
+    }
+  }
+
+  /// Load multi-page form with custom format
+  void _loadMultiPageForm(SavedFormModel savedForm) {
+    final customFormData = savedForm.customFormData!;
+
+    // Step 1: Convert saved form pages to dynamic form pages for preview screen
+    final dynamicPages = _convertToDynamicFormPages(customFormData.pages);
+
+    // Step 2: Log form information for debugging
+    debugPrint('🔄 Loading saved form with custom format');
+    debugPrint('📋 Form ID: ${customFormData.formId}');
+    debugPrint('🔢 Pages loaded: ${dynamicPages.length}');
+
+    // Step 3: Close current screen and navigate to preview
+    Navigator.pop(context); // Close saved forms screen
+
+    // Step 4: Navigate to preview screen with converted data
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PreviewPageScreen(
+          pages: dynamicPages,
+          allComponentValues: _getComponentValuesForPreview(
+            customFormData.componentValues,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Load legacy single-page form (backward compatibility)
+  void _loadLegacyForm(SavedFormModel savedForm) {
+    // For legacy forms, we can use the formData directly
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PreviewPageScreen(
+          pages: [savedForm.formData!],
+          allComponentValues: ComponentValuesModel.empty(),
+        ),
+      ),
+    );
+  }
+
+  /// Convert saved form pages to dynamic form pages for preview screen
+  ///
+  /// This method transforms SavedFormPageDataModel (from storage)
+  /// to DynamicFormPageModel (for preview screen)
+  List<DynamicFormPageModel> _convertToDynamicFormPages(
+    List<SavedFormPageDataModel> savedPages,
+  ) {
+    return savedPages.map((savedPage) {
+      // Convert each saved page to dynamic form page
+      return DynamicFormPageModel(
+        pageId: savedPage.pageId, // Keep the same page ID
+        title: savedPage.title, // Keep the same title
+        order: savedPage.order, // Keep the same order
+        components: _convertPageComponents(
+          savedPage.components,
+        ), // Convert components
+      );
+    }).toList();
+  }
+
+  /// Convert saved form components to dynamic form components
+  ///
+  /// This method transforms SavedFormComponentDataModel (from storage)
+  /// to DynamicFormModel (for preview screen)
+  List<DynamicFormModel> _convertPageComponents(
+    List<SavedFormComponentDataModel> savedComponents,
+  ) {
+    return savedComponents.map((savedComponent) {
+      // Use the built-in conversion method to transform each component
+      return savedComponent.toDynamicFormModel();
+    }).toList();
+  }
+
+  /// Get component values for preview screen
+  ///
+  /// This method converts ComponentValuesDataModel to ComponentValuesModel
+  /// that the preview screen expects
+  ComponentValuesModel _getComponentValuesForPreview(
+    ComponentValuesDataModel componentValues,
+  ) {
+    if (componentValues.hasValues) {
+      // Convert to ComponentValuesModel if there are values
+      return componentValues.toComponentValuesModel();
+    } else {
+      // Return empty model if no values
+      return ComponentValuesModel.empty();
+    }
+  }
+
+  /// Show error snackbar with consistent styling
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to load form: $e'),
+          content: Text(message),
           backgroundColor: Colors.red,
         ),
       );
@@ -356,9 +412,10 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                     onPressed: () async {
                       String configJson;
                       try {
-                        if (form.customFormData != null) {
+                        if (form.hasCustomData) {
+                          // Use CustomFormDataModel for proper conversion
                           configJson = const JsonEncoder().convert(
-                            form.customFormData,
+                            form.customFormData!.toJson(),
                           );
                         } else if (form.formData != null) {
                           configJson = const JsonEncoder().convert(
@@ -458,7 +515,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '${_getComponentsCount(form)} components',
+                  '${form.totalComponentsCount} components',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.green.shade700,
@@ -471,29 +528,5 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
         ),
       ),
     );
-  }
-
-  int _getComponentsCount(SavedFormModel form) {
-    if (form.customFormData != null) {
-      final customData = form.customFormData!;
-      // Handle new multi-page format
-      if (customData.containsKey('pages')) {
-        final pages = customData['pages'] as List<dynamic>? ?? [];
-        int totalComponents = 0;
-        for (final page in pages) {
-          final pageComponents = page['components'] as List<dynamic>? ?? [];
-          totalComponents += pageComponents.length;
-        }
-        return totalComponents;
-      } else {
-        // Handle old single-page format
-        final components = customData['components'] as List<dynamic>? ?? [];
-        return components.length;
-      }
-    } else if (form.formData != null) {
-      return form.formData!.components.length;
-    } else {
-      return 0;
-    }
   }
 }
