@@ -23,13 +23,10 @@ class DynamicSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicSwitchBloc, DynamicSwitchState>(
       listener: (context, state) {
-        final valueMap = {
-          'value': state.component?.config?.value,
-          'selected': state.component?.config?.selected,
-          'current_state': state.component?.config?.currentState ?? StatesEnum.base,
-        };
         if (state is DynamicSwitchSuccess) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value ?? false;
+          onComplete(simpleValue);
         } else if (state is DynamicSwitchError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicSwitchLoading ||
@@ -38,7 +35,9 @@ class DynamicSwitch extends StatelessWidget {
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
           );
         } else {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value ?? false;
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },

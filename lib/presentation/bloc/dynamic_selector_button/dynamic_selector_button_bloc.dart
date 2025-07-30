@@ -89,18 +89,11 @@ class DynamicSelectorButtonBloc
 
     final newState = event.isSelected ? StatesEnum.success : StatesEnum.base;
 
-    final updatedConfig = Map<String, dynamic>.from(
-      successState.component!.config?.toJson() ?? {},
-    );
-    updatedConfig['value'] = event.isSelected;
-    updatedConfig['selected'] = event.isSelected; // For compatibility
-    updatedConfig['current_state'] = newState;
-    updatedConfig['error_text'] =
-        null; // No validation error for this component
-
-    final updatedComponent = ComponentUtils.updateComponentConfig(
+    final updatedComponent = ComponentUtils.updateComponentWithValue(
       successState.component!,
-      ConfigModel.fromJson(updatedConfig),
+      event.isSelected,
+      currentState: newState,
+      selected: event.isSelected,
     );
 
     debugPrint(

@@ -23,20 +23,19 @@ class DynamicTextFieldTags extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicTextFieldTagsBloc, DynamicTextFieldTagsState>(
       listener: (context, state) {
-        final valueMap = {
-          'value': state.selectedTags,
-          'current_state': state.component?.config?.currentState ?? StatesEnum.base,
-          'error_text': state.errorText,
-        };
         if (state is DynamicTextFieldTagsSuccess) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.selectedTags;
+          onComplete(simpleValue);
         } else if (state is DynamicTextFieldTagsError) {
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicTextFieldTagsLoading ||
             state is DynamicTextFieldTagsInitial) {
           debugPrint('Listener: Handling ${state.runtimeType} state');
         } else {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.selectedTags;
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },

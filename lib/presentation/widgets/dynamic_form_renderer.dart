@@ -1,5 +1,7 @@
 ﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
@@ -45,7 +47,7 @@ class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormPageModel? page;
   final VoidCallback? onCompleted;
   final Function(String componentId, dynamic value)? onFieldChanged;
-  final Function(String action, Map<String, dynamic>? data)? onButtonAction;
+  final Function(String action, ButtonActionDataModel? data)? onButtonAction;
 
   const DynamicFormRenderer({
     super.key,
@@ -70,8 +72,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       if (widget.onFieldChanged != null) {
         widget.onFieldChanged!(component.id, value);
       } else {
+        // Create ComponentValueUpdateModel from simple value
+        final updateModel = ComponentValueUpdateModel.create(
+          componentId: component.id,
+          value: value,
+        );
+
         context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(componentId: component.id, value: value),
+          UpdateFormFieldEvent(componentId: component.id, value: updateModel),
         );
       }
     } else {
@@ -133,14 +141,15 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: DynamicTextField(
         key: Key(component.id),
         component: component,
-         // onComplete: (value) => handleFormFieldUpdate(context, component, value)
+        // onComplete: (value) => handleFormFieldUpdate(context, component, value)
       ),
     );
   }
 
   Widget _buildTextFieldTagsBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicTextFieldTagsBloc(initialComponent: component),
+      create: (context) =>
+          DynamicTextFieldTagsBloc(initialComponent: component),
       child: DynamicTextFieldTags(
         key: Key(component.id),
         component: component,
@@ -151,7 +160,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildSelectorButtonBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicSelectorButtonBloc(initialComponent: component),
+      create: (context) =>
+          DynamicSelectorButtonBloc(initialComponent: component),
       child: DynamicSelectorButton(
         key: Key(component.id),
         component: component,
@@ -173,7 +183,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
 
   Widget _buildDateTimeRangePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicDateTimeRangePickerBloc(initialComponent: component),
+      create: (context) =>
+          DynamicDateTimeRangePickerBloc(initialComponent: component),
       child: DynamicDateTimeRangePicker(
         key: Key(component.id),
         component: component,
@@ -185,7 +196,8 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
   //
   Widget _buildDateTimePickerBlocProvider(DynamicFormModel component) {
     return BlocProvider(
-      create: (context) => DynamicDateTimePickerBloc(initialComponent: component),
+      create: (context) =>
+          DynamicDateTimePickerBloc(initialComponent: component),
       child: DynamicDateTimePicker(
         key: Key(component.id),
         component: component,

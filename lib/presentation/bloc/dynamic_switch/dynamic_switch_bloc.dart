@@ -82,7 +82,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style,
-        formState: updateData['current_state']?? StatesEnum.base,
+        formState: updateData['current_state'] ?? StatesEnum.base,
       ),
     );
   }

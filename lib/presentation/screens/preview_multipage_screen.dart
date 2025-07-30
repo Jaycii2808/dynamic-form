@@ -39,19 +39,12 @@ class PreviewPageScreen extends StatelessWidget {
       final pageComponents = page.components
           .map((componentItem) {
             final value = allComponentValues.values[componentItem.id];
-            final newConfig = Map<String, dynamic>.from(
-              componentItem.config?.toJson() ?? {},
-            );
-            if (value != null) {
-              newConfig['value'] = value;
-            } else {
-              newConfig.remove('value');
-            }
+            final updatedConfig = componentItem.config?.copyWith(value: value);
             return DynamicFormModel(
               id: componentItem.id,
               type: componentItem.type,
               order: componentItem.order,
-              config: ConfigModel.fromJson(newConfig),
+              config: updatedConfig,
               style: componentItem.style,
               inputTypes: componentItem.inputTypes,
               variants: componentItem.variants,
@@ -325,19 +318,12 @@ List<DynamicFormModel> _buildPreviewComponents(
 ) {
   return pages.expand((p) => p.components).map((componentItem) {
     final value = allComponentValues.values[componentItem.id];
-    final newConfig = Map<String, dynamic>.from(
-      componentItem.config?.toJson() ?? {},
-    );
-    if (value != null) {
-      newConfig['value'] = value;
-    } else {
-      newConfig.remove('value');
-    }
+    final updatedConfig = componentItem.config?.copyWith(value: value);
     return DynamicFormModel(
       id: componentItem.id,
       type: componentItem.type,
       order: componentItem.order,
-      config: ConfigModel.fromJson(newConfig),
+      config: updatedConfig,
       style: componentItem.style,
       inputTypes: componentItem.inputTypes,
       variants: componentItem.variants,

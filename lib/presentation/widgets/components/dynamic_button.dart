@@ -1,20 +1,25 @@
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
 
 class DynamicButton extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(String action, Map<String, dynamic>? data)? onAction;
+  final Function(String action, ButtonActionDataModel? data)? onAction;
 
   const DynamicButton({super.key, required this.component, this.onAction});
 
@@ -146,52 +151,72 @@ class _DynamicButtonState extends State<DynamicButton> {
 
     // For navigation buttons, set loading state briefly to prevent double click
     if (_action == 'next_page' || _action == 'previous_page') {
-      setState(() {
-        _isLoading = true;
-        _computeValues();
-      });
-      final validate = _currentComponent.validation?.toJson();
-      final targetPage =
-          validate?[_action == 'next_page' ? 'next_page' : 'previous_page']
-              as String?;
-      debugPrint('🔘 [Button] Target page: $targetPage');
-      final data = {
-        'action': _action,
-        'timestamp': DateTime.now().toIso8601String(),
-        'formId': _currentComponent.id,
-        'customData': _currentComponent.config?.toJson()['customData'],
-        'targetPage': targetPage,
-      };
-      widget.onAction?.call(_action, data);
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
+      try {
         setState(() {
-          _isLoading = false;
-          _computeValues();
+          _isLoading = true;
         });
+        final validate = _currentComponent.validation?.toJson();
+        final targetPage =
+            validate?[_action == 'next_page' ? 'next_page' : 'previous_page']
+                as String?;
+        debugPrint('🔘 [Button] Target page: $targetPage');
+        final data = {
+          'action': _action,
+          'timestamp': DateTime.now().toIso8601String(),
+          'formId': _currentComponent.id,
+          'customData': null,
+          'targetPage': targetPage,
+        };
+        widget.onAction?.call(
+          _action,
+          ButtonActionDataModel.create(
+            action: _action,
+            formId: _currentComponent.id,
+            targetPage: targetPage,
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        debugPrint('❌ [Button] Error handling button action: $e');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-      return;
-    }
-    // For other actions, keep the original loading logic
-    setState(() {
-      _isLoading = true;
-      _computeValues();
-    });
-    try {
-      final data = {
-        'action': _action,
-        'timestamp': DateTime.now().toIso8601String(),
-        'formId': _currentComponent.id,
-        'customData': _currentComponent.config?.toJson()['customData'],
-      };
-      widget.onAction?.call(_action, data);
-      await Future.delayed(const Duration(milliseconds: 500));
-    } finally {
-      if (mounted) {
+    } else {
+      // Handle custom actions
+      try {
         setState(() {
-          _isLoading = false;
-          _computeValues();
+          _isLoading = true;
         });
+
+        final data = {
+          'action': _action,
+          'timestamp': DateTime.now().toIso8601String(),
+          'formId': _currentComponent.id,
+          'customData': _currentComponent.config?.toJson()['customData'],
+        };
+        widget.onAction?.call(
+          _action,
+          ButtonActionDataModel.create(
+            action: _action,
+            formId: _currentComponent.id,
+            customData: _currentComponent.config?.toJson()['customData'],
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 500));
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }

@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
@@ -89,11 +90,30 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         return DynamicFormRenderer(
           component: updatedComponent,
           onFieldChanged: (componentId, value) {
-            final newValue = value is Map && value.containsKey('value')
-                ? value['value']
-                : value;
+            // Create ComponentValueUpdateModel from the value
+            ComponentValueUpdateModel updateModel;
+
+            if (value is ComponentValueUpdateModel) {
+              updateModel = value;
+            } else if (value is Map && value.containsKey('value')) {
+              // Handle legacy Map format
+              updateModel = ComponentValueUpdateModel.create(
+                componentId: componentId,
+                value: value['value'],
+                currentState: value['current_state'],
+                errorText: value['error_text'],
+                selected: value['selected'],
+              );
+            } else {
+              // Handle simple value
+              updateModel = ComponentValueUpdateModel.create(
+                componentId: componentId,
+                value: value,
+              );
+            }
+
             context.read<MultiPageFormBloc>().add(
-              UpdateComponentValue(componentId, newValue),
+              UpdateComponentValue(componentId, updateModel),
             );
           },
           onButtonAction: (action, data) async {
@@ -138,9 +158,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
             }
             // FIX: Handle next_page navigation from ListView button
             if (action == ButtonAction.nextPage.value) {
-              String? targetPage = data != null && data['targetPage'] != null
-                  ? data['targetPage'] as String?
-                  : null;
+              String? targetPage = data?.targetPage;
               if (targetPage == null || targetPage.isEmpty) {
                 final validate = updatedComponent.validation?.toJson();
                 targetPage = validate?['next_page'] as String?;
@@ -295,10 +313,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                         );
                         if (action == ButtonAction.nextPage.value) {
                           // Get targetPage from data first, then from validation
-                          String? targetPage =
-                              data != null && data['targetPage'] != null
-                              ? data['targetPage'] as String?
-                              : null;
+                          String? targetPage = data?.targetPage;
                           if (targetPage == null || targetPage.isEmpty) {
                             final validate = nextButton.validation?.toJson();
                             targetPage = validate?['next_page'] as String?;

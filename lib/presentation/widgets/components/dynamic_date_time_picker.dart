@@ -28,20 +28,20 @@ class DynamicDateTimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicDateTimePickerBloc, DynamicDateTimePickerState>(
       listener: (context, state) {
-        final valueMap = {
-          'value': state.component?.config?.value ?? '',
-          'current_state': state.component?.config?.currentState ?? StatesEnum.base,
-          'error_text': state.errorText,
-        };
         if (state is DynamicDateTimePickerSuccess) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
+
           if (state.focusNode?.hasFocus == false &&
               state.textController!.text !=
                   (state.component?.config?.value ?? '')) {
             state.textController!.text = state.component?.config?.value ?? '';
           }
         } else if (state is DynamicDateTimePickerError) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicDateTimePickerInitial ||
             state is DynamicDateTimePickerLoading) {
@@ -49,7 +49,9 @@ class DynamicDateTimePicker extends StatelessWidget {
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
           );
         } else {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
@@ -76,13 +78,13 @@ class DynamicDateTimePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
     final StatesEnum? stateKey = component.config?.currentState;
-    final StatesEnum effectiveState =stateKey ?? currentState;
+    final StatesEnum effectiveState = stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
@@ -146,7 +148,7 @@ class DynamicDateTimePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -182,20 +184,17 @@ class DynamicDateTimePicker extends StatelessWidget {
         errorBorder: _buildBorder(styleModel, StatesEnum.error),
         disabledBorder: _buildBorder(styleModel, StatesEnum.disabled),
         prefixIcon: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SvgPicture.asset(
-                  'assets/svg/SelectDate.svg',
-                  colorFilter: ColorFilter.mode(
-                    stateStyle?.textColor ??
-                        styleModel.textColor ??
-                        Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                  width: styleModel.fontSize ?? 16,
-                  height: styleModel.fontSize ?? 16,
-                ),
-              )
-            ,
+          padding: const EdgeInsets.all(8.0),
+          child: SvgPicture.asset(
+            'assets/svg/SelectDate.svg',
+            colorFilter: ColorFilter.mode(
+              stateStyle?.textColor ?? styleModel.textColor ?? Colors.black,
+              BlendMode.srcIn,
+            ),
+            width: styleModel.fontSize ?? 16,
+            height: styleModel.fontSize ?? 16,
+          ),
+        ),
         helperText: helperText,
         helperStyle: TextStyle(
           color: helperTextColor,
@@ -233,8 +232,6 @@ class DynamicDateTimePicker extends StatelessWidget {
       borderSide: BorderSide(color: color, width: width),
     );
   }
-
-
 
   PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
     final pickerModeStr = config['picker_mode'] ?? 'fullDateTime';

@@ -30,13 +30,11 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       DynamicDateTimeRangePickerState
     >(
       listener: (context, state) {
-        final valueMap = {
-          'value': state.component?.config?.value ?? '',
-          'current_state': state.component?.config?.currentState ?? StatesEnum.base,
-          'error_text': state.errorText,
-        };
         if (state is DynamicDateTimeRangePickerSuccess) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
+
           if (state.focusNode?.hasFocus == false &&
               state.textController!.text !=
                   _formatRangeValue(state.component?.config?.value)) {
@@ -45,7 +43,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
             );
           }
         } else if (state is DynamicDateTimeRangePickerError) {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicDateTimeRangePickerInitial ||
             state is DynamicDateTimeRangePickerLoading) {
@@ -53,7 +53,9 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
           );
         } else {
-          onComplete(valueMap);
+          // Pass simple value instead of valueMap
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
@@ -89,13 +91,13 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
   ) {
     final StatesEnum? stateKey = component.config?.currentState;
-    final StatesEnum effectiveState =stateKey ?? currentState;
+    final StatesEnum effectiveState = stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
@@ -159,7 +161,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
@@ -242,9 +244,6 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
       borderSide: BorderSide(color: color, width: width),
     );
   }
-
-
-
 
   Future<void> _pickDateTimeRange(
     BuildContext context,

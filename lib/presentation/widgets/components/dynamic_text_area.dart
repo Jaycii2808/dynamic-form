@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/components/input_config.dart';
+import 'package:dynamic_form_bi/data/models/components/text_field_value_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
@@ -24,20 +25,20 @@ class DynamicTextArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<DynamicTextAreaBloc, DynamicTextAreaState>(
       listener: (context, state) {
-        final valueMap = {
-          'value': state.component?.config?.value,
-          'current_state': state.component?.config?.currentState,
-          'error_text': state.errorText,
-        };
         if (state is DynamicTextAreaSuccess) {
-          onComplete(valueMap);
+          // Pass simple value instead of TextFieldValueModel
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
+
           if (state.textController!.text !=
               (state.component?.config?.value?.toString() ?? '')) {
             state.textController!.text =
                 state.component?.config?.value?.toString() ?? '';
           }
         } else if (state is DynamicTextAreaError) {
-          onComplete(valueMap);
+          // Pass simple value instead of TextFieldValueModel
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicTextAreaInitial ||
             state is DynamicTextAreaLoading) {
@@ -45,7 +46,9 @@ class DynamicTextArea extends StatelessWidget {
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config!.value}',
           );
         } else {
-          onComplete(valueMap);
+          // Pass simple value instead of TextFieldValueModel
+          final simpleValue = state.component?.config?.value?.toString() ?? '';
+          onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
@@ -87,15 +90,15 @@ class DynamicTextArea extends StatelessWidget {
     StyleModel styleModel,
     InputConfig inputConfig,
     DynamicFormModel component,
-      StatesEnum currentState,
+    StatesEnum currentState,
     String? errorText,
     TextEditingController textController,
     FocusNode focusNode,
     BuildContext context,
   ) {
     // Determine state from config['current_state'] if available
-    final StatesEnum? stateKey = component.config?.currentState;
-    final StatesEnum effectiveState =stateKey ?? currentState;
+    //final StatesEnum? stateKey = component.config?.currentState;
+    //final StatesEnum effectiveState = stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(
@@ -111,14 +114,14 @@ class DynamicTextArea extends StatelessWidget {
         children: [
           _buildLabel(styleModel, inputConfig),
           _buildTextField(
-            styleModel,
-            inputConfig,
-            component,
-            effectiveState,
-            errorText,
-            textController,
-            focusNode,
-            context,
+            styleModel: styleModel,
+            inputConfig: inputConfig,
+            component: component,
+            currentState: StatesEnum.base,
+            errorText: null,
+            textController: textController,
+            focusNode: focusNode,
+            context: context,
           ),
         ],
       ),
@@ -157,16 +160,16 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(
-    StyleModel styleModel,
-    InputConfig inputConfig,
-    DynamicFormModel component,
-      StatesEnum currentState,
-    String? errorText,
-    TextEditingController textController,
-    FocusNode focusNode,
-    BuildContext context,
-  ) {
+  Widget _buildTextField({
+    required StyleModel styleModel,
+    required InputConfig inputConfig,
+    required DynamicFormModel component,
+    required StatesEnum currentState,
+    required String? errorText,
+    required TextEditingController textController,
+    required FocusNode focusNode,
+    required BuildContext context,
+  }) {
     // Get state key
     final StatesEnum stateKey = currentState;
     final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
@@ -217,7 +220,7 @@ class DynamicTextArea extends StatelessWidget {
 
   OutlineInputBorder _buildBorder(
     StyleModel styleModel,
-      StatesEnum state,
+    StatesEnum state,
   ) {
     double width = styleModel.borderWidth ?? 1.0;
     Color color = styleModel.borderColor ?? Colors.grey;
@@ -235,8 +238,6 @@ class DynamicTextArea extends StatelessWidget {
       borderSide: BorderSide(color: color, width: width),
     );
   }
-
-
 
   // String _componentStateEnumToKey(String state) {
   //   switch (state) {

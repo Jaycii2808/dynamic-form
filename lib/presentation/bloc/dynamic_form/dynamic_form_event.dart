@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DynamicFormEvent extends Equatable {
@@ -18,7 +19,7 @@ class LoadDynamicFormPageEvent extends DynamicFormEvent {
 
 class UpdateFormFieldEvent extends DynamicFormEvent {
   final String componentId;
-  final dynamic value;
+  final ComponentValueUpdateModel value;
 
   const UpdateFormFieldEvent({required this.componentId, required this.value});
 

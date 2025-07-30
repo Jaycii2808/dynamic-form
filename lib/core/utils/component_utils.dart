@@ -2,13 +2,14 @@
 
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 
 class ComponentUtils {
   /// Create updated DynamicFormModel with new config - clean and safe
   static DynamicFormModel updateComponentConfig(
-      DynamicFormModel component,
-      ConfigModel? newConfig,
-      ) {
+    DynamicFormModel component,
+    ConfigModel? newConfig,
+  ) {
     return DynamicFormModel(
       id: component.id,
       type: component.type,
@@ -21,6 +22,48 @@ class ComponentUtils {
       validation: component.validation,
       children: component.children,
     );
+  }
+
+  /// Update component with new value while preserving all properties and excluding null values
+  static DynamicFormModel updateComponentWithValue(
+    DynamicFormModel component,
+    dynamic newValue, {
+    StatesEnum? currentState,
+    String? errorText,
+    bool? selected,
+  }) {
+    // Create updated config with new value and state, preserving all other properties
+    final updatedConfig = ConfigModel(
+      label: component.config?.label,
+      placeholder: component.config?.placeholder,
+      isRequired: component.config?.isRequired,
+      value: newValue,
+      currentState: currentState ?? component.config?.currentState,
+      errorText: errorText,
+      defaultFormat: component.config?.defaultFormat,
+      initialTags: component.config?.initialTags,
+      textSeparators: component.config?.textSeparators,
+      pickerMode: component.config?.pickerMode,
+      selected: selected ?? component.config?.selected,
+      range: component.config?.range,
+      min: component.config?.min,
+      max: component.config?.max,
+      values: component.config?.values,
+      prefix: component.config?.prefix,
+      icon: component.config?.icon,
+      title: component.config?.title,
+      buttonText: component.config?.buttonText,
+      allowedExtensions: component.config?.allowedExtensions,
+      action: component.config?.action,
+      conditions: component.config?.conditions,
+      options: component.config?.options,
+      hint: component.config?.hint,
+      height: component.config?.height,
+      statusText: component.config?.statusText,
+      validate: component.config?.validate,
+    );
+
+    return updateComponentConfig(component, updatedConfig);
   }
 
   /// Clone component for clean immutable updates

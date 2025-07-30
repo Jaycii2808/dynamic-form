@@ -89,7 +89,9 @@ class DynamicDateTimeRangePickerBloc
       );
       final StatesEnum configState = validationError != null
           ? StatesEnum.error
-          : (valueForValidation.isNotEmpty ? StatesEnum.success : StatesEnum.base);
+          : (valueForValidation.isNotEmpty
+                ? StatesEnum.success
+                : StatesEnum.base);
 
       emit(
         DynamicDateTimeRangePickerSuccess(

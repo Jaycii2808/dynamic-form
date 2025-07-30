@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/button_condition_model.dart';
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
@@ -124,24 +125,17 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
           '⚠️ Component ${event.componentId} not found in current page, creating minimal component',
         );
 
-        final configMap = <String, dynamic>{
-          'placeholder': 'Dynamic component',
-          'isRequired': false,
-          'value': event.value is Map
-              ? (event.value as Map)['value']
-              : event.value,
-          'current_state': event.value is Map
-              ? (event.value as Map)['current_state'] ?? StatesEnum.base
-              : StatesEnum.base,
-          if (event.value is Map && (event.value as Map)['error_text'] != null)
-            'error_text': (event.value as Map)['error_text'],
-        };
-
         final newComponent = DynamicFormModel(
           id: event.componentId,
           type: FormTypeEnum.textFieldFormType,
           order: currentPage.components.length,
-          config: ConfigModel.fromJson(configMap),
+          config: ConfigModel(
+            placeholder: 'Dynamic component',
+            isRequired: false,
+            value: event.value.value,
+            currentState: event.value.currentState ?? StatesEnum.base,
+            errorText: event.value.errorText,
+          ),
           style: StyleModel.fromJson({
             'padding': '10px 12px',
             'border_color': '#888888',
@@ -172,7 +166,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       // Update button states based on conditions
       final finalPage = _updateButtonStates(updatedPage);
       debugPrint(
-        '📝 Form field updated: ${event.componentId} = ${event.value}',
+        '📝 Form field updated: ${event.componentId} = ${event.value.value}',
       );
 
       debugPrint(
@@ -333,186 +327,27 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   /// Update component with new value - JSON-driven validation
   DynamicFormModel _updateComponentWithValue(
     DynamicFormModel component,
-    dynamic value,
+    ComponentValueUpdateModel value,
   ) {
     try {
       debugPrint(
-        '🔧 [FormBloc] Updating component ${component.id} with value: $value',
+        '🔧 [FormBloc] Updating component ${component.id} with value: ${value.value}',
       );
 
-      // Handle simple value data (Map with value, current_state, error_text)
-      if (value is Map && value.containsKey('value')) {
-        final valueData = value as Map<String, dynamic>;
+      // Use the new model directly
+      final updatedComponent = ComponentUtils.updateComponentWithValue(
+        component,
+        value.value,
+        currentState: value.currentState,
+        errorText: value.errorText,
+        selected: value.selected,
+      );
 
-        // Create new config model with only updated properties
-        final updatedConfig = ConfigModel(
-          label: component.config?.label,
-          placeholder: component.config?.placeholder,
-          isRequired: component.config?.isRequired,
-          value: valueData['value'],
-          currentState:
-              valueData['current_state'] ?? component.config?.currentState,
-          errorText: valueData['error_text'],
-          defaultFormat: component.config?.defaultFormat,
-          initialTags: component.config?.initialTags,
-          textSeparators: component.config?.textSeparators,
-          pickerMode: component.config?.pickerMode,
-          selected: component.config?.selected,
-          range: component.config?.range,
-          min: component.config?.min,
-          max: component.config?.max,
-          values: component.config?.values,
-          prefix: component.config?.prefix,
-          icon: component.config?.icon,
-          title: component.config?.title,
-          buttonText: component.config?.buttonText,
-          allowedExtensions: component.config?.allowedExtensions,
-          action: component.config?.action,
-          conditions: component.config?.conditions,
-          options: component.config?.options,
-          hint: component.config?.hint,
-          height: component.config?.height,
-          statusText: component.config?.statusText,
-          validate: component.config?.validate,
-        );
+      debugPrint(
+        '✅ [FormBloc] Component ${component.id} updated successfully',
+      );
 
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.value = ${valueData['value']}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.currentState = ${valueData['current_state']}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.errorText = ${valueData['error_text']}',
-        );
-
-        final updatedComponent = ComponentUtils.updateComponentConfig(
-          component,
-          updatedConfig,
-        );
-        debugPrint(
-          '✅ [FormBloc] Component ${component.id} updated successfully',
-        );
-
-        return updatedComponent;
-      } else if (value is DynamicFormModel) {
-        debugPrint(
-          '📝 [FormBloc] Received component model directly for ${component.id}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Component value: ${value.config?.value}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Component state: ${value.config?.currentState}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Component errorText: ${value.config?.errorText}',
-        );
-
-        // Return the updated component model directly
-        return value;
-      } else if (value is TextFieldValueModel) {
-        // Create new config model directly with updated properties
-        final updatedConfig = ConfigModel(
-          label: component.config?.label,
-          placeholder: component.config?.placeholder,
-          isRequired: component.config?.isRequired,
-          value: value.value,
-          currentState: value.currentState,
-          errorText: value.errorText,
-          defaultFormat: component.config?.defaultFormat,
-          initialTags: component.config?.initialTags,
-          textSeparators: component.config?.textSeparators,
-          pickerMode: component.config?.pickerMode,
-          selected: component.config?.selected,
-          range: component.config?.range,
-          min: component.config?.min,
-          max: component.config?.max,
-          values: component.config?.values,
-          prefix: component.config?.prefix,
-          icon: component.config?.icon,
-          title: component.config?.title,
-          buttonText: component.config?.buttonText,
-          allowedExtensions: component.config?.allowedExtensions,
-          action: component.config?.action,
-          conditions: component.config?.conditions,
-          options: component.config?.options,
-          hint: component.config?.hint,
-          height: component.config?.height,
-          statusText: component.config?.statusText,
-          validate: component.config?.validate,
-        );
-
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.value = ${value.value}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.errorText = ${value.errorText}',
-        );
-        debugPrint(
-          '📝 [FormBloc] Setting ${component.id}.currentState = ${value.currentState}',
-        );
-
-        final updatedComponent = ComponentUtils.updateComponentConfig(
-          component,
-          updatedConfig,
-        );
-        debugPrint(
-          '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config?.toJson()}',
-        );
-
-        return updatedComponent;
-      } else {
-        // Special handling for range slider (array values)
-        final configMap = component.config?.toJson() ?? {};
-        final isRangeSlider = component.config?.range == true;
-
-        if (isRangeSlider && value is List && value.length == 2) {
-          // Range slider: store in 'values' field (plural)
-          configMap['values'] = value;
-          debugPrint(
-            '📝 Range Slider Update: ${component.id} = $value (stored in values field)',
-          );
-        } else {
-          // Regular components: store in 'value' field (singular)
-          configMap['value'] = value;
-          debugPrint(
-            '📝 [FormBloc] Setting ${component.id}.value = $value (was: ${component.config?.value})',
-          );
-        }
-
-        // Simple value update with JSON-driven validation
-        final stringValue = value?.toString() ?? '';
-
-        // Use JSON-configured validation
-        final validationError = ValidationUtils.validateForm(
-          component,
-          stringValue,
-        );
-
-        // Update component config
-        configMap['error_text'] = validationError;
-
-        // Determine state based on validation result and JSON config
-        configMap['current_state'] = ValidationUtils.determineComponentState(
-          stringValue,
-          validationError,
-        );
-
-        debugPrint(
-          '📝 JSON Validation: ${component.id} = "$stringValue" -> ${validationError ?? "valid"} (state: ${configMap['current_state']})',
-        );
-
-        final updatedComponent = ComponentUtils.updateComponentConfig(
-          component,
-          ConfigModel.fromJson(configMap),
-        );
-        debugPrint(
-          '✅ [FormBloc] Component ${component.id} updated. New config: ${updatedComponent.config?.toJson()}',
-        );
-
-        return updatedComponent;
-      }
+      return updatedComponent;
     } catch (e) {
       debugPrint('Error updating component ${component.id}: $e');
       return component;

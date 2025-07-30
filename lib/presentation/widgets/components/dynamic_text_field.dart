@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/components/input_config.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -100,15 +101,16 @@ class _DynamicTextFieldWidgetState extends State<DynamicTextFieldWidget> {
           if (state is DynamicTextFieldSuccess) {
             debugPrint('📝 [TextField] Sending only necessary data');
 
-            // Only pass the necessary data: value, currentState, errorText
-            final valueData = {
-              'value': state.component!.config?.value?.toString(),
-              'current_state':
+            // Create ComponentValueUpdateModel instead of Map
+            final valueData = ComponentValueUpdateModel.create(
+              componentId: state.component!.id,
+              value: state.component!.config?.value?.toString(),
+              currentState:
                   state.component!.config?.currentState ?? StatesEnum.base,
-              'error_text': state.errorText,
-            };
+              errorText: state.errorText,
+            );
 
-            // Update the main form bloc with only necessary data
+            // Update the main form bloc with the new model
             context.read<DynamicFormBloc>().add(
               UpdateFormFieldEvent(
                 componentId: state.component!.id,

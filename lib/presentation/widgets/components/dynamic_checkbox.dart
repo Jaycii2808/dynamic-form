@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
@@ -115,16 +116,16 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
         },
         listener: (context, state) {
           if (state is DynamicCheckboxSuccess) {
-            // CRITICAL FIX: Use state.isSelected directly instead of reading from config
-            // because component config might not be fully updated yet
-            final valueMap = {
-              'value': state.isSelected, // ✅ Use confirmed state value
-              'current_state': state.formState, // ✅ Use computed form state
-              'error_text': state.errorText,
-            };
+            // Create ComponentValueUpdateModel instead of Map
+            final valueModel = ComponentValueUpdateModel.create(
+              componentId: state.component!.id,
+              value: state.isSelected,
+              currentState: state.formState,
+              errorText: state.errorText,
+            );
 
             debugPrint(
-              '📤 [Checkbox] Sending to FormBloc: ${state.component!.id} = $valueMap',
+              '📤 [Checkbox] Sending to FormBloc: ${state.component!.id} = $valueModel',
             );
             debugPrint(
               '🔍 [Checkbox] Component config: ${state.component!.config}',
@@ -135,7 +136,7 @@ class _DynamicCheckboxWidgetState extends State<DynamicCheckboxWidget> {
             _formBloc?.add(
               UpdateFormFieldEvent(
                 componentId: state.component!.id,
-                value: valueMap,
+                value: valueModel,
               ),
             );
           }

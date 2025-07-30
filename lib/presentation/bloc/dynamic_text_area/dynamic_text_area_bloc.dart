@@ -117,14 +117,11 @@ class DynamicTextAreaBloc
         newState = StatesEnum.success;
       }
 
-      final configMap = successState.component!.config?.toJson() ?? {};
-      configMap['value'] = event.value;
-      configMap['current_state'] = newState;
-      configMap['error_text'] = validationError;
-
-      final updatedComponent = ComponentUtils.updateComponentConfig(
+      final updatedComponent = ComponentUtils.updateComponentWithValue(
         successState.component!,
-        ConfigModel.fromJson(configMap),
+        event.value,
+        currentState: newState,
+        errorText: validationError,
       );
 
       final configState =

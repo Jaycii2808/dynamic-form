@@ -85,11 +85,11 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       final oldValue = currentState.componentValues.getValue(event.componentId);
       final newComponentValues = currentState.componentValues.setValue(
         event.componentId,
-        event.value,
+        event.value.value,
       );
 
       debugPrint(
-        '📝 [MultiPageForm] Updated ${event.componentId}: $oldValue -> ${event.value}',
+        '📝 [MultiPageForm] Updated ${event.componentId}: $oldValue -> ${event.value.value}',
       );
       debugPrint(
         '📝 [MultiPageForm] All component values: ${newComponentValues.values}',

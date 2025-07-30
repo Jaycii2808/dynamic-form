@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class MultiPageFormEvent extends Equatable {
@@ -15,7 +16,7 @@ class LoadMultiPageForm extends MultiPageFormEvent {
 
 class UpdateComponentValue extends MultiPageFormEvent {
   final String componentId;
-  final dynamic value;
+  final ComponentValueUpdateModel value;
   const UpdateComponentValue(this.componentId, this.value);
   @override
   List<Object?> get props => [componentId, value];
