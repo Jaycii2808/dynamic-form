@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
@@ -58,7 +59,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       emit(
         MultiPageFormSuccess(
           formModel: formModel,
-          componentValues: initialValues,
+          componentValues: ComponentValuesModel.fromMap(initialValues),
           currentPageIndex: 0,
         ),
       );
@@ -81,23 +82,27 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
     if (state is! MultiPageFormSuccess) return;
     final currentState = state as MultiPageFormSuccess;
     try {
-      final newValues = Map<String, dynamic>.from(currentState.componentValues);
-      final oldValue = newValues[event.componentId];
-      newValues[event.componentId] = event.value;
+      final oldValue = currentState.componentValues.getValue(event.componentId);
+      final newComponentValues = currentState.componentValues.setValue(
+        event.componentId,
+        event.value,
+      );
 
       debugPrint(
         '📝 [MultiPageForm] Updated ${event.componentId}: $oldValue -> ${event.value}',
       );
-      debugPrint('📝 [MultiPageForm] All component values: $newValues');
+      debugPrint(
+        '📝 [MultiPageForm] All component values: ${newComponentValues.values}',
+      );
 
-      emit(currentState.copyWith(componentValues: newValues));
+      emit(currentState.copyWith(componentValues: newComponentValues));
     } catch (e) {
       emit(
         MultiPageFormError(
-          errorMessage: "Failed to update value: ${e.toString()}",
-          formModel: currentState.formModel,
-          componentValues: currentState.componentValues,
-          currentPageIndex: currentState.currentPageIndex,
+          errorMessage: e.toString(),
+          formModel: state.formModel,
+          componentValues: state.componentValues,
+          currentPageIndex: state.currentPageIndex,
         ),
       );
     }
@@ -196,8 +201,9 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       for (var page in formJson['pages']) {
         for (var component in page['components']) {
           final id = component['id'];
-          if (currentState.componentValues.containsKey(id)) {
-            component['config']['value'] = currentState.componentValues[id];
+          if (currentState.componentValues.hasValue(id)) {
+            component['config']['value'] = currentState.componentValues
+                .getValue(id);
           }
         }
       }
@@ -231,7 +237,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
     } catch (e) {
       emit(
         MultiPageFormError(
-          errorMessage: "Submission failed:  [${e.toString()}]",
+          errorMessage: "Submission failed: [${e.toString()}]",
           formModel: currentState.formModel,
           componentValues: currentState.componentValues,
           currentPageIndex: currentState.currentPageIndex,

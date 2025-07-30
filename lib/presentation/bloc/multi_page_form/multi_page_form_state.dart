@@ -1,24 +1,25 @@
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class MultiPageFormState extends Equatable {
   final DynamicMultiPageFormModel? formModel;
   final int currentPageIndex;
-  final Map<String, dynamic> componentValues;
+  final ComponentValuesModel componentValues;
   final Map<String, String?> validationErrors;
 
   const MultiPageFormState({
     this.formModel,
     this.currentPageIndex = 0,
-    this.componentValues = const {},
+    this.componentValues = const ComponentValuesModel(),
     this.validationErrors = const {},
   });
 
   // Getter to easily access the current page model
   FormForMultiPageModel? get currentPage =>
       formModel != null && formModel!.pages.length > currentPageIndex
-          ? formModel!.pages[currentPageIndex]
-          : null;
+      ? formModel!.pages[currentPageIndex]
+      : null;
 
   @override
   List<Object?> get props => [
@@ -33,7 +34,7 @@ class MultiPageFormInitial extends MultiPageFormState {
   const MultiPageFormInitial({
     super.formModel,
     super.currentPageIndex = 0,
-    super.componentValues = const {},
+    super.componentValues = const ComponentValuesModel(),
     super.validationErrors = const {},
   });
 }
@@ -67,7 +68,7 @@ class MultiPageFormSuccess extends MultiPageFormState {
   MultiPageFormSuccess copyWith({
     DynamicMultiPageFormModel? formModel,
     int? currentPageIndex,
-    Map<String, dynamic>? componentValues,
+    ComponentValuesModel? componentValues,
     Map<String, String?>? validationErrors,
   }) {
     return MultiPageFormSuccess(
@@ -91,5 +92,11 @@ class MultiPageFormError extends MultiPageFormState {
   });
 
   @override
-  List<Object?> get props => super.props..add(errorMessage);
+  List<Object?> get props => [
+    errorMessage,
+    formModel,
+    currentPageIndex,
+    componentValues,
+    validationErrors,
+  ];
 }

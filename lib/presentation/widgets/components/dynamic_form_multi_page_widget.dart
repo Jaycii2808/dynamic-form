@@ -2,11 +2,13 @@ import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
@@ -18,7 +20,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicFormMultiPageWidget extends StatelessWidget {
   final FormForMultiPageModel page;
-  final Map<String, dynamic> allComponentValues;
+  final ComponentValuesModel allComponentValues;
 
   const DynamicFormMultiPageWidget({
     super.key,
@@ -64,7 +66,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         final configJson =
             componentModel.config?.toJson() ?? <String, dynamic>{};
         final oldValue = configJson['value'];
-        final newValue = allComponentValues[componentModel.id];
+        final newValue = allComponentValues.values[componentModel.id];
         configJson['value'] = newValue;
 
         debugPrint(
@@ -446,7 +448,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
   Future<void> _saveFormData(
     BuildContext context,
     MultiPageFormSuccess state,
-    Map<String, dynamic> componentValues,
+    ComponentValuesModel componentValues,
   ) async {
     debugPrint('🔄 [SaveForm] Starting to save form data...');
     debugPrint(
@@ -495,7 +497,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               }).toList(),
             };
           }).toList(),
-          'component_values': componentValues,
+          'component_values': componentValues.toMap(),
         };
 
         debugPrint('🔄 [SaveForm] Calling saveFormWithCustomFormat...');
@@ -580,13 +582,14 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
-      final validate = button?.config?.validate;
-      if (validate != null &&
-          validate is Map<String, dynamic> &&
-          validate['condition'] is List) {
-        for (final cond in validate['condition']) {
-          if (cond['is_required'] == true && cond['id_component'] != null) {
-            requiredIds.add(cond['id_component']);
+      if (button != null) {
+        final validation = button.validation;
+        if (validation is ButtonConditionValidation) {
+          for (final condition in validation.conditions) {
+            if (condition.isRequired == true &&
+                condition.idComponent.isNotEmpty) {
+              requiredIds.add(condition.idComponent);
+            }
           }
         }
       }
@@ -608,7 +611,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
           final model = _toDynamicFormModel(component);
           // Set value for the component
           final oldValue = model.config?.value;
-          final newValue = allComponentValues[model.id];
+          final newValue = allComponentValues.values[model.id];
           debugPrint(
             '🔍 [MultiPageWidget] Component ${model.id}: oldValue=$oldValue, newValue=$newValue',
           );
@@ -652,70 +655,79 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     BuildContext context, {
     bool showDialogOnError = true,
   }) {
-    final validate = button.validation?.toJson();
+    // Use specific validation model instead of map
+    final validation = button.validation;
     debugPrint(
-      '🔍 [ButtonValidation] Validating button  [33m${button.id} [0m: $validate',
+      '🔍 [ButtonValidation] Validating button ${button.id}: $validation',
     );
-    final conditions = (validate != null && validate['condition'] is List)
-        ? List<Map<String, dynamic>>.from(validate['condition'])
-        : [];
-    debugPrint('🔍 [ButtonValidation] Conditions: $conditions');
 
-    final List<String> errors = [];
-    for (final cond in conditions) {
-      final id = cond['id_component'];
-      final value = allComponentValues[id];
-      debugPrint(
-        '🔍 [ButtonValidation] Checking $id: value=$value, condition=$cond',
-      );
+    // Handle ButtonConditionValidation specifically
+    if (validation is ButtonConditionValidation) {
+      final conditions = validation.conditions;
+      debugPrint('🔍 [ButtonValidation] Conditions: $conditions');
 
-      if (cond['is_required'] == true &&
-          (value == null ||
-              (value is bool
-                  ? value == false
-                  : value.toString().trim().isEmpty))) {
-        errors.add(cond['error_message']?.toString() ?? 'Required');
-        debugPrint('❌ [ButtonValidation] Required validation failed for $id');
-      } else if ((cond['regex'] ?? '').toString().isNotEmpty) {
-        final regex = RegExp(cond['regex']);
-        if (value != null &&
-            value.toString().isNotEmpty &&
-            !regex.hasMatch(value.toString())) {
-          errors.add(
-            cond['regex_error']?.toString() ??
-                cond['error_message']?.toString() ??
-                'Invalid format',
-          );
-          debugPrint('❌ [ButtonValidation] Regex validation failed for $id');
+      final List<String> errors = [];
+      for (final condition in conditions) {
+        final id = condition.idComponent;
+        final value = allComponentValues.values[id];
+        debugPrint(
+          '🔍 [ButtonValidation] Checking $id: value=$value, condition=$condition',
+        );
+
+        if (condition.isRequired == true &&
+            (value == null ||
+                (value is bool
+                    ? value == false
+                    : value.toString().trim().isEmpty))) {
+          errors.add(condition.errorMessage?.toString() ?? 'Required');
+          debugPrint('❌ [ButtonValidation] Required validation failed for $id');
+        } else if ((condition.regex ?? '').toString().isNotEmpty) {
+          final regex = RegExp(condition.regex!);
+          if (value != null &&
+              value.toString().isNotEmpty &&
+              !regex.hasMatch(value.toString())) {
+            errors.add(
+              condition.regexError?.toString() ??
+                  condition.errorMessage?.toString() ??
+                  'Invalid format',
+            );
+            debugPrint('❌ [ButtonValidation] Regex validation failed for $id');
+          }
         }
       }
-    }
 
-    if (errors.isNotEmpty) {
-      debugPrint('❌ [ButtonValidation] Errors for ${button.id}: $errors');
-      if (showDialogOnError) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Validation Errors'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: errors.map((e) => Text('- $e')).toList(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
+      if (errors.isNotEmpty) {
+        debugPrint('❌ [ButtonValidation] Errors for ${button.id}: $errors');
+        if (showDialogOnError) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Validation Errors'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: errors.map((e) => Text('- $e')).toList(),
               ),
-            ],
-          ),
-        );
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return false;
       }
-      return false;
+
+      debugPrint('✅ [ButtonValidation] Button ${button.id} passed validation');
+      return true;
     }
 
-    debugPrint('✅ [ButtonValidation] Button ${button.id} passed validation');
+    // Fallback for other validation types
+    debugPrint(
+      '⚠️ [ButtonValidation] Unknown validation type: ${validation.runtimeType}',
+    );
     return true;
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
@@ -93,7 +94,8 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
 
   void _loadSavedForm(SavedFormModel savedForm) {
     try {
-      if (savedForm.customFormData != null && savedForm.customFormData!.containsKey('pages')) {
+      if (savedForm.customFormData != null &&
+          savedForm.customFormData!.containsKey('pages')) {
         // New format with multiple pages
         final formJson = savedForm.customFormData!;
         final pagesJson = formJson['pages'] as List<dynamic>;
@@ -151,7 +153,9 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
           MaterialPageRoute(
             builder: (context) => PreviewPageScreen(
               pages: dynamicPages,
-              allComponentValues: formJson['component_values'] ?? {},
+              allComponentValues: ComponentValuesModel.fromMap(
+                Map<String, dynamic>.from(formJson['component_values'] ?? {}),
+              ),
             ),
           ),
         );
@@ -163,7 +167,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
           MaterialPageRoute(
             builder: (context) => PreviewPageScreen(
               pages: [savedForm.formData!],
-              allComponentValues: {},
+              allComponentValues: ComponentValuesModel.empty(),
             ),
           ),
         );
@@ -499,8 +503,20 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
   int _getComponentsCount(SavedFormModel form) {
     if (form.customFormData != null) {
       final customData = form.customFormData!;
-      final components = customData['components'] as List<dynamic>? ?? [];
-      return components.length;
+      // Handle new multi-page format
+      if (customData.containsKey('pages')) {
+        final pages = customData['pages'] as List<dynamic>? ?? [];
+        int totalComponents = 0;
+        for (final page in pages) {
+          final pageComponents = page['components'] as List<dynamic>? ?? [];
+          totalComponents += pageComponents.length;
+        }
+        return totalComponents;
+      } else {
+        // Handle old single-page format
+        final components = customData['components'] as List<dynamic>? ?? [];
+        return components.length;
+      }
     } else if (form.formData != null) {
       return form.formData!.components.length;
     } else {

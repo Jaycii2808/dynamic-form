@@ -1,4 +1,5 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
@@ -216,7 +217,7 @@ class _DynamicButtonState extends State<DynamicButton> {
       try {
         final multiPageState = context.read<MultiPageFormBloc>().state;
         if (multiPageState is MultiPageFormSuccess) {
-          final value = multiPageState.componentValues[componentId];
+          final value = multiPageState.componentValues.getValue(componentId);
           debugPrint(
             '🔍 [Button] Getting value from MultiPageForm for $componentId: $value',
           );
@@ -256,8 +257,6 @@ class _DynamicButtonState extends State<DynamicButton> {
       _style.addAll(stateStyle.toJson());
     }
   }
-
-
 
   void _computeCurrentState() {
     if (_isDisabled) {

@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/material.dart';
 
 class PreviewPageScreen extends StatelessWidget {
   final List<DynamicFormPageModel> pages;
-  final Map<String, dynamic> allComponentValues;
+  final ComponentValuesModel allComponentValues;
   final VoidCallback? onSubmit;
   final VoidCallback? onPrevious;
 
@@ -29,14 +30,15 @@ class PreviewPageScreen extends StatelessWidget {
       body: _buildBody(context),
     );
   }
-//han che map, define ro rang ( dynamic value)
+
+  //han che map, define ro rang ( dynamic value)
   Widget _buildBody(BuildContext context) {
     final pageBlocks = pages.asMap().entries.map((entry) {
       final pageIndex = entry.key;
       final page = entry.value;
       final pageComponents = page.components
           .map((componentItem) {
-            final value = allComponentValues[componentItem.id];
+            final value = allComponentValues.values[componentItem.id];
             final newConfig = Map<String, dynamic>.from(
               componentItem.config?.toJson() ?? {},
             );
@@ -266,14 +268,14 @@ class PreviewPageScreen extends StatelessWidget {
             }).toList(),
           };
         }).toList(),
-        'component_values': allComponentValues,
+        'component_values': allComponentValues.values,
       };
 
       await savedFormsService.saveFormWithCustomFormat(
         formId: formData['form_id'] as String,
         name: 'Preview Form - ${DateTime.now().toString().substring(0, 19)}',
         description:
-            'Form with ${pages.length} pages and ${allComponentValues.length} filled fields',
+            'Form with ${pages.length} pages and ${allComponentValues.values.length} filled fields',
         formData: formData,
         originalConfigKey: 'preview_form',
       );
@@ -319,10 +321,10 @@ class PreviewPageScreen extends StatelessWidget {
 
 List<DynamicFormModel> _buildPreviewComponents(
   List<DynamicFormPageModel> pages,
-  Map<String, dynamic> allComponentValues,
+  ComponentValuesModel allComponentValues,
 ) {
   return pages.expand((p) => p.components).map((componentItem) {
-    final value = allComponentValues[componentItem.id];
+    final value = allComponentValues.values[componentItem.id];
     final newConfig = Map<String, dynamic>.from(
       componentItem.config?.toJson() ?? {},
     );
@@ -356,11 +358,11 @@ List<DynamicFormModel> _buildPreviewComponents(
 
 bool isAllRequiredFilled(
   List<DynamicFormModel> components,
-  Map<String, dynamic> allComponentValues,
+  ComponentValuesModel allComponentValues,
 ) {
   for (final component in components) {
     if (ComponentUtils.isRequired(component)) {
-      final value = allComponentValues[component.id];
+      final value = allComponentValues.values[component.id];
       if (value == null ||
           (value is String && value.trim().isEmpty) ||
           (value is List && value.isEmpty)) {
