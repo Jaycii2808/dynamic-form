@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_multipage_screen.dart';
@@ -96,65 +97,37 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
     try {
       if (savedForm.customFormData != null &&
           savedForm.customFormData!.containsKey('pages')) {
-        // New format with multiple pages
-        final formJson = savedForm.customFormData!;
-        final pagesJson = formJson['pages'] as List<dynamic>;
-        final formComponents = pagesJson
-            .map((pageJson) => FormForMultiPageModel.fromJson(pageJson))
-            .toList();
+        // New format with multiple pages - use SavedFormDataModel
+        final savedFormData = SavedFormDataModel.fromJson(
+          savedForm.customFormData!,
+        );
 
-        // Convert to DynamicFormPageModel format for PreviewMultiPageScreen
-        final dynamicPages = formComponents.map((page) {
+        // Convert to DynamicFormPageModel format for PreviewPageScreen
+        final dynamicPages = savedFormData.pages.map((page) {
           return DynamicFormPageModel(
             pageId: page.pageId,
             title: page.title,
             order: page.order,
             components: page.components.map((component) {
-              return DynamicFormModel(
-                id: component.id,
-                type: component.type,
-                order: component.order,
-                config: component.config,
-                style: component.style,
-                inputTypes: null,
-                variants: null,
-                states: null,
-                validation: component.validation,
-                children: component.children
-                    ?.map(
-                      (child) => DynamicFormModel(
-                        id: child.id,
-                        type: child.type,
-                        order: child.order,
-                        config: child.config,
-                        style: child.style,
-                        inputTypes: null,
-                        variants: null,
-                        states: null,
-                        validation: child.validation,
-                        children: null,
-                      ),
-                    )
-                    .toList(),
-              );
+              return component.toDynamicFormModel();
             }).toList(),
           );
         }).toList();
 
         debugPrint('🔄 Loading saved form with custom format');
-        debugPrint('📋 Form ID: ${formJson['form_id']}');
+        debugPrint('📋 Form ID: ${savedFormData.formId}');
         debugPrint('🔢 Pages loaded: ${dynamicPages.length}');
 
         Navigator.pop(context); // Close saved forms screen
 
-        // Navigate to preview screen with loaded data
+        // Navigate to preview screen with loaded data using proper model
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PreviewPageScreen(
               pages: dynamicPages,
               allComponentValues: ComponentValuesModel.fromMap(
-                Map<String, dynamic>.from(formJson['component_values'] ?? {}),
+                savedFormData.componentValues,
               ),
             ),
           ),
@@ -520,7 +493,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
     } else if (form.formData != null) {
       return form.formData!.components.length;
     } else {
-      throw Exception('No form data available');
+      return 0;
     }
   }
 }

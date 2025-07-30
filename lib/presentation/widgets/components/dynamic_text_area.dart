@@ -30,10 +30,15 @@ class DynamicTextArea extends StatelessWidget {
           final simpleValue = state.component?.config?.value?.toString() ?? '';
           onComplete(simpleValue);
 
-          if (state.textController!.text !=
-              (state.component?.config?.value?.toString() ?? '')) {
-            state.textController!.text =
+          // Update text controller if needed
+          final textController = state.textController;
+          if (textController != null) {
+            final currentText = textController.text;
+            final expectedText =
                 state.component?.config?.value?.toString() ?? '';
+            if (currentText != expectedText) {
+              textController.text = expectedText;
+            }
           }
         } else if (state is DynamicTextAreaError) {
           // Pass simple value instead of TextFieldValueModel

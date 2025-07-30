@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
@@ -31,74 +32,98 @@ class PreviewPageScreen extends StatelessWidget {
     );
   }
 
-  //han che map, define ro rang ( dynamic value)
+  // Build page blocks with explicit loops instead of map
   Widget _buildBody(BuildContext context) {
-    final pageBlocks = pages.asMap().entries.map((entry) {
-      final pageIndex = entry.key;
-      final page = entry.value;
-      final pageComponents = page.components
-          .map((componentItem) {
-            final value = allComponentValues.values[componentItem.id];
-            final updatedConfig = componentItem.config?.copyWith(value: value);
-            return DynamicFormModel(
-              id: componentItem.id,
-              type: componentItem.type,
-              order: componentItem.order,
-              config: updatedConfig,
-              style: componentItem.style,
-              inputTypes: componentItem.inputTypes,
-              variants: componentItem.variants,
-              states: componentItem.states,
-              validation: componentItem.validation,
-              children: componentItem.children,
-            );
-          })
-          .where((c) => c.type != FormTypeEnum.buttonFormType)
-          .toList();
+    final List<Widget> pageBlocks = [];
 
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ✅ Only show page header when there's more than 1 page
-            if (pages.length > 1)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  'Page ${pageIndex + 1}/${pages.length}: ${page.title}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-              ),
-            ...pageComponents.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AbsorbPointer(
-                  absorbing:
-                      true, // ✅ Only block interaction for each component
-                  child: DynamicFormRenderer(component: c),
-                ),
+    // Build each page block
+    for (int pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+      final page = pages[pageIndex];
+      final List<DynamicFormModel> pageComponents = [];
+
+      // Process each component in the page
+      for (final componentItem in page.components) {
+        final value = allComponentValues.values[componentItem.id];
+        final updatedConfig = componentItem.config?.copyWith(value: value);
+
+        final processedComponent = DynamicFormModel(
+          id: componentItem.id,
+          type: componentItem.type,
+          order: componentItem.order,
+          config: updatedConfig,
+          style: componentItem.style,
+          inputTypes: componentItem.inputTypes,
+          variants: componentItem.variants,
+          states: componentItem.states,
+          validation: componentItem.validation,
+          children: componentItem.children,
+        );
+
+        // Only add non-button components
+        if (processedComponent.type != FormTypeEnum.buttonFormType) {
+          pageComponents.add(processedComponent);
+        }
+      }
+
+      // Build page header and components
+      final List<Widget> pageChildren = [];
+
+      // Add page header if multiple pages
+      if (pages.length > 1) {
+        pageChildren.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Page ${pageIndex + 1}/${pages.length}: ${page.title}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
               ),
             ),
-          ],
+          ),
+        );
+      }
+
+      // Add each component widget
+      for (final component in pageComponents) {
+        pageChildren.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: AbsorbPointer(
+              absorbing: true, // Block interaction for each component
+              child: DynamicFormRenderer(component: component),
+            ),
+          ),
+        );
+      }
+
+      pageBlocks.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: pageChildren,
+          ),
         ),
       );
-    }).toList();
+    }
 
     final previewComponents = _buildPreviewComponents(
       pages,
       allComponentValues,
     );
-    final previousButton = previewComponents.firstWhere(
-      (c) =>
-          c.type == FormTypeEnum.buttonFormType &&
-          c.config?.action == 'previous_page',
-      orElse: () => DynamicFormModel.empty(),
-    );
+
+    // Find previous button
+    DynamicFormModel? previousButton;
+    for (final component in previewComponents) {
+      if (component.type == FormTypeEnum.buttonFormType &&
+          component.config?.action == 'previous_page') {
+        previousButton = component;
+        break;
+      }
+    }
+    previousButton ??= DynamicFormModel.empty();
 
     // Create a submit button for the preview screen
     final submitButton = DynamicFormModel(
@@ -111,11 +136,6 @@ class PreviewPageScreen extends StatelessWidget {
         action: ButtonAction.submitForm.value,
       ),
       style: const StyleModel(),
-      // inputTypes: null,
-      // variants: null,
-      // states: null,
-      // validation: null,
-      // children: null,
     );
 
     final isFormValid = isAllRequiredFilled(
@@ -125,7 +145,7 @@ class PreviewPageScreen extends StatelessWidget {
 
     return Stack(
       children: [
-        // ✅ Scrollable
+        // Scrollable content
         ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           physics: const AlwaysScrollableScrollPhysics(),
@@ -144,7 +164,7 @@ class PreviewPageScreen extends StatelessWidget {
           ],
         ),
 
-        // ✅ Overlay showing preview mode
+        // Overlay showing preview mode
         Positioned(
           top: 0,
           left: 0,
@@ -179,7 +199,7 @@ class PreviewPageScreen extends StatelessWidget {
           ),
         ),
 
-        // ✅ Submit & Previous buttons
+        // Submit & Previous buttons
         _buildPreviewButtonsRow(
           previousButton: previousButton,
           submitButton: submitButton,
@@ -228,48 +248,19 @@ class PreviewPageScreen extends StatelessWidget {
     try {
       final savedFormsService = SavedFormsService();
 
-      // Convert to custom format for multi-page forms
-      //form model
-      final formData = {
-        'form_id': 'preview_form_${DateTime.now().millisecondsSinceEpoch}',
-        'pages': pages.map((page) {
-          return {
-            'pageId': page.pageId,
-            'title': page.title,
-            'order': page.order,
-            'components': page.components.map((component) {
-              return {
-                'id': component.id,
-                'type': component.type.toJson(),
-                'order': component.order,
-                'config': component.config?.toJson(),
-                'style': component.style.toJson(),
-                'validation': component.validation?.toJson(),
-                'children': component.children
-                    ?.map(
-                      (child) => {
-                        'id': child.id,
-                        'type': child.type.toJson(),
-                        'order': child.order,
-                        'config': child.config?.toJson(),
-                        'style': child.style.toJson(),
-                        'validation': child.validation?.toJson(),
-                      },
-                    )
-                    .toList(),
-              };
-            }).toList(),
-          };
-        }).toList(),
-        'component_values': allComponentValues.values,
-      };
+      // Use the new SavedFormDataModel instead of List<Map<String, dynamic>>
+      final savedFormData = SavedFormDataBuilder.createFromDynamicFormPages(
+        formId: 'preview_form_${DateTime.now().millisecondsSinceEpoch}',
+        pages: pages,
+        componentValues: allComponentValues.values,
+      );
 
       await savedFormsService.saveFormWithCustomFormat(
-        formId: formData['form_id'] as String,
+        formId: savedFormData.formId,
         name: 'Preview Form - ${DateTime.now().toString().substring(0, 19)}',
         description:
             'Form with ${pages.length} pages and ${allComponentValues.values.length} filled fields',
-        formData: formData,
+        formData: savedFormData.toJson(),
         originalConfigKey: 'preview_form',
       );
 
@@ -316,22 +307,33 @@ List<DynamicFormModel> _buildPreviewComponents(
   List<DynamicFormPageModel> pages,
   ComponentValuesModel allComponentValues,
 ) {
-  return pages.expand((p) => p.components).map((componentItem) {
-    final value = allComponentValues.values[componentItem.id];
-    final updatedConfig = componentItem.config?.copyWith(value: value);
-    return DynamicFormModel(
-      id: componentItem.id,
-      type: componentItem.type,
-      order: componentItem.order,
-      config: updatedConfig,
-      style: componentItem.style,
-      inputTypes: componentItem.inputTypes,
-      variants: componentItem.variants,
-      states: componentItem.states,
-      validation: componentItem.validation,
-      children: componentItem.children,
-    );
-  }).toList();
+  final List<DynamicFormModel> allComponents = [];
+
+  // Process each page
+  for (final page in pages) {
+    // Process each component in the page
+    for (final componentItem in page.components) {
+      final value = allComponentValues.values[componentItem.id];
+      final updatedConfig = componentItem.config?.copyWith(value: value);
+
+      final processedComponent = DynamicFormModel(
+        id: componentItem.id,
+        type: componentItem.type,
+        order: componentItem.order,
+        config: updatedConfig,
+        style: componentItem.style,
+        inputTypes: componentItem.inputTypes,
+        variants: componentItem.variants,
+        states: componentItem.states,
+        validation: componentItem.validation,
+        children: componentItem.children,
+      );
+
+      allComponents.add(processedComponent);
+    }
+  }
+
+  return allComponents;
 }
 
 // DynamicFormModel? buildRemoteButton(RemoteButtonConfigKey key) {

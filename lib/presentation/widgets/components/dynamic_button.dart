@@ -160,13 +160,7 @@ class _DynamicButtonState extends State<DynamicButton> {
             validate?[_action == 'next_page' ? 'next_page' : 'previous_page']
                 as String?;
         debugPrint('🔘 [Button] Target page: $targetPage');
-        final data = {
-          'action': _action,
-          'timestamp': DateTime.now().toIso8601String(),
-          'formId': _currentComponent.id,
-          'customData': null,
-          'targetPage': targetPage,
-        };
+
         widget.onAction?.call(
           _action,
           ButtonActionDataModel.create(
@@ -196,12 +190,6 @@ class _DynamicButtonState extends State<DynamicButton> {
           _isLoading = true;
         });
 
-        final data = {
-          'action': _action,
-          'timestamp': DateTime.now().toIso8601String(),
-          'formId': _currentComponent.id,
-          'customData': _currentComponent.config?.toJson()['customData'],
-        };
         widget.onAction?.call(
           _action,
           ButtonActionDataModel.create(

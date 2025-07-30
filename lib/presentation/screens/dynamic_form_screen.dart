@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicFormScreen extends StatefulWidget {
-  static const String routeName = '/dynamic-form-screen';
   final String configKey;
   final String? title;
   final Function(Map<String, dynamic>)? onAction;
@@ -54,6 +53,7 @@ class _DynamicFormContent extends StatefulWidget {
 class _DynamicFormContentState extends State<_DynamicFormContent> {
   /// Filter out Save buttons from main form
   /// Save buttons should only appear in preview page
+  ///
   List<DynamicFormModel> _getMainFormComponents(DynamicFormPageModel page) {
     final mainComponents = page.components.where((component) {
       final action = component.config?.action;

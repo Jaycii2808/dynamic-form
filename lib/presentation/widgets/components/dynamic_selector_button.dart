@@ -73,8 +73,14 @@ class DynamicSelectorButton extends StatelessWidget {
 
     return Container(
       key: Key(component.id),
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-      margin: const EdgeInsets.only(bottom: 10.0),
+      padding:const EdgeInsets.symmetric(
+        vertical: 10.0,
+        horizontal: 12.0,
+      ),
+      margin:const EdgeInsets.symmetric(
+      vertical: 10.0,
+      horizontal: 12.0,
+    ),
       child: GestureDetector(
         onTap: isDisabled
             ? null

@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/data/models/components/component_value_update_mo
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
@@ -156,12 +157,14 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               }
               return;
             }
-            // FIX: Handle next_page navigation from ListView button
+            // Handle next_page navigation from ListView button
             if (action == ButtonAction.nextPage.value) {
               String? targetPage = data?.targetPage;
               if (targetPage == null || targetPage.isEmpty) {
-                final validate = updatedComponent.validation?.toJson();
-                targetPage = validate?['next_page'] as String?;
+                final validation = updatedComponent.validation;
+                if (validation is ButtonConditionValidation) {
+                  targetPage = validation.nextPage;
+                }
               }
               if (targetPage != null && targetPage.isNotEmpty) {
                 if (state is MultiPageFormSuccess && state.formModel != null) {
@@ -270,9 +273,11 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                         }
 
                         // Handle previous navigation
-                        final validate = previousButton.validation?.toJson();
-                        final targetPage =
-                            validate?['previous_page'] as String?;
+                        final validation = previousButton.validation;
+                        String? targetPage;
+                        if (validation is ButtonConditionValidation) {
+                          targetPage = validation.previousPage;
+                        }
                         debugPrint(
                           '[UI] Previous button action: $action, targetPage: $targetPage',
                         );
@@ -315,8 +320,10 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           // Get targetPage from data first, then from validation
                           String? targetPage = data?.targetPage;
                           if (targetPage == null || targetPage.isEmpty) {
-                            final validate = nextButton.validation?.toJson();
-                            targetPage = validate?['next_page'] as String?;
+                            final validation = nextButton.validation;
+                            if (validation is ButtonConditionValidation) {
+                              targetPage = validation.nextPage;
+                            }
                           }
                           debugPrint('[UI] 🎯 Next targetPage: $targetPage');
                           if (targetPage != null && targetPage.isNotEmpty) {
@@ -360,7 +367,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           }
                           return;
                         }
-                        // CRITICAL FIX: Always validate before proceeding
+                        // Always validate before proceeding
                         if (!_validateButtonConditions(
                           nextButton,
                           context,
@@ -477,52 +484,21 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       final savedFormsService = SavedFormsService();
 
       if (state.formModel != null) {
-        // Convert to custom format for multi-page forms
-        final formData = {
-          'form_id': 'multi_page_form_${DateTime.now().millisecondsSinceEpoch}',
-          'pages': state.formModel!.pages.map((page) {
-            return {
-              'pageId': page.pageId,
-              'title': page.title,
-              'order': page.order,
-              'show_next_button': page.showNextButton,
-              'show_previous_button': page.showPreviousButton,
-              'show_submit_button': page.showSubmitButton,
-              'components': page.components.map((component) {
-                return {
-                  'id': component.id,
-                  'type': component.type.toJson(),
-                  'order': component.order,
-                  'config': component.config.toJson(),
-                  'style': component.style.toJson(),
-                  'validation': component.validation?.toJson(),
-                  'children': component.children
-                      ?.map(
-                        (child) => {
-                          'id': child.id,
-                          'type': child.type.toJson(),
-                          'order': child.order,
-                          'config': child.config.toJson(),
-                          'style': child.style.toJson(),
-                          'validation': child.validation?.toJson(),
-                        },
-                      )
-                      .toList(),
-                };
-              }).toList(),
-            };
-          }).toList(),
-          'component_values': componentValues.toMap(),
-        };
+        // Use the new SavedFormDataModel instead of List<Map<String, dynamic>>
+        final savedFormData = SavedFormDataBuilder.createFromMultiPageForm(
+          formId: 'multi_page_form_${DateTime.now().millisecondsSinceEpoch}',
+          pages: state.formModel!.pages,
+          componentValues: componentValues.toMap(),
+        );
 
         debugPrint('🔄 [SaveForm] Calling saveFormWithCustomFormat...');
         await savedFormsService.saveFormWithCustomFormat(
-          formId: formData['form_id'] as String,
+          formId: savedFormData.formId,
           name:
               'Multi-Page Form - ${DateTime.now().toString().substring(0, 19)}',
           description:
               'Form with ${state.formModel!.pages.length} pages and ${componentValues.length} filled fields',
-          formData: formData,
+          formData: savedFormData.toJson(),
           originalConfigKey: 'multi_page_form',
         );
 
@@ -557,43 +533,43 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     final showNext = page.showNextButton;
     final showPrevious = page.showPreviousButton;
 
-    // Find navigation/submit buttons by action
-    DynamicFormModel? nextButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config.action == ButtonAction.nextPage.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-    DynamicFormModel? previousButton = page.components
-        .where(
-          (component) =>
-              component.type == FormTypeEnum.buttonFormType &&
-              component.config.action == ButtonAction.previousPage.value,
-        )
-        .map((component) => _toDynamicFormModel(component))
-        .cast<DynamicFormModel?>()
-        .firstWhere((b) => b != null, orElse: () => null);
-    // Only show preview button on the last page (no submit button on finish page)
-    DynamicFormModel? previewButton = isLastPage
-        ? page.components
-              .where(
-                (component) =>
-                    component.type == FormTypeEnum.buttonFormType &&
-                    component.config.action == ButtonAction.previewForm.value,
-              )
-              .map((component) => _toDynamicFormModel(component))
-              .cast<DynamicFormModel?>()
-              .firstWhere((b) => b != null, orElse: () => null)
-        : null;
-    // Submit button is not shown on finish page - it will be in preview screen
+    // Find navigation/submit buttons by action using explicit loops
+    DynamicFormModel? nextButton;
+    DynamicFormModel? previousButton;
+    DynamicFormModel? previewButton;
     DynamicFormModel? submitButton;
+
+    // Find next button
+    for (final component in page.components) {
+      if (component.type == FormTypeEnum.buttonFormType &&
+          component.config.action == ButtonAction.nextPage.value) {
+        nextButton = _toDynamicFormModel(component);
+        break;
+      }
+    }
+
+    // Find previous button
+    for (final component in page.components) {
+      if (component.type == FormTypeEnum.buttonFormType &&
+          component.config.action == ButtonAction.previousPage.value) {
+        previousButton = _toDynamicFormModel(component);
+        break;
+      }
+    }
+
+    // Only show preview button on the last page
+    if (isLastPage) {
+      for (final component in page.components) {
+        if (component.type == FormTypeEnum.buttonFormType &&
+            component.config.action == ButtonAction.previewForm.value) {
+          previewButton = _toDynamicFormModel(component);
+          break;
+        }
+      }
+    }
 
     debugPrint('🔍 [ButtonDetection] isLastPage: $isLastPage');
     debugPrint('🔍 [ButtonDetection] previewButton: ${previewButton?.id}');
-    //debugPrint('🔍 [ButtonDetection] submitButton: ${submitButton?.id}');
 
     final requiredIds = <String>{};
     for (final button in [nextButton]) {
@@ -611,41 +587,39 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     }
 
     // Filter out navigation/submit/preview buttons from main components
-    final otherComponents = page.components
-        .where(
-          (component) =>
-              !(component.type == FormTypeEnum.buttonFormType &&
-                  (component.config.action == ButtonAction.submitForm.value ||
-                      component.config.action ==
-                          ButtonAction.previousPage.value ||
-                      component.config.action == ButtonAction.nextPage.value ||
-                      component.config.action ==
-                          ButtonAction.previewForm.value)),
-        )
-        .map((component) {
-          final model = _toDynamicFormModel(component);
-          // Set value for the component
-          final oldValue = model.config?.value;
-          final newValue = allComponentValues.values[model.id];
-          debugPrint(
-            '🔍 [MultiPageWidget] Component ${model.id}: oldValue=$oldValue, newValue=$newValue',
-          );
-          final updatedConfig = model.config?.copyWith(value: newValue);
-          final updatedModel = DynamicFormModel(
-            id: model.id,
-            type: model.type,
-            order: model.order,
-            config: updatedConfig,
-            style: model.style,
-            inputTypes: model.inputTypes,
-            variants: model.variants,
-            states: model.states,
-            validation: model.validation,
-            children: model.children,
-          );
-          return updatedModel;
-        })
-        .toList();
+    final List<DynamicFormModel> otherComponents = [];
+    for (final component in page.components) {
+      final isNavigationButton =
+          component.type == FormTypeEnum.buttonFormType &&
+          (component.config.action == ButtonAction.submitForm.value ||
+              component.config.action == ButtonAction.previousPage.value ||
+              component.config.action == ButtonAction.nextPage.value ||
+              component.config.action == ButtonAction.previewForm.value);
+
+      if (!isNavigationButton) {
+        final model = _toDynamicFormModel(component);
+        // Set value for the component
+        final oldValue = model.config?.value;
+        final newValue = allComponentValues.values[model.id];
+        debugPrint(
+          '🔍 [MultiPageWidget] Component ${model.id}: oldValue=$oldValue, newValue=$newValue',
+        );
+        final updatedConfig = model.config?.copyWith(value: newValue);
+        final updatedModel = DynamicFormModel(
+          id: model.id,
+          type: model.type,
+          order: model.order,
+          config: updatedConfig,
+          style: model.style,
+          inputTypes: model.inputTypes,
+          variants: model.variants,
+          states: model.states,
+          validation: model.validation,
+          children: model.children,
+        );
+        otherComponents.add(updatedModel);
+      }
+    }
 
     return Scaffold(
       body: Stack(
@@ -780,47 +754,60 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     MultiPageFormState state,
   ) async {
     if (state is MultiPageFormSuccess && state.formModel != null) {
-      // Convert FormForMultiPageModel to DynamicFormPageModel
-      final dynamicPages = state.formModel!.pages
-          .map(
-            (page) => DynamicFormPageModel(
-              pageId: page.pageId,
-              title: page.title,
-              order: page.order,
-              components: page.components
-                  .map(
-                    (c) => DynamicFormModel(
-                      id: c.id,
-                      type: c.type,
-                      order: c.order,
-                      config: c.config,
-                      style: c.style,
-                      inputTypes: null,
-                      variants: null,
-                      states: null,
-                      validation: c.validation,
-                      children: c.children
-                          ?.map(
-                            (child) => DynamicFormModel(
-                              id: child.id,
-                              type: child.type,
-                              order: child.order,
-                              config: child.config,
-                              style: child.style,
-                              inputTypes: null,
-                              variants: null,
-                              states: null,
-                              validation: child.validation,
-                              children: null,
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  )
-                  .toList(),
+      // Convert FormForMultiPageModel to DynamicFormPageModel using explicit loops
+      final List<DynamicFormPageModel> dynamicPages = [];
+
+      for (final page in state.formModel!.pages) {
+        final List<DynamicFormModel> pageComponents = [];
+
+        for (final component in page.components) {
+          final List<DynamicFormModel> childComponents = [];
+
+          if (component.children != null) {
+            for (final child in component.children!) {
+              childComponents.add(
+                DynamicFormModel(
+                  id: child.id,
+                  type: child.type,
+                  order: child.order,
+                  config: child.config,
+                  style: child.style,
+                  inputTypes: null,
+                  variants: null,
+                  states: null,
+                  validation: child.validation,
+                  children: null,
+                ),
+              );
+            }
+          }
+
+          pageComponents.add(
+            DynamicFormModel(
+              id: component.id,
+              type: component.type,
+              order: component.order,
+              config: component.config,
+              style: component.style,
+              inputTypes: null,
+              variants: null,
+              states: null,
+              validation: component.validation,
+              children: childComponents,
             ),
-          )
-          .toList();
+          );
+        }
+
+        dynamicPages.add(
+          DynamicFormPageModel(
+            pageId: page.pageId,
+            title: page.title,
+            order: page.order,
+            components: pageComponents,
+          ),
+        );
+      }
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (ctx) => PreviewPageScreen(

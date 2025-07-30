@@ -108,6 +108,18 @@ class SavedFormsService {
     }
   }
 
+  /// Clear all saved forms
+  Future<void> clearAllSavedForms() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_savedFormsKey);
+      debugPrint('✅ All saved forms cleared successfully');
+    } catch (e) {
+      debugPrint('❌ Error clearing all saved forms: $e');
+      rethrow;
+    }
+  }
+
   /// Update a saved form
   Future<void> updateSavedForm(SavedFormModel updatedForm) async {
     try {
@@ -122,6 +134,8 @@ class SavedFormsService {
         await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
         debugPrint('✅ Form updated successfully: ${updatedForm.name}');
+      } else {
+        throw Exception('Form not found: ${updatedForm.id}');
       }
     } catch (e) {
       debugPrint('❌ Error updating form: $e');
@@ -129,15 +143,14 @@ class SavedFormsService {
     }
   }
 
-  /// Clear all saved forms
-  Future<void> clearAllSavedForms() async {
+  /// Get a specific saved form by ID
+  Future<SavedFormModel?> getSavedFormById(String formId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_savedFormsKey);
-      debugPrint('✅ All saved forms cleared');
+      final savedForms = await getSavedForms();
+      return savedForms.firstWhere((form) => form.id == formId);
     } catch (e) {
-      debugPrint('❌ Error clearing saved forms: $e');
-      rethrow;
+      debugPrint('❌ Error getting saved form by ID: $e');
+      return null;
     }
   }
 }
