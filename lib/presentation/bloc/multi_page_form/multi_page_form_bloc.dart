@@ -199,19 +199,27 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       final formModel = currentState.formModel!;
 
       // Create a copy of the form model with updated values
-      final updatedPages = formModel.pages.map((page) {
-        final updatedComponents = page.components.map((component) {
-          if (currentState.componentValues.hasValue(component.id)) {
-            final updatedConfig = component.config.copyWith(
-              value: currentState.componentValues.getValue(component.id),
-            );
-            return component.copyWith(config: updatedConfig);
-          }
-          return component;
-        }).toList();
+      final updatedPages = List<FormForMultiPageModel>.generate(
+        formModel.pages.length,
+        (pageIndex) {
+          final page = formModel.pages[pageIndex];
+          final updatedComponents = List<FormComponentMultiPageModel>.generate(
+            page.components.length,
+            (componentIndex) {
+              final component = page.components[componentIndex];
+              if (currentState.componentValues.hasValue(component.id)) {
+                final updatedConfig = component.config.copyWith(
+                  value: currentState.componentValues.getValue(component.id),
+                );
+                return component.copyWith(config: updatedConfig);
+              }
+              return component;
+            },
+          );
 
-        return page.copyWith(components: updatedComponents);
-      }).toList();
+          return page.copyWith(components: updatedComponents);
+        },
+      );
 
       final formWithValues = formModel.copyWith(pages: updatedPages);
       final formJson = formWithValues.toJson();

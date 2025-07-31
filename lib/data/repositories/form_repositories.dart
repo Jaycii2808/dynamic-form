@@ -64,7 +64,10 @@ class FormMemoryRepository {
 
   static Future<void> persistTemplates() async {
     final prefs = await SharedPreferences.getInstance();
-    final templatesList = _formTemplates.values.map((t) => t.toJson()).toList();
+    final templatesList = List<Map<String, dynamic>>.generate(
+      _formTemplates.values.length,
+      (index) => _formTemplates.values.elementAt(index).toJson(),
+    );
     await prefs.setString(_templatesKey, jsonEncode(templatesList));
   }
 

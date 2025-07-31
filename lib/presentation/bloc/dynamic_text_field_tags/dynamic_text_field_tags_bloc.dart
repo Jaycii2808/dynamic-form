@@ -59,11 +59,17 @@ class DynamicTextFieldTagsBloc
     if (value is String && value.isNotEmpty) {
       // If value is a comma-separated string, split it
       debugPrint('DEBUG: _getInitialTags value is a non-empty String: $value');
-      return value
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
+      final splitValues = value.split(',');
+      final trimmedValues = <String>[];
+
+      for (int i = 0; i < splitValues.length; i++) {
+        final trimmed = splitValues[i].trim();
+        if (trimmed.isNotEmpty) {
+          trimmedValues.add(trimmed);
+        }
+      }
+
+      return trimmedValues;
     }
     final initialTags = config['initial_tags'] ?? config['initialTags'];
     debugPrint(

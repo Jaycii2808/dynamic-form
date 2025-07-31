@@ -160,17 +160,21 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
   List<DynamicFormPageModel> _convertToDynamicFormPages(
     List<SavedFormPageDataModel> savedPages,
   ) {
-    return savedPages.map((savedPage) {
-      // Convert each saved page to dynamic form page
-      return DynamicFormPageModel(
-        pageId: savedPage.pageId, // Keep the same page ID
-        title: savedPage.title, // Keep the same title
-        order: savedPage.order, // Keep the same order
-        components: _convertPageComponents(
-          savedPage.components,
-        ), // Convert components
-      );
-    }).toList();
+    return List<DynamicFormPageModel>.generate(
+      savedPages.length,
+      (index) {
+        final savedPage = savedPages[index];
+        // Convert each saved page to dynamic form page
+        return DynamicFormPageModel(
+          pageId: savedPage.pageId, // Keep the same page ID
+          title: savedPage.title, // Keep the same title
+          order: savedPage.order, // Keep the same order
+          components: _convertPageComponents(
+            savedPage.components,
+          ), // Convert components
+        );
+      },
+    );
   }
 
   /// Convert saved form components to dynamic form components
@@ -180,10 +184,14 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
   List<DynamicFormModel> _convertPageComponents(
     List<SavedFormComponentDataModel> savedComponents,
   ) {
-    return savedComponents.map((savedComponent) {
-      // Use the built-in conversion method to transform each component
-      return savedComponent.toDynamicFormModel();
-    }).toList();
+    return List<DynamicFormModel>.generate(
+      savedComponents.length,
+      (index) {
+        final savedComponent = savedComponents[index];
+        // Use the built-in conversion method to transform each component
+        return savedComponent.toDynamicFormModel();
+      },
+    );
   }
 
   /// Get component values for preview screen

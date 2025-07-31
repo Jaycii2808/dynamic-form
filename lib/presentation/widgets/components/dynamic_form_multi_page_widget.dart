@@ -10,7 +10,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_mult
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
@@ -162,7 +162,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               String? targetPage = data?.targetPage;
               if (targetPage == null || targetPage.isEmpty) {
                 final validation = updatedComponent.validation;
-                if (validation is ButtonConditionValidation) {
+                if (validation is ButtonConditionValidationModel) {
                   targetPage = validation.nextPage;
                 }
               }
@@ -275,7 +275,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                         // Handle previous navigation
                         final validation = previousButton.validation;
                         String? targetPage;
-                        if (validation is ButtonConditionValidation) {
+                        if (validation is ButtonConditionValidationModel) {
                           targetPage = validation.previousPage;
                         }
                         debugPrint(
@@ -321,7 +321,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
                           String? targetPage = data?.targetPage;
                           if (targetPage == null || targetPage.isEmpty) {
                             final validation = nextButton.validation;
-                            if (validation is ButtonConditionValidation) {
+                            if (validation is ButtonConditionValidationModel) {
                               targetPage = validation.nextPage;
                             }
                           }
@@ -486,19 +486,28 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
       if (state.formModel != null) {
         // Create updated form model with current component values
-        final updatedPages = state.formModel!.pages.map((page) {
-          final updatedComponents = page.components.map((component) {
-            if (componentValues.hasValue(component.id)) {
-              final updatedConfig = component.config.copyWith(
-                value: componentValues.getValue(component.id),
-              );
-              return component.copyWith(config: updatedConfig);
-            }
-            return component;
-          }).toList();
+        final updatedPages = List<FormForMultiPageModel>.generate(
+          state.formModel!.pages.length,
+          (pageIndex) {
+            final page = state.formModel!.pages[pageIndex];
+            final updatedComponents =
+                List<FormComponentMultiPageModel>.generate(
+                  page.components.length,
+                  (componentIndex) {
+                    final component = page.components[componentIndex];
+                    if (componentValues.hasValue(component.id)) {
+                      final updatedConfig = component.config.copyWith(
+                        value: componentValues.getValue(component.id),
+                      );
+                      return component.copyWith(config: updatedConfig);
+                    }
+                    return component;
+                  },
+                );
 
-          return page.copyWith(components: updatedComponents);
-        }).toList();
+            return page.copyWith(components: updatedComponents);
+          },
+        );
 
         final updatedFormModel = state.formModel!.copyWith(pages: updatedPages);
 
@@ -595,7 +604,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     for (final button in [nextButton]) {
       if (button != null) {
         final validation = button.validation;
-        if (validation is ButtonConditionValidation) {
+        if (validation is ButtonConditionValidationModel) {
           for (final condition in validation.conditions) {
             if (condition.isRequired == true &&
                 condition.idComponent.isNotEmpty) {
@@ -671,7 +680,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     );
 
     // Handle ButtonConditionValidation specifically
-    if (validation is ButtonConditionValidation) {
+    if (validation is ButtonConditionValidationModel) {
       final conditions = validation.conditions;
       debugPrint('🔍 [ButtonValidation] Conditions: $conditions');
 
@@ -715,7 +724,11 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: errors.map((e) => Text('- $e')).toList(),
+                //determines how many error messages are in the errors list
+                children: List<Widget>.generate(
+                  errors.length,
+                  (index) => Text('- ${errors[index]}'),
+                ),
               ),
               actions: [
                 TextButton(

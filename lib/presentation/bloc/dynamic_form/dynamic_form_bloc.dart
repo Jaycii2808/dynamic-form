@@ -137,7 +137,6 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             errorText: event.value.errorText,
           ),
           style: const StyleModel(),
-
         );
 
         // Add the new component to the list
@@ -196,27 +195,31 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         '🔍 Marking Save button as preview-validated: ${event.saveButtonId}',
       );
 
-      final updatedComponents = state.page!.components.map((component) {
-        if (component.id == event.saveButtonId &&
-            component.config?.action == ButtonAction.submitForm.value) {
-          final configMap = component.config?.toJson() ?? {};
-          configMap['hasPreviewedAndValid'] = true;
+      final updatedComponents = List<DynamicFormModel>.generate(
+        state.page!.components.length,
+        (index) {
+          final component = state.page!.components[index];
+          if (component.id == event.saveButtonId &&
+              component.config?.action == ButtonAction.submitForm.value) {
+            final configMap = component.config?.toJson() ?? {};
+            configMap['hasPreviewedAndValid'] = true;
 
-          return DynamicFormModel(
-            id: component.id,
-            type: component.type,
-            order: component.order,
-            config: ConfigModel.fromJson(configMap),
-            style: component.style,
-            inputTypes: component.inputTypes,
-            variants: component.variants,
-            states: component.states,
-            validation: component.validation,
-            children: component.children,
-          );
-        }
-        return component;
-      }).toList();
+            return DynamicFormModel(
+              id: component.id,
+              type: component.type,
+              order: component.order,
+              config: ConfigModel.fromJson(configMap),
+              style: component.style,
+              inputTypes: component.inputTypes,
+              variants: component.variants,
+              states: component.states,
+              validation: component.validation,
+              children: component.children,
+            );
+          }
+          return component;
+        },
+      );
 
       final updatedPage = DynamicFormPageModel(
         pageId: state.page!.pageId,
@@ -361,73 +364,80 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   DynamicFormPageModel _updateButtonStates(DynamicFormPageModel page) {
-    final updatedComponents = page.components.map((component) {
-      if (component.type.toString().contains('button')) {
-        final action = component.config?.action;
-        final conditions = component.config?.conditions;
+    final updatedComponents = List<DynamicFormModel>.generate(
+      page.components.length,
+      (index) {
+        final component = page.components[index];
+        if (component.type.toString().contains('button')) {
+          final action = component.config?.action;
+          final conditions = component.config?.conditions;
 
-        // Handle Save buttons (submit_form action)
-        if (action == ButtonAction.submitForm.value &&
-            conditions != null &&
-            conditions.isNotEmpty) {
-          final buttonConditions = conditions
-              .map((c) => ButtonCondition.fromJson(c.toJson()))
-              .toList();
+          // Handle Save buttons (submit_form action)
+          if (action == ButtonAction.submitForm.value &&
+              conditions != null &&
+              conditions.isNotEmpty) {
+            final buttonConditions = List<ButtonCondition>.generate(
+              conditions.length,
+              (conditionIndex) => ButtonCondition.fromJson(
+                conditions[conditionIndex].toJson(),
+              ),
+            );
 
-          debugPrint('=== Validating Save Button (${component.id}) ===');
-          debugPrint('Total conditions: ${buttonConditions.length}');
+            debugPrint('=== Validating Save Button (${component.id}) ===');
+            debugPrint('Total conditions: ${buttonConditions.length}');
 
-          // Use centralized validation
-          final validationResult = ValidationUtils.validateButtonConditions(
-            buttonConditions,
-            page.components,
-          );
+            // Use centralized validation
+            final validationResult = ValidationUtils.validateButtonConditions(
+              buttonConditions,
+              page.components,
+            );
 
-          final allConditionsValid = validationResult.isValid;
-          final errorMessage = validationResult.errorMessage;
+            final allConditionsValid = validationResult.isValid;
+            final errorMessage = validationResult.errorMessage;
 
-          if (validationResult.failedCondition != null) {
+            if (validationResult.failedCondition != null) {
+              debugPrint(
+                '❌ FAILED: ${validationResult.failedCondition!.componentId} - $errorMessage',
+              );
+            } else {
+              debugPrint('✅ All conditions PASSED');
+            }
+
+            // Save button logic: enabled only after preview validates successfully
+            final hasPreviewedAndValid =
+                component.config?.toJson()['hasPreviewedAndValid'] ?? false;
+            final canSave = allConditionsValid && hasPreviewedAndValid;
+
             debugPrint(
-              '❌ FAILED: ${validationResult.failedCondition!.componentId} - $errorMessage',
+              '=== Save Button Result: allValid=$allConditionsValid, hasPreviewedAndValid=$hasPreviewedAndValid, canSave=$canSave ===',
+            );
+
+            final configMap = component.config?.toJson() ?? {};
+            configMap.addAll({
+              'canSave': canSave,
+              'allConditionsValid': allConditionsValid,
+              'errorMessage': errorMessage,
+              'disabled': !canSave,
+            });
+
+            return ComponentUtils.updateComponentConfig(
+              component,
+              ConfigModel.fromJson(configMap),
             );
           } else {
-            debugPrint('✅ All conditions PASSED');
+            // For non-Save buttons, ensure they're always visible and enabled
+            final configMap = component.config?.toJson() ?? {};
+            configMap.addAll({'isVisible': true, 'disabled': false});
+
+            return ComponentUtils.updateComponentConfig(
+              component,
+              ConfigModel.fromJson(configMap),
+            );
           }
-
-          // Save button logic: enabled only after preview validates successfully
-          final hasPreviewedAndValid =
-              component.config?.toJson()['hasPreviewedAndValid'] ?? false;
-          final canSave = allConditionsValid && hasPreviewedAndValid;
-
-          debugPrint(
-            '=== Save Button Result: allValid=$allConditionsValid, hasPreviewedAndValid=$hasPreviewedAndValid, canSave=$canSave ===',
-          );
-
-          final configMap = component.config?.toJson() ?? {};
-          configMap.addAll({
-            'canSave': canSave,
-            'allConditionsValid': allConditionsValid,
-            'errorMessage': errorMessage,
-            'disabled': !canSave,
-          });
-
-          return ComponentUtils.updateComponentConfig(
-            component,
-            ConfigModel.fromJson(configMap),
-          );
-        } else {
-          // For non-Save buttons, ensure they're always visible and enabled
-          final configMap = component.config?.toJson() ?? {};
-          configMap.addAll({'isVisible': true, 'disabled': false});
-
-          return ComponentUtils.updateComponentConfig(
-            component,
-            ConfigModel.fromJson(configMap),
-          );
         }
-      }
-      return component;
-    }).toList();
+        return component;
+      },
+    );
 
     return DynamicFormPageModel(
       pageId: page.pageId,
@@ -484,35 +494,40 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     String targetId,
     dynamic value,
   ) {
-    return components.map((component) {
-      if (component.id == targetId) {
-        // Found target - update it
-        return _updateComponentWithValue(component, value);
-      } else if (component.children != null && component.children!.isNotEmpty) {
-        // Search and update in children
-        final updatedChildren = _updateComponentsRecursive(
-          component.children!,
-          targetId,
-          value,
-        );
+    return List<DynamicFormModel>.generate(
+      components.length,
+      (index) {
+        final component = components[index];
+        if (component.id == targetId) {
+          // Found target - update it
+          return _updateComponentWithValue(component, value);
+        } else if (component.children != null &&
+            component.children!.isNotEmpty) {
+          // Search and update in children
+          final updatedChildren = _updateComponentsRecursive(
+            component.children!,
+            targetId,
+            value,
+          );
 
-        // Return component with updated children
-        return DynamicFormModel(
-          id: component.id,
-          type: component.type,
-          order: component.order,
-          config: component.config,
-          style: component.style,
-          inputTypes: component.inputTypes,
-          variants: component.variants,
-          states: component.states,
-          validation: component.validation,
-          children: updatedChildren,
-        );
-      } else {
-        // No match and no children - return as is
-        return component;
-      }
-    }).toList();
+          // Return component with updated children
+          return DynamicFormModel(
+            id: component.id,
+            type: component.type,
+            order: component.order,
+            config: component.config,
+            style: component.style,
+            inputTypes: component.inputTypes,
+            variants: component.variants,
+            states: component.states,
+            validation: component.validation,
+            children: updatedChildren,
+          );
+        } else {
+          // No match and no children - return as is
+          return component;
+        }
+      },
+    );
   }
 }

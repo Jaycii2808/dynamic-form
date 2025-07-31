@@ -1,28 +1,28 @@
 import 'package:equatable/equatable.dart';
 import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 
-class ButtonConditionValidation extends BaseValidation {
-  final List<ButtonCondition> conditions;
+class ButtonConditionValidationModel extends BaseValidation {
+  final List<ButtonConditionModel> conditions;
   final String? nextPage;
   final String? previousPage;
 
-  const ButtonConditionValidation({
+  const ButtonConditionValidationModel({
     this.conditions = const [],
     this.nextPage,
     this.previousPage,
   });
 
-  factory ButtonConditionValidation.fromJson(Map<String, dynamic> json) {
+  factory ButtonConditionValidationModel.fromJson(Map<String, dynamic> json) {
     final conditionsJson = json['condition'] as List<dynamic>?;
-    List<ButtonCondition> conditions = [];
+    List<ButtonConditionModel> conditions = [];
 
     if (conditionsJson != null) {
       conditions = conditionsJson
-          .map((item) => ButtonCondition.fromJson(item as Map<String, dynamic>))
+          .map((item) => ButtonConditionModel.fromJson(item as Map<String, dynamic>))
           .toList();
     }
     // Don't assign next_page/previous_page to conditions by mistake
-    return ButtonConditionValidation(
+    return ButtonConditionValidationModel(
       conditions: conditions,
       nextPage: json['next_page'] as String?,
       previousPage: json['previous_page'] as String?,
@@ -41,12 +41,12 @@ class ButtonConditionValidation extends BaseValidation {
   @override
   List<Object?> get props => [conditions, nextPage, previousPage];
 
-  ButtonConditionValidation copyWith({
-    List<ButtonCondition>? conditions,
+  ButtonConditionValidationModel copyWith({
+    List<ButtonConditionModel>? conditions,
     String? nextPage,
     String? previousPage,
   }) {
-    return ButtonConditionValidation(
+    return ButtonConditionValidationModel(
       conditions: conditions ?? this.conditions,
       nextPage: nextPage ?? this.nextPage,
       previousPage: previousPage ?? this.previousPage,
@@ -54,14 +54,14 @@ class ButtonConditionValidation extends BaseValidation {
   }
 }
 
-class ButtonCondition extends Equatable {
+class ButtonConditionModel extends Equatable {
   final String idComponent;
   final bool? isRequired;
   final String? errorMessage;
   final String? regex;
   final String? regexError;
 
-  const ButtonCondition({
+  const ButtonConditionModel({
     required this.idComponent,
     this.isRequired,
     this.errorMessage,
@@ -69,8 +69,8 @@ class ButtonCondition extends Equatable {
     this.regexError,
   });
 
-  factory ButtonCondition.fromJson(Map<String, dynamic> json) {
-    return ButtonCondition(
+  factory ButtonConditionModel.fromJson(Map<String, dynamic> json) {
+    return ButtonConditionModel(
       idComponent: json['id_component']?.toString() ?? '',
       isRequired: json['is_required'] is bool ? json['is_required'] : null,
       errorMessage: json['error_message']?.toString(),
@@ -101,14 +101,14 @@ class ButtonCondition extends Equatable {
     regexError,
   ];
 
-  ButtonCondition copyWith({
+  ButtonConditionModel copyWith({
     String? idComponent,
     bool? isRequired,
     String? errorMessage,
     String? regex,
     String? regexError,
   }) {
-    return ButtonCondition(
+    return ButtonConditionModel(
       idComponent: idComponent ?? this.idComponent,
       isRequired: isRequired ?? this.isRequired,
       errorMessage: errorMessage ?? this.errorMessage,

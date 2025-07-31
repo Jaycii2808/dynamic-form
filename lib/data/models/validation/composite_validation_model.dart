@@ -1,23 +1,23 @@
 import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
 import 'package:dynamic_form_bi/data/models/validation/max_selections_validation.dart';
-import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
 
-class CompositeValidation extends BaseValidation {
+class CompositeValidationModel extends BaseValidation {
   final RequiredValidation? required;
   final MaxSelectionsValidation? maxSelections;
-  final ButtonConditionValidation? buttonCondition;
+  final ButtonConditionValidationModel? buttonCondition;
 
-  const CompositeValidation({
+  const CompositeValidationModel({
     this.required,
     this.maxSelections,
     this.buttonCondition,
   });
 
-  factory CompositeValidation.fromJson(Map<String, dynamic> json) {
+  factory CompositeValidationModel.fromJson(Map<String, dynamic> json) {
     RequiredValidation? required;
     MaxSelectionsValidation? maxSelections;
-    ButtonConditionValidation? buttonCondition;
+    ButtonConditionValidationModel? buttonCondition;
 
     // Parse required validation
     if (json['required'] != null) {
@@ -31,10 +31,10 @@ class CompositeValidation extends BaseValidation {
 
     // Parse button condition validation
     if (json['condition'] != null) {
-      buttonCondition = ButtonConditionValidation.fromJson(json);
+      buttonCondition = ButtonConditionValidationModel.fromJson(json);
     }
 
-    return CompositeValidation(
+    return CompositeValidationModel(
       required: required,
       maxSelections: maxSelections,
       buttonCondition: buttonCondition,
@@ -57,12 +57,12 @@ class CompositeValidation extends BaseValidation {
   @override
   List<Object?> get props => [required, maxSelections, buttonCondition];
 
-  CompositeValidation copyWith({
+  CompositeValidationModel copyWith({
     RequiredValidation? required,
     MaxSelectionsValidation? maxSelections,
-    ButtonConditionValidation? buttonCondition,
+    ButtonConditionValidationModel? buttonCondition,
   }) {
-    return CompositeValidation(
+    return CompositeValidationModel(
       required: required ?? this.required,
       maxSelections: maxSelections ?? this.maxSelections,
       buttonCondition: buttonCondition ?? this.buttonCondition,

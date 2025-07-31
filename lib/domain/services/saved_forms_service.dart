@@ -32,7 +32,12 @@ class SavedFormsService {
 
       savedForms.add(newForm);
 
-      final jsonList = savedForms.map((form) => form.toJson()).toList();
+      // Convert to JSON without using map
+      final List<Map<String, dynamic>> jsonList = [];
+      for (final form in savedForms) {
+        jsonList.add(form.toJson());
+      }
+
       await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
       debugPrint('✅ Form saved successfully: $name');
@@ -68,7 +73,12 @@ class SavedFormsService {
 
       savedForms.add(newForm);
 
-      final jsonList = savedForms.map((form) => form.toJson()).toList();
+      // Convert to JSON without using map
+      final List<Map<String, dynamic>> jsonList = [];
+      for (final form in savedForms) {
+        jsonList.add(form.toJson());
+      }
+
       await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
       debugPrint('✅ Form saved successfully with custom format: $name');
@@ -88,8 +98,18 @@ class SavedFormsService {
       if (jsonString == null) return [];
 
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
-      return jsonList.map((json) => SavedFormModel.fromJson(json)).toList()
-        ..sort((a, b) => b.savedAt.compareTo(a.savedAt)); // Latest first
+
+      // Convert JSON to SavedFormModel without using map
+      final List<SavedFormModel> savedForms = [];
+      for (final json in jsonList) {
+        final formModel = SavedFormModel.fromJson(json as Map<String, dynamic>);
+        savedForms.add(formModel);
+      }
+
+      // Sort by savedAt (latest first)
+      savedForms.sort((a, b) => b.savedAt.compareTo(a.savedAt));
+
+      return savedForms;
     } catch (e) {
       debugPrint('❌ Error loading saved forms: $e');
       return [];
@@ -104,7 +124,12 @@ class SavedFormsService {
 
       savedForms.removeWhere((form) => form.id == formId);
 
-      final jsonList = savedForms.map((form) => form.toJson()).toList();
+      // Convert to JSON without using map
+      final List<Map<String, dynamic>> jsonList = [];
+      for (final form in savedForms) {
+        jsonList.add(form.toJson());
+      }
+
       await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
       debugPrint('✅ Form deleted successfully: $formId');
@@ -136,7 +161,12 @@ class SavedFormsService {
       if (index != -1) {
         savedForms[index] = updatedForm;
 
-        final jsonList = savedForms.map((form) => form.toJson()).toList();
+        // Convert to JSON without using map
+        final List<Map<String, dynamic>> jsonList = [];
+        for (final form in savedForms) {
+          jsonList.add(form.toJson());
+        }
+
         await prefs.setString(_savedFormsKey, jsonEncode(jsonList));
 
         debugPrint('✅ Form updated successfully: ${updatedForm.name}');
@@ -153,7 +183,15 @@ class SavedFormsService {
   Future<SavedFormModel?> getSavedFormById(String formId) async {
     try {
       final savedForms = await getSavedForms();
-      return savedForms.firstWhere((form) => form.id == formId);
+
+      // Find form by ID without using firstWhere
+      for (final form in savedForms) {
+        if (form.id == formId) {
+          return form;
+        }
+      }
+
+      return null;
     } catch (e) {
       debugPrint('❌ Error getting saved form by ID: $e');
       return null;

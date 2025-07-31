@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
-import 'package:dynamic_form_bi/data/models/validation/button_condition_validation.dart';
-import 'package:dynamic_form_bi/data/models/validation/composite_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/composite_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/max_selections_validation.dart';
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
 
@@ -12,7 +12,7 @@ class ValidationFactory {
     final hasMultipleValidations = _hasMultipleValidations(json);
 
     if (hasMultipleValidations) {
-      return CompositeValidation.fromJson(json);
+      return CompositeValidationModel.fromJson(json);
     }
 
     // Check for specific validation types
@@ -25,7 +25,7 @@ class ValidationFactory {
     }
 
     if (json['condition'] != null) {
-      return ButtonConditionValidation.fromJson(json);
+      return ButtonConditionValidationModel.fromJson(json);
     }
 
     // Check if it's a direct validation object
@@ -40,7 +40,7 @@ class ValidationFactory {
 
     // Check if it's a button condition validation
     if (json['id_component'] != null) {
-      return ButtonConditionValidation.fromJson({
+      return ButtonConditionValidationModel.fromJson({
         'condition': [json],
       });
     }
@@ -50,7 +50,7 @@ class ValidationFactory {
   }
 
   static BaseValidation empty() {
-    return const CompositeValidation();
+    return const CompositeValidationModel();
   }
 
   static bool _hasMultipleValidations(Map<String, dynamic> json) {

@@ -107,17 +107,16 @@ class DynamicTextFieldTags extends StatelessWidget {
             : Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
-                children: state.selectedTags
-                    .map(
-                      (tag) => _buildTagChip(
-                        context,
-                        tag,
-                        state.component!.style,
-                        isDisabled,
-                        allowRemoval: false,
-                      ),
-                    )
-                    .toList(),
+                children: List<Widget>.generate(
+                  state.selectedTags.length,
+                  (index) => _buildTagChip(
+                    context,
+                    state.selectedTags[index],
+                    state.component!.style,
+                    isDisabled,
+                    allowRemoval: false,
+                  ),
+                ),
               ),
       ),
     );
@@ -142,16 +141,15 @@ class DynamicTextFieldTags extends StatelessWidget {
             child: Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
-              children: state.selectedTags
-                  .map(
-                    (tag) => _buildTagChip(
-                      context,
-                      tag,
-                      state.component!.style,
-                      false,
-                    ),
-                  )
-                  .toList(),
+              children: List<Widget>.generate(
+                state.selectedTags.length,
+                (index) => _buildTagChip(
+                  context,
+                  state.selectedTags[index],
+                  state.component!.style,
+                  false,
+                ),
+              ),
             ),
           ),
         Autocomplete<String>(
