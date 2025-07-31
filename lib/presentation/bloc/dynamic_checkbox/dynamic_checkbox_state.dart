@@ -34,7 +34,7 @@ class DynamicCheckboxLoading extends DynamicCheckboxState {
 
 class DynamicCheckboxSuccess extends DynamicCheckboxState {
   final StyleModel? styleModel;
-  final InputConfig? inputConfig;
+  final InputValidationModel? inputConfig;
   final bool isSelected;
   final bool isEditable;
   final FocusNode? focusNode;
@@ -93,7 +93,7 @@ class DynamicCheckboxSuccess extends DynamicCheckboxState {
     StatesEnum? formState,
     String? errorText,
     StyleModel? styleModel,
-    InputConfig? inputConfig,
+    InputValidationModel? inputConfig,
     bool? isSelected,
     bool? isEditable,
     FocusNode? focusNode,

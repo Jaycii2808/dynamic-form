@@ -69,7 +69,7 @@ class DynamicTextAreaBloc
       emit(
         DynamicTextAreaSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             initialComponent.config?.toJson() ?? {},
           ),
           styleModel: initialComponent.style,
@@ -131,7 +131,7 @@ class DynamicTextAreaBloc
         DynamicTextAreaSuccess(
           component: updatedComponent,
           errorText: validationError,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             updatedComponent.config?.toJson() ?? {},
           ),
           styleModel: updatedComponent.style,

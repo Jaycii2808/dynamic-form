@@ -26,53 +26,32 @@ class DynamicTextArea extends StatelessWidget {
     return BlocConsumer<DynamicTextAreaBloc, DynamicTextAreaState>(
       listener: (context, state) {
         if (state is DynamicTextAreaSuccess) {
-          // Pass simple value instead of TextFieldValueModel
           final simpleValue = state.component?.config?.value?.toString() ?? '';
           onComplete(simpleValue);
 
-          // Update text controller if needed
           final textController = state.textController;
           if (textController != null) {
             final currentText = textController.text;
-            final expectedText =
-                state.component?.config?.value?.toString() ?? '';
+            final expectedText = state.component?.config?.value?.toString() ?? '';
             if (currentText != expectedText) {
               textController.text = expectedText;
             }
           }
         } else if (state is DynamicTextAreaError) {
-          // Pass simple value instead of TextFieldValueModel
           final simpleValue = state.component?.config?.value?.toString() ?? '';
           onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
-        } else if (state is DynamicTextAreaInitial ||
-            state is DynamicTextAreaLoading) {
+        } else if (state is DynamicTextAreaInitial || state is DynamicTextAreaLoading) {
           debugPrint(
             'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config!.value}',
           );
         } else {
-          // Pass simple value instead of TextFieldValueModel
           final simpleValue = state.component?.config?.value?.toString() ?? '';
           onComplete(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
       builder: (context, state) {
-        // if (state is DynamicTextAreaLoading ||
-        //     state is DynamicTextAreaInitial) {
-        //   return const Center(child: Text("CC"),);
-        // }
-        // return _buildBody(
-        //   state.styleModel!,
-        //   state.inputConfig!,
-        //   state.component!,
-        //   state.formState!,
-        //   state.errorText!,
-        //   state.textController!,
-        //   state.focusNode!,
-        //   context,
-        // );
-
         if (state is DynamicTextAreaSuccess) {
           return _buildBody(
             state.styleModel!,
@@ -93,7 +72,7 @@ class DynamicTextArea extends StatelessWidget {
 
   Widget _buildBody(
     StyleModel styleModel,
-    InputConfig inputConfig,
+    InputValidationModel inputConfig,
     DynamicFormModel component,
     StatesEnum currentState,
     String? errorText,
@@ -101,9 +80,6 @@ class DynamicTextArea extends StatelessWidget {
     FocusNode focusNode,
     BuildContext context,
   ) {
-    // Determine state from config['current_state'] if available
-    //final StatesEnum? stateKey = component.config?.currentState;
-    //final StatesEnum effectiveState = stateKey ?? currentState;
     return Container(
       key: Key(component.id),
       padding: const EdgeInsets.symmetric(
@@ -133,9 +109,7 @@ class DynamicTextArea extends StatelessWidget {
     );
   }
 
-  // Helper to convert string to StatesModel
-
-  Widget _buildLabel(StyleModel styleModel, InputConfig inputConfig) {
+  Widget _buildLabel(StyleModel styleModel, InputValidationModel inputConfig) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -167,7 +141,7 @@ class DynamicTextArea extends StatelessWidget {
 
   Widget _buildTextField({
     required StyleModel styleModel,
-    required InputConfig inputConfig,
+    required InputValidationModel inputConfig,
     required DynamicFormModel component,
     required StatesEnum currentState,
     required String? errorText,
@@ -175,7 +149,6 @@ class DynamicTextArea extends StatelessWidget {
     required FocusNode focusNode,
     required BuildContext context,
   }) {
-    // Get state key
     final StatesEnum stateKey = currentState;
     final StyleStatesModel? stateStyle = ReusedWidget.getStateStyle(
       component.states,
@@ -208,8 +181,7 @@ class DynamicTextArea extends StatelessWidget {
           vertical: 10.0,
           horizontal: 12.0,
         ),
-        // filled: styleModel.fillColor != Colors.transparent,
-        // fillColor: styleModel.fillColor,
+
         helperText: helperText,
         helperStyle: TextStyle(
           color: helperTextColor,
@@ -243,36 +215,4 @@ class DynamicTextArea extends StatelessWidget {
       borderSide: BorderSide(color: color, width: width),
     );
   }
-
-  // String _componentStateEnumToKey(String state) {
-  //   switch (state) {
-  //     case StatesEnum.base:
-  //       return StatesEnum.base;
-  //     case StatesEnum.error:
-  //       return StatesEnum.error;
-  //     case StatesEnum.success:
-  //       return StatesEnum.success;
-  //     case StatesEnum.focused:
-  //       return StatesEnum.focused;
-  //     case 'enabled':
-  //       return 'enabled';
-  //     default:
-  //       return StatesEnum.base;
-  //   }
-  // }
-
-  // Color? _parseColor(dynamic value) {
-  //   if (value is int) return Color(value);
-  //   if (value is String) {
-  //     if (value.startsWith('#')) {
-  //       final hex = value.replaceAll('#', '');
-  //       if (hex.length == 6) {
-  //         return Color(int.parse('FF$hex', radix: 16));
-  //       } else if (hex.length == 8) {
-  //         return Color(int.parse(hex, radix: 16));
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // }
 }

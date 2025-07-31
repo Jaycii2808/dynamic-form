@@ -12,7 +12,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
   final RemoteConfigService _remoteConfigService;
-  String? _loadedFormJsonString;
 
   MultiPageFormBloc({required RemoteConfigService remoteConfigService})
     : _remoteConfigService = remoteConfigService,
@@ -34,7 +33,6 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       if (jsonString.isEmpty) {
         throw Exception('Remote config key is empty or not found.');
       }
-      _loadedFormJsonString = jsonString;
       final formModel = DynamicMultiPageFormModel.fromJson(
         jsonDecode(jsonString),
       );
@@ -197,35 +195,46 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
 
       await Future.delayed(const Duration(seconds: 1));
 
-      final formJson = jsonDecode(_loadedFormJsonString!);
-      for (var page in formJson['pages']) {
-        for (var component in page['components']) {
-          final id = component['id'];
-          if (currentState.componentValues.hasValue(id)) {
-            component['config']['value'] = currentState.componentValues
-                .getValue(id);
+      // Use model instead of raw JSON
+      final formModel = currentState.formModel!;
+
+      // Create a copy of the form model with updated values
+      final updatedPages = formModel.pages.map((page) {
+        final updatedComponents = page.components.map((component) {
+          if (currentState.componentValues.hasValue(component.id)) {
+            final updatedConfig = component.config.copyWith(
+              value: currentState.componentValues.getValue(component.id),
+            );
+            return component.copyWith(config: updatedConfig);
           }
-        }
-      }
-      final formWithValue = formJson;
+          return component;
+        }).toList();
+
+        return page.copyWith(components: updatedComponents);
+      }).toList();
+
+      final formWithValues = formModel.copyWith(pages: updatedPages);
+      final formJson = formWithValues.toJson();
 
       await SavedFormsService().saveFormWithCustomFormat(
-        formId:
-            formWithValue['formId'] ??
-            DateTime.now().millisecondsSinceEpoch.toString(),
-        name: formWithValue['name'] ?? 'No name',
+        formId: formWithValues.formId.isNotEmpty
+            ? formWithValues.formId
+            : DateTime.now().millisecondsSinceEpoch.toString(),
+        name: formWithValues.name.isNotEmpty ? formWithValues.name : 'No name',
         description: '',
-        formData: formWithValue,
-        originalConfigKey: formWithValue['formId'] ?? '',
+        formData: formJson,
+        originalConfigKey: formWithValues.formId.isNotEmpty
+            ? formWithValues.formId
+            : '',
       );
 
-      debugPrint(
-        jsonEncode({
-          'timestamp': DateTime.now().toIso8601String(),
-          'form': formWithValue,
-          StatesEnum.success: true,
-        }),
-      );
+      // debugPrint(
+      //   jsonEncode({
+      //     'timestamp': DateTime.now().toIso8601String(),
+      //     'form': formJson,
+      //     StatesEnum.success: true,
+      //   }),
+      // );
 
       emit(
         MultiPageFormSuccess(

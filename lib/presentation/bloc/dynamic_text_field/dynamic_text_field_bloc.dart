@@ -57,7 +57,7 @@ class DynamicTextFieldBloc
       emit(
         DynamicTextFieldSuccess(
           component: component,
-          inputConfig: InputConfig.fromJson(component.config?.toJson() ?? {}),
+          inputConfig: InputValidationModel.fromJson(component.config?.toJson() ?? {}),
           styleModel: component.style,
           formState: component.config?.currentState ?? StatesEnum.base,
           textController: _textController,
@@ -122,7 +122,7 @@ class DynamicTextFieldBloc
       emit(
         successState.copyWith(
           component: updatedComponent,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             updatedComponent.config?.toJson() ?? {},
           ),
         ),
@@ -202,7 +202,7 @@ class DynamicTextFieldBloc
         DynamicTextFieldSuccess(
           component: updatedComponent,
           errorText: validationError,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             updatedComponent.config?.toJson() ?? {},
           ),
           styleModel: updatedComponent.style,
@@ -239,7 +239,7 @@ class DynamicTextFieldBloc
       emit(
         DynamicTextFieldSuccess(
           component: event.component,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             event.component.config?.toJson() ?? {},
           ),
           styleModel: event.component.style,

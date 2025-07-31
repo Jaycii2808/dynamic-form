@@ -63,7 +63,7 @@ class DynamicSelectorButton extends StatelessWidget {
   Widget _buildBody(
     BuildContext context,
     StyleModel styleModel,
-    InputConfig inputConfig,
+    InputValidationModel inputConfig,
     DynamicFormModel component,
   ) {
     final config = component.config;

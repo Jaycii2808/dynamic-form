@@ -89,7 +89,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   Widget _buildBody(
     BuildContext context,
     StyleModel styleModel,
-    InputConfig inputConfig,
+    InputValidationModel inputConfig,
     DynamicFormModel component,
     StatesEnum currentState,
     String? errorText,
@@ -123,7 +123,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
 
   Widget _buildLabel(
     StyleModel styleModel,
-    InputConfig inputConfig,
+    InputValidationModel inputConfig,
     DynamicFormModel component,
   ) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
@@ -159,7 +159,7 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   Widget _buildDateTimeRangeField(
     BuildContext context,
     StyleModel styleModel,
-    InputConfig inputConfig,
+    InputValidationModel inputConfig,
     DynamicFormModel component,
     StatesEnum currentState,
     String? errorText,

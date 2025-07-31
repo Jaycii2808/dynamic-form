@@ -53,7 +53,7 @@ class DynamicSelectorButtonBloc
       emit(
         DynamicSelectorButtonSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             initialComponent.config?.toJson() ?? {},
           ),
           styleModel: initialComponent.style,
@@ -102,7 +102,7 @@ class DynamicSelectorButtonBloc
     emit(
       DynamicSelectorButtonSuccess(
         component: updatedComponent,
-        inputConfig: InputConfig.fromJson(
+        inputConfig: InputValidationModel.fromJson(
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style,

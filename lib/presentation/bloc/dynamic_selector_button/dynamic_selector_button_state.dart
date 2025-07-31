@@ -6,7 +6,7 @@ import 'package:equatable/equatable.dart';
 
 abstract class DynamicSelectorButtonState extends Equatable {
   final DynamicFormModel? component;
-  final InputConfig? inputConfig;
+  final InputValidationModel? inputConfig;
   final StyleModel? styleModel;
   final StatesEnum? formState;
   final String? errorText;

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 abstract class DynamicTextFieldState extends Equatable {
   final DynamicFormModel? component;
-  final InputConfig? inputConfig;
+  final InputValidationModel? inputConfig;
   final StyleModel? styleModel;
   final StatesEnum? formState;
   final String? errorText;
@@ -69,7 +69,7 @@ class DynamicTextFieldLoading extends DynamicTextFieldState {
 class DynamicTextFieldSuccess extends DynamicTextFieldState {
   const DynamicTextFieldSuccess({
     required DynamicFormModel super.component,
-    required InputConfig super.inputConfig,
+    required InputValidationModel super.inputConfig,
     required StyleModel super.styleModel,
     required StatesEnum super.formState,
     required TextEditingController super.textController,
@@ -79,7 +79,7 @@ class DynamicTextFieldSuccess extends DynamicTextFieldState {
 
   DynamicTextFieldSuccess copyWith({
     DynamicFormModel? component,
-    InputConfig? inputConfig,
+    InputValidationModel? inputConfig,
     StyleModel? styleModel,
     StatesEnum? formState,
     String? errorText,

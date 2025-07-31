@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 abstract class DynamicTextAreaState extends Equatable {
   final DynamicFormModel? component;
-  final InputConfig? inputConfig;
+  final InputValidationModel? inputConfig;
   final StyleModel? styleModel;
   final StatesEnum? formState;
   final String? errorText;
@@ -83,7 +83,7 @@ class DynamicTextAreaSuccess extends DynamicTextAreaState {
 
   DynamicTextAreaSuccess copyWith({
     DynamicFormModel? component,
-    InputConfig? inputConfig,
+    InputValidationModel? inputConfig,
     StyleModel? styleModel,
     StatesEnum? formState,
     String? errorText,

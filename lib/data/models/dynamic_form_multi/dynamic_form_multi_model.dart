@@ -42,6 +42,29 @@ class DynamicMultiPageFormModel extends Equatable {
 
   @override
   List<Object?> get props => [formId, name, navigationType, pages];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'formId': formId,
+      'name': name,
+      'navigationType': navigationType,
+      'pages': pages.map((page) => page.toJson()).toList(),
+    };
+  }
+
+  DynamicMultiPageFormModel copyWith({
+    String? formId,
+    String? name,
+    String? navigationType,
+    List<FormForMultiPageModel>? pages,
+  }) {
+    return DynamicMultiPageFormModel(
+      formId: formId ?? this.formId,
+      name: name ?? this.name,
+      navigationType: navigationType ?? this.navigationType,
+      pages: pages ?? this.pages,
+    );
+  }
 }
 
 class FormForMultiPageModel extends Equatable {
@@ -97,6 +120,38 @@ class FormForMultiPageModel extends Equatable {
     showSubmitButton,
     components,
   ];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pageId': pageId,
+      'title': title,
+      'order': order,
+      'show_next_button': showNextButton,
+      'show_previous_button': showPreviousButton,
+      'show_submit_button': showSubmitButton,
+      'components': components.map((component) => component.toJson()).toList(),
+    };
+  }
+
+  FormForMultiPageModel copyWith({
+    String? pageId,
+    String? title,
+    int? order,
+    bool? showNextButton,
+    bool? showPreviousButton,
+    bool? showSubmitButton,
+    List<FormComponentMultiPageModel>? components,
+  }) {
+    return FormForMultiPageModel(
+      pageId: pageId ?? this.pageId,
+      title: title ?? this.title,
+      order: order ?? this.order,
+      showNextButton: showNextButton ?? this.showNextButton,
+      showPreviousButton: showPreviousButton ?? this.showPreviousButton,
+      showSubmitButton: showSubmitButton ?? this.showSubmitButton,
+      components: components ?? this.components,
+    );
+  }
 }
 
 class FormComponentMultiPageModel extends Equatable {
@@ -148,4 +203,36 @@ class FormComponentMultiPageModel extends Equatable {
     validation,
     children,
   ];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.toJson(),
+      'order': order,
+      'config': config.toJson(),
+      'style': style.toJson(),
+      'validate': validation?.toJson(),
+      'children': children?.map((child) => child.toJson()).toList(),
+    };
+  }
+
+  FormComponentMultiPageModel copyWith({
+    String? id,
+    FormTypeEnum? type,
+    int? order,
+    ConfigModel? config,
+    StyleModel? style,
+    BaseValidation? validation,
+    List<FormComponentMultiPageModel>? children,
+  }) {
+    return FormComponentMultiPageModel(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      order: order ?? this.order,
+      config: config ?? this.config,
+      style: style ?? this.style,
+      validation: validation ?? this.validation,
+      children: children ?? this.children,
+    );
+  }
 }

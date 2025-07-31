@@ -96,7 +96,7 @@ class DynamicDateTimeRangePickerBloc
       emit(
         DynamicDateTimeRangePickerSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(initialComponent.config?.toJson()),
+          inputConfig: InputValidationModel.fromJson(initialComponent.config?.toJson()),
           styleModel: initialComponent.style,
           formState: configState,
           errorText: validationError,
@@ -201,7 +201,7 @@ class DynamicDateTimeRangePickerBloc
     emit(
       DynamicDateTimeRangePickerSuccess(
         component: updatedComponent,
-        inputConfig: InputConfig.fromJson(updatedComponent.config?.toJson()),
+        inputConfig: InputValidationModel.fromJson(updatedComponent.config?.toJson()),
         styleModel: updatedComponent.style,
         formState: newState,
         errorText: validationError,

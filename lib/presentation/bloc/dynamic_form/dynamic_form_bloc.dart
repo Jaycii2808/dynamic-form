@@ -136,19 +136,8 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
             currentState: event.value.currentState ?? StatesEnum.base,
             errorText: event.value.errorText,
           ),
-          style: StyleModel.fromJson({
-            'padding': '10px 12px',
-            'border_color': '#888888',
-            'border_radius': 6,
-            'font_size': 15,
-            'color': '#e0e0e0',
-            'background_color': '#000000',
-          }),
-          inputTypes: InputTypesModel(),
-          variants: null,
-          states: null,
-          validation: null,
-          children: null,
+          style: const StyleModel(),
+
         );
 
         // Add the new component to the list

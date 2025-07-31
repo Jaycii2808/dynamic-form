@@ -122,9 +122,9 @@ class DynamicTextFieldTagsBloc
         );
       });
 
-      InputConfig inputConfig;
+      InputValidationModel inputConfig;
       try {
-        inputConfig = InputConfig.fromJson(configMap);
+        inputConfig = InputValidationModel.fromJson(configMap);
         debugPrint('DEBUG: InputConfig.fromJson succeeded');
       } catch (e, stack) {
         debugPrint('DEBUG: InputConfig.fromJson error: $e');
@@ -380,7 +380,7 @@ class DynamicTextFieldTagsBloc
     emit(
       DynamicTextFieldTagsSuccess(
         component: updatedComponent,
-        inputConfig: InputConfig.fromJson(
+        inputConfig: InputValidationModel.fromJson(
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style, // Direct access

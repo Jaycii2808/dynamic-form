@@ -43,7 +43,7 @@ class DynamicCheckboxBloc
       );
 
       final styleModel = initialComponent.style;
-      final inputConfig = InputConfig.fromJson(
+      final inputConfig = InputValidationModel.fromJson(
         initialComponent.config?.toJson() ?? {},
       );
 
@@ -159,7 +159,7 @@ class DynamicCheckboxBloc
 
     try {
       final styleModel = event.component.style; // Direct access
-      final inputConfig = InputConfig.fromJson(
+      final inputConfig = InputValidationModel.fromJson(
         event.component.config?.toJson() ?? {},
       );
 

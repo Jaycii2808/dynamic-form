@@ -19,8 +19,8 @@ class RemoteConfigService {
         ),
       );
 
-      // Set default empty JSON
-      await _remoteConfig.setDefaults({'text_input_screen': '{}'});
+      // // Set default empty JSON
+      // await _remoteConfig.setDefaults({'text_input_screen': '{}'});
 
       await _remoteConfig.fetchAndActivate();
     } catch (e) {

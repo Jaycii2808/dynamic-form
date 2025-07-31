@@ -81,7 +81,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
 
   Widget _buildBody({
     required StyleModel styleModel,
-    required InputConfig inputConfig,
+    required InputValidationModel inputConfig,
     required DynamicFormModel component,
     required StatesEnum currentState,
     String? errorText,
@@ -135,7 +135,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
 
   Widget _buildLabel(
       StyleModel styleModel,
-      InputConfig inputConfig,
+      InputValidationModel inputConfig,
       StyleStatesModel? stateStyle,
       ) {
     if (inputConfig.label == null || inputConfig.label!.isEmpty) {
@@ -159,7 +159,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
 
   Widget _buildTextField(
       StyleModel styleModel,
-      InputConfig inputConfig,
+      InputValidationModel inputConfig,
       DynamicFormModel component,
       StatesEnum currentState,
       String? errorText,

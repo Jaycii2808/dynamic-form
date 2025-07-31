@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 
-class InputConfig {
+class InputValidationModel {
   final String? value;
   final StatesEnum currentState;
   final String? errorText;
@@ -10,7 +10,7 @@ class InputConfig {
   final bool disabled;
   final bool readOnly;
 
-  const InputConfig({
+  const InputValidationModel({
     this.value,
     this.currentState = StatesEnum.base,
     this.errorText,
@@ -21,9 +21,9 @@ class InputConfig {
     this.readOnly = false,
   });
 
-  factory InputConfig.fromJson(Map<String, dynamic>? map) {
+  factory InputValidationModel.fromJson(Map<String, dynamic>? map) {
     if (map == null) {
-      return const InputConfig();
+      return const InputValidationModel();
     }
     String? parseString(dynamic v, [String? fallback = '']) {
       if (v == null) return fallback;
@@ -77,7 +77,7 @@ class InputConfig {
     final editable = map['editable'] is bool ? map['editable'] : true;
     final disabled = map['disabled'] is bool ? map['disabled'] : false;
     final readOnly = map['readOnly'] is bool ? map['readOnly'] : false;
-    return InputConfig(
+    return InputValidationModel(
       value: valueString,
       currentState: currentState,
       errorText: errorText,

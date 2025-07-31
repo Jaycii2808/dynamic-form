@@ -34,7 +34,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
       emit(
         DynamicSwitchSuccess(
           component: initialComponent,
-          inputConfig: InputConfig.fromJson(
+          inputConfig: InputValidationModel.fromJson(
             initialComponent.config?.toJson() ?? {},
           ),
           styleModel: initialComponent.style,
@@ -78,7 +78,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
     emit(
       DynamicSwitchSuccess(
         component: updatedComponent,
-        inputConfig: InputConfig.fromJson(
+        inputConfig: InputValidationModel.fromJson(
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style,
