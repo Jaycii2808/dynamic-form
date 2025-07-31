@@ -8,6 +8,8 @@ lib/firebase_options.dart
 # If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
 .idea/
+firebase.json
+.metadata
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
 doc/api/
@@ -26,3 +28,4 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+/android/app/google-services.json
