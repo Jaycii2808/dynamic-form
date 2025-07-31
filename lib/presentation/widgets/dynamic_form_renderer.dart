@@ -141,7 +141,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: DynamicTextField(
         key: Key(component.id),
         component: component,
-        // onComplete: (value) => handleFormFieldUpdate(context, component, value)
+        onComplete: (value) => handleFormFieldUpdate(context, component, value)
       ),
     );
   }

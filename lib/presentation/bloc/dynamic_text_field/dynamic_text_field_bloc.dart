@@ -47,7 +47,7 @@ class DynamicTextFieldBloc
     InitializeTextFieldEvent event,
     Emitter<DynamicTextFieldState> emit,
   ) async {
-    emit(DynamicTextFieldLoading.fromState(state: state));
+    //emit(DynamicTextFieldLoading.fromState(state: state));
     try {
       final component = state.component;
       if (component == null) {
@@ -145,7 +145,7 @@ class DynamicTextFieldBloc
   ) async {
     if (state is! DynamicTextFieldSuccess) return;
     final successState = state as DynamicTextFieldSuccess;
-    emit(DynamicTextFieldLoading.fromState(state: successState));
+   // emit(DynamicTextFieldLoading.fromState(state: successState));
 
     try {
       await Future.delayed(const Duration(milliseconds: 50));
