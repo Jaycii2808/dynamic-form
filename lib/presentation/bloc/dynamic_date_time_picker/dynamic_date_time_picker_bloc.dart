@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/config/config_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_event.dart';
@@ -63,7 +66,9 @@ class DynamicDateTimePickerBloc
       emit(
         DynamicDateTimePickerSuccess(
           component: initialComponent,
-          inputConfig: InputValidationModel.fromJson(initialComponent.config?.toJson()),
+          inputConfig: InputValidationModel.fromJson(
+            initialComponent.config?.toJson(),
+          ),
           styleModel: initialComponent.style,
           formState: configState,
           errorText: validationError,
@@ -156,24 +161,28 @@ class DynamicDateTimePickerBloc
     if (_textController.text != value) {
       _textController.text = value;
     }
-    final configMap =
-        Map<String, dynamic>.from(
-            currentState.component!.config?.toJson() ?? {},
-          )
-          ..['value'] = value
-          ..['current_state'] = newState
-          ..['error_text'] = validationError;
+
+    final configData = ConfigDataModel(
+      value: value,
+      currentState: newState,
+      errorText: validationError,
+      placeholder: currentState.component!.config?.placeholder,
+      required: currentState.component!.config?.isRequired,
+      type: currentState.component!.config?.pickerMode,
+    );
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       currentState.component!,
-      ConfigModel.fromJson(configMap),
+      ConfigModel.fromJson(configData.toJson()),
     );
 
     emit(
       DynamicDateTimePickerSuccess(
         component: updatedComponent,
         errorText: validationError,
-        inputConfig: InputValidationModel.fromJson(updatedComponent.config?.toJson()),
+        inputConfig: InputValidationModel.fromJson(
+          updatedComponent.config?.toJson(),
+        ),
         styleModel: updatedComponent.style,
         formState: newState,
         textController: _textController,

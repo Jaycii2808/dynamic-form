@@ -483,7 +483,7 @@ class ComponentValuesDataModel extends Equatable {
   }
 }
 
-/// Model for saved form data structure - replaces List<Map<String, dynamic>>
+/// Model for saved form data structure
 class SavedFormDataModel extends Equatable {
   final String formId;
   final List<SavedFormPageDataModel> pages;
@@ -820,8 +820,7 @@ class SavedFormDataBuilder {
   }
 }
 
-/// Model for custom form data - replaces Map<String, dynamic>? customFormData
-///
+/// Model for custom form data -
 /// This model handles both single-page and multi-page form data formats
 /// and provides easy access to form structure and component counts.
 ///

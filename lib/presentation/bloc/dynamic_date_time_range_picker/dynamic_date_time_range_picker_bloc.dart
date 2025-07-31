@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/config/config_data_model.dart';
+import 'package:dynamic_form_bi/data/models/date_time_range/date_time_range_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_event.dart';
@@ -12,36 +16,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class DynamicDateTimeRangePickerBloc
     extends
         Bloc<DynamicDateTimeRangePickerEvent, DynamicDateTimeRangePickerState> {
-  final TextEditingController _textController;
-  final FocusNode _focusNode;
   final DynamicFormModel initialComponent;
-  //final String _displayFormat = 'MMM d, yyyy';
+  final TextEditingController _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   DynamicDateTimeRangePickerBloc({required this.initialComponent})
-    : _textController = TextEditingController(
-        text: _formatInitialValue(initialComponent.config?.value),
-      ),
-      _focusNode = FocusNode(),
-      super(
+    : super(
         DynamicDateTimeRangePickerInitial(component: DynamicFormModel.empty()),
       ) {
-    _focusNode.addListener(_onFocusChange);
-
     on<InitializeDateTimeRangePickerEvent>(_onInitializeDateTimeRangePicker);
     on<DateTimeRangePickedEvent>(_onDateTimeRangePicked);
     on<DateTimeRangePickerFocusLostEvent>(_onFocusLost);
 
+    _focusNode.addListener(_onFocusChange);
+
     add(const InitializeDateTimeRangePickerEvent());
   }
 
-  static String _formatInitialValue(dynamic value) {
-    if (value is Map<String, dynamic> &&
-        value.containsKey('start') &&
-        value.containsKey('end')) {
-      return '${value['start']} - ${value['end']}';
-    }
-    return '';
-  }
 
   void _onFocusChange() {
     if (!_focusNode.hasFocus) {
@@ -50,11 +41,11 @@ class DynamicDateTimeRangePickerBloc
     }
   }
 
-  Map<String, String>? _parseTextControllerValue(String text) {
+  DateTimeRangeModel? _parseTextControllerValue(String text) {
     if (text.isEmpty) return null;
     final parts = text.split(' - ');
     if (parts.length == 2) {
-      return {'start': parts[0], 'end': parts[1]};
+      return DateTimeRangeModel(start: parts[0], end: parts[1]);
     }
     return null;
   }
@@ -77,9 +68,7 @@ class DynamicDateTimeRangePickerBloc
       }
       final initialValue = initialComponent.config?.value;
       String valueForValidation = '';
-      if (initialValue is Map<String, dynamic> &&
-          initialValue.containsKey('start') &&
-          initialValue.containsKey('end')) {
+      if (initialValue is DateTimeRangeModel && initialValue.hasValue) {
         valueForValidation = 'hasValue';
       }
 
@@ -96,7 +85,9 @@ class DynamicDateTimeRangePickerBloc
       emit(
         DynamicDateTimeRangePickerSuccess(
           component: initialComponent,
-          inputConfig: InputValidationModel.fromJson(initialComponent.config?.toJson()),
+          inputConfig: InputValidationModel.fromJson(
+            initialComponent.config?.toJson(),
+          ),
           styleModel: initialComponent.style,
           formState: configState,
           errorText: validationError,
@@ -158,15 +149,13 @@ class DynamicDateTimeRangePickerBloc
   }
 
   void _updateState(
-    Map<String, String>? rangeValue,
+    DateTimeRangeModel? rangeValue,
     DynamicDateTimeRangePickerSuccess currentState,
     Emitter<DynamicDateTimeRangePickerState> emit,
   ) {
     // Update text controller
-    if (rangeValue != null &&
-        rangeValue.containsKey('start') &&
-        rangeValue.containsKey('end')) {
-      _textController.text = '${rangeValue['start']} - ${rangeValue['end']}';
+    if (rangeValue != null && rangeValue.hasValue) {
+      _textController.text = '${rangeValue.start} - ${rangeValue.end}';
     } else {
       _textController.text = '';
     }
@@ -185,23 +174,27 @@ class DynamicDateTimeRangePickerBloc
       newState = StatesEnum.success;
     }
 
-    // Update component config
-    final updatedConfig = Map<String, dynamic>.from(
-      currentState.component!.config?.toJson() ?? {},
+    // Update component config using ConfigDataModel
+    final configData = ConfigDataModel(
+      value: rangeValue, // Save the model directly, not toJson()
+      currentState: newState,
+      errorText: validationError,
+      placeholder: currentState.component!.config?.placeholder,
+      required: currentState.component!.config?.isRequired,
+      type: currentState.component!.config?.pickerMode,
     );
-    updatedConfig['value'] = rangeValue;
-    updatedConfig['current_state'] = newState;
-    updatedConfig['error_text'] = validationError;
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       currentState.component!,
-      ConfigModel.fromJson(updatedConfig),
+      ConfigModel.fromJson(configData.toJson()),
     );
 
     emit(
       DynamicDateTimeRangePickerSuccess(
         component: updatedComponent,
-        inputConfig: InputValidationModel.fromJson(updatedComponent.config?.toJson()),
+        inputConfig: InputValidationModel.fromJson(
+          updatedComponent.config?.toJson(),
+        ),
         styleModel: updatedComponent.style,
         formState: newState,
         errorText: validationError,

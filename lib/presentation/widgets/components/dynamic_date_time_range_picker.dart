@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/form_style_utils.dart';
+import 'package:dynamic_form_bi/data/models/date_time_range/date_time_range_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
@@ -78,10 +79,16 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
   }
 
   String _formatRangeValue(dynamic value) {
-    if (value is Map<String, dynamic> &&
-        value.containsKey('start') &&
-        value.containsKey('end')) {
-      return '${value['start']} - ${value['end']}';
+    // Handle both DateTimeRangeModel and Map from JSON
+    DateTimeRangeModel? rangeModel;
+    if (value is DateTimeRangeModel) {
+      rangeModel = value;
+    } else if (value is Map<String, dynamic>) {
+      rangeModel = DateTimeRangeModel.fromJson(value);
+    }
+
+    if (rangeModel != null && rangeModel.hasValue) {
+      return '${rangeModel.start} - ${rangeModel.end}';
     }
     return '';
   }
@@ -253,14 +260,21 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     // Parse current value if exists
     DateTimeRange? initialRange;
     final currentValue = component.config?.value;
-    if (currentValue is Map<String, dynamic> &&
-        currentValue.containsKey('start') &&
-        currentValue.containsKey('end')) {
+
+    // Handle both DateTimeRangeModel and Map from JSON
+    DateTimeRangeModel? currentRangeModel;
+    if (currentValue is DateTimeRangeModel) {
+      currentRangeModel = currentValue;
+    } else if (currentValue is Map<String, dynamic>) {
+      currentRangeModel = DateTimeRangeModel.fromJson(currentValue);
+    }
+
+    if (currentRangeModel != null && currentRangeModel.hasValue) {
       try {
         final startDate = DateFormat(
           'MMM d, yyyy',
-        ).parse(currentValue['start']);
-        final endDate = DateFormat('MMM d, yyyy').parse(currentValue['end']);
+        ).parse(currentRangeModel.start!);
+        final endDate = DateFormat('MMM d, yyyy').parse(currentRangeModel.end!);
         initialRange = DateTimeRange(start: startDate, end: endDate);
       } catch (e) {
         debugPrint('Error parsing existing date range: $e');
@@ -292,10 +306,10 @@ class DynamicDateTimeRangePicker extends StatelessWidget {
     );
 
     if (pickedRange != null && context.mounted) {
-      final formattedRange = {
-        'start': DateFormat('MMM d, yyyy').format(pickedRange.start),
-        'end': DateFormat('MMM d, yyyy').format(pickedRange.end),
-      };
+      final formattedRange = DateTimeRangeModel(
+        start: DateFormat('MMM d, yyyy').format(pickedRange.start),
+        end: DateFormat('MMM d, yyyy').format(pickedRange.end),
+      );
 
       context.read<DynamicDateTimeRangePickerBloc>().add(
         DateTimeRangePickedEvent(value: formattedRange),

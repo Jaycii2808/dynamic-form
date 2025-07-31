@@ -7,7 +7,6 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -25,43 +24,8 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
   }
 
   // Helper method to add validation error
-  void _addValidationError(
-    Emitter<MultiPageFormState> emit,
-    String componentId,
-    String errorMessage, {
-    String? fieldName,
-    String? validationType,
-  }) {
-    if (state is MultiPageFormSuccess) {
-      final currentState = state as MultiPageFormSuccess;
-      final newError = ValidationErrorModel.create(
-        componentId: componentId,
-        errorMessage: errorMessage,
-        fieldName: fieldName,
-        validationType: validationType,
-      );
-      final updatedValidationErrors = currentState.validationErrors.addError(
-        newError,
-      );
-
-      emit(currentState.copyWith(validationErrors: updatedValidationErrors));
-    }
-  }
 
   // Helper method to remove validation error
-  void _removeValidationError(
-    Emitter<MultiPageFormState> emit,
-    String componentId,
-  ) {
-    if (state is MultiPageFormSuccess) {
-      final currentState = state as MultiPageFormSuccess;
-      final updatedValidationErrors = currentState.validationErrors.removeError(
-        componentId,
-      );
-
-      emit(currentState.copyWith(validationErrors: updatedValidationErrors));
-    }
-  }
 
   // Helper method to clear all validation errors
   void _clearValidationErrors(Emitter<MultiPageFormState> emit) {

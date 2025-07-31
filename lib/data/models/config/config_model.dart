@@ -136,12 +136,41 @@ class ConfigModel extends Equatable {
     if (json == null) {
       return const ConfigModel();
     }
+
+    // Helper function to parse StatesEnum from string
+    StatesEnum? parseState(dynamic stateValue) {
+      if (stateValue == null) return null;
+      final stateStr = stateValue.toString();
+      switch (stateStr) {
+        case 'StatesEnum.base':
+        case 'base':
+          return StatesEnum.base;
+        case 'StatesEnum.error':
+        case 'error':
+          return StatesEnum.error;
+        case 'StatesEnum.success':
+        case 'success':
+          return StatesEnum.success;
+        case 'StatesEnum.focused':
+        case 'focused':
+          return StatesEnum.focused;
+        case 'StatesEnum.disabled':
+        case 'disabled':
+          return StatesEnum.disabled;
+        case 'StatesEnum.loading':
+        case 'loading':
+          return StatesEnum.loading;
+        default:
+          return StatesEnum.base;
+      }
+    }
+
     return ConfigModel(
       label: json['label'] as String?,
       placeholder: json['placeholder'] as String?,
       isRequired: json['is_required'] as bool?,
       value: json['value'],
-      currentState: json['current_state'] as StatesEnum?,
+      currentState: parseState(json['current_state']),
       errorText: json['error_text'] as String?,
       defaultFormat: json['default_format'] as String?,
       initialTags: (json['initial_tags'] as List<dynamic>?)?.cast<String>(),

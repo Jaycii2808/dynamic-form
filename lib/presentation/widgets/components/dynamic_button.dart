@@ -1,11 +1,12 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
+import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
@@ -13,9 +14,6 @@ import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_for
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
-import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
-import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
 
 class DynamicButton extends StatefulWidget {
   final DynamicFormModel component;

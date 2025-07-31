@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_data_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ abstract class DynamicDateTimeRangePickerState extends Equatable {
   final String? errorText;
   final TextEditingController? textController;
   final FocusNode? focusNode;
-  final Map<String, dynamic>? computedStyle;
+  final StyleDataModel? computedStyle;
 
   const DynamicDateTimeRangePickerState({
     this.component,
@@ -33,6 +34,9 @@ abstract class DynamicDateTimeRangePickerState extends Equatable {
     styleModel,
     formState,
     errorText,
+    textController,
+    focusNode,
+    computedStyle,
   ];
 }
 

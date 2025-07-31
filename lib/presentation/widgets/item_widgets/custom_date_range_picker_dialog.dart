@@ -2,11 +2,12 @@ import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/style/style_data_model.dart';
 
 class CustomDateRangePickerDialog extends StatefulWidget {
   final DateTimeRange? initialDateRange;
   final Function(DateTimeRange?) onConfirm;
-  final Map<String, dynamic> style;
+  final StyleDataModel style;
 
   const CustomDateRangePickerDialog({
     super.key,
@@ -73,9 +74,7 @@ class _CustomDateRangePickerDialogState
 
   @override
   Widget build(BuildContext context) {
-    final styleModel = widget.style is StyleModel
-        ? widget.style as StyleModel
-        : StyleModel.fromJson(widget.style);
+    final styleModel = StyleModel.fromJson(widget.style.toJson());
     final primaryColor = styleModel.iconColor;
     final surfaceColor = styleModel.backgroundColor;
     final textColor = styleModel.textColor;
@@ -248,12 +247,10 @@ Future<DateTime?> _showConfiguredDatePicker({
   required DateTime? initialDate,
   required DateTime firstDate,
   required DateTime lastDate,
-  required Map<String, dynamic> style,
+  required StyleDataModel style,
   bool Function(DateTime)? selectableDayPredicate,
 }) {
-  final styleModel = style is StyleModel
-      ? style as StyleModel
-      : StyleModel.fromJson(style);
+  final styleModel = StyleModel.fromJson(style.toJson());
   final primaryColor = styleModel.iconColor;
   final surfaceColor = styleModel.backgroundColor;
   final onSurfaceColor = styleModel.textColor;

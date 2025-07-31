@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/core/utils/form_style_utils.dart';
+import 'package:dynamic_form_bi/data/models/config/config_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
@@ -233,8 +234,8 @@ class DynamicDateTimePicker extends StatelessWidget {
     );
   }
 
-  PickerModeEnum _determinePickerMode(Map<String, dynamic> config) {
-    final pickerModeStr = config['picker_mode'] ?? 'fullDateTime';
+  PickerModeEnum _determinePickerMode(ConfigDataModel config) {
+    final pickerModeStr = config.type ?? 'fullDateTime';
     return PickerModeEnum.fromString(pickerModeStr);
   }
 
@@ -243,7 +244,10 @@ class DynamicDateTimePicker extends StatelessWidget {
     DynamicFormModel component,
     StyleModel styleModel,
   ) async {
-    final pickerMode = _determinePickerMode(component.config?.toJson() ?? {});
+    final configData = ConfigDataModel.fromJson(
+      component.config?.toJson() ?? {},
+    );
+    final pickerMode = _determinePickerMode(configData);
     final selectedFormat = pickerMode.dateFormat;
 
     final pickedDate = await _showDatePicker(context, styleModel);

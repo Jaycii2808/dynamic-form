@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:dynamic_form_bi/data/models/date_time_range/date_time_range_model.dart';
 
 abstract class DynamicDateTimeRangePickerEvent extends Equatable {
   const DynamicDateTimeRangePickerEvent();
@@ -17,7 +18,7 @@ class DateTimeRangePickerTappedEvent extends DynamicDateTimeRangePickerEvent {
 }
 
 class DateTimeRangePickedEvent extends DynamicDateTimeRangePickerEvent {
-  final Map<String, String> value;
+  final DateTimeRangeModel value;
 
   const DateTimeRangePickedEvent({required this.value});
 
@@ -27,7 +28,7 @@ class DateTimeRangePickedEvent extends DynamicDateTimeRangePickerEvent {
 
 class DateTimeRangePickerFocusLostEvent
     extends DynamicDateTimeRangePickerEvent {
-  final Map<String, String>? value;
+  final DateTimeRangeModel? value;
 
   const DateTimeRangePickerFocusLostEvent({required this.value});
 
