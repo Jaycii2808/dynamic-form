@@ -1,6 +1,6 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/components/input_config.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/components/text_field_value_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';

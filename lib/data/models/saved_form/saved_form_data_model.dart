@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
 import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 /// Model for component values with specific fields instead of generic Map
 ///
@@ -715,6 +716,9 @@ class SavedFormDataBuilder {
     required List<FormForMultiPageModel> pages,
     required Map<String, dynamic> componentValues,
   }) {
+    debugPrint('🔍 [SavedFormDataBuilder] Creating from multi-page form');
+    debugPrint('🔍 [SavedFormDataBuilder] Component values: $componentValues');
+    
     final List<SavedFormPageDataModel> savedPages = [];
 
     for (final page in pages) {
@@ -736,12 +740,24 @@ class SavedFormDataBuilder {
             )
             .toList();
 
+        // Update component config with new values if available
+        ConfigModel updatedConfig = component.config;
+        if (componentValues.containsKey(component.id)) {
+          final newValue = componentValues[component.id];
+          debugPrint('🔍 [SavedFormDataBuilder] Updating ${component.id}: ${component.config.value} -> $newValue');
+          updatedConfig = component.config.copyWith(
+            value: newValue,
+          );
+        } else {
+          debugPrint('🔍 [SavedFormDataBuilder] No update for ${component.id}: ${component.config.value}');
+        }
+
         savedComponents.add(
           SavedFormComponentDataModel(
             id: component.id,
             type: component.type,
             order: component.order,
-            config: component.config,
+            config: updatedConfig,
             style: component.style,
             validation: component.validation,
             children: savedChildren,

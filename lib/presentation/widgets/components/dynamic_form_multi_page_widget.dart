@@ -479,6 +479,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
     debugPrint(
       '🔄 [SaveForm] Form model pages count: ${state.formModel?.pages.length}',
     );
+    debugPrint('🔄 [SaveForm] Component values: ${componentValues.values}');
 
     try {
       final savedFormsService = SavedFormsService();
@@ -492,6 +493,8 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         );
 
         debugPrint('🔄 [SaveForm] Calling saveFormWithCustomFormat...');
+        debugPrint('🔄 [SaveForm] Saved form data: ${savedFormData.toJson()}');
+
         await savedFormsService.saveFormWithCustomFormat(
           formId: savedFormData.formId,
           name:
@@ -782,12 +785,20 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
             }
           }
 
+          // Update component config with current component values
+          ConfigModel updatedConfig = component.config;
+          if (state.componentValues.hasValue(component.id)) {
+            updatedConfig = component.config.copyWith(
+              value: state.componentValues.getValue(component.id),
+            );
+          }
+
           pageComponents.add(
             DynamicFormModel(
               id: component.id,
               type: component.type,
               order: component.order,
-              config: component.config,
+              config: updatedConfig,
               style: component.style,
               inputTypes: null,
               variants: null,

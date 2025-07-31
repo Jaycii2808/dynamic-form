@@ -178,7 +178,7 @@ class ConfigModel extends Equatable {
     if (label != null) result['label'] = label;
     if (placeholder != null) result['placeholder'] = placeholder;
     if (isRequired != null) result['is_required'] = isRequired;
-    if (value != null) result['value'] = value;
+    result['value'] = value; // Always include value, even if null
     if (currentState != null) result['current_state'] = currentState;
     if (errorText != null) result['error_text'] = errorText;
     if (defaultFormat != null) result['default_format'] = defaultFormat;
