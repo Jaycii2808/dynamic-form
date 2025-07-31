@@ -1,6 +1,8 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
@@ -127,7 +129,8 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
     final buttonText = component.config?.label ?? 'Button';
 
     // Get button action
-    final actionString = component.config?.action ?? ButtonAction.submitForm.value;
+    final actionString =
+        component.config?.action ?? ButtonAction.submitForm.value;
     final action = ButtonAction.fromString(actionString);
 
     // Check visibility
@@ -158,23 +161,23 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
       return true;
     }
 
-    // Check validation conditions from validate object
-    final validate = component.config?.toJson()['validate'];
-    if (validate != null && validate is Map<String, dynamic>) {
-      final conditions = validate['condition'] as List?;
-      if (conditions != null &&
-          conditions.isNotEmpty &&
-          formBloc.state.page != null) {
+    // Check validation conditions using proper model
+    final validateJson = component.config?.toJson()['validate'];
+    final validation = ValidationFactory.fromJson(validateJson);
+
+    if (validation is ButtonConditionValidationModel) {
+      final conditions = validation.conditions;
+      if (conditions.isNotEmpty && formBloc.state.page != null) {
         debugPrint(
           '🔍 Checking ${conditions.length} validation conditions for button ${component.id}',
         );
 
-        for (final cond in conditions) {
-          final id = cond['id_component'];
-          final isRequired = cond['is_required'] == true;
-          final regex = cond['regex']?.toString() ?? '';
+        for (final condition in conditions) {
+          final id = condition.idComponent;
+          final isRequired = condition.isRequired ?? false;
+          final regex = condition.regex ?? '';
 
-          if (isRequired && id != null) {
+          if (isRequired && id.isNotEmpty) {
             final targetComponent = formBloc.state.page!.components.firstWhere(
               (comp) => comp.id == id,
               orElse: () => DynamicFormModel.empty(),

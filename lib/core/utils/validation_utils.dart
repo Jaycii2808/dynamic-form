@@ -4,6 +4,8 @@ import 'package:dynamic_form_bi/data/models/components/button_condition_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_types_model.dart';
+import 'package:dynamic_form_bi/data/models/components/field_update_data_model.dart';
+import 'package:dynamic_form_bi/data/models/components/additional_field_data_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -238,29 +240,66 @@ class ValidationUtils {
   }
 
   /// Smart field update data creation - reduces boilerplate
-  static Map<String, dynamic> createFieldUpdateData({
+  static FieldUpdateDataModel createFieldUpdateData({
     required dynamic value,
     String? errorText,
-    String? explicitState,
+    StatesEnum? explicitState,
     bool? selected,
-    Map<String, dynamic>? additionalData,
+    AdditionalFieldDataModel? additionalData,
   }) {
     final state =
         explicitState ??
         determineFieldState(
-          value?.toString(),
-          errorText,
-          boolValue: selected,
-          listValue: value is List ? value : null,
-        );
+              value?.toString(),
+              errorText,
+              boolValue: selected,
+              listValue: value is List ? value : null,
+            )
+            as StatesEnum;
 
-    final data = <String, dynamic>{'value': value, 'current_state': state};
+    return FieldUpdateDataModel.create(
+      value: value,
+      currentState: state,
+      errorText: errorText,
+      selected: selected,
+      additionalData: additionalData,
+    );
+  }
 
-    // Always set error_text, even when null to clear previous errors
-    data['error_text'] = errorText;
-    if (selected != null) data['selected'] = selected;
-    if (additionalData != null) data.addAll(additionalData);
-
-    return data;
+  /// Helper method to create AdditionalFieldDataModel with validation info
+  static AdditionalFieldDataModel createAdditionalData({
+    String? validationRule,
+    String? validationMessage,
+    bool? isDirty,
+    bool? isTouched,
+    String? source,
+    Map<String, dynamic>? customProperties,
+    List<String>? tags,
+    String? format,
+    int? maxLength,
+    int? minLength,
+    String? pattern,
+    bool? readOnly,
+    bool? disabled,
+    String? helpText,
+    String? tooltip,
+  }) {
+    return AdditionalFieldDataModel.create(
+      validationRule: validationRule,
+      validationMessage: validationMessage,
+      isDirty: isDirty,
+      isTouched: isTouched,
+      source: source,
+      customProperties: customProperties,
+      tags: tags,
+      format: format,
+      maxLength: maxLength,
+      minLength: minLength,
+      pattern: pattern,
+      readOnly: readOnly,
+      disabled: disabled,
+      helpText: helpText,
+      tooltip: tooltip,
+    );
   }
 }

@@ -50,7 +50,13 @@ class DynamicTextFieldTagsBloc
     debugPrint('DEBUG: _getInitialTags value = $value');
     if (value is List) {
       // Filter out nulls and non-strings, and print debug info if any nulls found
-      final filtered = value.whereType<String>().cast<String>().toList();
+      final filtered = <String>[];
+      for (int i = 0; i < value.length; i++) {
+        final item = value[i];
+        if (item is String) {
+          filtered.add(item);
+        }
+      }
       if (filtered.length != value.length) {
         debugPrint('Warning: value list contains non-strings or nulls: $value');
       }
@@ -76,7 +82,13 @@ class DynamicTextFieldTagsBloc
       'DEBUG: _getInitialTags initialTags = $initialTags',
     );
     if (initialTags is List) {
-      final filtered = initialTags.whereType<String>().cast<String>().toList();
+      final filtered = <String>[];
+      for (int i = 0; i < initialTags.length; i++) {
+        final item = initialTags[i];
+        if (item is String) {
+          filtered.add(item);
+        }
+      }
       if (filtered.length != initialTags.length) {
         debugPrint(
           'Warning: initial_tags contains non-strings or nulls: $initialTags',
@@ -89,7 +101,13 @@ class DynamicTextFieldTagsBloc
 
   List<String> _getAvailableTags(Map<String, dynamic> config) {
     if (config['initial_tags'] ?? config['initialTags'] case final List tags) {
-      final filtered = tags.whereType<String>().cast<String>().toList();
+      final filtered = <String>[];
+      for (int i = 0; i < tags.length; i++) {
+        final item = tags[i];
+        if (item is String) {
+          filtered.add(item);
+        }
+      }
       if (filtered.length != tags.length) {
         debugPrint(
           'Warning: availableTags contains non-strings or nulls: $tags',

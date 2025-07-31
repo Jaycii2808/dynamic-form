@@ -1,18 +1,19 @@
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_errors_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class MultiPageFormState extends Equatable {
   final DynamicMultiPageFormModel? formModel;
   final int currentPageIndex;
   final ComponentValuesModel componentValues;
-  final Map<String, String?> validationErrors;
+  final ValidationErrorsModel validationErrors;
 
   const MultiPageFormState({
     this.formModel,
     this.currentPageIndex = 0,
     this.componentValues = const ComponentValuesModel(),
-    this.validationErrors = const {},
+    this.validationErrors = const ValidationErrorsModel(),
   });
 
   // Getter to easily access the current page model
@@ -35,7 +36,7 @@ class MultiPageFormInitial extends MultiPageFormState {
     super.formModel,
     super.currentPageIndex = 0,
     super.componentValues = const ComponentValuesModel(),
-    super.validationErrors = const {},
+    super.validationErrors = const ValidationErrorsModel(),
   });
 }
 
@@ -69,7 +70,7 @@ class MultiPageFormSuccess extends MultiPageFormState {
     DynamicMultiPageFormModel? formModel,
     int? currentPageIndex,
     ComponentValuesModel? componentValues,
-    Map<String, String?>? validationErrors,
+    ValidationErrorsModel? validationErrors,
   }) {
     return MultiPageFormSuccess(
       formModel: formModel ?? this.formModel,

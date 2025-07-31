@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
+import 'package:dynamic_form_bi/data/models/components/field_update_data_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
@@ -96,6 +97,15 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
             if (value is ComponentValueUpdateModel) {
               updateModel = value;
+            } else if (value is FieldUpdateDataModel) {
+              // Handle FieldUpdateDataModel format
+              updateModel = ComponentValueUpdateModel.create(
+                componentId: componentId,
+                value: value.value,
+                currentState: value.currentState,
+                errorText: value.errorText,
+                selected: value.selected,
+              );
             } else if (value is Map && value.containsKey('value')) {
               // Handle legacy Map format
               updateModel = ComponentValueUpdateModel.create(

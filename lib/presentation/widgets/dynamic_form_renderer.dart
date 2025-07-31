@@ -1,17 +1,31 @@
-﻿import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+﻿import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
+import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_selector_button/dynamic_selector_button_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_area/dynamic_text_area_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_event.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field/dynamic_text_field_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
@@ -47,7 +61,7 @@ class DynamicFormRenderer extends StatefulWidget {
   final DynamicFormPageModel? page;
   final VoidCallback? onCompleted;
   final Function(String componentId, dynamic value)? onFieldChanged;
-  final Function(String action, ButtonActionDataModel? data)? onButtonAction;
+  final Function(String action, FormActionDataModel? data)? onButtonAction;
 
   const DynamicFormRenderer({
     super.key,
@@ -141,7 +155,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
       child: DynamicTextField(
         key: Key(component.id),
         component: component,
-        onComplete: (value) => handleFormFieldUpdate(context, component, value)
+        onComplete: (value) => handleFormFieldUpdate(context, component, value),
       ),
     );
   }

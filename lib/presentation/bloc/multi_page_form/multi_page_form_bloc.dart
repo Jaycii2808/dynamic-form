@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_errors_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
@@ -21,6 +22,106 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
     on<NavigateToPage>(_onNavigateToPage);
     on<NavigateToPageByIndex>(_onNavigateToPageByIndex);
     on<SubmitMultiPageForm>(_onSubmitMultiPageForm);
+  }
+
+  // Helper method to add validation error
+  void _addValidationError(
+    Emitter<MultiPageFormState> emit,
+    String componentId,
+    String errorMessage, {
+    String? fieldName,
+    String? validationType,
+  }) {
+    if (state is MultiPageFormSuccess) {
+      final currentState = state as MultiPageFormSuccess;
+      final newError = ValidationErrorModel.create(
+        componentId: componentId,
+        errorMessage: errorMessage,
+        fieldName: fieldName,
+        validationType: validationType,
+      );
+      final updatedValidationErrors = currentState.validationErrors.addError(
+        newError,
+      );
+
+      emit(currentState.copyWith(validationErrors: updatedValidationErrors));
+    }
+  }
+
+  // Helper method to remove validation error
+  void _removeValidationError(
+    Emitter<MultiPageFormState> emit,
+    String componentId,
+  ) {
+    if (state is MultiPageFormSuccess) {
+      final currentState = state as MultiPageFormSuccess;
+      final updatedValidationErrors = currentState.validationErrors.removeError(
+        componentId,
+      );
+
+      emit(currentState.copyWith(validationErrors: updatedValidationErrors));
+    }
+  }
+
+  // Helper method to clear all validation errors
+  void _clearValidationErrors(Emitter<MultiPageFormState> emit) {
+    if (state is MultiPageFormSuccess) {
+      final currentState = state as MultiPageFormSuccess;
+      final clearedValidationErrors = currentState.validationErrors.clear();
+
+      emit(currentState.copyWith(validationErrors: clearedValidationErrors));
+    }
+  }
+
+  // Helper method to validate current page
+  bool _validateCurrentPage(Emitter<MultiPageFormState> emit) {
+    if (state is! MultiPageFormSuccess) return false;
+
+    final currentState = state as MultiPageFormSuccess;
+    if (currentState.formModel == null) return false;
+
+    final currentPage = currentState.currentPage;
+    if (currentPage == null) return false;
+
+    bool isValid = true;
+    final newErrors = <ValidationErrorModel>[];
+
+    for (final component in currentPage.components) {
+      final value = currentState.componentValues.getValue(component.id);
+
+      // Check required validation
+      if (component.config.isRequired == true) {
+        if (value == null ||
+            (value is bool
+                ? value == false
+                : value.toString().trim().isEmpty)) {
+          final error = ValidationErrorModel.create(
+            componentId: component.id,
+            errorMessage:
+                component.config.errorText ?? 'This field is required',
+            fieldName: component.config.label,
+            validationType: 'required',
+          );
+          newErrors.add(error);
+          isValid = false;
+        }
+      }
+
+      // Add more validation types here as needed
+      // For example: regex validation, length validation, etc.
+    }
+
+    if (newErrors.isNotEmpty) {
+      final updatedValidationErrors = currentState.validationErrors.addErrors(
+        newErrors,
+      );
+      emit(currentState.copyWith(validationErrors: updatedValidationErrors));
+    } else {
+      // Clear errors if validation passes
+      _clearValidationErrors(emit);
+    }
+
+    return isValid;
   }
 
   Future<void> _onLoadMultiPageForm(
@@ -93,14 +194,24 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         '📝 [MultiPageForm] All component values: ${newComponentValues.values}',
       );
 
-      emit(currentState.copyWith(componentValues: newComponentValues));
+      // Clear validation error for this component when value is updated
+      final updatedValidationErrors = currentState.validationErrors.removeError(
+        event.componentId,
+      );
+
+      emit(
+        currentState.copyWith(
+          componentValues: newComponentValues,
+          validationErrors: updatedValidationErrors,
+        ),
+      );
     } catch (e) {
       emit(
         MultiPageFormError(
           errorMessage: e.toString(),
-          formModel: state.formModel,
-          componentValues: state.componentValues,
-          currentPageIndex: state.currentPageIndex,
+          formModel: currentState.formModel,
+          componentValues: currentState.componentValues,
+          currentPageIndex: currentState.currentPageIndex,
         ),
       );
     }
@@ -117,6 +228,15 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         throw Exception("Form model is not loaded.");
       }
 
+      // Validate current page before navigating to next page
+      if (event.isNext) {
+        final isValid = _validateCurrentPage(emit);
+        if (!isValid) {
+          debugPrint('[Bloc] Navigation blocked: validation failed');
+          return;
+        }
+      }
+
       int nextPageIndex =
           currentState.currentPageIndex + (event.isNext ? 1 : -1);
 
@@ -130,7 +250,14 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       if (nextPageIndex >= 0 &&
           nextPageIndex < currentState.formModel!.pages.length) {
         debugPrint('[Bloc] Navigating to page  [33m$nextPageIndex [0m');
-        emit(currentState.copyWith(currentPageIndex: nextPageIndex));
+        // Clear validation errors when navigating to a new page
+        final clearedValidationErrors = currentState.validationErrors.clear();
+        emit(
+          currentState.copyWith(
+            currentPageIndex: nextPageIndex,
+            validationErrors: clearedValidationErrors,
+          ),
+        );
       } else {
         debugPrint('[Bloc] Navigation blocked: out of range');
       }

@@ -368,6 +368,8 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
       child: InkWell(
         onTap: () => _loadSavedForm(form),
         borderRadius: BorderRadius.circular(12),
+        hoverColor: Colors.yellow.withOpacity(0.1),
+        highlightColor: Colors.red.withOpacity(0.1),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/components/field_update_data_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
@@ -68,7 +69,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
 
     final updatedConfig = Map<String, dynamic>.from(
       successState.component!.config?.toJson() ?? {},
-    )..addAll(updateData);
+    )..addAll(updateData.toLegacyMap());
 
     final updatedComponent = ComponentUtils.updateComponentConfig(
       successState.component!,
@@ -82,7 +83,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
           updatedComponent.config?.toJson() ?? {},
         ),
         styleModel: updatedComponent.style,
-        formState: updateData['current_state'] ?? StatesEnum.base,
+        formState: updateData.currentState,
       ),
     );
   }

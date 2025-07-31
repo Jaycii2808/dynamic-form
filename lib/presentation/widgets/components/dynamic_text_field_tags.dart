@@ -127,9 +127,14 @@ class DynamicTextFieldTags extends StatelessWidget {
     DynamicTextFieldTagsSuccess state,
   ) {
     final textFieldTagsBloc = context.read<DynamicTextFieldTagsBloc>();
-    final unselectedTags = state.availableTags
-        .where((t) => !state.selectedTags.contains(t))
-        .toList();
+    final unselectedTags = <String>[];
+
+    for (int i = 0; i < state.availableTags.length; i++) {
+      final tag = state.availableTags[i];
+      if (!state.selectedTags.contains(tag)) {
+        unselectedTags.add(tag);
+      }
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,

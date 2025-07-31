@@ -1,14 +1,11 @@
-import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
-import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
+import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/data/models/variants/variants_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_button/dynamic_button_state.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
@@ -16,10 +13,13 @@ import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_for
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
+import 'package:dynamic_form_bi/data/models/validation/button_condition_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
 
 class DynamicButton extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(String action, ButtonActionDataModel? data)? onAction;
+  final Function(String action, FormActionDataModel? data)? onAction;
 
   const DynamicButton({super.key, required this.component, this.onAction});
 
@@ -33,8 +33,8 @@ class _DynamicButtonState extends State<DynamicButton> {
   // State variables for computed values
   late DynamicFormModel _currentComponent;
   StatesEnum _currentState = StatesEnum.base;
-  Map<String, dynamic> _style = {};
-  Map<String, dynamic> _config = {};
+  late StyleModel _style;
+  late ConfigModel _config;
   String _buttonText = 'Button';
   String _action = 'custom';
   bool _isVisible = true;
@@ -56,34 +56,37 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeValues() {
-    _config = _currentComponent.config?.toJson() ?? <String, dynamic>{};
+    _config = _currentComponent.config ?? const ConfigModel();
     _buttonText =
-        _config['label']?.toString() ?? _config['text']?.toString() ?? 'Button';
-    _action = _config['action']?.toString() ?? 'custom';
-    _isVisible = _config['isVisible'] ?? true;
+        _config.label?.toString() ?? _config.buttonText?.toString() ?? 'Button';
+    _action = _config.action?.toString() ?? 'custom';
+    _isVisible = true; // Default visibility
 
     debugPrint('🔍 [Button] Starting validation for ${_currentComponent.id}');
-    debugPrint('🔍 [Button] Config: $_config');
+    debugPrint('🔍 [Button] Config: ${_config.toJson()}');
 
     bool validationPassed = true;
-    final validate = _currentComponent.config?.toJson()['validate'];
-    debugPrint('🔍 [Button] Validate object: $validate');
+    final validateJson = _config.validate;
+    debugPrint('🔍 [Button] Validate object: $validateJson');
 
-    if (validate != null && validate is Map<String, dynamic>) {
-      final conditions = validate['condition'] as List?;
+    // Use ValidationFactory to create proper model
+    final validation = ValidationFactory.fromJson(validateJson);
+
+    if (validation is ButtonConditionValidationModel) {
+      final conditions = validation.conditions;
       debugPrint('🔍 [Button] Conditions: $conditions');
 
-      if (conditions != null && conditions.isNotEmpty) {
-        for (final cond in conditions) {
-          final id = cond['id_component'];
-          final isRequired = cond['is_required'] == true;
-          final regex = cond['regex']?.toString() ?? '';
+      if (conditions.isNotEmpty) {
+        for (final condition in conditions) {
+          final id = condition.idComponent;
+          final isRequired = condition.isRequired ?? false;
+          final regex = condition.regex ?? '';
 
           debugPrint(
             '🔍 [Button] Condition: id=$id, isRequired=$isRequired, regex=$regex',
           );
 
-          if (isRequired && id != null) {
+          if (isRequired && id.isNotEmpty) {
             final componentValue = _getComponentValue(id);
             debugPrint(
               '🔍 [Button] Validating $id: value=$componentValue, isRequired=$isRequired, regex=$regex',
@@ -128,10 +131,9 @@ class _DynamicButtonState extends State<DynamicButton> {
       }
     }
 
-    _isDisabled =
-        _config['disabled'] == true || _isLoading || !validationPassed;
+    _isDisabled = _isLoading || !validationPassed;
     debugPrint(
-      '🔍 [Button] Final disabled state: $_isDisabled (config_disabled=${_config['disabled']}, isLoading=$_isLoading, validationPassed=$validationPassed)',
+      '🔍 [Button] Final disabled state: $_isDisabled (isLoading=$_isLoading, validationPassed=$validationPassed)',
     );
 
     _computeStyles();
@@ -163,10 +165,11 @@ class _DynamicButtonState extends State<DynamicButton> {
 
         widget.onAction?.call(
           _action,
-          ButtonActionDataModel.create(
+          FormActionDataModel.navigation(
             action: _action,
+            targetPage: targetPage ?? '',
             formId: _currentComponent.id,
-            targetPage: targetPage,
+            configKey: _currentComponent.id,
           ),
         );
         await Future.delayed(const Duration(milliseconds: 100));
@@ -192,10 +195,11 @@ class _DynamicButtonState extends State<DynamicButton> {
 
         widget.onAction?.call(
           _action,
-          ButtonActionDataModel.create(
+          FormActionDataModel.create(
             action: _action,
             formId: _currentComponent.id,
-            customData: _currentComponent.config?.toJson()['customData'],
+            customData: _config.toJson()['customData'],
+            configKey: _currentComponent.id,
           ),
         );
         await Future.delayed(const Duration(milliseconds: 500));
@@ -248,17 +252,19 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeStyles() {
-    final styleModel = _currentComponent.style;
-    _style = styleModel.toJson();
+    _style = _currentComponent.style;
 
     // Apply variant styles
     if (_currentComponent.variants != null) {
-      final variant = _config['variant']?.toString() ?? 'primary';
-      final variantStyle = _currentComponent.variants
-          ?.getByKey(variant)
-          ?.style
-          ?.toJson();
-      if (variantStyle != null) _style.addAll(variantStyle);
+      final variant = _config.toJson()['variant']?.toString() ?? 'primary';
+      final variantStyle = _currentComponent.variants?.getByKey(variant)?.style;
+      if (variantStyle != null) {
+        // Merge variant styles with base styles
+        _style = _mergeStyleModels(
+          _style,
+          _convertStyleStatesToStyleModel(variantStyle),
+        );
+      }
     }
 
     // Apply state styles
@@ -267,8 +273,74 @@ class _DynamicButtonState extends State<DynamicButton> {
       _currentState,
     );
     if (stateStyle != null) {
-      _style.addAll(stateStyle.toJson());
+      // Merge state styles with current styles
+      _style = _mergeStyleModels(
+        _style,
+        _convertStyleStatesToStyleModel(stateStyle),
+      );
     }
+  }
+
+  // Helper method to convert StyleStatesModel to StyleModel
+  StyleModel _convertStyleStatesToStyleModel(StyleStatesModel stateStyle) {
+    return StyleModel(
+      borderColor: stateStyle.borderColor,
+      borderWidth: stateStyle.borderWidth,
+      helperText: stateStyle.helperText,
+      helperTextColor: stateStyle.helperTextColor,
+      textColor: stateStyle.textColor,
+      icon: stateStyle.icon,
+      iconColor: stateStyle.iconColor,
+      iconSize: stateStyle.iconSize,
+    );
+  }
+
+  // Helper method to merge two StyleModels
+  StyleModel _mergeStyleModels(StyleModel base, StyleModel overlay) {
+    return StyleModel(
+      fontSize: overlay.fontSize ?? base.fontSize,
+      fontStyle: overlay.fontStyle ?? base.fontStyle,
+      contentVerticalPadding:
+          overlay.contentVerticalPadding ?? base.contentVerticalPadding,
+      contentHorizontalPadding:
+          overlay.contentHorizontalPadding ?? base.contentHorizontalPadding,
+      backgroundColor: overlay.backgroundColor ?? base.backgroundColor,
+      helperText: overlay.helperText ?? base.helperText,
+      helperTextColor: overlay.helperTextColor ?? base.helperTextColor,
+      labelTextSize: overlay.labelTextSize ?? base.labelTextSize,
+      labelColor: overlay.labelColor ?? base.labelColor,
+      maxLines: overlay.maxLines ?? base.maxLines,
+      minLines: overlay.minLines ?? base.minLines,
+      borderRadius: overlay.borderRadius ?? base.borderRadius,
+      borderColor: overlay.borderColor ?? base.borderColor,
+      borderWidth: overlay.borderWidth ?? base.borderWidth,
+      borderOpacity: overlay.borderOpacity ?? base.borderOpacity,
+      iconColor: overlay.iconColor ?? base.iconColor,
+      hintColor: overlay.hintColor ?? base.hintColor,
+      width: overlay.width ?? base.width,
+      height: overlay.height ?? base.height,
+      activeColor: overlay.activeColor ?? base.activeColor,
+      inactiveColor: overlay.inactiveColor ?? base.inactiveColor,
+      inactiveTrackColor: overlay.inactiveTrackColor ?? base.inactiveTrackColor,
+      tagBackgroundColor: overlay.tagBackgroundColor ?? base.tagBackgroundColor,
+      tagRemoveIconColor: overlay.tagRemoveIconColor ?? base.tagRemoveIconColor,
+      thumbColor: overlay.thumbColor ?? base.thumbColor,
+      thumbIconColor: overlay.thumbIconColor ?? base.thumbIconColor,
+      valueLabelColor: overlay.valueLabelColor ?? base.valueLabelColor,
+      iconSize: overlay.iconSize ?? base.iconSize,
+      textColor: overlay.textColor ?? base.textColor,
+      buttonBackgroundColor:
+          overlay.buttonBackgroundColor ?? base.buttonBackgroundColor,
+      buttonBorderRadius: overlay.buttonBorderRadius ?? base.buttonBorderRadius,
+      buttonTextColor: overlay.buttonTextColor ?? base.buttonTextColor,
+      icon: overlay.icon ?? base.icon,
+      iconPosition: overlay.iconPosition ?? base.iconPosition,
+      fontWeight: overlay.fontWeight ?? base.fontWeight,
+      elevation: overlay.elevation ?? base.elevation,
+      shadowColor: overlay.shadowColor ?? base.shadowColor,
+      focusedBorderColor: overlay.focusedBorderColor ?? base.focusedBorderColor,
+      errorBorderColor: overlay.errorBorderColor ?? base.errorBorderColor,
+    );
   }
 
   void _computeCurrentState() {
@@ -282,8 +354,7 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   void _computeIcon() {
-    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
-    final iconName = _config['icon']?.toString() ?? styleModel.icon;
+    final iconName = _config.icon?.toString() ?? _style.icon;
     if (iconName != null && iconName.isNotEmpty) {
       _iconData = IconTypeEnum.fromString(iconName).toIconData();
     } else {
@@ -309,10 +380,9 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   Widget _buildButtonContent() {
-    final styleModel = StyleModel.fromJson(_currentComponent.style.toJson());
-    final fontSize = styleModel.fontSize ?? 16.0;
+    final fontSize = _style.fontSize ?? 16.0;
     final fontWeight = _parseFontWeight(
-      styleModel.fontWeight?.toString() ?? 'normal',
+      _style.fontWeight?.toString() ?? 'normal',
     );
 
     if (_isLoading) {
@@ -325,7 +395,7 @@ class _DynamicButtonState extends State<DynamicButton> {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                styleModel.textColor ?? Colors.white,
+                _style.textColor ?? Colors.white,
               ),
             ),
           ),
@@ -337,9 +407,11 @@ class _DynamicButtonState extends State<DynamicButton> {
         ],
       );
     }
+
+    // Check icon position from config
     final isIconRightPosition =
-        _currentComponent.config?.toJson()['is_icon_right_position'] == true ||
-        _currentComponent.config?.toJson()['is_icon_right_position'] == 'true';
+        _config.toJson()['is_icon_right_position'] == true ||
+        _config.toJson()['is_icon_right_position'] == 'true';
 
     if (_iconData != null) {
       if (isIconRightPosition) {
@@ -352,7 +424,6 @@ class _DynamicButtonState extends State<DynamicButton> {
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: fontWeight,
-                //color: textColor,
               ),
             ),
             const SizedBox(width: 8),
@@ -380,20 +451,18 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   Widget _buildButtonWidget() {
-    final styleModel = _currentComponent.style;
-    final backgroundColor = styleModel.backgroundColor ?? Colors.blue;
-    final textColor = styleModel.textColor ?? Colors.white;
-    final borderColor = styleModel.borderColor ?? Colors.black;
-    final borderWidth = styleModel.borderWidth ?? 1.0;
-
-    final elevation = styleModel.elevation ?? 2.0;
+    final backgroundColor = _style.backgroundColor ?? Colors.blue;
+    final textColor = _style.textColor ?? Colors.white;
+    final borderColor = _style.borderColor ?? Colors.black;
+    final borderWidth = _style.borderWidth ?? 1.0;
+    final elevation = _style.elevation ?? 2.0;
 
     return Container(
       key: Key(_currentComponent.id),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       child: SizedBox(
-        width: styleModel.width,
-        height: styleModel.height ?? 48.0,
+        width: _style.width,
+        height: _style.height ?? 48.0,
         child: ElevatedButton(
           onPressed: _onPressedHandler,
           style: ElevatedButton.styleFrom(
@@ -404,43 +473,15 @@ class _DynamicButtonState extends State<DynamicButton> {
             side: borderWidth > 0
                 ? BorderSide(color: borderColor, width: borderWidth)
                 : null,
-            //shape: RoundedRectangleBorder(borderRadius: ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             elevation: elevation,
-            shadowColor: styleModel.shadowColor ?? Colors.purpleAccent,
+            shadowColor: _style.shadowColor ?? Colors.purpleAccent,
           ),
           child: _buttonContent,
         ),
       ),
     );
   }
-
-  // Event handler - business logic
-
-  // Helper methods
-  // double? _parseDouble(dynamic value) {
-  //   if (value == null) return null;
-  //   if (value is double) return value;
-  //   if (value is int) return value.toDouble();
-  //   if (value is String) {
-  //     // Remove 'px' suffix if present
-  //     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
-  //     return double.tryParse(cleanValue);
-  //   }
-  //   return null;
-  // }
-
-  // int? _parseInt(dynamic value) {
-  //   if (value == null) return null;
-  //   if (value is int) return value;
-  //   if (value is double) return value.toInt();
-  //   if (value is String) {
-  //     // Remove any non-numeric characters
-  //     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '').trim();
-  //     return int.tryParse(cleanValue);
-  //   }
-  //   return null;
-  // }
 
   FontWeight _parseFontWeight(String weight) {
     switch (weight.toLowerCase()) {
@@ -483,14 +524,8 @@ class _DynamicButtonState extends State<DynamicButton> {
 
         // Only update if component actually changed
         if (updatedComponent != _currentComponent ||
-            updatedComponent.config?.toJson()['isVisible'] !=
-                _currentComponent.config?.toJson()['isVisible'] ||
-            updatedComponent.config?.toJson()['disabled'] !=
-                _currentComponent.config?.toJson()['disabled'] ||
-            updatedComponent.config?.toJson()['label'] !=
-                _currentComponent.config?.toJson()['label'] ||
-            updatedComponent.config?.toJson()['text'] !=
-                _currentComponent.config?.toJson()['text']) {
+            updatedComponent.config?.label != _config.label ||
+            updatedComponent.config?.buttonText != _config.buttonText) {
           setState(() {
             _currentComponent = updatedComponent;
             _computeValues();
@@ -509,14 +544,9 @@ class _DynamicButtonState extends State<DynamicButton> {
             orElse: () => widget.component,
           );
 
-          return prevComponent?.config?.toJson()['isVisible'] !=
-                  currComponent?.config?.toJson()['isVisible'] ||
-              prevComponent?.config?.toJson()['disabled'] !=
-                  currComponent?.config?.toJson()['disabled'] ||
-              prevComponent?.config?.toJson()['label'] !=
-                  currComponent?.config?.toJson()['label'] ||
-              prevComponent?.config?.toJson()['text'] !=
-                  currComponent?.config?.toJson()['text'];
+          return prevComponent?.config?.label != currComponent?.config?.label ||
+              prevComponent?.config?.buttonText !=
+                  currComponent?.config?.buttonText;
         },
         builder: (context, state) {
           // Pure UI rendering - NO LOGIC HERE

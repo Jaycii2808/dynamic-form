@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
@@ -11,7 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class DynamicFormScreen extends StatefulWidget {
   final String configKey;
   final String? title;
-  final Function(Map<String, dynamic>)? onAction;
+  final Function(FormActionDataModel)? onAction;
 
   const DynamicFormScreen({
     super.key,
@@ -38,7 +39,7 @@ class _DynamicFormScreenState extends State<DynamicFormScreen> {
 class _DynamicFormContent extends StatefulWidget {
   final String configKey;
   final String? title;
-  final Function(Map<String, dynamic>)? onAction;
+  final Function(FormActionDataModel)? onAction;
 
   const _DynamicFormContent({
     required this.configKey,
@@ -60,6 +61,54 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
       return action != ButtonAction.submitForm.value;
     }).toList();
     return mainComponents;
+  }
+
+  /// Handle form actions with proper model
+  void _handleFormAction(String action, FormActionDataModel? data) {
+    debugPrint('🔘 [FormScreen] Action: $action, Data: $data');
+
+    if (data != null) {
+      // Handle different action types
+      switch (data.action) {
+        case 'next_page':
+        case 'previous_page':
+          _handleNavigationAction(data);
+          break;
+        case 'submit_form':
+          _handleSubmitAction(data);
+          break;
+        case 'custom':
+          _handleCustomAction(data);
+          break;
+        default:
+          _handleDefaultAction(data);
+      }
+    }
+
+    // Call the original onAction callback if provided
+    widget.onAction?.call(data ?? FormActionDataModel.create(action: action));
+  }
+
+  void _handleNavigationAction(FormActionDataModel data) {
+    debugPrint(
+      '🔘 [FormScreen] Navigation action: ${data.action} to ${data.targetPage}',
+    );
+    // Handle navigation logic here
+  }
+
+  void _handleSubmitAction(FormActionDataModel data) {
+    debugPrint('🔘 [FormScreen] Submit action: ${data.formId}');
+    // Handle form submission logic here
+  }
+
+  void _handleCustomAction(FormActionDataModel data) {
+    debugPrint('🔘 [FormScreen] Custom action: ${data.action}');
+    // Handle custom action logic here
+  }
+
+  void _handleDefaultAction(FormActionDataModel data) {
+    debugPrint('🔘 [FormScreen] Default action: ${data.action}');
+    // Handle default action logic here
   }
 
   @override
@@ -118,7 +167,9 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             title: Text(
-              page.title.isNotEmpty ? page.title : (widget.title ?? 'Dynamic Form'),
+              page.title.isNotEmpty
+                  ? page.title
+                  : (widget.title ?? 'Dynamic Form'),
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             foregroundColor: Colors.white,
@@ -177,6 +228,7 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
                             return DynamicFormRenderer(
                               component: component,
                               page: page,
+                              onButtonAction: _handleFormAction,
                             );
                           },
                         ),
@@ -191,7 +243,6 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
       ),
     );
   }
-
 
   Widget _buildLoadingPage() {
     return Scaffold(
