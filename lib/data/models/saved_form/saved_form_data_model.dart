@@ -28,7 +28,7 @@ import 'package:flutter/foundation.dart';
 /// // Set value by type
 /// final updatedValues = componentValues.setValueByType('text', 'Jane Doe');
 ///
-/// // Convert to ComponentValuesModel (no more fromMap/toMap!)
+/// // Convert to ComponentValuesModel (no more fromJson/toJson!)
 /// final componentValuesModel = componentValues.toComponentValuesModel();
 ///
 /// // Create from ComponentValuesModel
@@ -137,9 +137,6 @@ class ComponentValuesDataModel extends Equatable {
     );
   }
 
-  factory ComponentValuesDataModel.fromMap(Map<String, dynamic> map) {
-    return ComponentValuesDataModel.fromJson(map);
-  }
 
   factory ComponentValuesDataModel.empty() {
     return const ComponentValuesDataModel();
@@ -300,7 +297,7 @@ class ComponentValuesDataModel extends Equatable {
   }
 
   /// Convert to Map for compatibility with existing code
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
 
     if (textValue != null) map['text_value'] = textValue;
@@ -329,9 +326,6 @@ class ComponentValuesDataModel extends Equatable {
     return map;
   }
 
-  Map<String, dynamic> toJson() {
-    return toMap();
-  }
 
   @override
   List<Object?> get props => [
@@ -718,7 +712,7 @@ class SavedFormDataBuilder {
   }) {
     debugPrint('🔍 [SavedFormDataBuilder] Creating from multi-page form');
     debugPrint('🔍 [SavedFormDataBuilder] Component values: $componentValues');
-    
+
     final List<SavedFormPageDataModel> savedPages = [];
 
     for (final page in pages) {
@@ -744,12 +738,16 @@ class SavedFormDataBuilder {
         ConfigModel updatedConfig = component.config;
         if (componentValues.containsKey(component.id)) {
           final newValue = componentValues[component.id];
-          debugPrint('🔍 [SavedFormDataBuilder] Updating ${component.id}: ${component.config.value} -> $newValue');
+          debugPrint(
+            '🔍 [SavedFormDataBuilder] Updating ${component.id}: ${component.config.value} -> $newValue',
+          );
           updatedConfig = component.config.copyWith(
             value: newValue,
           );
         } else {
-          debugPrint('🔍 [SavedFormDataBuilder] No update for ${component.id}: ${component.config.value}');
+          debugPrint(
+            '🔍 [SavedFormDataBuilder] No update for ${component.id}: ${component.config.value}',
+          );
         }
 
         savedComponents.add(
@@ -781,7 +779,7 @@ class SavedFormDataBuilder {
     return SavedFormDataModel(
       formId: formId,
       pages: savedPages,
-      componentValues: ComponentValuesDataModel.fromMap(componentValues),
+      componentValues: ComponentValuesDataModel.fromJson(componentValues),
     );
   }
 
@@ -817,7 +815,7 @@ class SavedFormDataBuilder {
     return SavedFormDataModel(
       formId: formId,
       pages: savedPages,
-      componentValues: ComponentValuesDataModel.fromMap(componentValues),
+      componentValues: ComponentValuesDataModel.fromJson(componentValues),
     );
   }
 }

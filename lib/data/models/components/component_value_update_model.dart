@@ -32,7 +32,7 @@ class ComponentValueUpdateModel extends Equatable {
     );
   }
 
-  factory ComponentValueUpdateModel.fromMap(Map<String, dynamic> map) {
+  factory ComponentValueUpdateModel.fromJson(Map<String, dynamic> map) {
     return ComponentValueUpdateModel(
       componentId: map['componentId'] as String? ?? '',
       value: map['value'],
@@ -47,7 +47,7 @@ class ComponentValueUpdateModel extends Equatable {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'componentId': componentId,
       'value': value,

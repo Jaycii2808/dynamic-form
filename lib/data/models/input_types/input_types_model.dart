@@ -1,4 +1,3 @@
-
 import 'package:dynamic_form_bi/data/models/input_types/input_type_validation_model.dart';
 
 class InputTypesModel {
@@ -49,5 +48,9 @@ class InputTypesModel {
   String toString() => toJson().toString();
 
   bool get isEmpty =>
-      text == null && email == null && tel == null && password == null;
+      text == null &&
+      email == null &&
+      tel == null &&
+      password == null &&
+      multiline == null;
 }

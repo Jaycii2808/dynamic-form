@@ -485,11 +485,28 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       final savedFormsService = SavedFormsService();
 
       if (state.formModel != null) {
+        // Create updated form model with current component values
+        final updatedPages = state.formModel!.pages.map((page) {
+          final updatedComponents = page.components.map((component) {
+            if (componentValues.hasValue(component.id)) {
+              final updatedConfig = component.config.copyWith(
+                value: componentValues.getValue(component.id),
+              );
+              return component.copyWith(config: updatedConfig);
+            }
+            return component;
+          }).toList();
+
+          return page.copyWith(components: updatedComponents);
+        }).toList();
+
+        final updatedFormModel = state.formModel!.copyWith(pages: updatedPages);
+
         // Use the new SavedFormDataModel instead of List<Map<String, dynamic>>
         final savedFormData = SavedFormDataBuilder.createFromMultiPageForm(
           formId: 'multi_page_form_${DateTime.now().millisecondsSinceEpoch}',
-          pages: state.formModel!.pages,
-          componentValues: componentValues.toMap(),
+          pages: updatedFormModel.pages,
+          componentValues: componentValues.toJson(),
         );
 
         debugPrint('🔄 [SaveForm] Calling saveFormWithCustomFormat...');
@@ -500,7 +517,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
           name:
               'Multi-Page Form - ${DateTime.now().toString().substring(0, 19)}',
           description:
-              'Form with ${state.formModel!.pages.length} pages and ${componentValues.length} filled fields',
+              'Form with ${updatedFormModel.pages.length} pages and ${componentValues.length} filled fields',
           formData: savedFormData.toJson(),
           originalConfigKey: 'multi_page_form',
         );

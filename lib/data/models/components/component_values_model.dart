@@ -7,7 +7,7 @@ class ComponentValuesModel extends Equatable {
     this.values = const {},
   });
 
-  factory ComponentValuesModel.fromMap(Map<String, dynamic> map) {
+  factory ComponentValuesModel.fromJson(Map<String, dynamic> map) {
     return ComponentValuesModel(values: Map<String, dynamic>.from(map));
   }
 
@@ -39,7 +39,7 @@ class ComponentValuesModel extends Equatable {
   bool get isNotEmpty => values.isNotEmpty;
   int get length => values.length;
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return Map<String, dynamic>.from(values);
   }
 

@@ -42,7 +42,7 @@ class ButtonActionDataModel extends Equatable {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'action': action,
       'timestamp': timestamp.toIso8601String(),

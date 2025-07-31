@@ -57,7 +57,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       emit(
         MultiPageFormSuccess(
           formModel: formModel,
-          componentValues: ComponentValuesModel.fromMap(initialValues),
+          componentValues: ComponentValuesModel.fromJson(initialValues),
           currentPageIndex: 0,
         ),
       );

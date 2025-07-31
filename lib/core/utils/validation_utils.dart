@@ -80,10 +80,8 @@ class ValidationUtils {
   static String? detectInputType(
     InputTypesModel? inputTypes,
     String? value,
-    String? configuredType,
   ) {
     if (inputTypes == null || inputTypes.isEmpty) return null;
-    if (configuredType != null) return configuredType;
     if (value == null || value.trim().isEmpty) {
       if (inputTypes.email != null) return 'email';
       if (inputTypes.tel != null) return 'tel';
@@ -129,8 +127,7 @@ class ValidationUtils {
       if (inputTypes == null || inputTypes.isEmpty) return null;
       String? selectedType = detectInputType(
         inputTypes,
-        safeValue,
-        config.toJson()['inputType'] as String?,
+        safeValue, // No inputType property in ConfigModel, rely on auto-detection
       );
       // Fallback for textAreaFormType: if multiline is missing, use text
       if (component.type.toString().contains('textAreaFormType')) {
