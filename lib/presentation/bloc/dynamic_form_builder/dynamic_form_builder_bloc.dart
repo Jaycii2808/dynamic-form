@@ -1,4 +1,5 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_state.dart';
@@ -13,7 +14,23 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
   FormBuilderBloc({
     required RemoteConfigService remoteConfigService,
   }) : _remoteConfigService = remoteConfigService,
-       super(const FormBuilderInitial()) {
+       super(
+         const FormBuilderInitial(
+           pages: [
+             FormBuilderPageModel(
+               pageId: 'page_1',
+               title: 'Form Page',
+               order: 1,
+               showPreviousButton: false,
+               showNextButton: false,
+               showSubmitButton: true,
+               components: [],
+             ),
+           ],
+           currentPageId: 'page_1',
+           formTitle: 'Untitled Form',
+         ),
+       ) {
     on<LoadComponentsEvent>(_onLoadComponents);
     on<LoadButtonComponentsEvent>(_onLoadButtonComponents);
     on<AddComponentEvent>(_onAddComponent);
@@ -26,6 +43,14 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<ClearCanvasEvent>(_onClearCanvas);
     on<UpdateComponentValueEvent>(_onUpdateComponentValue);
     on<HandleComponentActionEvent>(_onHandleComponentAction);
+    on<UpdateFormTitleEvent>(_onUpdateFormTitle);
+    on<UpdatePageTitleEvent>(_onUpdatePageTitle);
+    on<SwitchPageEvent>(_onSwitchPage);
+    on<AddPageEvent>(_onAddPage);
+    on<RemovePageEvent>(_onRemovePage);
+    on<SubmitFormEvent>(_onSubmitForm);
+    on<AddPageWithTitleEvent>(_onAddPageWithTitle);
+    on<UpdateFirstPageTitleEvent>(_onUpdateFirstPageTitle);
   }
 
   Future<void> _onLoadComponents(
@@ -53,10 +78,14 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         FormBuilderError(
           errorMessage: errorMessage,
           components: state.components,
-          canvasComponents: state.canvasComponents,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
           availableComponents: state.availableComponents,
+          availableButtonComponents: state.availableButtonComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
+          showButtonComponentsPanel: state.showButtonComponentsPanel,
+          formTitle: state.formTitle,
         ),
       );
     }
@@ -87,12 +116,14 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         FormBuilderError(
           errorMessage: errorMessage,
           components: state.components,
-          canvasComponents: state.canvasComponents,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
           availableComponents: state.availableComponents,
           availableButtonComponents: state.availableButtonComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
           showButtonComponentsPanel: state.showButtonComponentsPanel,
+          formTitle: state.formTitle,
         ),
       );
     }
@@ -108,17 +139,25 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         id: '${event.component.type}_${DateTime.now().millisecondsSinceEpoch}',
       );
 
-      final updatedCanvasComponents = List<DynamicFormModel>.from(
-        state.canvasComponents,
-      )..add(newComponent);
+      // Update the current page with the new component
+      final updatedPages = state.pages.map((page) {
+        if (page.pageId == state.currentPageId) {
+          final updatedComponents = List<DynamicFormModel>.from(page.components)
+            ..add(newComponent);
+          return page.copyWith(components: updatedComponents);
+        }
+        return page;
+      }).toList();
 
       emit(
         FormBuilderSuccess.fromState(state: state).copyWith(
-          canvasComponents: updatedCanvasComponents,
+          pages: updatedPages,
         ),
       );
 
-      debugPrint('Component added: ${newComponent.type}');
+      debugPrint(
+        'Component added to page ${state.currentPageId}: ${newComponent.type}',
+      );
     } catch (e, stackTrace) {
       String errorMessage = 'Failed to add component: $e';
       debugPrint('Stack trace: $stackTrace');
@@ -126,7 +165,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         FormBuilderError(
           errorMessage: errorMessage,
           components: state.components,
-          canvasComponents: state.canvasComponents,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
           availableComponents: state.availableComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
@@ -140,27 +180,35 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     Emitter<FormBuilderState> emit,
   ) async {
     try {
-      final updatedCanvasComponents = List<DynamicFormModel>.from(
-        state.canvasComponents,
+      // Update the current page with moved component
+      final updatedPages = state.pages.map((page) {
+        if (page.pageId == state.currentPageId) {
+          final updatedComponents = List<DynamicFormModel>.from(
+            page.components,
+          );
+
+          if (event.oldIndex >= 0 &&
+              event.oldIndex < updatedComponents.length &&
+              event.newIndex >= 0 &&
+              event.newIndex < updatedComponents.length) {
+            final component = updatedComponents.removeAt(event.oldIndex);
+            updatedComponents.insert(event.newIndex, component);
+          }
+
+          return page.copyWith(components: updatedComponents);
+        }
+        return page;
+      }).toList();
+
+      emit(
+        FormBuilderSuccess.fromState(state: state).copyWith(
+          pages: updatedPages,
+        ),
       );
 
-      if (event.oldIndex >= 0 &&
-          event.oldIndex < updatedCanvasComponents.length &&
-          event.newIndex >= 0 &&
-          event.newIndex < updatedCanvasComponents.length) {
-        final component = updatedCanvasComponents.removeAt(event.oldIndex);
-        updatedCanvasComponents.insert(event.newIndex, component);
-
-        emit(
-          FormBuilderSuccess.fromState(state: state).copyWith(
-            canvasComponents: updatedCanvasComponents,
-          ),
-        );
-
-        debugPrint(
-          'Component moved from index ${event.oldIndex} to ${event.newIndex}',
-        );
-      }
+      debugPrint(
+        'Component moved from index ${event.oldIndex} to ${event.newIndex} on page ${state.currentPageId}',
+      );
     } catch (e, stackTrace) {
       String errorMessage = 'Failed to move component: $e';
       debugPrint('Stack trace: $stackTrace');
@@ -168,7 +216,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         FormBuilderError(
           errorMessage: errorMessage,
           components: state.components,
-          canvasComponents: state.canvasComponents,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
           availableComponents: state.availableComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
@@ -182,21 +231,30 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     Emitter<FormBuilderState> emit,
   ) async {
     try {
-      final updatedCanvasComponents = List<DynamicFormModel>.from(
-        state.canvasComponents,
+      // Update the current page with removed component
+      final updatedPages = state.pages.map((page) {
+        if (page.pageId == state.currentPageId) {
+          final updatedComponents = List<DynamicFormModel>.from(
+            page.components,
+          );
+
+          if (event.index >= 0 && event.index < updatedComponents.length) {
+            final removedComponent = updatedComponents.removeAt(event.index);
+            debugPrint(
+              'Component removed from page ${state.currentPageId}: ${removedComponent.type}',
+            );
+          }
+
+          return page.copyWith(components: updatedComponents);
+        }
+        return page;
+      }).toList();
+
+      emit(
+        FormBuilderSuccess.fromState(state: state).copyWith(
+          pages: updatedPages,
+        ),
       );
-
-      if (event.index >= 0 && event.index < updatedCanvasComponents.length) {
-        final removedComponent = updatedCanvasComponents.removeAt(event.index);
-
-        emit(
-          FormBuilderSuccess.fromState(state: state).copyWith(
-            canvasComponents: updatedCanvasComponents,
-          ),
-        );
-
-        debugPrint('Component removed: ${removedComponent.type}');
-      }
     } catch (e, stackTrace) {
       String errorMessage = 'Failed to remove component: $e';
       debugPrint('Stack trace: $stackTrace');
@@ -204,7 +262,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         FormBuilderError(
           errorMessage: errorMessage,
           components: state.components,
-          canvasComponents: state.canvasComponents,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
           availableComponents: state.availableComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
@@ -267,12 +326,20 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     ClearCanvasEvent event,
     Emitter<FormBuilderState> emit,
   ) {
+    // Clear only the current page components
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        return page.copyWith(components: []);
+      }
+      return page;
+    }).toList();
+
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
-        canvasComponents: [],
+        pages: updatedPages,
       ),
     );
-    debugPrint('Canvas cleared');
+    debugPrint('Canvas cleared for page ${state.currentPageId}');
   }
 
   void _onUpdateComponentValue(
@@ -320,5 +387,185 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         add(RemoveComponentEvent(event.index));
         break;
     }
+  }
+
+  /// Update form title
+  void _onUpdateFormTitle(
+    UpdateFormTitleEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('📝 [FormBuilderBloc] Updating form title to: ${event.title}');
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        formTitle: event.title,
+      ),
+    );
+  }
+
+  /// Update page title
+  void _onUpdatePageTitle(
+    UpdatePageTitleEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '📝 [FormBuilderBloc] Updating page title for pageId: ${event.pageId} to: ${event.title}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == event.pageId) {
+        return page.copyWith(title: event.title);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
+  }
+
+  /// Switch to a different page
+  void _onSwitchPage(
+    SwitchPageEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('🔄 [FormBuilderBloc] Switching to page: ${event.pageId}');
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        currentPageId: event.pageId,
+      ),
+    );
+  }
+
+  /// Add a new page
+  void _onAddPage(
+    AddPageEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('➕ [FormBuilderBloc] Adding new page');
+
+    final newPageId = 'page_${DateTime.now().millisecondsSinceEpoch}';
+    final newPage = FormBuilderPageModel(
+      pageId: newPageId,
+      title: 'New Page',
+      order: state.pages.length + 1,
+      showPreviousButton: true,
+      showNextButton: true,
+      showSubmitButton: false,
+      components: const [],
+    );
+
+    final updatedPages = List<FormBuilderPageModel>.from(state.pages)
+      ..add(newPage);
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+        currentPageId: newPageId,
+      ),
+    );
+  }
+
+  /// Add a new page with a specific title
+  void _onAddPageWithTitle(
+    AddPageWithTitleEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '➕ [FormBuilderBloc] Adding new page with title: ${event.title}',
+    );
+
+    final newPageId = 'page_${DateTime.now().millisecondsSinceEpoch}';
+    final newPage = FormBuilderPageModel(
+      pageId: newPageId,
+      title: event.title,
+      order: state.pages.length + 1,
+      showPreviousButton: true,
+      showNextButton: true,
+      showSubmitButton: false,
+      components: const [],
+    );
+
+    final updatedPages = List<FormBuilderPageModel>.from(state.pages)
+      ..add(newPage);
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+        currentPageId: newPageId,
+      ),
+    );
+  }
+
+  /// Remove a page
+  void _onRemovePage(
+    RemovePageEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('➖ [FormBuilderBloc] Removing page: ${event.pageId}');
+
+    final updatedPages = state.pages
+        .where((page) => page.pageId != event.pageId)
+        .toList();
+
+    // If we're removing the current page, switch to the first available page
+    String newCurrentPageId = state.currentPageId;
+    if (event.pageId == state.currentPageId && updatedPages.isNotEmpty) {
+      newCurrentPageId = updatedPages.first.pageId;
+    } else if (updatedPages.isEmpty) {
+      // If no pages left, create a default page
+      final defaultPage = const FormBuilderPageModel(
+        pageId: 'page_1',
+        title: 'Form Page',
+        order: 1,
+        showPreviousButton: false,
+        showNextButton: false,
+        showSubmitButton: true,
+        components: [],
+      );
+      updatedPages.add(defaultPage);
+      newCurrentPageId = 'page_1';
+    }
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+        currentPageId: newCurrentPageId,
+      ),
+    );
+  }
+
+  /// Submit form and navigate to preview
+  void _onSubmitForm(
+    SubmitFormEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('🚀 [FormBuilderBloc] Submitting form for preview');
+    // The navigation will be handled in the UI layer
+    // This method can be used for any additional logic before navigation
+  }
+
+  /// Update the title of the first page
+  void _onUpdateFirstPageTitle(
+    UpdateFirstPageTitleEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '📝 [FormBuilderBloc] Updating first page title to: ${event.title}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == 'page_1') {
+        return page.copyWith(title: event.title);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
   }
 }

@@ -131,7 +131,7 @@ class PreviewPageScreen extends StatelessWidget {
       type: FormTypeEnum.buttonFormType,
       order: 999,
       config: ConfigModel(
-        label: 'Submit Form',
+        label: 'Submit',
         icon: 'submit',
         action: ButtonAction.submitForm.value,
       ),

@@ -100,3 +100,69 @@ class HandleComponentActionEvent extends FormBuilderEvent {
   @override
   List<Object?> get props => [action, index];
 }
+
+class UpdateFormTitleEvent extends FormBuilderEvent {
+  final String title;
+
+  const UpdateFormTitleEvent(this.title);
+
+  @override
+  List<Object?> get props => [title];
+}
+
+class UpdatePageTitleEvent extends FormBuilderEvent {
+  final String pageId;
+  final String title;
+
+  const UpdatePageTitleEvent({
+    required this.pageId,
+    required this.title,
+  });
+
+  @override
+  List<Object?> get props => [pageId, title];
+}
+
+class SwitchPageEvent extends FormBuilderEvent {
+  final String pageId;
+
+  const SwitchPageEvent(this.pageId);
+
+  @override
+  List<Object?> get props => [pageId];
+}
+
+class AddPageEvent extends FormBuilderEvent {
+  const AddPageEvent();
+}
+
+class AddPageWithTitleEvent extends FormBuilderEvent {
+  final String title;
+
+  const AddPageWithTitleEvent(this.title);
+
+  @override
+  List<Object?> get props => [title];
+}
+
+class UpdateFirstPageTitleEvent extends FormBuilderEvent {
+  final String title;
+
+  const UpdateFirstPageTitleEvent(this.title);
+
+  @override
+  List<Object?> get props => [title];
+}
+
+class RemovePageEvent extends FormBuilderEvent {
+  final String pageId;
+
+  const RemovePageEvent(this.pageId);
+
+  @override
+  List<Object?> get props => [pageId];
+}
+
+class SubmitFormEvent extends FormBuilderEvent {
+  const SubmitFormEvent();
+}

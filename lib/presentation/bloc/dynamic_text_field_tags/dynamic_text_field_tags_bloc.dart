@@ -187,7 +187,7 @@ class DynamicTextFieldTagsBloc
           errorMessage: 'Failed to initialize TextFieldTags: $e',
           component: initialComponent,
           isEditing: false,
-          availableTags: [],
+          availableTags: const [],
         ),
       );
     }

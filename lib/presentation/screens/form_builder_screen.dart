@@ -2,9 +2,11 @@ import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_state.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder_preview_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +26,69 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     super.initState();
     formBuilderBloc = context.read<FormBuilderBloc>();
     formBuilderBloc.add(const LoadComponentsEvent());
+
+    // Show dialog to name the first page after the screen is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showFirstPageNameDialog();
+    });
+  }
+
+  void _showFirstPageNameDialog() {
+    final formController = TextEditingController(text: 'Untitled form');
+    final pageController = TextEditingController(text: 'Page 1');
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User must enter a name
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create Your Form'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Let\'s start by naming your form and first page:',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: formController,
+                decoration: const InputDecoration(
+                  labelText: 'Form Name',
+                  hintText: 'e.g., Customer Feedback, Event Registration',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: pageController,
+                decoration: const InputDecoration(
+                  labelText: 'First Page Title',
+                  hintText: 'e.g., Personal Information, Contact Details',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                final formName = formController.text.trim();
+                final pageName = pageController.text.trim();
+
+                if (formName.isNotEmpty && pageName.isNotEmpty) {
+                  formBuilderBloc.add(UpdateFormTitleEvent(formName));
+                  formBuilderBloc.add(UpdateFirstPageTitleEvent(pageName));
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Create Form'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -51,10 +116,34 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
         }
         //error and success
         if (state is FormBuilderSuccess) {
-          return _buildMainContent(state);
+          return Column(
+            children: [
+              // Progress bar for multiple pages
+              if (state.pages.length > 1) _buildProgressBar(state),
+              Expanded(child: _buildMainContent(state)),
+            ],
+          );
         }
         return const Text('Error');
       },
+    );
+  }
+
+  Widget _buildProgressBar(FormBuilderState state) {
+    final currentPageIndex = state.pages.indexWhere(
+      (page) => page.pageId == state.currentPageId,
+    );
+    final progress = (currentPageIndex + 1) / state.pages.length;
+
+    return Container(
+      width: double.infinity,
+      height: 4,
+      color: Colors.grey[800],
+      child: LinearProgressIndicator(
+        value: progress,
+        backgroundColor: Colors.transparent,
+        valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+      ),
     );
   }
 
@@ -89,6 +178,41 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
                 Icons.radio_button_unchecked_sharp,
               ),
             ),
+            // Add page button
+            FloatingActionButton(
+              onPressed: () {
+                _showAddPageDialog();
+              },
+              backgroundColor: Colors.green.shade100,
+              foregroundColor: Colors.green,
+              child: const Icon(
+                Icons.add,
+              ),
+            ),
+            // Remove page button (only show if more than 1 page)
+            if (state.pages.length > 1)
+              FloatingActionButton(
+                onPressed: () {
+                  formBuilderBloc.add(RemovePageEvent(state.currentPageId));
+                },
+                backgroundColor: Colors.red.shade100,
+                foregroundColor: Colors.red,
+                child: const Icon(
+                  Icons.remove,
+                ),
+              ),
+            // Pages overview button (only show if more than 1 page)
+            if (state.pages.length > 1)
+              FloatingActionButton(
+                onPressed: () {
+                  _showPagesOverviewDialog(state);
+                },
+                backgroundColor: Colors.purple.shade100,
+                foregroundColor: Colors.purple,
+                child: const Icon(
+                  Icons.view_list,
+                ),
+              ),
           ],
         );
       },
@@ -97,10 +221,470 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text('Form Builder'),
+      title: BlocBuilder<FormBuilderBloc, FormBuilderState>(
+        builder: (context, state) {
+          return _buildEditableTitle(state);
+        },
+      ),
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       elevation: 1,
+      actions: [
+        BlocBuilder<FormBuilderBloc, FormBuilderState>(
+          builder: (context, state) {
+            return Row(
+              spacing: 10,
+              children: [
+                if (state.canvasComponents.isNotEmpty)
+                  _buildClearCanvasButton(),
+                GestureDetector(
+                  onTap: () => _handleSubmitForm(state),
+                  child: Container(
+                    // Padding inside the container
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    // Margin outside the container (space from edge)
+                    margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+                    // Decoration: background color, border, rounded corners
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    // The text inside the button
+                    child: const Center(
+                      child: Text(
+                        'Preview',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditableTitle(FormBuilderState state) {
+    return Row(
+      children: [
+        // Form title
+        GestureDetector(
+          onTap: () => _showEditFormTitleDialog(state),
+          child: Row(
+            children: [
+              const Icon(Icons.edit, color: Colors.blue),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  state.formTitle,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Breadcrumb separator
+        const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+        const SizedBox(width: 16),
+        // Page title
+        GestureDetector(
+          onTap: () => _showEditPageTitleDialog(state),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.edit, color: Colors.blue, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    state.currentPageTitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.blue,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Page navigation
+        if (state.pages.length > 1) _buildPageNavigation(state),
+      ],
+    );
+  }
+
+  void _showEditFormTitleDialog(FormBuilderState state) {
+    final TextEditingController controller = TextEditingController(
+      text: state.formTitle,
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Form Title'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Form Title',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final newTitle = controller.text.trim();
+                if (newTitle.isNotEmpty) {
+                  formBuilderBloc.add(UpdateFormTitleEvent(newTitle));
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditPageTitleDialog(FormBuilderState state) {
+    final TextEditingController controller = TextEditingController(
+      text: state.currentPageTitle,
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Page Title'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Page Title',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final newTitle = controller.text.trim();
+                if (newTitle.isNotEmpty) {
+                  formBuilderBloc.add(
+                    UpdatePageTitleEvent(
+                      pageId: state.currentPageId,
+                      title: newTitle,
+                    ),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddPageDialog() {
+    final TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add New Page'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter a title for your new page:',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'Page Title',
+                  hintText: 'e.g., Personal Information, Contact Details',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
+                onSubmitted: (value) {
+                  final newTitle = value.trim();
+                  if (newTitle.isNotEmpty) {
+                    formBuilderBloc.add(AddPageWithTitleEvent(newTitle));
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newTitle = controller.text.trim();
+                if (newTitle.isNotEmpty) {
+                  formBuilderBloc.add(AddPageWithTitleEvent(newTitle));
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Create Page'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPageNavigation(FormBuilderState state) {
+    final currentPageIndex = state.pages.indexWhere(
+      (page) => page.pageId == state.currentPageId,
+    );
+    final hasPrevious = currentPageIndex > 0;
+    final hasNext = currentPageIndex < state.pages.length - 1;
+
+    return Row(
+      spacing: 8,
+      children: [
+        // Page info and selector
+        GestureDetector(
+          onTap: () => _showPageSelectorDialog(state),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.description,
+                  color: Colors.blue,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${currentPageIndex + 1} of ${state.pages.length}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.blue,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Previous page button
+        if (hasPrevious)
+          GestureDetector(
+            onTap: () {
+              final previousPage = state.pages[currentPageIndex - 1];
+              formBuilderBloc.add(SwitchPageEvent(previousPage.pageId));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios,
+                color: Colors.blue,
+                size: 16,
+              ),
+            ),
+          ),
+        // Next page button
+        if (hasNext)
+          GestureDetector(
+            onTap: () {
+              final nextPage = state.pages[currentPageIndex + 1];
+              formBuilderBloc.add(SwitchPageEvent(nextPage.pageId));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.blue,
+                size: 16,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showPageSelectorDialog(FormBuilderState state) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.view_list, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('Select Page'),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: state.pages.length,
+              itemBuilder: (context, index) {
+                final page = state.pages[index];
+                final isCurrentPage = page.pageId == state.currentPageId;
+                final componentCount = page.components.length;
+
+                return ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isCurrentPage ? Colors.blue : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color: isCurrentPage
+                              ? Colors.white
+                              : Colors.grey[600],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    page.title,
+                    style: TextStyle(
+                      fontWeight: isCurrentPage
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isCurrentPage ? Colors.blue : Colors.black,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Page ${index + 1}'),
+                      if (componentCount > 0)
+                        Text(
+                          '$componentCount component${componentCount > 1 ? 's' : ''}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
+                  ),
+                  trailing: isCurrentPage
+                      ? const Icon(Icons.check_circle, color: Colors.blue)
+                      : null,
+                  onTap: () {
+                    formBuilderBloc.add(SwitchPageEvent(page.pageId));
+                    Navigator.of(context).pop();
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleSubmitForm(FormBuilderState state) {
+    if (state.pages.isEmpty ||
+        state.pages.every((page) => page.components.isEmpty)) {
+      DialogUtils.showErrorDialog(
+        context,
+        'Please add at least one component to the form',
+      );
+      return;
+    }
+
+    // Create FormBuilderModel from current state with all pages
+    final formBuilderModel = FormBuilderModel(
+      formId: 'form_${DateTime.now().millisecondsSinceEpoch}',
+      name: state.formTitle,
+      pages: state.pages,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    // Navigate to preview screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FormBuilderPreviewScreen(
+          formBuilderModel: formBuilderModel,
+        ),
+      ),
     );
   }
 
@@ -201,7 +785,8 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
       color: const Color(0xFF000000),
       child: Column(
         children: [
-          _buildCanvasHeader(state),
+          // Page info header
+          if (state.pages.length > 1) _buildPageInfoHeader(state),
           Expanded(
             child: state.canvasComponents.isEmpty
                 ? _buildEmptyCanvas()
@@ -212,32 +797,65 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
-  Widget _buildCanvasHeader(FormBuilderState state) {
+  Widget _buildPageInfoHeader(FormBuilderState state) {
+    final currentPageIndex = state.pages.indexWhere(
+      (page) => page.pageId == state.currentPageId,
+    );
+    final currentPage = state.pages[currentPageIndex];
+    final componentCount = currentPage.components.length;
+
     return Container(
-      width: double.infinity,
-      color: const Color(0xFF000000),
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            const Icon(Icons.dashboard_customize, color: Colors.blue),
-            const SizedBox(width: 8),
-            const Flexible(
-              child: Text(
-                'Form Canvas',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[800]!),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              'Page ${currentPageIndex + 1}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.blue,
               ),
             ),
-            const Spacer(),
-            if (state.canvasComponents.isNotEmpty) _buildClearCanvasButton(),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              currentPage.title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '$componentCount component${componentCount != 1 ? 's' : ''}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[400],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -246,28 +864,43 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     return GestureDetector(
       onTap: () => formBuilderBloc.add(const ClearCanvasEvent()),
       child: Container(
-        decoration: BoxDecoration(
-          color: Colors.red[50],
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.red[200]!),
+        // Padding inside the container
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
         ),
-        child: const Icon(
-          Icons.cleaning_services_rounded,
-          color: Colors.red,
-          size: 20,
+        // Margin outside the container (space from edge)
+        margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+        // Decoration: background color, border, rounded corners
+        decoration: BoxDecoration(
+          color: Colors.red.shade100,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.red),
+        ),
+        // The text inside the button
+        child: const Center(
+          child: Text(
+            'Clear',
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEmptyCanvas() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        _buildEmptyCanvasText(),
-        const SizedBox(height: 32),
-        ..._buildEmptyDropZones(),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _buildEmptyCanvasText(),
+          const SizedBox(height: 32),
+          ..._buildEmptyDropZones(),
+        ],
+      ),
     );
   }
 
@@ -811,6 +1444,8 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
         return _buildDateTimePickerPreview(component);
       case FormTypeEnum.dateTimeRangePickerFormType:
         return _buildDateTimeRangePickerPreview(component);
+      case FormTypeEnum.buttonFormType:
+        return _buildButtonPreview(component);
       default:
         return _buildDefaultPreview(component);
     }
@@ -1136,6 +1771,100 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildButtonPreview(DynamicFormModel component) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.grey[600]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.send,
+                  color: Colors.blue,
+                  size: 12,
+                ),
+                const SizedBox(width: 8),
+                if (component.config?.label != null) ...[
+                  Expanded(
+                    child: Text(
+                      component.config!.label!,
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 8,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPagesOverviewDialog(FormBuilderState state) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pages Overview'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: state.pages.length,
+              itemBuilder: (context, index) {
+                final page = state.pages[index];
+                final isCurrentPage = page.pageId == state.currentPageId;
+
+                return ListTile(
+                  leading: Icon(
+                    isCurrentPage
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: isCurrentPage ? Colors.blue : Colors.grey,
+                  ),
+                  title: Text(
+                    page.title,
+                    style: TextStyle(
+                      fontWeight: isCurrentPage
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: Text('Page ${index + 1}'),
+                  onTap: () {
+                    formBuilderBloc.add(SwitchPageEvent(page.pageId));
+                    Navigator.of(context).pop();
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
