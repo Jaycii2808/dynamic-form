@@ -13,14 +13,24 @@ class ButtonConditionValidationModel extends BaseValidation {
   });
 
   factory ButtonConditionValidationModel.fromJson(Map<String, dynamic> json) {
-    final conditionsJson = json['condition'] as List<dynamic>?;
+    final conditionJson = json['condition'];
     List<ButtonConditionModel> conditions = [];
 
-    if (conditionsJson != null) {
-      conditions = conditionsJson
-          .map((item) => ButtonConditionModel.fromJson(item as Map<String, dynamic>))
-          .toList();
+    if (conditionJson != null) {
+      if (conditionJson is List) {
+        // Handle array of conditions
+        conditions = conditionJson
+            .map(
+              (item) =>
+                  ButtonConditionModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
+      } else if (conditionJson is Map<String, dynamic>) {
+        // Handle single condition object
+        conditions = [ButtonConditionModel.fromJson(conditionJson)];
+      }
     }
+
     // Don't assign next_page/previous_page to conditions by mistake
     return ButtonConditionValidationModel(
       conditions: conditions,

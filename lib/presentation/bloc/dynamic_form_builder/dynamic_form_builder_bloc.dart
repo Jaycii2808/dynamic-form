@@ -15,12 +15,14 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
   }) : _remoteConfigService = remoteConfigService,
        super(const FormBuilderInitial()) {
     on<LoadComponentsEvent>(_onLoadComponents);
+    on<LoadButtonComponentsEvent>(_onLoadButtonComponents);
     on<AddComponentEvent>(_onAddComponent);
     on<MoveComponentEvent>(_onMoveComponent);
     on<RemoveComponentEvent>(_onRemoveComponent);
     on<StartDragEvent>(_onStartDrag);
     on<EndDragEvent>(_onEndDrag);
     on<ToggleComponentsPanelEvent>(_onToggleComponentsPanel);
+    on<ToggleButtonComponentsPanelEvent>(_onToggleButtonComponentsPanel);
     on<ClearCanvasEvent>(_onClearCanvas);
     on<UpdateComponentValueEvent>(_onUpdateComponentValue);
     on<HandleComponentActionEvent>(_onHandleComponentAction);
@@ -55,6 +57,42 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
           availableComponents: state.availableComponents,
           isDragging: state.isDragging,
           showComponentsPanel: state.showComponentsPanel,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLoadButtonComponents(
+    LoadButtonComponentsEvent event,
+    Emitter<FormBuilderState> emit,
+  ) async {
+    emit(FormBuilderLoading.fromState(state: state));
+    try {
+      // Get all button configs dynamically from enum values
+      final buttonComponents = _remoteConfigService.getAllButtonConfigs();
+
+      if (buttonComponents.isEmpty) {
+        throw Exception('No valid button components found in Remote Config');
+      }
+
+      emit(
+        FormBuilderSuccess.fromState(state: state).copyWith(
+          availableButtonComponents: buttonComponents,
+        ),
+      );
+    } catch (e, stackTrace) {
+      String errorMessage = 'Failed to load button components: $e';
+      debugPrint('Stack trace: $stackTrace');
+      emit(
+        FormBuilderError(
+          errorMessage: errorMessage,
+          components: state.components,
+          canvasComponents: state.canvasComponents,
+          availableComponents: state.availableComponents,
+          availableButtonComponents: state.availableButtonComponents,
+          isDragging: state.isDragging,
+          showComponentsPanel: state.showComponentsPanel,
+          showButtonComponentsPanel: state.showButtonComponentsPanel,
         ),
       );
     }
@@ -209,6 +247,20 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       ),
     );
     debugPrint('Components panel toggled: ${!state.showComponentsPanel}');
+  }
+
+  void _onToggleButtonComponentsPanel(
+    ToggleButtonComponentsPanelEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        showButtonComponentsPanel: !state.showButtonComponentsPanel,
+      ),
+    );
+    debugPrint(
+      'Button components panel toggled: ${!state.showButtonComponentsPanel}',
+    );
   }
 
   void _onClearCanvas(

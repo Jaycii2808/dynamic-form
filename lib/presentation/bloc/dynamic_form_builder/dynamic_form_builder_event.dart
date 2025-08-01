@@ -63,6 +63,14 @@ class ToggleComponentsPanelEvent extends FormBuilderEvent {
   const ToggleComponentsPanelEvent();
 }
 
+class ToggleButtonComponentsPanelEvent extends FormBuilderEvent {
+  const ToggleButtonComponentsPanelEvent();
+}
+
+class LoadButtonComponentsEvent extends FormBuilderEvent {
+  const LoadButtonComponentsEvent();
+}
+
 class ClearCanvasEvent extends FormBuilderEvent {
   const ClearCanvasEvent();
 }

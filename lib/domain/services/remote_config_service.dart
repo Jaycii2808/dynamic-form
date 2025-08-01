@@ -64,6 +64,55 @@ class RemoteConfigService {
     return getConfigKey(configKey.key);
   }
 
+  // Method that accepts button enum for better type safety
+  DynamicFormPageModel? getButtonConfigByKey(
+    RemoteConfigButtonBuilderEnum configKey,
+  ) {
+    return getButtonConfigKey(configKey.key);
+  }
+
+  DynamicFormPageModel? getButtonConfigKey(String configKey) {
+    try {
+      final String jsonString = _remoteConfig.getString(configKey);
+      debugPrint('RemoteConfig $configKey: $jsonString');
+      if (jsonString.isEmpty || jsonString == '{}') {
+        debugPrint('RemoteConfig: $configKey is empty or {}');
+        return null;
+      }
+      final dynamic json = jsonDecode(jsonString);
+      debugPrint('Parsed JSON type: ${json.runtimeType}');
+
+      if (json is List) {
+        debugPrint('JSON is List, wrapping as components array');
+        // Wrap array as {components: array}
+        return DynamicFormPageModel.fromJson({'components': json});
+      } else if (json is Map<String, dynamic>) {
+        debugPrint('JSON is Map, checking for components field');
+        // Check if it has a components field
+        if (json.containsKey('components')) {
+          debugPrint('Found components field, parsing as DynamicFormPageModel');
+          return DynamicFormPageModel.fromJson(json);
+        } else {
+          debugPrint(
+            'No components field, treating as single button component',
+          );
+          // Single button component object - wrap it as {components: [json]}
+          return DynamicFormPageModel.fromJson({
+            'components': [json],
+          });
+        }
+      } else {
+        debugPrint(
+          'RemoteConfig: $configKey is not a valid JSON object or array',
+        );
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Error parsing button config $configKey: $e');
+      return null;
+    }
+  }
+
   /// Get all configs from all enum values automatically
   /// This method loops through all RemoteConfigFormBuilderEnum values
   /// and returns all available components
@@ -90,6 +139,43 @@ class RemoteConfigService {
     }
 
     debugPrint('🎯 Total components loaded: ${components.length}');
+    return components;
+  }
+
+  /// Get all button configs from all enum values automatically
+  /// This method loops through all RemoteConfigButtonBuilderEnum values
+  /// and returns all available button components
+  List<DynamicFormModel> getAllButtonConfigs() {
+    final components = <DynamicFormModel>[];
+
+    // Get button component keys from remote config
+    final buttonComponentKeys = RemoteConfigButtonBuilderEnum.getValues();
+    debugPrint(
+      '🚀 Starting to load ${buttonComponentKeys.length} button components from remote config',
+    );
+
+    for (final configKey in buttonComponentKeys) {
+      debugPrint('📦 Processing button component key: ${configKey.key}');
+      final configPage = getButtonConfigKey(configKey.key);
+      debugPrint(
+        '📦 Config page result: ${configPage != null ? 'not null' : 'null'}',
+      );
+      if (configPage != null) {
+        debugPrint('📦 Components count: ${configPage.components.length}');
+        if (configPage.components.isNotEmpty) {
+          components.addAll(configPage.components);
+          debugPrint(
+            '✅ Loaded ${configPage.components.length} button components from ${configKey.key}',
+          );
+        } else {
+          debugPrint('❌ No components in config page for ${configKey.key}');
+        }
+      } else {
+        debugPrint('❌ No valid button components found in ${configKey.key}');
+      }
+    }
+
+    debugPrint('🎯 Total button components loaded: ${components.length}');
     return components;
   }
 
@@ -125,7 +211,6 @@ class RemoteConfigService {
   String getStringByKey(RemoteConfigFormBuilderEnum configKey) {
     return getString(configKey.key);
   }
-
 
   String getString(String key) {
     return _remoteConfig.getString(key);

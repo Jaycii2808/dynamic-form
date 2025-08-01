@@ -31,25 +31,67 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     return Scaffold(
       appBar: _buildAppBar(),
       backgroundColor: const Color(0xFF000000),
-      body: BlocConsumer<FormBuilderBloc, FormBuilderState>(
-        listener: (context, state) {
-          if (state is FormBuilderError) {
-            DialogUtils.showErrorDialog(context, state.errorMessage!);
-          }
-        },
-        builder: (context, state) {
-          if (state is FormBuilderLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          //error and success
-          if (state is FormBuilderSuccess) {
-            return _buildMainContent(state);
-          }
-          return const Text('Error');
-        },
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    return BlocConsumer<FormBuilderBloc, FormBuilderState>(
+      listener: (context, state) {
+        if (state is FormBuilderError) {
+          DialogUtils.showErrorDialog(context, state.errorMessage!);
+        }
+      },
+      builder: (context, state) {
+        if (state is FormBuilderLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        //error and success
+        if (state is FormBuilderSuccess) {
+          return _buildMainContent(state);
+        }
+        return const Text('Error');
+      },
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return BlocBuilder<FormBuilderBloc, FormBuilderState>(
+      builder: (context, state) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 10,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                formBuilderBloc.add(
+                  const ToggleComponentsPanelEvent(),
+                );
+              },
+              backgroundColor: Colors.blue.shade100,
+              foregroundColor: Colors.blue,
+              child: Icon(
+                state.showComponentsPanel ? Icons.hide_source : Icons.widgets,
+              ),
+            ),
+            //implement show list button
+            FloatingActionButton(
+              onPressed: () {
+                formBuilderBloc.add(const LoadButtonComponentsEvent());
+                formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
+              },
+              backgroundColor: Colors.blue.shade100,
+              foregroundColor: Colors.blue,
+              child: const Icon(
+                Icons.radio_button_unchecked_sharp,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -59,122 +101,112 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       elevation: 1,
-      actions: [
-        BlocBuilder<FormBuilderBloc, FormBuilderState>(
-          builder: (context, state) {
-            return GestureDetector(
-              onTap: () {
-                formBuilderBloc.add(
-                  const ToggleComponentsPanelEvent(),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue),
-                ),
-                child: Text(
-                  state.showComponentsPanel
-                      ? 'Hide Components'
-                      : 'Show Components',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
     );
   }
 
   Widget _buildMainContent(FormBuilderState state) {
-    return AnimatedContainer(
+    return Stack(
+      children: [
+        // Main form canvas - takes full width
+        _buildFormCanvas(state),
+        // Floating components panel
+        if (state.showComponentsPanel) _buildFloatingComponentsPanel(state),
+        // Floating button components panel
+        if (state.showButtonComponentsPanel)
+          _buildFloatingButtonComponentsPanel(state),
+      ],
+    );
+  }
+
+  Widget _buildFloatingComponentsPanel(FormBuilderState state) {
+    return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      child: Row(
-        children: [
-          // Form Canvas - takes full width when panel is hidden
-          Expanded(
-            flex: state.showComponentsPanel ? 2 : 2,
-            child: _buildFormCanvas(state),
-          ),
-          // Divider - only show when panel is visible
-          if (state.showComponentsPanel) _buildDivider(),
-          // Available Components Panel - only show when showComponentsPanel is true
-          if (state.showComponentsPanel)
-            Expanded(
-              flex: 2,
-              child: _buildComponentsPanel(state),
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: 300,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF000000),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(-2, 0),
             ),
-        ],
+          ],
+          border: Border(
+            left: BorderSide(
+              color: Colors.blue.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildComponentsPanelHeader(),
+            Expanded(
+              child: state.availableComponents.isEmpty
+                  ? _buildEmptyComponentsList()
+                  : _buildComponentsList(state),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      width: 1,
-      color: const Color(0xFF000000),
+  Widget _buildFloatingButtonComponentsPanel(FormBuilderState state) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      right: state.showComponentsPanel ? 300 : 0,
+      top: 0,
+      bottom: 0,
+      width: 300,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF000000),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(-2, 0),
+            ),
+          ],
+          border: Border(
+            left: BorderSide(
+              color: Colors.green.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildButtonComponentsPanelHeader(),
+            Expanded(
+              child: state.availableButtonComponents.isEmpty
+                  ? _buildEmptyButtonComponentsList()
+                  : _buildButtonComponentsList(state),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildFormCanvas(FormBuilderState state) {
     return Container(
       color: const Color(0xFF000000),
-      child: Stack(
+      child: Column(
         children: [
-          Column(
-            children: [
-              _buildCanvasHeader(state),
-              Expanded(
-                child: state.canvasComponents.isEmpty
-                    ? _buildEmptyCanvas()
-                    : _buildCanvasWithComponents(state),
-              ),
-            ],
+          _buildCanvasHeader(state),
+          Expanded(
+            child: state.canvasComponents.isEmpty
+                ? _buildEmptyCanvas()
+                : _buildCanvasWithComponents(state),
           ),
-          // Show components panel indicator when hidden
-          if (!state.showComponentsPanel)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Tooltip(
-                message: 'Show Components Panel',
-                child: GestureDetector(
-                  onTap: () => formBuilderBloc.add(
-                    const ToggleComponentsPanelEvent(),
-                  ),
-                  child: Container(
-                    width: 20,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
-                      border: Border(
-                        left: BorderSide(
-                          color: Colors.blue.withValues(alpha: 0.3),
-                        ),
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.chevron_left,
-                        color: Colors.blue,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -423,44 +455,100 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
-  Widget _buildComponentsPanel(FormBuilderState state) {
-    return Container(
-      color: const Color(0xFF000000),
-      child: Column(
-        children: [
-          _buildComponentsPanelHeader(),
-          Expanded(
-            child: state.availableComponents.isEmpty
-                ? _buildEmptyComponentsList()
-                : _buildComponentsList(state),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildComponentsPanelHeader() {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF000000),
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!),
+          left: BorderSide(color: Colors.blue.withValues(alpha: 0.3)),
+        ),
       ),
       child: Container(
         margin: const EdgeInsets.all(8),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.widgets, color: Colors.blue, size: 16),
-            SizedBox(width: 4),
-            Flexible(
+            const Icon(Icons.widgets, color: Colors.blue, size: 16),
+            const SizedBox(width: 4),
+            const Flexible(
               child: Text(
-                'Components',
+                'Form Components',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
                 overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => formBuilderBloc.add(
+                const ToggleComponentsPanelEvent(),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.red,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButtonComponentsPanelHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF000000),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!),
+          left: BorderSide(color: Colors.green.withValues(alpha: 0.3)),
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.widgets, color: Colors.green, size: 16),
+            const SizedBox(width: 4),
+            const Flexible(
+              child: Text(
+                'Button Components',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => formBuilderBloc.add(
+                const ToggleButtonComponentsPanelEvent(),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.red,
+                  size: 16,
+                ),
               ),
             ),
           ],
@@ -478,6 +566,15 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
+  Widget _buildEmptyButtonComponentsList() {
+    return const Center(
+      child: Text(
+        'No button components available',
+        style: TextStyle(color: Colors.grey),
+      ),
+    );
+  }
+
   Widget _buildComponentsList(FormBuilderState state) {
     return ListView.builder(
       itemCount: state.availableComponents.length,
@@ -487,7 +584,30 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
+  Widget _buildButtonComponentsList(FormBuilderState state) {
+    return ListView.builder(
+      itemCount: state.availableButtonComponents.length,
+      itemBuilder: (context, index) {
+        return _buildDraggableButtonComponent(
+          state.availableButtonComponents[index],
+        );
+      },
+    );
+  }
+
   Widget _buildDraggableComponent(DynamicFormModel component) {
+    return LongPressDraggable<DynamicFormModel>(
+      data: component,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      onDragStarted: () => formBuilderBloc.add(StartDragEvent(component)),
+      onDragEnd: (details) => formBuilderBloc.add(EndDragEvent(component)),
+      feedback: _buildDragFeedback(component),
+      childWhenDragging: _buildComponentListItemDragging(component),
+      child: _buildComponentListItem(component),
+    );
+  }
+
+  Widget _buildDraggableButtonComponent(DynamicFormModel component) {
     return LongPressDraggable<DynamicFormModel>(
       data: component,
       dragAnchorStrategy: pointerDragAnchorStrategy,
