@@ -2,11 +2,13 @@ import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
+import 'package:nested/nested.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => DynamicFormBloc(
-            remoteConfigService: RemoteConfigService(),
-            formTemplateService: FormTemplateService(),
-          ),
-        ),
-      ],
+      providers: _buildBlocProviders(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -43,5 +38,21 @@ class MyApp extends StatelessWidget {
         home: const HomeScreen(),
       ),
     );
+  }
+
+  List<SingleChildWidget> _buildBlocProviders() {
+    return [
+      BlocProvider(
+        create: (context) => DynamicFormBloc(
+          remoteConfigService: RemoteConfigService(),
+          formTemplateService: FormTemplateService(),
+        ),
+      ),
+      BlocProvider(
+        create: (context) => FormBuilderBloc(
+          remoteConfigService: RemoteConfigService(),
+        ),
+      ),
+    ];
   }
 }

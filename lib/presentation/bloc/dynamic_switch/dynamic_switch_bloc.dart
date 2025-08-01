@@ -1,9 +1,6 @@
 import 'dart:async';
 
-import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
-import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/data/models/config/config_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
 import 'package:dynamic_form_bi/presentation/bloc/dynamic_switch/dynamic_switch_event.dart';
@@ -67,17 +64,17 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
       selected: event.value, // for boolean-like components
     );
 
-    final configData = ConfigDataModel(
+    // Update only value and selected in existing config
+    final existingConfig = successState.component!.config!;
+    final updatedConfig = existingConfig.copyWith(
       value: event.value,
+      selected: event.value,
       currentState: updateData.currentState,
       errorText: updateData.errorText,
-      required: successState.component!.config?.isRequired,
-      type: successState.component!.config?.pickerMode,
     );
 
-    final updatedComponent = ComponentUtils.updateComponentConfig(
-      successState.component!,
-      ConfigModel.fromJson(configData.toJson()),
+    final updatedComponent = successState.component!.copyWith(
+      config: updatedConfig,
     );
 
     emit(

@@ -104,12 +104,14 @@ class AdditionalFieldDataModel extends Equatable {
     final data = <String, dynamic>{};
 
     if (validationRule != null) data['validation_rule'] = validationRule;
-    if (validationMessage != null)
+    if (validationMessage != null) {
       data['validation_message'] = validationMessage;
+    }
     if (isDirty != null) data['is_dirty'] = isDirty;
     if (isTouched != null) data['is_touched'] = isTouched;
-    if (lastModified != null)
+    if (lastModified != null) {
       data['last_modified'] = lastModified!.toIso8601String();
+    }
     if (source != null) data['source'] = source;
     if (customProperties != null) data['custom_properties'] = customProperties;
     if (tags != null) data['tags'] = tags;
@@ -130,12 +132,14 @@ class AdditionalFieldDataModel extends Equatable {
     final data = <String, dynamic>{};
 
     if (validationRule != null) data['validationRule'] = validationRule;
-    if (validationMessage != null)
+    if (validationMessage != null) {
       data['validationMessage'] = validationMessage;
+    }
     if (isDirty != null) data['isDirty'] = isDirty;
     if (isTouched != null) data['isTouched'] = isTouched;
-    if (lastModified != null)
+    if (lastModified != null) {
       data['lastModified'] = lastModified!.toIso8601String();
+    }
     if (source != null) data['source'] = source;
     if (customProperties != null) data.addAll(customProperties!);
     if (tags != null) data['tags'] = tags;

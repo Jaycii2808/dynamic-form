@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/button_action_data_model.dart';
 
 class FormActionDataModel extends Equatable {
@@ -173,7 +174,7 @@ class FormActionDataModel extends Equatable {
     Map<String, dynamic>? customData,
   }) {
     return FormActionDataModel.create(
-      action: 'submit_form',
+      action: ButtonAction.submitForm.value,
       formId: formId,
       formTitle: formTitle,
       formData: formData,

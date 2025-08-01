@@ -10,12 +10,12 @@ import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 class DynamicFormModel extends Equatable {
   final String id;
   final FormTypeEnum type;
+  final String? labelFormBuilder;
   final int order;
   final ConfigModel? config;
   final StyleModel style;
   final InputTypesModel? inputTypes; // changed
-  final VariantsModel?
-  variants; //use style and config from inputTypes and States
+  final VariantsModel? variants; //use style and config from inputTypes and States
   final StatesModel? states; // changed
   final BaseValidation? validation;
   final List<DynamicFormModel>? children;
@@ -23,6 +23,7 @@ class DynamicFormModel extends Equatable {
   const DynamicFormModel({
     required this.id,
     required this.type,
+    this.labelFormBuilder,
     required this.order,
     required this.config,
     required this.style,
@@ -37,6 +38,7 @@ class DynamicFormModel extends Equatable {
     return DynamicFormModel(
       id: json['id'] ?? '',
       type: FormTypeEnum.fromJson(json['type']),
+      labelFormBuilder: json['label_form_builder'] ?? 'xx',
       order: json['order'] ?? 0,
       config: json['config'] != null
           ? ConfigModel.fromJson(json['config'] as Map<String, dynamic>)
@@ -74,6 +76,7 @@ class DynamicFormModel extends Equatable {
     final result = <String, dynamic>{
       'id': id,
       'type': type.toJson(),
+      'label_form_builder': labelFormBuilder,
       'order': order,
       'config': config,
       'style': style,
@@ -93,11 +96,40 @@ class DynamicFormModel extends Equatable {
   factory DynamicFormModel.empty() => const DynamicFormModel(
     id: '',
     config: ConfigModel(),
+    labelFormBuilder: '',
     style: StyleModel(),
     type: FormTypeEnum.unknown,
     order: 0,
     validation: null,
   );
+
+  DynamicFormModel copyWith({
+    String? id,
+    FormTypeEnum? type,
+    String? labelFormBuilder,
+    int? order,
+    ConfigModel? config,
+    StyleModel? style,
+    InputTypesModel? inputTypes,
+    VariantsModel? variants,
+    StatesModel? states,
+    BaseValidation? validation,
+    List<DynamicFormModel>? children,
+  }) {
+    return DynamicFormModel(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      labelFormBuilder: labelFormBuilder ?? this.labelFormBuilder,
+      order: order ?? this.order,
+      config: config ?? this.config,
+      style: style ?? this.style,
+      inputTypes: inputTypes ?? this.inputTypes,
+      variants: variants ?? this.variants,
+      states: states ?? this.states,
+      validation: validation ?? this.validation,
+      children: children ?? this.children,
+    );
+  }
 }
 
 class DynamicFormPageModel extends Equatable {

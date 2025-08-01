@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Model for date time range data - replaces Map<String, dynamic>
+/// Model for date time range data
 class DateTimeRangeModel extends Equatable {
   final String? start;
   final String? end;

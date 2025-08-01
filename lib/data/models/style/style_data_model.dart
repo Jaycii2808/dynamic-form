@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Model for style data - replaces Map<String, dynamic>
+/// Model for style data
 class StyleDataModel extends Equatable {
   final String? backgroundColor;
   final String? textColor;

@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
@@ -34,7 +35,7 @@ class _DynamicButtonState extends State<DynamicButton> {
   late StyleModel _style;
   late ConfigModel _config;
   String _buttonText = 'Button';
-  String _action = 'custom';
+  ButtonAction _action = ButtonAction.custom;
   bool _isVisible = true;
   bool _isDisabled = false;
   IconData? _iconData;
@@ -57,7 +58,19 @@ class _DynamicButtonState extends State<DynamicButton> {
     _config = _currentComponent.config ?? const ConfigModel();
     _buttonText =
         _config.label?.toString() ?? _config.buttonText?.toString() ?? 'Button';
-    _action = _config.action?.toString() ?? 'custom';
+
+    // Convert action to ButtonAction enum
+    try {
+      final actionString = _config.action?.toString();
+      if (actionString != null) {
+        _action = ButtonAction.fromString(actionString);
+      } else {
+        _action = ButtonAction.custom;
+      }
+    } catch (e) {
+      _action = ButtonAction.custom;
+    }
+
     _isVisible = true; // Default visibility
 
     debugPrint('🔍 [Button] Starting validation for ${_currentComponent.id}');
@@ -150,21 +163,24 @@ class _DynamicButtonState extends State<DynamicButton> {
     );
 
     // For navigation buttons, set loading state briefly to prevent double click
-    if (_action == 'next_page' || _action == 'previous_page') {
+    if (_action == ButtonAction.nextPage ||
+        _action == ButtonAction.previousPage) {
       try {
         setState(() {
           _isLoading = true;
         });
         final validate = _currentComponent.validation?.toJson();
         final targetPage =
-            validate?[_action == 'next_page' ? 'next_page' : 'previous_page']
+            validate?[_action == ButtonAction.nextPage
+                    ? 'next_page'
+                    : 'previous_page']
                 as String?;
         debugPrint('🔘 [Button] Target page: $targetPage');
 
         widget.onAction?.call(
-          _action,
+          _action.value,
           FormActionDataModel.navigation(
-            action: _action,
+            action: _action.value,
             targetPage: targetPage ?? '',
             formId: _currentComponent.id,
             configKey: _currentComponent.id,
@@ -192,9 +208,9 @@ class _DynamicButtonState extends State<DynamicButton> {
         });
 
         widget.onAction?.call(
-          _action,
+          _action.value,
           FormActionDataModel.create(
-            action: _action,
+            action: _action.value,
             formId: _currentComponent.id,
             customData: _config.toJson()['customData'],
             configKey: _currentComponent.id,

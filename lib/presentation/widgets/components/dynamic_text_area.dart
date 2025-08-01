@@ -12,12 +12,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicTextArea extends StatelessWidget {
   final DynamicFormModel component;
-  final Function(dynamic) onComplete;
+  final Function(dynamic)? onComplete;
 
   const DynamicTextArea({
     super.key,
     required this.component,
-    required this.onComplete,
+    this.onComplete,
   });
 
   @override
@@ -26,7 +26,7 @@ class DynamicTextArea extends StatelessWidget {
       listener: (context, state) {
         if (state is DynamicTextAreaSuccess) {
           final simpleValue = state.component?.config?.value?.toString() ?? '';
-          onComplete(simpleValue);
+          onComplete?.call(simpleValue);
 
           final textController = state.textController;
           if (textController != null) {
@@ -38,20 +38,31 @@ class DynamicTextArea extends StatelessWidget {
           }
         } else if (state is DynamicTextAreaError) {
           final simpleValue = state.component?.config?.value?.toString() ?? '';
-          onComplete(simpleValue);
+          onComplete?.call(simpleValue);
           DialogUtils.showErrorDialog(context, state.errorMessage!);
         } else if (state is DynamicTextAreaInitial || state is DynamicTextAreaLoading) {
           debugPrint(
-            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config!.value}',
+            'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
           );
         } else {
           final simpleValue = state.component?.config?.value?.toString() ?? '';
-          onComplete(simpleValue);
+          onComplete?.call(simpleValue);
           DialogUtils.showErrorDialog(context, "Another Error");
         }
       },
       builder: (context, state) {
         if (state is DynamicTextAreaSuccess) {
+          // Add null checks for all required properties
+          if (state.styleModel == null ||
+              state.inputConfig == null ||
+              state.component == null ||
+              state.formState == null ||
+              state.textController == null ||
+              state.focusNode == null) {
+            debugPrint('DynamicTextArea: Some required properties are null');
+            return const SizedBox.shrink();
+          }
+
           return _buildBody(
             state.styleModel!,
             state.inputConfig!,
@@ -118,7 +129,7 @@ class DynamicTextArea extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            inputConfig.label!,
+            inputConfig.label ?? '',
             style: TextStyle(
               fontSize: styleModel.labelTextSize,
               color: styleModel.labelColor,

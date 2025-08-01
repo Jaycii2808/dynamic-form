@@ -69,19 +69,25 @@ class _DynamicFormContentState extends State<_DynamicFormContent> {
 
     if (data != null) {
       // Handle different action types
-      switch (data.action) {
-        case 'next_page':
-        case 'previous_page':
-          _handleNavigationAction(data);
-          break;
-        case 'submit_form':
-          _handleSubmitAction(data);
-          break;
-        case 'custom':
-          _handleCustomAction(data);
-          break;
-        default:
-          _handleDefaultAction(data);
+      try {
+        final buttonAction = ButtonAction.fromString(data.action);
+        switch (buttonAction) {
+          case ButtonAction.nextPage:
+          case ButtonAction.previousPage:
+            _handleNavigationAction(data);
+            break;
+          case ButtonAction.submitForm:
+            _handleSubmitAction(data);
+            break;
+          case ButtonAction.custom:
+            _handleCustomAction(data);
+            break;
+          default:
+            _handleDefaultAction(data);
+        }
+      } catch (e) {
+        // Handle unknown action types
+        _handleDefaultAction(data);
       }
     }
 
