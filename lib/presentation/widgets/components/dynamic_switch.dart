@@ -78,53 +78,62 @@ class DynamicSwitch extends StatelessWidget {
     return Container(
       key: ValueKey(component.id),
       padding: const EdgeInsets.symmetric(
-        vertical: 10.0,
-        horizontal: 12.0,
+        vertical: 8.0,
+        horizontal: 8.0,
       ),
       margin: const EdgeInsets.symmetric(
-        vertical: 10.0,
-        horizontal: 12.0,
+        vertical: 8.0,
+        horizontal: 8.0,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           if (hasLabel)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    config.label ?? '',
-                    style: TextStyle(
-                      fontSize: styleModel.labelTextSize ?? 16,
-                      color: styleModel.labelColor ?? Colors.white,
-                    ),
-                  ),
-                  if (component.config?.isRequired == true)
-                    const Text(
-                      ' *',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        config.label ?? '',
+                        style: TextStyle(
+                          fontSize: (styleModel.labelTextSize ?? 16) * 0.8,
+                          color: styleModel.labelColor ?? Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
-                ],
+                    if (component.config?.isRequired == true)
+                      const Text(
+                        ' *',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          Switch(
-            value: isSelected,
-            onChanged: isDisabled
-                ? null
-                : (bool value) {
-                    context.read<DynamicSwitchBloc>().add(
-                      SwitchToggledEvent(value: value),
-                    );
-                  },
-            activeColor: activeColor,
-            inactiveThumbColor: inactiveThumbColor,
-            inactiveTrackColor: inactiveTrackColor,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          Transform.scale(
+            scale: 0.7,
+            child: Switch(
+              value: isSelected,
+              onChanged: isDisabled
+                  ? null
+                  : (bool value) {
+                      context.read<DynamicSwitchBloc>().add(
+                        SwitchToggledEvent(value: value),
+                      );
+                    },
+              activeColor: activeColor,
+              inactiveThumbColor: inactiveThumbColor,
+              inactiveTrackColor: inactiveTrackColor,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
         ],
       ),

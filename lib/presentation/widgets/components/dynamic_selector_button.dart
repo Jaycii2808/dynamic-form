@@ -72,14 +72,14 @@ class DynamicSelectorButton extends StatelessWidget {
 
     return Container(
       key: Key(component.id),
-      padding:const EdgeInsets.symmetric(
-        vertical: 10.0,
-        horizontal: 12.0,
+      padding: const EdgeInsets.symmetric(
+        vertical: 8.0,
+        horizontal: 8.0,
       ),
-      margin:const EdgeInsets.symmetric(
-      vertical: 10.0,
-      horizontal: 12.0,
-    ),
+      margin: const EdgeInsets.symmetric(
+        vertical: 8.0,
+        horizontal: 8.0,
+      ),
       child: GestureDetector(
         onTap: isDisabled
             ? null
@@ -89,49 +89,54 @@ class DynamicSelectorButton extends StatelessWidget {
                 );
               },
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: styleModel.iconSize ?? 20.0,
-              height: styleModel.iconSize ?? 20.0,
+              width: (styleModel.iconSize ?? 20.0) * 0.8,
+              height: (styleModel.iconSize ?? 20.0) * 0.8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: styleModel.backgroundColor ?? Colors.transparent,
                 border: Border.all(
                   color: styleModel.borderColor ?? Colors.grey,
-                  width: styleModel.borderWidth ?? 2.0,
+                  width: (styleModel.borderWidth ?? 2.0) * 0.8,
                 ),
               ),
               child: selected
                   ? Icon(
                       Icons.check,
-                      size: (styleModel.iconSize ?? 20.0) * 0.6,
+                      size: (styleModel.iconSize ?? 20.0) * 0.5,
                       color: Colors.white,
                     )
                   : null,
             ),
             if (hasLabel)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      config.label ?? '',
-                      style: TextStyle(
-                        fontSize: styleModel.labelTextSize ?? 16,
-                        color: styleModel.labelColor ?? Colors.white,
-                      ),
-                    ),
-                    if (component.config?.isRequired == true)
-                      const Text(
-                        ' *',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          config.label ?? '',
+                          style: TextStyle(
+                            fontSize: (styleModel.labelTextSize ?? 16) * 0.8,
+                            color: styleModel.labelColor ?? Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
-                  ],
+                      if (component.config?.isRequired == true)
+                        const Text(
+                          ' *',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
           ],
