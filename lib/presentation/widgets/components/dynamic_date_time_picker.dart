@@ -123,12 +123,16 @@ class DynamicDateTimePicker extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            inputConfig.label!,
-            style: TextStyle(
-              fontSize: styleModel.labelTextSize ?? 16,
-              color: styleModel.textColor ?? Colors.black,
-              fontWeight: FontWeight.bold,
+          Flexible(
+            child: Text(
+              inputConfig.label!,
+              style: TextStyle(
+                fontSize: styleModel.labelTextSize ?? 16,
+                color: styleModel.textColor ?? Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
           if (isRequired)
