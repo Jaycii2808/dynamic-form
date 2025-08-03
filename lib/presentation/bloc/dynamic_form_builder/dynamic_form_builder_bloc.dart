@@ -51,6 +51,12 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<SubmitFormEvent>(_onSubmitForm);
     on<AddPageWithTitleEvent>(_onAddPageWithTitle);
     on<UpdateFirstPageTitleEvent>(_onUpdateFirstPageTitle);
+    // New event handlers for insert logic
+    on<InsertComponentEvent>(_onInsertComponent);
+    on<StartHoverEvent>(_onStartHover);
+    on<EndHoverEvent>(_onEndHover);
+    on<ShowInsertIndicatorEvent>(_onShowInsertIndicator);
+    on<HideInsertIndicatorEvent>(_onHideInsertIndicator);
   }
 
   Future<void> _onLoadComponents(
@@ -565,6 +571,106 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
+      ),
+    );
+  }
+
+  /// Insert component at specific index
+  void _onInsertComponent(
+    InsertComponentEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '📎 [FormBuilderBloc] Inserting component at index: ${event.insertIndex}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = List<DynamicFormModel>.from(page.components);
+        updatedComponents.insert(event.insertIndex, event.component);
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+        insertIndicatorIndex: null,
+        isHovering: false,
+        hoveredComponent: null,
+        hoverTargetIndex: null,
+      ),
+    );
+  }
+
+  /// Start hover timer for insert logic
+  void _onStartHover(
+    StartHoverEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '🔄 [FormBuilderBloc] Starting hover for index: ${event.targetIndex}',
+    );
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        isHovering: true,
+        hoveredComponent: event.draggedComponent,
+        hoverTargetIndex: event.targetIndex,
+      ),
+    );
+
+    // Start timer to show insert indicator after 0.5 seconds
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (state.isHovering && state.hoverTargetIndex == event.targetIndex) {
+        add(ShowInsertIndicatorEvent(event.targetIndex));
+      }
+    });
+  }
+
+  /// End hover state
+  void _onEndHover(
+    EndHoverEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('🛑 [FormBuilderBloc] Ending hover');
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        isHovering: false,
+        hoveredComponent: null,
+        hoverTargetIndex: null,
+      ),
+    );
+  }
+
+  /// Show insert indicator
+  void _onShowInsertIndicator(
+    ShowInsertIndicatorEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '📍 [FormBuilderBloc] Showing insert indicator at index: ${event.insertIndex}',
+    );
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        insertIndicatorIndex: event.insertIndex,
+      ),
+    );
+  }
+
+  /// Hide insert indicator
+  void _onHideInsertIndicator(
+    HideInsertIndicatorEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('🚫 [FormBuilderBloc] Hiding insert indicator');
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        insertIndicatorIndex: null,
       ),
     );
   }

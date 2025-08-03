@@ -1028,8 +1028,10 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
         );
       },
       onWillAcceptWithDetails: (data) => true,
-      onAcceptWithDetails: (details) =>
-          formBuilderBloc.add(AddComponentEvent(details.data)),
+      onAcceptWithDetails: (details) {
+        // Add component to the end of the list
+        formBuilderBloc.add(AddComponentEvent(details.data));
+      },
     );
   }
 
@@ -1064,6 +1066,12 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
+  /// Build canvas with components and insert indicators
+  ///
+  /// This method handles the display of components in the canvas with support for:
+  /// - Insert indicators that show where a component will be inserted
+  /// - Visual feedback when hovering over components during drag operations
+  /// - Proper spacing and layout for the insert functionality
   Widget _buildCanvasWithComponents(FormBuilderState state) {
     return ListView.builder(
       itemCount: state.canvasComponents.length + 1, // +1 for drop zone at end
@@ -1071,35 +1079,171 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
         if (index == state.canvasComponents.length) {
           return _buildDropZone(index);
         }
-        return _buildCanvasItem(state.canvasComponents[index], index);
+
+        // Show insert indicator before component if needed
+        if (state.insertIndicatorIndex == index) {
+          return Column(
+            children: [
+              _buildInsertIndicator(),
+              _buildCanvasItem(state.canvasComponents[index], index, state),
+            ],
+          );
+        }
+
+        return _buildCanvasItem(state.canvasComponents[index], index, state);
       },
     );
   }
 
-  Widget _buildCanvasItem(DynamicFormModel component, int index) {
+  /// Build individual canvas item with drag & drop support
+  ///
+  /// This method creates a draggable component container that:
+  /// - Accepts dragged components from the components panel
+  /// - Shows visual feedback during hover (0.5s timer)
+  /// - Inserts components at the specific index when dropped
+  /// - Provides tooltips for better UX
+  Widget _buildCanvasItem(
+    DynamicFormModel component,
+    int index,
+    FormBuilderState state,
+  ) {
+    return DragTarget<DynamicFormModel>(
+      onWillAcceptWithDetails: (details) {
+        // Start hover timer when dragging over component
+        formBuilderBloc.add(
+          StartHoverEvent(
+            targetIndex: index,
+            draggedComponent: details.data,
+          ),
+        );
+        return true;
+      },
+      onAcceptWithDetails: (details) {
+        // Insert component at this index
+        formBuilderBloc.add(
+          InsertComponentEvent(
+            component: details.data,
+            insertIndex: index,
+          ),
+        );
+      },
+      onLeave: (data) {
+        // End hover when leaving component
+        formBuilderBloc.add(const EndHoverEvent());
+        formBuilderBloc.add(const HideInsertIndicatorEvent());
+      },
+      builder: (context, candidateData, rejectedData) {
+        final isDragOver = candidateData.isNotEmpty;
+        final isHovering = state.isHovering && state.hoverTargetIndex == index;
+
+        return Tooltip(
+          message: isHovering
+              ? 'Hold for 0.5s to insert component here'
+              : 'Drag component here to insert',
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF000000),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDragOver || isHovering
+                    ? Colors.blue
+                    : Colors.grey[200]!,
+                width: isDragOver || isHovering ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDragOver || isHovering
+                      ? Colors.blue.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.05),
+                  blurRadius: isDragOver || isHovering ? 8 : 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: isHovering
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.blue.withValues(alpha: 0.05),
+                          Colors.blue.withValues(alpha: 0.02),
+                        ],
+                      )
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(12),
+                      child: _buildComponentWidget(component),
+                    ),
+                  ),
+                  _buildComponentActions(index),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInsertIndicator() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      height: 6,
       decoration: BoxDecoration(
-        color: const Color(0xFF000000),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.withValues(alpha: 0.8),
+            Colors.blue,
+            Colors.blue.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            color: Colors.blue.withValues(alpha: 0.4),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(12),
-              child: _buildComponentWidget(component),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.add_circle,
+                  color: Colors.white,
+                  size: 12,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Insert Here',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-          _buildComponentActions(index),
         ],
       ),
     );

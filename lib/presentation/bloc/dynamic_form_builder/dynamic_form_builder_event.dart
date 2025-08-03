@@ -166,3 +166,46 @@ class RemovePageEvent extends FormBuilderEvent {
 class SubmitFormEvent extends FormBuilderEvent {
   const SubmitFormEvent();
 }
+
+class InsertComponentEvent extends FormBuilderEvent {
+  final DynamicFormModel component;
+  final int insertIndex;
+
+  const InsertComponentEvent({
+    required this.component,
+    required this.insertIndex,
+  });
+
+  @override
+  List<Object?> get props => [component, insertIndex];
+}
+
+class StartHoverEvent extends FormBuilderEvent {
+  final int targetIndex;
+  final DynamicFormModel draggedComponent;
+
+  const StartHoverEvent({
+    required this.targetIndex,
+    required this.draggedComponent,
+  });
+
+  @override
+  List<Object?> get props => [targetIndex, draggedComponent];
+}
+
+class EndHoverEvent extends FormBuilderEvent {
+  const EndHoverEvent();
+}
+
+class ShowInsertIndicatorEvent extends FormBuilderEvent {
+  final int insertIndex;
+
+  const ShowInsertIndicatorEvent(this.insertIndex);
+
+  @override
+  List<Object?> get props => [insertIndex];
+}
+
+class HideInsertIndicatorEvent extends FormBuilderEvent {
+  const HideInsertIndicatorEvent();
+}

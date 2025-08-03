@@ -12,6 +12,11 @@ abstract class FormBuilderState extends Equatable {
   final bool showComponentsPanel;
   final bool showButtonComponentsPanel;
   final String formTitle;
+  // New properties for insert logic
+  final int? insertIndicatorIndex;
+  final bool isHovering;
+  final DynamicFormModel? hoveredComponent;
+  final int? hoverTargetIndex;
 
   const FormBuilderState({
     this.components = const [],
@@ -23,6 +28,10 @@ abstract class FormBuilderState extends Equatable {
     this.showComponentsPanel = true,
     this.showButtonComponentsPanel = false,
     this.formTitle = 'Untitled',
+    this.insertIndicatorIndex,
+    this.isHovering = false,
+    this.hoveredComponent,
+    this.hoverTargetIndex,
   });
 
   // Get current page components
@@ -68,6 +77,10 @@ abstract class FormBuilderState extends Equatable {
     showComponentsPanel,
     showButtonComponentsPanel,
     formTitle,
+    insertIndicatorIndex,
+    isHovering,
+    hoveredComponent,
+    hoverTargetIndex,
   ];
 }
 
@@ -82,6 +95,10 @@ class FormBuilderInitial extends FormBuilderState {
     super.showComponentsPanel,
     super.showButtonComponentsPanel,
     super.formTitle,
+    super.insertIndicatorIndex,
+    super.isHovering,
+    super.hoveredComponent,
+    super.hoverTargetIndex,
   });
 }
 
@@ -96,6 +113,10 @@ class FormBuilderLoading extends FormBuilderState {
     super.showComponentsPanel,
     super.showButtonComponentsPanel,
     super.formTitle,
+    super.insertIndicatorIndex,
+    super.isHovering,
+    super.hoveredComponent,
+    super.hoverTargetIndex,
   });
 
   FormBuilderLoading.fromState({required FormBuilderState state})
@@ -109,6 +130,10 @@ class FormBuilderLoading extends FormBuilderState {
         showComponentsPanel: state.showComponentsPanel,
         showButtonComponentsPanel: state.showButtonComponentsPanel,
         formTitle: state.formTitle,
+        insertIndicatorIndex: state.insertIndicatorIndex,
+        isHovering: state.isHovering,
+        hoveredComponent: state.hoveredComponent,
+        hoverTargetIndex: state.hoverTargetIndex,
       );
 }
 
@@ -123,6 +148,10 @@ class FormBuilderSuccess extends FormBuilderState {
     super.showComponentsPanel,
     super.showButtonComponentsPanel,
     super.formTitle,
+    super.insertIndicatorIndex,
+    super.isHovering,
+    super.hoveredComponent,
+    super.hoverTargetIndex,
   });
 
   FormBuilderSuccess.fromState({required FormBuilderState state})
@@ -136,6 +165,10 @@ class FormBuilderSuccess extends FormBuilderState {
         showComponentsPanel: state.showComponentsPanel,
         showButtonComponentsPanel: state.showButtonComponentsPanel,
         formTitle: state.formTitle,
+        insertIndicatorIndex: state.insertIndicatorIndex,
+        isHovering: state.isHovering,
+        hoveredComponent: state.hoveredComponent,
+        hoverTargetIndex: state.hoverTargetIndex,
       );
 
   FormBuilderSuccess copyWith({
@@ -148,6 +181,10 @@ class FormBuilderSuccess extends FormBuilderState {
     bool? showComponentsPanel,
     bool? showButtonComponentsPanel,
     String? formTitle,
+    int? insertIndicatorIndex,
+    bool? isHovering,
+    DynamicFormModel? hoveredComponent,
+    int? hoverTargetIndex,
   }) {
     return FormBuilderSuccess(
       components: components ?? this.components,
@@ -161,6 +198,10 @@ class FormBuilderSuccess extends FormBuilderState {
       showButtonComponentsPanel:
           showButtonComponentsPanel ?? this.showButtonComponentsPanel,
       formTitle: formTitle ?? this.formTitle,
+      insertIndicatorIndex: insertIndicatorIndex ?? this.insertIndicatorIndex,
+      isHovering: isHovering ?? this.isHovering,
+      hoveredComponent: hoveredComponent ?? this.hoveredComponent,
+      hoverTargetIndex: hoverTargetIndex ?? this.hoverTargetIndex,
     );
   }
 }
@@ -178,6 +219,10 @@ class FormBuilderError extends FormBuilderState {
     super.showComponentsPanel,
     super.showButtonComponentsPanel,
     super.formTitle,
+    super.insertIndicatorIndex,
+    super.isHovering,
+    super.hoveredComponent,
+    super.hoverTargetIndex,
     required this.errorMessage,
   });
 
@@ -193,5 +238,9 @@ class FormBuilderError extends FormBuilderState {
     showButtonComponentsPanel,
     formTitle,
     errorMessage,
+    insertIndicatorIndex,
+    isHovering,
+    hoveredComponent,
+    hoverTargetIndex,
   ];
 }
