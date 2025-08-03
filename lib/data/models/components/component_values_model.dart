@@ -43,6 +43,14 @@ class ComponentValuesModel extends Equatable {
     return Map<String, dynamic>.from(values);
   }
 
+  ComponentValuesModel copyWith({
+    Map<String, dynamic>? values,
+  }) {
+    return ComponentValuesModel(
+      values: values ?? Map<String, dynamic>.from(this.values),
+    );
+  }
+
   @override
   List<Object?> get props => [values];
 

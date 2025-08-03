@@ -52,7 +52,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       bottom: TabBar(
         controller: _tabController,
         tabs: const [
-          Tab(text: 'Preview', icon: Icon(Icons.visibility)),
+          Tab(text: 'Form Preview', icon: Icon(Icons.visibility)),
           Tab(text: 'JSON Output', icon: Icon(Icons.code)),
         ],
         labelColor: Colors.white,
@@ -66,13 +66,13 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     return TabBarView(
       controller: _tabController,
       children: [
-        _buildPreviewTab(),
+        _buildFormPreviewTab(),
         _buildJsonOutputTab(),
       ],
     );
   }
 
-  Widget _buildPreviewTab() {
+  Widget _buildFormPreviewTab() {
     // Convert FormBuilderModel pages to DynamicFormPageModel format
     final dynamicPages = widget.formBuilderModel.pages.map((page) {
       return DynamicFormPageModel(

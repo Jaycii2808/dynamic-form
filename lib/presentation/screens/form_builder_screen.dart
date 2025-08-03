@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/hero_tag_form_builder_enum.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
@@ -155,6 +156,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
           spacing: 10,
           children: [
             FloatingActionButton(
+              heroTag: HeroTagFormBuilderEnum.componentsPanel.value,
               onPressed: () {
                 formBuilderBloc.add(
                   const ToggleComponentsPanelEvent(),
@@ -168,6 +170,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ),
             //implement show list button
             FloatingActionButton(
+              heroTag: HeroTagFormBuilderEnum.buttonComponents.value,
               onPressed: () {
                 formBuilderBloc.add(const LoadButtonComponentsEvent());
                 formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
@@ -180,6 +183,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ),
             // Add page button
             FloatingActionButton(
+              heroTag: HeroTagFormBuilderEnum.addPage.value,
               onPressed: () {
                 _showAddPageDialog();
               },
@@ -192,6 +196,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             // Remove page button (only show if more than 1 page)
             if (state.pages.length > 1)
               FloatingActionButton(
+                heroTag: HeroTagFormBuilderEnum.removePage.value,
                 onPressed: () {
                   formBuilderBloc.add(RemovePageEvent(state.currentPageId));
                 },
@@ -204,6 +209,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             // Pages overview button (only show if more than 1 page)
             if (state.pages.length > 1)
               FloatingActionButton(
+                heroTag: HeroTagFormBuilderEnum.pagesOverview.value,
                 onPressed: () {
                   _showPagesOverviewDialog(state);
                 },
@@ -277,25 +283,28 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     return Row(
       children: [
         // Form title
-        GestureDetector(
-          onTap: () => _showEditFormTitleDialog(state),
-          child: Row(
-            children: [
-              const Icon(Icons.edit, color: Colors.blue),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  state.formTitle,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _showEditFormTitleDialog(state),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.edit, color: Colors.blue),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    state.formTitle,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -303,33 +312,35 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
         const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
         const SizedBox(width: 16),
         // Page title
-        GestureDetector(
-          onTap: () => _showEditPageTitleDialog(state),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.edit, color: Colors.blue, size: 14),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    state.currentPageTitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blue,
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _showEditPageTitleDialog(state),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.edit, color: Colors.blue, size: 14),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      state.currentPageTitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blue,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

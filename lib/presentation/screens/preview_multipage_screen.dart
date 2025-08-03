@@ -1,7 +1,9 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_preview_multipage_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
+import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
@@ -10,7 +12,7 @@ import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 
-class PreviewPageScreen extends StatelessWidget {
+class PreviewPageScreen extends StatefulWidget {
   final List<DynamicFormPageModel> pages;
   final ComponentValuesModel allComponentValues;
   final VoidCallback? onSubmit;
@@ -25,6 +27,21 @@ class PreviewPageScreen extends StatelessWidget {
   });
 
   @override
+  State<PreviewPageScreen> createState() => _PreviewPageScreenState();
+}
+
+class _PreviewPageScreenState extends State<PreviewPageScreen> {
+  int currentPageIndex = 0;
+  late ComponentValuesModel componentValues;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use model's copyWith method to create a copy
+    componentValues = widget.allComponentValues.copyWith();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
@@ -37,13 +54,13 @@ class PreviewPageScreen extends StatelessWidget {
     final List<Widget> pageBlocks = [];
 
     // Build each page block
-    for (int pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-      final page = pages[pageIndex];
+    for (int pageIndex = 0; pageIndex < widget.pages.length; pageIndex++) {
+      final page = widget.pages[pageIndex];
       final List<DynamicFormModel> pageComponents = [];
 
       // Process each component in the page
       for (final componentItem in page.components) {
-        final value = allComponentValues.values[componentItem.id];
+        final value = componentValues.values[componentItem.id];
         final updatedConfig = componentItem.config?.copyWith(value: value);
 
         final processedComponent = DynamicFormModel(
@@ -59,22 +76,20 @@ class PreviewPageScreen extends StatelessWidget {
           children: componentItem.children,
         );
 
-        // Only add non-button components
-        if (processedComponent.type != FormTypeEnum.buttonFormType) {
-          pageComponents.add(processedComponent);
-        }
+        // Add all components including buttons
+        pageComponents.add(processedComponent);
       }
 
       // Build page header and components
       final List<Widget> pageChildren = [];
 
       // Add page header if multiple pages
-      if (pages.length > 1) {
+      if (widget.pages.length > 1) {
         pageChildren.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'Page ${pageIndex + 1}/${pages.length}: ${page.title}',
+              'Page ${pageIndex + 1}/${widget.pages.length}: ${page.title}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -85,15 +100,12 @@ class PreviewPageScreen extends StatelessWidget {
         );
       }
 
-      // Add each component widget
+      // Add each component widget with appropriate handling
       for (final component in pageComponents) {
         pageChildren.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: AbsorbPointer(
-              absorbing: true, // Block interaction for each component
-              child: DynamicFormRenderer(component: component),
-            ),
+            child: _buildComponentWidget(component),
           ),
         );
       }
@@ -110,37 +122,13 @@ class PreviewPageScreen extends StatelessWidget {
     }
 
     final previewComponents = _buildPreviewComponents(
-      pages,
-      allComponentValues,
-    );
-
-    // Find previous button
-    DynamicFormModel? previousButton;
-    for (final component in previewComponents) {
-      if (component.type == FormTypeEnum.buttonFormType &&
-          component.config?.action == 'previous_page') {
-        previousButton = component;
-        break;
-      }
-    }
-    previousButton ??= DynamicFormModel.empty();
-
-    // Create a submit button for the preview screen
-    final submitButton = DynamicFormModel(
-      id: 'preview_submit_button',
-      type: FormTypeEnum.buttonFormType,
-      order: 999,
-      config: ConfigModel(
-        label: 'Submit',
-        icon: 'submit',
-        action: ButtonAction.submitForm.value,
-      ),
-      style: const StyleModel(),
+      widget.pages,
+      componentValues,
     );
 
     final isFormValid = isAllRequiredFilled(
       previewComponents,
-      allComponentValues,
+      componentValues,
     );
 
     return Stack(
@@ -185,7 +173,7 @@ class PreviewPageScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Preview Mode (Read Only)',
+                    'Preview Mode',
                     style: TextStyle(
                       color: Colors.yellow,
                       fontWeight: FontWeight.bold,
@@ -199,48 +187,213 @@ class PreviewPageScreen extends StatelessWidget {
           ),
         ),
 
-        // Submit & Previous buttons
-        _buildPreviewButtonsRow(
-          previousButton: previousButton,
-          submitButton: submitButton,
-          isFormValid: isFormValid,
-          onPrevious: onPrevious,
-          onSubmit: () async {
-            if (isFormValid) {
-              // Save form data
-              await _saveForm(context);
-
-              // Show success message
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Form submitted and saved successfully!'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 3),
-                  ),
-                );
-              }
-
-              // Navigate back to first screen
-              if (context.mounted) {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
-            } else {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Please fill all required fields before submitting.',
-                    ),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 3),
-                  ),
-                );
-              }
-            }
-          },
-        ),
+        // Save button for preview
+        _buildPreviewSaveButton(isFormValid),
       ],
+    );
+  }
+
+  Widget _buildComponentWidget(DynamicFormModel component) {
+    // Handle different component types for preview
+    switch (component.type) {
+      case FormTypeEnum.buttonFormType:
+        return _buildButtonComponent(component);
+      default:
+        return _buildFormComponent(component);
+    }
+  }
+
+  Widget _buildFormComponent(DynamicFormModel component) {
+    // Form components are read-only in preview
+    return AbsorbPointer(
+      absorbing: true,
+      child: DynamicFormRenderer(
+        component: component,
+        onFieldChanged: (componentId, value) {
+          // Update local state for preview
+          setState(() {
+            componentValues.values[componentId] = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildButtonComponent(DynamicFormModel component) {
+    // Button components are interactive in preview
+    return DynamicFormRenderer(
+      component: component,
+      onButtonAction: (action, data) {
+        // Convert string action to enum
+        final buttonAction = ButtonActionPreviewMultipageEnum.tryFromString(
+          action,
+        );
+        if (buttonAction != null) {
+          _handleButtonAction(buttonAction, data, component);
+        } else {
+          _showPreviewActionDialog(action, component);
+        }
+      },
+    );
+  }
+
+  void _handleButtonAction(
+    ButtonActionPreviewMultipageEnum action,
+    FormActionDataModel? data,
+    DynamicFormModel component,
+  ) {
+    debugPrint('Button action: ${action.value}, data: $data');
+
+    switch (action) {
+      case ButtonActionPreviewMultipageEnum.previousPage:
+        _handlePreviousPage();
+        break;
+      case ButtonActionPreviewMultipageEnum.nextPage:
+        _handleNextPage();
+        break;
+      case ButtonActionPreviewMultipageEnum.submitForm:
+        _handleSubmitForm();
+        break;
+      case ButtonActionPreviewMultipageEnum.saveForm:
+        _handleSaveForm();
+        break;
+      case ButtonActionPreviewMultipageEnum.clearForm:
+        _handleClearForm();
+        break;
+      case ButtonActionPreviewMultipageEnum.customAction:
+        _handleCustomAction(data);
+        break;
+    }
+  }
+
+  void _handlePreviousPage() {
+    if (currentPageIndex > 0) {
+      setState(() {
+        currentPageIndex--;
+      });
+      _scrollToPage(currentPageIndex);
+    }
+  }
+
+  void _handleNextPage() {
+    if (currentPageIndex < widget.pages.length - 1) {
+      setState(() {
+        currentPageIndex++;
+      });
+      _scrollToPage(currentPageIndex);
+    }
+  }
+
+  void _handleSubmitForm() {
+    _showPreviewActionDialog('submit_form', null);
+  }
+
+  void _handleSaveForm() {
+    _saveForm(context);
+  }
+
+  void _handleClearForm() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Form'),
+        content: const Text(
+          'This action would clear all form data in a real form.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleCustomAction(FormActionDataModel? data) {
+    _showPreviewActionDialog('custom_action', null);
+  }
+
+  void _showPreviewActionDialog(String action, DynamicFormModel? component) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Preview Action'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Action: $action'),
+            if (component != null) ...[
+              const SizedBox(height: 8),
+              Text('Component: ${component.config?.label ?? component.id}'),
+            ],
+            const SizedBox(height: 8),
+            const Text('This action would be executed in a real form.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _scrollToPage(int pageIndex) {
+    // Scroll to the specific page
+    // This is a simplified implementation
+    debugPrint('Scrolling to page $pageIndex');
+  }
+
+  Widget _buildPreviewSaveButton(bool isFormValid) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isFormValid ? Colors.green : Colors.grey,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: GestureDetector(
+                    onTap: isFormValid ? () => _saveForm(context) : null,
+                    child: const Center(
+                      child: Text(
+                        'Save Form Data',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -251,15 +404,15 @@ class PreviewPageScreen extends StatelessWidget {
       // Use the new SavedFormDataModel instead of List<Map<String, dynamic>>
       final savedFormData = SavedFormDataBuilder.createFromDynamicFormPages(
         formId: 'preview_form_${DateTime.now().millisecondsSinceEpoch}',
-        pages: pages,
-        componentValues: allComponentValues.values,
+        pages: widget.pages,
+        componentValues: componentValues.values,
       );
 
       await savedFormsService.saveFormWithCustomFormat(
         formId: savedFormData.formId,
         name: 'Preview Form - ${DateTime.now().toString().substring(0, 19)}',
         description:
-            'Form with ${pages.length} pages and ${allComponentValues.values.length} filled fields',
+            'Form with ${widget.pages.length} pages and ${componentValues.values.length} filled fields',
         formData: savedFormData.toJson(),
         originalConfigKey: 'preview_form',
       );
@@ -359,55 +512,4 @@ bool isAllRequiredFilled(
     }
   }
   return true;
-}
-
-Widget _buildPreviewButtonsRow({
-  required DynamicFormModel? previousButton,
-  required DynamicFormModel submitButton,
-  required bool isFormValid,
-  VoidCallback? onPrevious,
-  VoidCallback? onSubmit,
-}) {
-  return Positioned(
-    bottom: 0,
-    left: 0,
-    right: 0,
-    child: SafeArea(
-      child: SizedBox(
-        width: double.infinity,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: previousButton != null
-                  ? DynamicFormRenderer(
-                      component: previousButton,
-                      onButtonAction: (action, data) {
-                        if (onPrevious != null) onPrevious();
-                      },
-                    )
-                  : const Text("Missing Previous Button"),
-            ),
-            if (submitButton.id.isNotEmpty) ...[
-              const SizedBox(width: 16),
-              Expanded(
-                child: Opacity(
-                  opacity: isFormValid ? 1.0 : 0.5,
-                  child: IgnorePointer(
-                    ignoring: !isFormValid,
-                    child: DynamicFormRenderer(
-                      component: submitButton,
-                      onButtonAction: (action, data) {
-                        if (isFormValid && onSubmit != null) onSubmit();
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    ),
-  );
 }
