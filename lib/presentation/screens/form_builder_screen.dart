@@ -158,27 +158,67 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             FloatingActionButton(
               heroTag: HeroTagFormBuilderEnum.componentsPanel.value,
               onPressed: () {
-                formBuilderBloc.add(
-                  const ToggleComponentsPanelEvent(),
-                );
+                // Close button panel if open, then toggle components panel
+                if (state.showButtonComponentsPanel) {
+                  formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
+                }
+                formBuilderBloc.add(const ToggleComponentsPanelEvent());
               },
-              backgroundColor: Colors.blue.shade100,
-              foregroundColor: Colors.blue,
-              child: Icon(
-                state.showComponentsPanel ? Icons.hide_source : Icons.widgets,
+              backgroundColor: state.showComponentsPanel
+                  ? Colors.blue.shade600
+                  : Colors.blue.shade100,
+              foregroundColor: state.showComponentsPanel
+                  ? Colors.white
+                  : Colors.blue,
+              elevation: state.showComponentsPanel ? 8 : 4,
+              child: Container(
+                decoration: state.showComponentsPanel
+                    ? BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                      )
+                    : null,
+                child: Icon(
+                  state.showComponentsPanel ? Icons.hide_source : Icons.widgets,
+                  size: state.showComponentsPanel ? 24 : 20,
+                ),
               ),
             ),
             //implement show list button
             FloatingActionButton(
               heroTag: HeroTagFormBuilderEnum.buttonComponents.value,
               onPressed: () {
+                // Close components panel if open, then toggle button components panel
+                if (state.showComponentsPanel) {
+                  formBuilderBloc.add(const ToggleComponentsPanelEvent());
+                }
                 formBuilderBloc.add(const LoadButtonComponentsEvent());
                 formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
               },
-              backgroundColor: Colors.blue.shade100,
-              foregroundColor: Colors.blue,
-              child: const Icon(
-                Icons.radio_button_unchecked_sharp,
+              backgroundColor: state.showButtonComponentsPanel
+                  ? Colors.green.shade600
+                  : Colors.blue.shade100,
+              foregroundColor: state.showButtonComponentsPanel
+                  ? Colors.white
+                  : Colors.blue,
+              elevation: state.showButtonComponentsPanel ? 8 : 4,
+              child: Container(
+                decoration: state.showButtonComponentsPanel
+                    ? BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                      )
+                    : null,
+                child: Icon(
+                  Icons.next_week_outlined,
+                  size: state.showButtonComponentsPanel ? 24 : 20,
+                ),
               ),
             ),
             // Add page button
@@ -235,42 +275,28 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       elevation: 1,
+      toolbarHeight: 80, // Increase height for column layout
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 20),
+          onPressed: () => Navigator.of(context).pop(),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.grey[800],
+            padding: const EdgeInsets.all(8),
+            minimumSize: const Size(32, 32),
+          ),
+        ),
+      ),
       actions: [
         BlocBuilder<FormBuilderBloc, FormBuilderState>(
           builder: (context, state) {
             return Row(
-              spacing: 10,
+              spacing: 6,
               children: [
                 if (state.canvasComponents.isNotEmpty)
-                  _buildClearCanvasButton(),
-                GestureDetector(
-                  onTap: () => _handleSubmitForm(state),
-                  child: Container(
-                    // Padding inside the container
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    // Margin outside the container (space from edge)
-                    margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-                    // Decoration: background color, border, rounded corners
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green),
-                    ),
-                    // The text inside the button
-                    child: const Center(
-                      child: Text(
-                        'Preview',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                  _buildCompactClearButton(),
+                _buildCompactPreviewButton(state),
               ],
             );
           },
@@ -279,74 +305,154 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     );
   }
 
+  Widget _buildCompactClearButton() {
+    return Container(
+      margin: const EdgeInsets.only(right: 6, top: 8, bottom: 8),
+      child: IconButton(
+        onPressed: () => formBuilderBloc.add(const ClearCanvasEvent()),
+        icon: const Icon(Icons.clear, size: 18),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.red.shade100,
+          foregroundColor: Colors.red,
+          padding: const EdgeInsets.all(8),
+          minimumSize: const Size(32, 32),
+        ),
+        tooltip: 'Clear Canvas',
+      ),
+    );
+  }
+
+  Widget _buildCompactPreviewButton(FormBuilderState state) {
+    return Container(
+      margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+      child: IconButton(
+        onPressed: () => _handleSubmitForm(state),
+        icon: const Icon(Icons.preview, size: 18),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.green.shade100,
+          foregroundColor: Colors.green,
+          padding: const EdgeInsets.all(8),
+          minimumSize: const Size(32, 32),
+        ),
+        tooltip: 'Preview Form',
+      ),
+    );
+  }
+
   Widget _buildEditableTitle(FormBuilderState state) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Form title
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _showEditFormTitleDialog(state),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.edit, color: Colors.blue),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    state.formTitle,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+        // Form title row
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showEditFormTitleDialog(state),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.blue.withValues(alpha: 0.3),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.edit, color: Colors.blue, size: 14),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          state.formTitle,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Breadcrumb separator
-        const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-        const SizedBox(width: 16),
-        // Page title
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _showEditPageTitleDialog(state),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.edit, color: Colors.blue, size: 14),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      state.currentPageTitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+            ),
+            const SizedBox(width: 12),
+            // Page navigation
+            if (state.pages.length > 1) _buildPageNavigation(state),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Page title row
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showEditPageTitleDialog(state),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.3),
                     ),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.description,
+                        color: Colors.green,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          state.currentPageTitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 12),
+            // Page info badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Page ${state.pages.indexWhere((page) => page.pageId == state.currentPageId) + 1} of ${state.pages.length}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        // Page navigation
-        if (state.pages.length > 1) _buildPageNavigation(state),
       ],
     );
   }
@@ -867,37 +973,6 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildClearCanvasButton() {
-    return GestureDetector(
-      onTap: () => formBuilderBloc.add(const ClearCanvasEvent()),
-      child: Container(
-        // Padding inside the container
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 8,
-        ),
-        // Margin outside the container (space from edge)
-        margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-        // Decoration: background color, border, rounded corners
-        decoration: BoxDecoration(
-          color: Colors.red.shade100,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red),
-        ),
-        // The text inside the button
-        child: const Center(
-          child: Text(
-            'Clear',
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
       ),
     );
   }
