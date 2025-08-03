@@ -5,8 +5,8 @@ import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_mult
 import 'package:dynamic_form_bi/data/models/validation/validation_errors_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

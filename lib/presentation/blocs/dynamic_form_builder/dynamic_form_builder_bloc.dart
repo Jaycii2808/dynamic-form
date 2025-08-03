@@ -1,8 +1,8 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
 
 import 'package:flutter/material.dart';

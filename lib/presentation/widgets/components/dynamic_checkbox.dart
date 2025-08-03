@@ -2,12 +2,12 @@
 
 import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_checkbox/dynamic_checkbox_state.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_checkbox/dynamic_checkbox_bloc.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_checkbox/dynamic_checkbox_event.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_checkbox/dynamic_checkbox_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

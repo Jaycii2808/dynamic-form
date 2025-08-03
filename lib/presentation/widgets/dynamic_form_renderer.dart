@@ -2,8 +2,8 @@
 import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

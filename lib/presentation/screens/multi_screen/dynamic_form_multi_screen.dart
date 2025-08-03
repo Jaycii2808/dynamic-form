@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/multi_page_form/multi_page_form_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_form_multi_page_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

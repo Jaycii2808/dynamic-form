@@ -11,8 +11,8 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

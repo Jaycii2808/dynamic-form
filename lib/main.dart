@@ -1,8 +1,8 @@
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form_builder/dynamic_form_builder_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

@@ -1,8 +1,8 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/dynamic_form_multi_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/dynamic_form_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'package:flutter/material.dart';
 

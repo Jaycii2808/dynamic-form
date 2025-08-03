@@ -1,9 +1,9 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_event.dart';
-import 'package:dynamic_form_bi/presentation/bloc/dynamic_form/dynamic_form_state.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:dynamic_form_bi/presentation/widgets/item_widgets/form_wrapper.dart';
 import 'package:flutter/material.dart';
