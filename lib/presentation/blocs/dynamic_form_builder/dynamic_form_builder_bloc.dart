@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
@@ -57,6 +58,12 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<EndHoverEvent>(_onEndHover);
     on<ShowInsertIndicatorEvent>(_onShowInsertIndicator);
     on<HideInsertIndicatorEvent>(_onHideInsertIndicator);
+    // New event handlers for editing component config
+    on<EditComponentConfigEvent>(_onEditComponentConfig);
+    on<EditComponentLabelEvent>(_onEditComponentLabel);
+    on<EditComponentPlaceholderEvent>(_onEditComponentPlaceholder);
+    // Force rebuild UI event
+    on<ForceRebuildUIEvent>(_onForceRebuildUI);
   }
 
   Future<void> _onLoadComponents(
@@ -392,6 +399,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       case ComponentActionEnum.delete:
         add(RemoveComponentEvent(event.index));
         break;
+      case ComponentActionEnum.editConfig:
+        // This is handled in the UI layer, not here
+        break;
     }
   }
 
@@ -671,6 +681,152 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         insertIndicatorIndex: null,
+      ),
+    );
+  }
+
+  /// Edit component configuration
+  void _onEditComponentConfig(
+    EditComponentConfigEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '⚙️ [FormBuilderBloc] Editing component config: ${event.componentId}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = page.components.map((component) {
+          if (component.id == event.componentId) {
+            final updatedConfig =
+                component.config?.copyWith(
+                  label: event.label,
+                  placeholder: event.placeholder,
+                  value: event.value,
+                  isRequired: event.isRequired,
+                  errorText: event.errorText,
+                ) ??
+                ConfigModel(
+                  label: event.label,
+                  placeholder: event.placeholder,
+                  value: event.value,
+                  isRequired: event.isRequired,
+                  errorText: event.errorText,
+                );
+
+            return component.copyWith(config: updatedConfig);
+          }
+          return component;
+        }).toList();
+
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
+
+    // Force rebuild UI after updating component
+    add(const ForceRebuildUIEvent());
+  }
+
+  /// Edit component label
+  void _onEditComponentLabel(
+    EditComponentLabelEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '🏷️ [FormBuilderBloc] Editing component label: ${event.componentId}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = page.components.map((component) {
+          if (component.id == event.componentId) {
+            final updatedConfig =
+                component.config?.copyWith(
+                  label: event.label,
+                ) ??
+                ConfigModel(label: event.label);
+
+            return component.copyWith(
+              config: updatedConfig,
+              labelFormBuilder: event.label,
+            );
+          }
+          return component;
+        }).toList();
+
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
+
+    // Force rebuild UI after updating component
+    add(const ForceRebuildUIEvent());
+  }
+
+  /// Edit component placeholder
+  void _onEditComponentPlaceholder(
+    EditComponentPlaceholderEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '📝 [FormBuilderBloc] Editing component placeholder: ${event.componentId}',
+    );
+
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = page.components.map((component) {
+          if (component.id == event.componentId) {
+            final updatedConfig =
+                component.config?.copyWith(
+                  placeholder: event.placeholder,
+                ) ??
+                ConfigModel(placeholder: event.placeholder);
+
+            return component.copyWith(config: updatedConfig);
+          }
+          return component;
+        }).toList();
+
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
+
+    // Force rebuild UI after updating component
+    add(const ForceRebuildUIEvent());
+  }
+
+  /// Force rebuild UI
+  void _onForceRebuildUI(
+    ForceRebuildUIEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('🔄 [FormBuilderBloc] Forcing UI rebuild');
+
+    // Force rebuild by emitting a new state with a timestamp
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        // Add a rebuild timestamp to force UI update
+        rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
       ),
     );
   }

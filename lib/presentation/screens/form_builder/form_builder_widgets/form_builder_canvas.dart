@@ -1,29 +1,42 @@
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
+import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-Widget formBuilderCanvas(FormBuilderState state, FormBuilderBloc formBuilderBloc) {
-  return Container(
-    color: const Color(0xFF000000),
-    child: Column(
-      children: [
-        if (state.pages.length > 1) _buildPageInfoHeader(state),
-        Expanded(
-          child: state.canvasComponents.isEmpty
-              ? _buildEmptyCanvas(formBuilderBloc)
-              : _buildCanvasWithComponents(state, formBuilderBloc),
-        ),
-      ],
+Widget formBuilderCanvas(
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
+  return BlocBuilder<FormBuilderBloc, FormBuilderState>(
+    builder: (context, currentState) => Container(
+      color: const Color(0xFF000000),
+      child: Column(
+        children: [
+          if (currentState.pages.length > 1) _buildPageInfoHeader(currentState),
+          Expanded(
+            child: currentState.canvasComponents.isEmpty
+                ? _buildEmptyCanvas(formBuilderBloc)
+                : _buildCanvasWithComponents(
+                    currentState,
+                    formBuilderBloc,
+                    context,
+                  ),
+          ),
+        ],
+      ),
     ),
   );
 }
 
 Widget _buildPageInfoHeader(FormBuilderState state) {
-  final currentPageIndex = state.pages.indexWhere((page) => page.pageId == state.currentPageId);
+  final currentPageIndex = state.pages.indexWhere(
+    (page) => page.pageId == state.currentPageId,
+  );
   final currentPage = state.pages[currentPageIndex];
   final componentCount = currentPage.components.length;
   return Container(
@@ -43,14 +56,22 @@ Widget _buildPageInfoHeader(FormBuilderState state) {
           ),
           child: Text(
             'Page ${currentPageIndex + 1}',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.blue),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.blue,
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             currentPage.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
         ),
         Container(
@@ -108,7 +129,9 @@ Widget _buildDropZone(int index, FormBuilderBloc formBuilderBloc) {
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: isDragOver ? Colors.blue.withValues(alpha: 0.1) : const Color(0xFF000000),
+          color: isDragOver
+              ? Colors.blue.withValues(alpha: 0.1)
+              : const Color(0xFF000000),
         ),
         child: _buildDropZoneContent(isDragOver, formBuilderBloc),
       );
@@ -147,7 +170,11 @@ Widget _buildDropZoneContent(bool isDragOver, FormBuilderBloc formBuilderBloc) {
   );
 }
 
-Widget _buildCanvasWithComponents(FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildCanvasWithComponents(
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+  BuildContext context,
+) {
   return ListView.builder(
     itemCount: state.canvasComponents.length + 1,
     itemBuilder: (context, index) {
@@ -158,11 +185,21 @@ Widget _buildCanvasWithComponents(FormBuilderState state, FormBuilderBloc formBu
         return Column(
           children: [
             _buildInsertIndicator(),
-            _buildCanvasItem(state.canvasComponents[index], index, state, formBuilderBloc),
+            _buildCanvasItem(
+              state.canvasComponents[index],
+              index,
+              state,
+              formBuilderBloc,
+            ),
           ],
         );
       }
-      return _buildCanvasItem(state.canvasComponents[index], index, state, formBuilderBloc);
+      return _buildCanvasItem(
+        state.canvasComponents[index],
+        index,
+        state,
+        formBuilderBloc,
+      );
     },
   );
 }
@@ -204,7 +241,11 @@ Widget _buildInsertIndicator() {
               SizedBox(width: 4),
               Text(
                 'Insert Here',
-                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -215,14 +256,22 @@ Widget _buildInsertIndicator() {
 }
 
 Widget _buildCanvasItem(
-    DynamicFormModel component, int index, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  DynamicFormModel component,
+  int index,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return DragTarget<DynamicFormModel>(
     onWillAcceptWithDetails: (details) {
-      formBuilderBloc.add(StartHoverEvent(targetIndex: index, draggedComponent: details.data));
+      formBuilderBloc.add(
+        StartHoverEvent(targetIndex: index, draggedComponent: details.data),
+      );
       return true;
     },
     onAcceptWithDetails: (details) {
-      formBuilderBloc.add(InsertComponentEvent(component: details.data, insertIndex: index));
+      formBuilderBloc.add(
+        InsertComponentEvent(component: details.data, insertIndex: index),
+      );
     },
     onLeave: (data) {
       formBuilderBloc.add(const EndHoverEvent());
@@ -260,13 +309,13 @@ Widget _buildCanvasItem(
               borderRadius: BorderRadius.circular(12),
               gradient: isHovering
                   ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.blue.withValues(alpha: 0.05),
-                  Colors.blue.withValues(alpha: 0.02),
-                ],
-              )
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.blue.withValues(alpha: 0.05),
+                        Colors.blue.withValues(alpha: 0.02),
+                      ],
+                    )
                   : null,
             ),
             child: Row(
@@ -274,10 +323,15 @@ Widget _buildCanvasItem(
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.all(12),
-                    child: _buildComponentWidget(component, formBuilderBloc),
+                    child: _buildComponentWidget(
+                      component,
+                      formBuilderBloc,
+                      context,
+                      state,
+                    ),
                   ),
                 ),
-                _buildComponentActions(index, formBuilderBloc),
+                _buildComponentActions(index, formBuilderBloc, context),
               ],
             ),
           ),
@@ -287,24 +341,134 @@ Widget _buildCanvasItem(
   );
 }
 
-Widget _buildComponentWidget(DynamicFormModel component, FormBuilderBloc formBuilderBloc) {
-  return ReusedWidget.buildFormComponent(
-    component: component,
-    onComponentValueChange: (componentId, value) => formBuilderBloc.add(
-      UpdateComponentValueEvent(componentId: componentId, value: value),
+Widget _buildComponentWidget(
+  DynamicFormModel component,
+  FormBuilderBloc formBuilderBloc,
+  BuildContext context,
+  FormBuilderState state,
+) {
+  return GestureDetector(
+    onTap: () => _showEditLabelDialog(component, formBuilderBloc, context),
+    child: Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ReusedWidget.buildFormComponent(
+        key: ValueKey(
+          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_${state.rebuildTimestamp}',
+        ), // Force rebuild when config changes or rebuildTimestamp changes
+        component: component,
+        onComponentValueChange: (componentId, value) => formBuilderBloc.add(
+          UpdateComponentValueEvent(componentId: componentId, value: value),
+        ),
+        onComponentUpdate: (updatedComponent) {
+          // Update the component in the form builder
+          formBuilderBloc.add(
+            EditComponentConfigEvent(
+              componentId: updatedComponent.id,
+              label: updatedComponent.config?.label,
+              placeholder: updatedComponent.config?.placeholder,
+              value: updatedComponent.config?.value, // Keep original type
+              errorText: updatedComponent.config?.errorText,
+              isRequired: updatedComponent.config?.isRequired,
+            ),
+          );
+        },
+      ),
     ),
   );
 }
 
-Widget _buildComponentActions(int index, FormBuilderBloc formBuilderBloc) {
+void _showEditLabelDialog(
+  DynamicFormModel component,
+  FormBuilderBloc formBuilderBloc,
+  BuildContext context,
+) {
+  final TextEditingController labelController = TextEditingController(
+    text: component.config?.label ?? component.labelFormBuilder ?? '',
+  );
+
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: const Text('Edit Label'),
+        content: TextField(
+          controller: labelController,
+          decoration: const InputDecoration(
+            labelText: 'Label',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              formBuilderBloc.add(
+                EditComponentLabelEvent(
+                  componentId: component.id,
+                  label: labelController.text,
+                ),
+              );
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Widget _buildComponentActions(
+  int index,
+  FormBuilderBloc formBuilderBloc,
+  BuildContext context,
+) {
   return PopupMenuButton<ComponentActionEnum>(
-    onSelected: (value) => formBuilderBloc.add(
-      HandleComponentActionEvent(action: value, index: index),
-    ),
+    onSelected: (value) {
+      if (value == ComponentActionEnum.editConfig) {
+        _showEditConfigDialog(
+          formBuilderBloc.state.canvasComponents[index],
+          formBuilderBloc,
+          context,
+        );
+      } else {
+        formBuilderBloc.add(
+          HandleComponentActionEvent(action: value, index: index),
+        );
+      }
+    },
     itemBuilder: (context) => [
-      _buildActionMenuItem(ComponentActionEnum.moveUp, Icons.arrow_upward, 'Move Up', Colors.blue),
-      _buildActionMenuItem(ComponentActionEnum.moveDown, Icons.arrow_downward, 'Move Down', Colors.blue),
-      _buildActionMenuItem(ComponentActionEnum.delete, Icons.delete, 'Delete', Colors.red),
+      _buildActionMenuItem(
+        ComponentActionEnum.moveUp,
+        Icons.arrow_upward,
+        'Move Up',
+        Colors.blue,
+      ),
+      _buildActionMenuItem(
+        ComponentActionEnum.moveDown,
+        Icons.arrow_downward,
+        'Move Down',
+        Colors.blue,
+      ),
+      _buildActionMenuItem(
+        ComponentActionEnum.editConfig,
+        Icons.edit,
+        'Edit Config',
+        Colors.green,
+      ),
+      _buildActionMenuItem(
+        ComponentActionEnum.delete,
+        Icons.delete,
+        'Delete',
+        Colors.red,
+      ),
     ],
     child: Container(
       margin: const EdgeInsets.all(8),
@@ -313,8 +477,44 @@ Widget _buildComponentActions(int index, FormBuilderBloc formBuilderBloc) {
   );
 }
 
+void _showEditConfigDialog(
+  DynamicFormModel component,
+  FormBuilderBloc formBuilderBloc,
+  BuildContext context,
+) {
+  final currentConfig = {
+    'label': component.config?.label ?? component.labelFormBuilder ?? '',
+    'placeholder': component.config?.placeholder ?? '',
+    'value': component.config?.value ?? '',
+    'errorText': component.config?.errorText ?? '',
+    'isRequired': component.config?.isRequired ?? false,
+  };
+
+  DialogUtils.showComponentConfigDialog(
+    context,
+    currentConfig,
+  ).then((result) {
+    if (result != null) {
+      formBuilderBloc.add(
+        EditComponentConfigEvent(
+          componentId: component.id,
+          label: result['label'],
+          placeholder: result['placeholder'],
+          value: result['value'],
+          errorText: result['errorText'],
+          isRequired: result['isRequired'],
+        ),
+      );
+    }
+  });
+}
+
 PopupMenuItem<ComponentActionEnum> _buildActionMenuItem(
-    ComponentActionEnum action, IconData icon, String text, Color color) {
+  ComponentActionEnum action,
+  IconData icon,
+  String text,
+  Color color,
+) {
   return PopupMenuItem(
     value: action,
     child: Row(

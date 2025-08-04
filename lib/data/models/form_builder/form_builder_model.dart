@@ -212,7 +212,7 @@ class FormBuilderModel extends Equatable {
       },
       'validate': {
         'condition': [],
-        '${isNextPage ? 'next_page' : 'previous_page'}': targetPage,
+        isNextPage ? 'next_page' : 'previous_page': targetPage,
       },
       'style': {
         'width': '120px',

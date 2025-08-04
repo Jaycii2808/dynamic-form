@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DynamicSelectorButtonEvent extends Equatable {
@@ -18,4 +19,13 @@ class SelectorButtonToggledEvent extends DynamicSelectorButtonEvent {
 
   @override
   List<Object?> get props => [isSelected];
+}
+
+class UpdateSelectorButtonFromExternalEvent extends DynamicSelectorButtonEvent {
+  final DynamicFormModel component;
+
+  const UpdateSelectorButtonFromExternalEvent({required this.component});
+
+  @override
+  List<Object?> get props => [component];
 }

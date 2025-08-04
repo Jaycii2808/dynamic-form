@@ -57,7 +57,9 @@ class DynamicTextFieldBloc
       emit(
         DynamicTextFieldSuccess(
           component: component,
-          inputConfig: InputValidationModel.fromJson(component.config?.toJson() ?? {}),
+          inputConfig: InputValidationModel.fromJson(
+            component.config?.toJson() ?? {},
+          ),
           styleModel: component.style,
           formState: component.config?.currentState ?? StatesEnum.base,
           textController: _textController,
@@ -145,7 +147,7 @@ class DynamicTextFieldBloc
   ) async {
     if (state is! DynamicTextFieldSuccess) return;
     final successState = state as DynamicTextFieldSuccess;
-   // emit(DynamicTextFieldLoading.fromState(state: successState));
+    // emit(DynamicTextFieldLoading.fromState(state: successState));
 
     try {
       await Future.delayed(const Duration(milliseconds: 50));
@@ -230,18 +232,29 @@ class DynamicTextFieldBloc
     if (state is! DynamicTextFieldSuccess) return;
 
     try {
+      debugPrint('🔄 [DynamicTextFieldBloc] Updating from external:');
+      debugPrint('  - Component ID: ${event.component.id}');
+      debugPrint('  - New Label: ${event.component.config?.label}');
+      debugPrint('  - New Placeholder: ${event.component.config?.placeholder}');
+      debugPrint('  - New Value: ${event.component.config?.value}');
+
       // Update text controller if value changed
       final newValue = event.component.config?.value?.toString() ?? '';
       if (_textController.text != newValue) {
         _textController.text = newValue;
       }
 
+      final newInputConfig = InputValidationModel.fromJson(
+        event.component.config?.toJson() ?? {},
+      );
+
+      debugPrint('  - InputConfig Label: ${newInputConfig.label}');
+      debugPrint('  - InputConfig Placeholder: ${newInputConfig.placeholder}');
+
       emit(
         DynamicTextFieldSuccess(
           component: event.component,
-          inputConfig: InputValidationModel.fromJson(
-            event.component.config?.toJson() ?? {},
-          ),
+          inputConfig: newInputConfig,
           styleModel: event.component.style,
           formState: event.component.config?.currentState ?? StatesEnum.base,
           textController: _textController,

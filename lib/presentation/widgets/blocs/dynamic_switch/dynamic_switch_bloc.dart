@@ -16,6 +16,7 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
     : super(DynamicSwitchInitial(component: DynamicFormModel.empty())) {
     on<InitializeSwitchEvent>(_onInitialize);
     on<SwitchToggledEvent>(_onToggled);
+    on<UpdateSwitchFromExternalEvent>(_onUpdateFromExternal);
 
     add(const InitializeSwitchEvent());
   }
@@ -87,5 +88,36 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
         formState: updateData.currentState,
       ),
     );
+  }
+
+  void _onUpdateFromExternal(
+    UpdateSwitchFromExternalEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) {
+    debugPrint(
+      '🔄 [DynamicSwitchBloc] Updating component from external: ${event.component.id}',
+    );
+
+    try {
+      emit(
+        DynamicSwitchSuccess(
+          component: event.component,
+          inputConfig: InputValidationModel.fromJson(
+            event.component.config?.toJson() ?? {},
+          ),
+          styleModel: event.component.style,
+          formState: event.component.config?.currentState ?? StatesEnum.base,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to update Switch from external: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicSwitchError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
   }
 }

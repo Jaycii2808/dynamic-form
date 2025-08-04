@@ -20,10 +20,14 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_fie
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-enum StatesEnum { base, error, success, focused,disabled,loading }
+
+enum StatesEnum { base, error, success, focused, disabled, loading }
 
 class ReusedWidget {
-  static StyleStatesModel? getStateStyle(StatesModel? states, StatesEnum state) {
+  static StyleStatesModel? getStateStyle(
+    StatesModel? states,
+    StatesEnum state,
+  ) {
     switch (state) {
       case StatesEnum.base:
         return states?.base;
@@ -33,7 +37,7 @@ class ReusedWidget {
         return states?.success;
       case StatesEnum.focused:
         return states?.focused;
-        //disabled, loading
+      //disabled, loading
       default:
         return null;
     }
@@ -41,13 +45,19 @@ class ReusedWidget {
 
   /// Reusable widget to build form components with BlocProvider
   static Widget buildFormComponent({
+    Key? key, // Add key parameter
     required DynamicFormModel component,
     required Function(String, dynamic) onComponentValueChange,
     Function(String, FormActionDataModel?)? onButtonAction,
+    Function(DynamicFormModel)?
+    onComponentUpdate, // Add callback for component updates
   }) {
     debugPrint(
       '🔍 [ReusedWidget] Building component: ${component.id}, type: ${component.type}',
     );
+    debugPrint('  - Key: ${key.toString()}');
+    debugPrint('  - Label: ${component.config?.label}');
+    debugPrint('  - Placeholder: ${component.config?.placeholder}');
 
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
@@ -55,9 +65,10 @@ class ReusedWidget {
           create: (context) =>
               DynamicTextFieldBloc(initialComponent: component),
           child: DynamicTextField(
-            key: Key(component.id),
+            key: key ?? Key(component.id), // Use provided key or default
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
+            onComponentUpdate: onComponentUpdate, // Pass the callback
           ),
         );
 
@@ -65,9 +76,10 @@ class ReusedWidget {
         return BlocProvider(
           create: (context) => DynamicTextAreaBloc(initialComponent: component),
           child: DynamicTextArea(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
+            onComponentUpdate: onComponentUpdate,
           ),
         );
 
@@ -75,9 +87,10 @@ class ReusedWidget {
         return BlocProvider(
           create: (context) => DynamicSwitchBloc(initialComponent: component),
           child: DynamicSwitch(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
+            onComponentUpdate: onComponentUpdate,
           ),
         );
 
@@ -86,9 +99,10 @@ class ReusedWidget {
           create: (context) =>
               DynamicSelectorButtonBloc(initialComponent: component),
           child: DynamicSelectorButton(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
+            onComponentUpdate: onComponentUpdate,
           ),
         );
 
@@ -97,7 +111,7 @@ class ReusedWidget {
           create: (context) =>
               DynamicDateTimePickerBloc(initialComponent: component),
           child: DynamicDateTimePicker(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
           ),
@@ -108,7 +122,7 @@ class ReusedWidget {
           create: (context) =>
               DynamicDateTimeRangePickerBloc(initialComponent: component),
           child: DynamicDateTimeRangePicker(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
           ),
@@ -116,7 +130,7 @@ class ReusedWidget {
 
       case FormTypeEnum.buttonFormType:
         return DynamicButton(
-          key: Key(component.id),
+          key: key ?? Key(component.id),
           component: component,
           onAction: onButtonAction,
         );
@@ -126,7 +140,7 @@ class ReusedWidget {
           create: (context) =>
               DynamicTextFieldTagsBloc(initialComponent: component),
           child: DynamicTextFieldTags(
-            key: Key(component.id),
+            key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
           ),
@@ -137,15 +151,14 @@ class ReusedWidget {
 
       case FormTypeEnum.unknown:
         return const SizedBox.shrink();
-
-      }
+    }
   }
 
   /// Build placeholder component for unsupported types
   static Widget _buildPlaceholderComponent(
-      DynamicFormModel component,
-      String title,
-      ) {
+    DynamicFormModel component,
+    String title,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -212,5 +225,4 @@ class ReusedWidget {
       ),
     );
   }
-
 }

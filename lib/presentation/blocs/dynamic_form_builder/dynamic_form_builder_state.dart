@@ -17,6 +17,8 @@ abstract class FormBuilderState extends Equatable {
   final bool isHovering;
   final DynamicFormModel? hoveredComponent;
   final int? hoverTargetIndex;
+  // Force rebuild timestamp
+  final int? rebuildTimestamp;
 
   const FormBuilderState({
     this.components = const [],
@@ -32,6 +34,7 @@ abstract class FormBuilderState extends Equatable {
     this.isHovering = false,
     this.hoveredComponent,
     this.hoverTargetIndex,
+    this.rebuildTimestamp,
   });
 
   // Get current page components
@@ -81,6 +84,7 @@ abstract class FormBuilderState extends Equatable {
     isHovering,
     hoveredComponent,
     hoverTargetIndex,
+    rebuildTimestamp,
   ];
 }
 
@@ -99,6 +103,7 @@ class FormBuilderInitial extends FormBuilderState {
     super.isHovering,
     super.hoveredComponent,
     super.hoverTargetIndex,
+    super.rebuildTimestamp,
   });
 }
 
@@ -117,6 +122,7 @@ class FormBuilderLoading extends FormBuilderState {
     super.isHovering,
     super.hoveredComponent,
     super.hoverTargetIndex,
+    super.rebuildTimestamp,
   });
 
   FormBuilderLoading.fromState({required FormBuilderState state})
@@ -134,6 +140,7 @@ class FormBuilderLoading extends FormBuilderState {
         isHovering: state.isHovering,
         hoveredComponent: state.hoveredComponent,
         hoverTargetIndex: state.hoverTargetIndex,
+        rebuildTimestamp: state.rebuildTimestamp,
       );
 }
 
@@ -152,6 +159,7 @@ class FormBuilderSuccess extends FormBuilderState {
     super.isHovering,
     super.hoveredComponent,
     super.hoverTargetIndex,
+    super.rebuildTimestamp,
   });
 
   FormBuilderSuccess.fromState({required FormBuilderState state})
@@ -169,6 +177,7 @@ class FormBuilderSuccess extends FormBuilderState {
         isHovering: state.isHovering,
         hoveredComponent: state.hoveredComponent,
         hoverTargetIndex: state.hoverTargetIndex,
+        rebuildTimestamp: state.rebuildTimestamp,
       );
 
   FormBuilderSuccess copyWith({
@@ -185,6 +194,7 @@ class FormBuilderSuccess extends FormBuilderState {
     bool? isHovering,
     DynamicFormModel? hoveredComponent,
     int? hoverTargetIndex,
+    int? rebuildTimestamp,
   }) {
     return FormBuilderSuccess(
       components: components ?? this.components,
@@ -202,6 +212,7 @@ class FormBuilderSuccess extends FormBuilderState {
       isHovering: isHovering ?? this.isHovering,
       hoveredComponent: hoveredComponent ?? this.hoveredComponent,
       hoverTargetIndex: hoverTargetIndex ?? this.hoverTargetIndex,
+      rebuildTimestamp: rebuildTimestamp ?? this.rebuildTimestamp,
     );
   }
 }
@@ -223,6 +234,7 @@ class FormBuilderError extends FormBuilderState {
     super.isHovering,
     super.hoveredComponent,
     super.hoverTargetIndex,
+    super.rebuildTimestamp,
     required this.errorMessage,
   });
 
@@ -242,5 +254,6 @@ class FormBuilderError extends FormBuilderState {
     isHovering,
     hoveredComponent,
     hoverTargetIndex,
+    rebuildTimestamp,
   ];
 }

@@ -20,6 +20,7 @@ class DynamicSelectorButtonBloc
     );
     on<InitializeSelectorButtonEvent>(_onInitialize);
     on<SelectorButtonToggledEvent>(_onToggled);
+    on<UpdateSelectorButtonFromExternalEvent>(_onUpdateFromExternal);
     add(const InitializeSelectorButtonEvent());
   }
 
@@ -108,5 +109,36 @@ class DynamicSelectorButtonBloc
         formState: newState,
       ),
     );
+  }
+
+  void _onUpdateFromExternal(
+    UpdateSelectorButtonFromExternalEvent event,
+    Emitter<DynamicSelectorButtonState> emit,
+  ) {
+    debugPrint(
+      '🔄 [DynamicSelectorButtonBloc] Updating component from external: ${event.component.id}',
+    );
+
+    try {
+      emit(
+        DynamicSelectorButtonSuccess(
+          component: event.component,
+          inputConfig: InputValidationModel.fromJson(
+            event.component.config?.toJson() ?? {},
+          ),
+          styleModel: event.component.style,
+          formState: event.component.config?.currentState ?? StatesEnum.base,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to update SelectorButton from external: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicSelectorButtonError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
   }
 }

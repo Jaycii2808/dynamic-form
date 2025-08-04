@@ -230,9 +230,9 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha:0.2),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.green.withOpacity(0.5)),
+              border: Border.all(color: Colors.green.withValues(alpha:0.5)),
             ),
             child: const Text(
               'Auto-generated navigation with next_page/previous_page',

@@ -101,6 +101,60 @@ class HandleComponentActionEvent extends FormBuilderEvent {
   List<Object?> get props => [action, index];
 }
 
+class EditComponentConfigEvent extends FormBuilderEvent {
+  final String componentId;
+  final String? label;
+  final String? placeholder;
+  final dynamic value; // Change from String? to dynamic
+  final bool? isRequired;
+  final String? errorText;
+
+  const EditComponentConfigEvent({
+    required this.componentId,
+    this.label,
+    this.placeholder,
+    this.value,
+    this.isRequired,
+    this.errorText,
+  });
+
+  @override
+  List<Object?> get props => [
+    componentId,
+    label,
+    placeholder,
+    value,
+    isRequired,
+    errorText,
+  ];
+}
+
+class EditComponentLabelEvent extends FormBuilderEvent {
+  final String componentId;
+  final String label;
+
+  const EditComponentLabelEvent({
+    required this.componentId,
+    required this.label,
+  });
+
+  @override
+  List<Object?> get props => [componentId, label];
+}
+
+class EditComponentPlaceholderEvent extends FormBuilderEvent {
+  final String componentId;
+  final String placeholder;
+
+  const EditComponentPlaceholderEvent({
+    required this.componentId,
+    required this.placeholder,
+  });
+
+  @override
+  List<Object?> get props => [componentId, placeholder];
+}
+
 class UpdateFormTitleEvent extends FormBuilderEvent {
   final String title;
 
@@ -208,4 +262,8 @@ class ShowInsertIndicatorEvent extends FormBuilderEvent {
 
 class HideInsertIndicatorEvent extends FormBuilderEvent {
   const HideInsertIndicatorEvent();
+}
+
+class ForceRebuildUIEvent extends FormBuilderEvent {
+  const ForceRebuildUIEvent();
 }

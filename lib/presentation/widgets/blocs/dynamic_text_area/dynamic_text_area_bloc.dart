@@ -37,6 +37,7 @@ class DynamicTextAreaBloc
 
     on<InitializeTextAreaEvent>(_onInitializeTextArea);
     on<TextAreaFocusLostEvent>(_onTextAreaFocusLost);
+    on<UpdateTextAreaFromExternalEvent>(_onUpdateTextAreaFromExternal);
     add(const InitializeTextAreaEvent());
   }
 
@@ -141,6 +142,41 @@ class DynamicTextAreaBloc
       );
     } catch (e, stackTrace) {
       final errorMessage = 'Failed to handle focus lost for TextArea: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicTextAreaError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+
+  void _onUpdateTextAreaFromExternal(
+    UpdateTextAreaFromExternalEvent event,
+    Emitter<DynamicTextAreaState> emit,
+  ) {
+    debugPrint(
+      '🔄 [DynamicTextAreaBloc] Updating component from external: ${event.component.id}',
+    );
+
+    try {
+      final configState =
+          event.component.config?.currentState ?? StatesEnum.base;
+      emit(
+        DynamicTextAreaSuccess(
+          component: event.component,
+          inputConfig: InputValidationModel.fromJson(
+            event.component.config?.toJson() ?? {},
+          ),
+          styleModel: event.component.style,
+          formState: configState,
+          textController: _textController,
+          focusNode: _focusNode,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to update TextArea from external: $e';
       debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
       emit(
         DynamicTextAreaError(

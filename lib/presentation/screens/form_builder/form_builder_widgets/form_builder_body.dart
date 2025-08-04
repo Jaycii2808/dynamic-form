@@ -32,7 +32,9 @@ Widget formBuilderBody(BuildContext context, FormBuilderBloc formBuilderBloc) {
 }
 
 Widget _buildProgressBar(FormBuilderState state) {
-  final currentPageIndex = state.pages.indexWhere((page) => page.pageId == state.currentPageId);
+  final currentPageIndex = state.pages.indexWhere(
+    (page) => page.pageId == state.currentPageId,
+  );
   final progress = (currentPageIndex + 1) / state.pages.length;
   return Container(
     width: double.infinity,
@@ -46,11 +48,15 @@ Widget _buildProgressBar(FormBuilderState state) {
   );
 }
 
-Widget _buildMainContent(FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildMainContent(
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return Stack(
     children: [
       formBuilderCanvas(state, formBuilderBloc),
-      if (state.showComponentsPanel) formBuilderComponentsPanel(state, formBuilderBloc),
+      if (state.showComponentsPanel)
+        formBuilderComponentsPanel(state, formBuilderBloc),
       if (state.showButtonComponentsPanel)
         formBuilderButtonComponentsPanel(state, formBuilderBloc),
     ],

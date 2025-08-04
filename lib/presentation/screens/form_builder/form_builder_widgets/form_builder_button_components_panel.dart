@@ -4,38 +4,47 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_component_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-Widget formBuilderButtonComponentsPanel(FormBuilderState state, FormBuilderBloc formBuilderBloc) {
-  return AnimatedPositioned(
-    duration: const Duration(milliseconds: 300),
-    curve: Curves.easeInOut,
-    right: state.showComponentsPanel ? 300 : 0,
-    top: 0,
-    bottom: 0,
-    width: 300,
-    child: Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF000000),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(-2, 0),
+Widget formBuilderButtonComponentsPanel(
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
+  return BlocBuilder<FormBuilderBloc, FormBuilderState>(
+    builder: (context, currentState) => AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      right: currentState.showComponentsPanel ? 300 : 0,
+      top: 0,
+      bottom: 0,
+      width: 300,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF000000),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(-2, 0),
+            ),
+          ],
+          border: Border(
+            left: BorderSide(
+              color: Colors.green.withValues(alpha: 0.3),
+              width: 1,
+            ),
           ),
-        ],
-        border: Border(
-          left: BorderSide(color: Colors.green.withValues(alpha: 0.3), width: 1),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildButtonComponentsPanelHeader(formBuilderBloc),
-          Expanded(
-            child: state.availableButtonComponents.isEmpty
-                ? _buildEmptyButtonComponentsList()
-                : _buildButtonComponentsList(state, formBuilderBloc),
-          ),
-        ],
+        child: Column(
+          children: [
+            _buildButtonComponentsPanelHeader(formBuilderBloc),
+            Expanded(
+              child: currentState.availableButtonComponents.isEmpty
+                  ? _buildEmptyButtonComponentsList()
+                  : _buildButtonComponentsList(currentState, formBuilderBloc),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -60,13 +69,18 @@ Widget _buildButtonComponentsPanelHeader(FormBuilderBloc formBuilderBloc) {
           const Flexible(
             child: Text(
               'Button Components',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () => formBuilderBloc.add(const ToggleButtonComponentsPanelEvent()),
+            onTap: () =>
+                formBuilderBloc.add(const ToggleButtonComponentsPanelEvent()),
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -84,20 +98,32 @@ Widget _buildButtonComponentsPanelHeader(FormBuilderBloc formBuilderBloc) {
 
 Widget _buildEmptyButtonComponentsList() {
   return const Center(
-    child: Text('No button components available', style: TextStyle(color: Colors.grey)),
+    child: Text(
+      'No button components available',
+      style: TextStyle(color: Colors.grey),
+    ),
   );
 }
 
-Widget _buildButtonComponentsList(FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildButtonComponentsList(
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return ListView.builder(
     itemCount: state.availableButtonComponents.length,
     itemBuilder: (context, index) {
-      return _buildDraggableButtonComponent(state.availableButtonComponents[index], formBuilderBloc);
+      return _buildDraggableButtonComponent(
+        state.availableButtonComponents[index],
+        formBuilderBloc,
+      );
     },
   );
 }
 
-Widget _buildDraggableButtonComponent(DynamicFormModel component, FormBuilderBloc formBuilderBloc) {
+Widget _buildDraggableButtonComponent(
+  DynamicFormModel component,
+  FormBuilderBloc formBuilderBloc,
+) {
   return LongPressDraggable<DynamicFormModel>(
     data: component,
     dragAnchorStrategy: pointerDragAnchorStrategy,
@@ -109,7 +135,10 @@ Widget _buildDraggableButtonComponent(DynamicFormModel component, FormBuilderBlo
   );
 }
 
-Widget _buildComponentListItem(DynamicFormModel component, FormBuilderBloc formBuilderBloc) {
+Widget _buildComponentListItem(
+  DynamicFormModel component,
+  FormBuilderBloc formBuilderBloc,
+) {
   return GestureDetector(
     onTap: () => formBuilderBloc.add(AddComponentEvent(component)),
     child: Container(

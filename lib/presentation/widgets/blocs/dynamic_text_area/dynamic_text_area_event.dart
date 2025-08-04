@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DynamicTextAreaEvent extends Equatable {
@@ -18,4 +19,13 @@ class TextAreaFocusLostEvent extends DynamicTextAreaEvent {
 
   @override
   List<Object?> get props => [value];
+}
+
+class UpdateTextAreaFromExternalEvent extends DynamicTextAreaEvent {
+  final DynamicFormModel component;
+
+  const UpdateTextAreaFromExternalEvent({required this.component});
+
+  @override
+  List<Object?> get props => [component];
 }
