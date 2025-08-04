@@ -185,7 +185,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
         ),
 
         // Save button for preview
-        _buildPreviewSaveButton(isFormValid),
+        //_buildPreviewSaveButton(isFormValid),
       ],
     );
   }
@@ -345,54 +345,54 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
     debugPrint('Scrolling to page $pageIndex');
   }
 
-  Widget _buildPreviewSaveButton(bool isFormValid) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: isFormValid ? Colors.green : Colors.grey,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: GestureDetector(
-                    onTap: isFormValid ? () => _saveForm(context) : null,
-                    child: const Center(
-                      child: Text(
-                        'Save Form Data',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildPreviewSaveButton(bool isFormValid) {
+  //   return Positioned(
+  //     bottom: 0,
+  //     left: 0,
+  //     right: 0,
+  //     child: SafeArea(
+  //       child: Container(
+  //         padding: const EdgeInsets.all(16),
+  //         decoration: BoxDecoration(
+  //           color: Colors.white,
+  //           boxShadow: [
+  //             BoxShadow(
+  //               color: Colors.black.withValues(alpha: 0.1),
+  //               blurRadius: 4,
+  //               offset: const Offset(0, -2),
+  //             ),
+  //           ],
+  //         ),
+  //         child: Row(
+  //           children: [
+  //             Expanded(
+  //               child: Container(
+  //                 height: 48,
+  //                 decoration: BoxDecoration(
+  //                   color: isFormValid ? Colors.green : Colors.grey,
+  //                   borderRadius: BorderRadius.circular(8),
+  //                 ),
+  //                 child: GestureDetector(
+  //                   onTap: isFormValid ? () => _saveForm(context) : null,
+  //                   child: const Center(
+  //                     child: Text(
+  //                       'Save Form Data',
+  //                       style: TextStyle(
+  //                         color: Colors.white,
+  //                         fontWeight: FontWeight.bold,
+  //                         fontSize: 16,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _saveForm(BuildContext context) async {
     try {

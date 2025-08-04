@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-
+import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
+import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
@@ -490,6 +491,23 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       '🔄 [SaveForm] Form model pages count: ${state.formModel?.pages.length}',
     );
     debugPrint('🔄 [SaveForm] Component values: ${componentValues.values}');
+
+    // Create readable submission model for better debugging and email sending
+    if (state.formModel != null) {
+      final submissionModel = FormSubmissionConverter.convertToSubmissionModel(
+        componentValues: componentValues,
+        formModel: state.formModel!,
+      );
+
+      // Debug print readable format instead of complex IDs
+      FormSubmissionConverter.debugPrintSubmission(submissionModel);
+
+      // Print email format for easy copying
+      debugPrint('📧 Email Format:');
+      debugPrint(submissionModel.toEmailFormat());
+      debugPrint('📊 Simple Map Format:');
+      debugPrint(submissionModel.toSimpleMap().toString());
+    }
 
     try {
       final savedFormsService = SavedFormsService();

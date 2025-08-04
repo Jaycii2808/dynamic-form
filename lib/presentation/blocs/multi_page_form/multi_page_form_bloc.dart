@@ -9,6 +9,8 @@ import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_fo
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
+import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
 
 class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
   final RemoteConfigService _remoteConfigService;
@@ -283,6 +285,19 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       if (currentState.formModel == null) {
         throw Exception("Form is not initialized for submission.");
       }
+
+      // Create readable submission model for debugging and email
+      final submissionModel = FormSubmissionConverter.convertToSubmissionModel(
+        componentValues: currentState.componentValues,
+        formModel: currentState.formModel!,
+      );
+
+      // Debug print readable format instead of complex debug logs
+      debugPrint('🔄 [Bloc Submit] Creating readable submission data...');
+      FormSubmissionConverter.debugPrintSubmission(submissionModel);
+
+      debugPrint('📧 [Bloc Submit] Email ready format:');
+      debugPrint(submissionModel.toEmailFormat());
 
       await Future.delayed(const Duration(seconds: 1));
 
