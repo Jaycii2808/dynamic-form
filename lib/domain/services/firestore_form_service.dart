@@ -14,14 +14,20 @@ class FirestoreFormService {
   Future<String> saveSharedForm({
     required Map<String, dynamic> formData,
     required String formName,
+    String? recipientEmail,
+    String? recipientName,
   }) async {
     try {
       debugPrint('=== Saving form to Firestore ===');
       debugPrint('Form name: $formName');
+      debugPrint('Recipient email: $recipientEmail');
+      debugPrint('Recipient name: $recipientName');
 
       final docRef = await _firestore.collection(_formsCollection).add({
         'formData': formData,
         'formName': formName,
+        'recipientEmail': recipientEmail,
+        'recipientName': recipientName,
         'createdAt': FieldValue.serverTimestamp(),
         'isActive': true,
       });
@@ -61,6 +67,8 @@ class FirestoreFormService {
       return {
         'formData': data['formData'],
         'formName': data['formName'],
+        'recipientEmail': data['recipientEmail'],
+        'recipientName': data['recipientName'],
         'createdAt': data['createdAt'],
       };
     } catch (e, stackTrace) {
@@ -87,6 +95,67 @@ class FirestoreFormService {
       debugPrint('Form deactivated: $formId');
     } catch (e) {
       debugPrint('Error deactivating form: $e');
+      rethrow;
+    }
+  }
+
+  /// Save form submission data to Firestore for tracking
+  Future<String> saveFormSubmission({
+    required String formId,
+    required Map<String, dynamic> formData,
+    required String submitterEmail,
+    required String submitterName,
+    required Map<String, dynamic> submittedValues,
+  }) async {
+    try {
+      debugPrint('=== Saving form submission to Firestore ===');
+      debugPrint('Form ID: $formId');
+      debugPrint('Submitter: $submitterEmail ($submitterName)');
+
+      final docRef = await _firestore.collection('form_submissions').add({
+        'formId': formId,
+        'formData': formData,
+        'submitterEmail': submitterEmail,
+        'submitterName': submitterName,
+        'submittedValues': submittedValues,
+        'submittedAt': FieldValue.serverTimestamp(),
+        'status': 'submitted',
+      });
+
+      debugPrint('Form submission saved with ID: ${docRef.id}');
+      return docRef.id;
+    } catch (e, stackTrace) {
+      debugPrint('Error saving form submission to Firestore: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// Get all submissions for a specific form
+  Future<List<Map<String, dynamic>>> getFormSubmissions(String formId) async {
+    try {
+      debugPrint('=== Getting form submissions from Firestore ===');
+      debugPrint('Form ID: $formId');
+
+      final querySnapshot = await _firestore
+          .collection('form_submissions')
+          .where('formId', isEqualTo: formId)
+          .orderBy('submittedAt', descending: true)
+          .get();
+
+      final submissions = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          ...data,
+        };
+      }).toList();
+
+      debugPrint('Found ${submissions.length} submissions for form: $formId');
+      return submissions;
+    } catch (e, stackTrace) {
+      debugPrint('Error getting form submissions: $e');
+      debugPrint('Stack trace: $stackTrace');
       rethrow;
     }
   }

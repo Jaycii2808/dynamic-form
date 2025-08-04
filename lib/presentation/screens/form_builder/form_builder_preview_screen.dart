@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart
 import 'package:dynamic_form_bi/domain/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
+import 'package:dynamic_form_bi/presentation/widgets/dialogs/email_input_dialog.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -112,36 +113,54 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   // Open actual dynamic form multiscreen with current data
   void _openActualDynamicForm() async {
     try {
-      // Show loading dialog
-      showDialog(
+      // Show email input dialog first
+      final emailData = await showDialog<Map<String, String>>(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Saving form and generating link...',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
+        builder: (context) => const EmailInputDialog(),
       );
+
+      if (emailData == null) {
+        // User cancelled the dialog
+        return;
+      }
+      if(mounted){
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Saving form and generating link...',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      // Show loading dialog
+
 
       // Convert current form to JSON
       final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
       final formName = widget.formBuilderModel.name;
 
       debugPrint('Saving form to Firestore: $formName');
+      debugPrint('Recipient email: ${emailData['email']}');
+      debugPrint('Recipient name: ${emailData['name']}');
 
       // Save to Firestore and get form ID
       final firestoreService = FirestoreFormService();
       final formId = await firestoreService.saveSharedForm(
         formData: jsonOutput,
         formName: formName,
+        recipientEmail: emailData['email'],
+        recipientName: emailData['name'],
       );
 
       // Generate shareable link
@@ -149,13 +168,11 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       if (mounted) {
         // Close loading dialog
         Navigator.of(context).pop();
-
       }
 
       // Show success dialog with options
       _showShareSuccessDialog(shareableLink, formId, jsonOutput);
     } catch (e) {
-
       if (mounted) {
         // Close loading dialog
         Navigator.of(context).pop();
@@ -168,7 +185,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           ),
         );
       }
-
     }
   }
 
@@ -326,7 +342,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           ),
         );
       }
-
     }
   }
 
@@ -335,38 +350,34 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     final tempConfigKey = 'temp_form_${DateTime.now().millisecondsSinceEpoch}';
     final jsonString = const JsonEncoder.withIndent('  ').convert(jsonOutput);
 
-      // Set temporary defaults for this session
-      FirebaseRemoteConfig.instance
-          .setDefaults({
-        tempConfigKey: jsonString,
-      })
-          .then((_) {
-        // Navigate to actual dynamic form multiscreen
-        if ( mounted){
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  DynamicFormMultiScreen(configKey: tempConfigKey),
-            ),
-          );
-        }
-
-      })
-          .catchError((e) {
-        debugPrint('Error setting temp config: $e');
-        if ( mounted){
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error opening live form: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-
-      });
-
-
+    // Set temporary defaults for this session
+    FirebaseRemoteConfig.instance
+        .setDefaults({
+          tempConfigKey: jsonString,
+        })
+        .then((_) {
+          // Navigate to actual dynamic form multiscreen
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    DynamicFormMultiScreen(configKey: tempConfigKey),
+              ),
+            );
+          }
+        })
+        .catchError((e) {
+          debugPrint('Error setting temp config: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error opening live form: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        });
   }
 
   void _copyToClipboard(String text) {

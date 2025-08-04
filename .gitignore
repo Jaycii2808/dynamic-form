@@ -31,3 +31,5 @@ doc/api/
 /android/app/google-services.json
 /.firebase/hosting.YnVpbGRcd2Vi.cache
 /web/
+/.cursor/
+/lib/dotenv

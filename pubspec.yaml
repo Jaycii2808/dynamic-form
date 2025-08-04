@@ -29,6 +29,8 @@ dependencies:
   table_calendar: ^3.2.0
   go_router: ^16.0.0
   url_launcher: ^6.3.2
+  flutter_dotenv: ^5.2.1
+  http: ^1.4.0
   collection:
   nested:
 
@@ -39,7 +41,9 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 
+
 flutter:
   uses-material-design: true
   assets:
     - assets/svg/
+    - lib/dotenv
