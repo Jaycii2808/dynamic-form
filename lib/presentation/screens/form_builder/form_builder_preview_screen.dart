@@ -27,7 +27,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -54,6 +54,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         tabs: const [
           Tab(text: 'Form Preview', icon: Icon(Icons.visibility)),
           Tab(text: 'JSON Output', icon: Icon(Icons.code)),
+          Tab(text: 'Multi-Page JSON', icon: Icon(Icons.pages)),
         ],
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey,
@@ -68,6 +69,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       children: [
         _buildFormPreviewTab(),
         _buildJsonOutputTab(),
+        _buildMultiPageJsonOutputTab(),
       ],
     );
   }
@@ -171,6 +173,99 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       const SnackBar(
         content: Text('JSON copied to clipboard'),
         backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  Widget _buildMultiPageJsonOutputTab() {
+    final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
+    final jsonString = const JsonEncoder.withIndent('  ').convert(jsonOutput);
+
+    return Container(
+      color: const Color(0xFF1E1E1E),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.pages, color: Colors.green),
+              const SizedBox(width: 8),
+              const Text(
+                'Multi-Page JSON Export',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => _copyToClipboard(jsonString),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy, color: Colors.white, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        'Copy',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.green.withOpacity(0.5)),
+            ),
+            child: const Text(
+              'Auto-generated navigation with next_page/previous_page',
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D2D),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[700]!),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  jsonString,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

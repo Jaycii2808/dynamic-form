@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 PreferredSizeWidget formBuilderAppBar(BuildContext context, FormBuilderBloc formBuilderBloc) {
   return AppBar(
     title: BlocBuilder<FormBuilderBloc, FormBuilderState>(
-      builder: (context, state) => _buildEditableTitle(context, state, formBuilderBloc),
+      builder: (context, state) => _buildTitle(context, state, formBuilderBloc),
     ),
     backgroundColor: const Color(0xFF000000),
     foregroundColor: Colors.white,
@@ -30,196 +30,166 @@ PreferredSizeWidget formBuilderAppBar(BuildContext context, FormBuilderBloc form
     ),
     actions: [
       BlocBuilder<FormBuilderBloc, FormBuilderState>(
-        builder: (context, state) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (state.canvasComponents.isNotEmpty)
-                _buildCompactClearButton(context, formBuilderBloc),
-              _buildCompactPreviewButton(context, state, formBuilderBloc),
-            ],
-          );
-        },
+        builder: (context, state) => _buildActionButtons(context, state, formBuilderBloc),
       ),
     ],
   );
 }
 
-Widget _buildEditableTitle(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  final isMultiPage = state.pages.length > 1;
+  final currentPageIndex = state.pages.indexWhere((page) => page.pageId == state.currentPageId);
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
+      // Form Title Row
       Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () => _showEditFormTitleDialog(context, state, formBuilderBloc),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.edit, color: Colors.blue, size: 14),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        state.formTitle,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: _buildEditableFormTitle(context, state, formBuilderBloc),
           ),
-          const SizedBox(width: 12),
-          if (state.pages.length > 1) _buildPageNavigation(context, state, formBuilderBloc),
+          if (isMultiPage) ...[
+            const SizedBox(width: 12),
+            _buildPageIndicator(currentPageIndex, state.pages.length),
+          ],
         ],
       ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _showEditPageTitleDialog(context, state, formBuilderBloc),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.description, color: Colors.green, size: 14),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        state.currentPageTitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
+      // Page Navigation Row (only show if multi-page)
+      if (isMultiPage) ...[
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildEditablePageTitle(context, state, formBuilderBloc),
             ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Page ${state.pages.indexWhere((page) => page.pageId == state.currentPageId) + 1} of ${state.pages.length}',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[400],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 12),
+            _buildPageNavigation(context, state, formBuilderBloc, currentPageIndex),
+          ],
+        ),
+      ],
     ],
   );
 }
 
-Widget _buildCompactClearButton(BuildContext context, FormBuilderBloc formBuilderBloc) {
-  return Container(
-    margin: const EdgeInsets.only(right: 6, top: 8, bottom: 8),
-    child: IconButton(
-      onPressed: () => formBuilderBloc.add(const ClearCanvasEvent()),
-      icon: const Icon(Icons.clear, size: 18),
-      style: IconButton.styleFrom(
-        backgroundColor: Colors.red.shade100,
-        foregroundColor: Colors.red,
-        padding: const EdgeInsets.all(8),
-        minimumSize: const Size(32, 32),
+Widget _buildEditableFormTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  return GestureDetector(
+    onTap: () => _showEditFormTitleDialog(context, state, formBuilderBloc),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
-      tooltip: 'Clear Canvas',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.edit, color: Colors.blue, size: 14),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              state.formTitle,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
 
-Widget _buildCompactPreviewButton(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
-  return Container(
-    margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-    child: IconButton(
-      onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
-      icon: const Icon(Icons.preview, size: 18),
-      style: IconButton.styleFrom(
-        backgroundColor: Colors.green.shade100,
-        foregroundColor: Colors.green,
-        padding: const EdgeInsets.all(8),
-        minimumSize: const Size(32, 32),
+Widget _buildEditablePageTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  return GestureDetector(
+    onTap: () => _showEditPageTitleDialog(context, state, formBuilderBloc),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
-      tooltip: 'Preview Form',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.description, color: Colors.green, size: 14),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              state.currentPageTitle,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: Colors.grey[800],
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      '${currentPageIndex + 1}/$totalPages',
+      style: TextStyle(
+        fontSize: 10,
+        color: Colors.grey[400],
+        fontWeight: FontWeight.w500,
+      ),
     ),
   );
 }
 
 Widget _buildPageNavigation(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
-  final currentPageIndex = state.pages.indexWhere(
-        (page) => page.pageId == state.currentPageId,
-  );
+    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc, int currentPageIndex) {
   final hasPrevious = currentPageIndex > 0;
   final hasNext = currentPageIndex < state.pages.length - 1;
 
   return Row(
-    spacing: 8,
+    mainAxisSize: MainAxisSize.min,
     children: [
+      // Page Selector
       GestureDetector(
         onTap: () => _showPageSelectorDialog(context, state, formBuilderBloc),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
           ),
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.description, color: Colors.blue, size: 14),
-              const SizedBox(width: 4),
-              Text(
-                '${currentPageIndex + 1} of ${state.pages.length}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down, color: Colors.blue, size: 16),
+              Icon(Icons.list, color: Colors.blue, size: 12),
+              SizedBox(width: 2),
+              Icon(Icons.arrow_drop_down, color: Colors.blue, size: 14),
             ],
           ),
         ),
       ),
+
+      const SizedBox(width: 4),
+
+      // Previous Button
       if (hasPrevious)
         GestureDetector(
           onTap: () {
@@ -227,15 +197,19 @@ Widget _buildPageNavigation(
             formBuilderBloc.add(SwitchPageEvent(previousPage.pageId));
           },
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.arrow_back_ios, color: Colors.blue, size: 16),
+            child: const Icon(Icons.arrow_back_ios, color: Colors.blue, size: 12),
           ),
         ),
+
+      if (hasPrevious && hasNext) const SizedBox(width: 4),
+
+      // Next Button
       if (hasNext)
         GestureDetector(
           onTap: () {
@@ -243,15 +217,56 @@ Widget _buildPageNavigation(
             formBuilderBloc.add(SwitchPageEvent(nextPage.pageId));
           },
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.arrow_forward_ios, color: Colors.blue, size: 16),
+            child: const Icon(Icons.arrow_forward_ios, color: Colors.blue, size: 12),
           ),
         ),
+    ],
+  );
+}
+
+Widget _buildActionButtons(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  // Check if current page has components
+  final currentPage = state.pages.firstWhere((page) => page.pageId == state.currentPageId);
+  final hasComponents = currentPage.components.isNotEmpty;
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (hasComponents)
+        Container(
+          margin: const EdgeInsets.only(right: 6, top: 8, bottom: 8),
+          child: IconButton(
+            onPressed: () => formBuilderBloc.add(const ClearCanvasEvent()),
+            icon: const Icon(Icons.clear, size: 18),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.red.shade100,
+              foregroundColor: Colors.red,
+              padding: const EdgeInsets.all(8),
+              minimumSize: const Size(32, 32),
+            ),
+            tooltip: 'Clear Current Page',
+          ),
+        ),
+      Container(
+        margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+        child: IconButton(
+          onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
+          icon: const Icon(Icons.preview, size: 18),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.green.shade100,
+            foregroundColor: Colors.green,
+            padding: const EdgeInsets.all(8),
+            minimumSize: const Size(32, 32),
+          ),
+          tooltip: 'Preview Form',
+        ),
+      ),
     ],
   );
 }
@@ -379,16 +394,14 @@ void _showPageSelectorDialog(
                     color: isCurrentPage ? Colors.blue : Colors.black,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Page ${index + 1}'),
-                    if (componentCount > 0)
-                      Text(
-                        '$componentCount component${componentCount > 1 ? 's' : ''}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                  ],
+                subtitle: componentCount > 0
+                    ? Text(
+                  '$componentCount component${componentCount > 1 ? 's' : ''}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                )
+                    : const Text(
+                  'Empty page',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 trailing: isCurrentPage
                     ? const Icon(Icons.check_circle, color: Colors.blue)

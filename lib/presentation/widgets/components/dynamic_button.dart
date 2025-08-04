@@ -394,7 +394,7 @@ class _DynamicButtonState extends State<DynamicButton> {
   }
 
   Widget _buildButtonContent() {
-    final fontSize = _style.fontSize ?? 12.0;
+    final fontSize = _style.fontSize ?? 10.0;
     final fontWeight = _parseFontWeight(
       _style.fontWeight?.toString() ?? 'normal',
     );

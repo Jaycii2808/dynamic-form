@@ -1,4 +1,6 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:equatable/equatable.dart';
 
 class FormBuilderModel extends Equatable {
@@ -92,6 +94,201 @@ class FormBuilderModel extends Equatable {
       'formId': formId,
       'name': name,
       'pages': pages.map((page) => page.toJson()).toList(),
+    };
+  }
+
+  /// Convert to multi-page JSON format with automatic navigation
+  Map<String, dynamic> toExportMultiPageJson() {
+    return {
+      'formId': formId,
+      'name': name,
+      'pages': pages
+          .map((page) => _convertPageToMultiPageFormat(page))
+          .toList(),
+    };
+  }
+
+  /// Convert page to multi-page format with automatic navigation buttons
+  Map<String, dynamic> _convertPageToMultiPageFormat(
+    FormBuilderPageModel page,
+  ) {
+    final pageIndex = pages.indexOf(page);
+    final isFirstPage = pageIndex == 0;
+    final isLastPage = pageIndex == pages.length - 1;
+
+    // Convert components and add navigation buttons
+    final convertedComponents = <Map<String, dynamic>>[];
+
+    // Add main components (excluding navigation buttons)
+    for (final component in page.components) {
+      if (component.type != FormTypeEnum.buttonFormType ||
+          (component.config?.action != ButtonAction.nextPage.value &&
+              component.config?.action != ButtonAction.previousPage.value &&
+              component.config?.action != ButtonAction.submitForm.value)) {
+        convertedComponents.add(_convertComponentToMultiPageFormat(component));
+      }
+    }
+
+    // Add navigation buttons based on page position
+    if (!isFirstPage) {
+      convertedComponents.add(
+        _createNavigationButton(
+          'previous',
+          ButtonAction.previousPage.value,
+          'Back',
+          pageIndex > 0 ? pages[pageIndex - 1].pageId : '',
+        ),
+      );
+    }
+
+    if (!isLastPage) {
+      convertedComponents.add(
+        _createNavigationButton(
+          'next',
+          ButtonAction.nextPage.value,
+          'Next',
+          pageIndex < pages.length - 1 ? pages[pageIndex + 1].pageId : '',
+        ),
+      );
+    } else {
+      // Add submit button on last page
+      convertedComponents.add(_createSubmitButton());
+    }
+
+    return {
+      'pageId': page.pageId,
+      'title': page.title,
+      'order': page.order,
+      'show_previous_button': !isFirstPage,
+      'show_next_button': !isLastPage,
+      'show_submit_button': isLastPage,
+      'components': convertedComponents,
+    };
+  }
+
+  /// Convert component to multi-page format
+  Map<String, dynamic> _convertComponentToMultiPageFormat(
+    DynamicFormModel component,
+  ) {
+    final Map<String, dynamic> json = {
+      'id': component.id,
+      'type': component.type.toJson(),
+      'config': component.config?.toJson() ?? {},
+      'style': component.style.toJson(),
+    };
+
+    if (component.variants != null) {
+      json['variants'] = component.variants!.toJson();
+    }
+
+    if (component.states != null) {
+      json['states'] = component.states!.toJson();
+    }
+
+    if (component.validation != null) {
+      json['validate'] = component.validation!.toJson();
+    }
+
+    return json;
+  }
+
+  /// Create navigation button with proper validation
+  Map<String, dynamic> _createNavigationButton(
+    String icon,
+    String action,
+    String label,
+    String targetPage,
+  ) {
+    final isNextPage = action == ButtonAction.nextPage.value;
+    return {
+      'id': '${action}_btn_${DateTime.now().millisecondsSinceEpoch}',
+      'type': 'buttonFormType',
+      'config': {
+        'label': label,
+        'value': null,
+        'icon': icon,
+        'action': action,
+        'is_icon_right_position': isNextPage ? 'true' : 'false',
+      },
+      'validate': {
+        'condition': [],
+        '${isNextPage ? 'next_page' : 'previous_page'}': targetPage,
+      },
+      'style': {
+        'width': '120px',
+        'height': '40px',
+        'background_color': isNextPage ? '0xFF3B82F6' : '0xFFE5E7EB',
+        'text_color': isNextPage ? '0xFFFFFFFF' : '0xFF111827',
+        'border_color': 'transparent',
+        'font_size': 15,
+        'font_weight': '600',
+        'margin': '8px 6px',
+        'padding': '8px 12px',
+        'icon_size': 14,
+        'elevation': 4,
+        'shadow_color': isNextPage ? '0xFF3B82F6' : '0xFF3B82F6',
+      },
+      'variants': {},
+      'states': {},
+    };
+  }
+
+  /// Create submit button for the last page
+  Map<String, dynamic> _createSubmitButton() {
+    return {
+      'id': 'submit_btn_${DateTime.now().millisecondsSinceEpoch}',
+      'type': 'buttonFormType',
+      'config': {
+        'label': 'Submit',
+        'value': null,
+        'icon': 'check_circle',
+        'action': ButtonAction.submitForm.value,
+        'is_icon_right_position': 'true',
+      },
+      'validate': {
+        'condition': [],
+      },
+      'style': {
+        'width': '120px',
+        'height': '40px',
+        'background_color': '0xFF059669',
+        'text_color': '0xFFFFFFFF',
+        'border_color': 'transparent',
+        'font_size': 15,
+        'font_weight': '600',
+        'margin': '8px 6px',
+        'padding': '8px 12px',
+        'icon_size': 14,
+        'elevation': 4,
+        'shadow_color': '0xFF059669',
+      },
+      'variants': {},
+      'states': {
+        'disabled': {
+          'style': {
+            'background_color': '0xFFF3F4F6',
+            'text_color': '0xFF9CA3AF',
+            'border_color': 'transparent',
+            'elevation': 0,
+            'shadow_color': 'transparent',
+          },
+        },
+        'base': {
+          'style': {
+            'background_color': '0xFF059669',
+            'text_color': '0xFFFFFFFF',
+            'border_color': 'transparent',
+            'elevation': 4,
+            'shadow_color': '0xFF059669',
+          },
+        },
+        'loading': {
+          'style': {
+            'background_color': '0xFF047857',
+            'elevation': 2,
+          },
+        },
+      },
     };
   }
 

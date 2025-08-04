@@ -607,11 +607,23 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
       }
     }
 
+    // Find submit button - only show on the last page
+    if (isLastPage) {
+      for (final component in page.components) {
+        if (component.type == FormTypeEnum.buttonFormType &&
+            component.config.action == ButtonAction.submitForm.value) {
+          submitButton = _toDynamicFormModel(component);
+          break;
+        }
+      }
+    }
+
     debugPrint('🔍 [ButtonDetection] isLastPage: $isLastPage');
     debugPrint('🔍 [ButtonDetection] previewButton: ${previewButton?.id}');
+    debugPrint('🔍 [ButtonDetection] submitButton: ${submitButton?.id}');
 
     final requiredIds = <String>{};
-    for (final button in [nextButton]) {
+    for (final button in [nextButton, submitButton]) {
       if (button != null) {
         final validation = button.validation;
         if (validation is ButtonConditionValidationModel) {
