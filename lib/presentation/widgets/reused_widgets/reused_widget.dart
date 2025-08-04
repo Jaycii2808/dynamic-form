@@ -51,6 +51,7 @@ class ReusedWidget {
     Function(String, FormActionDataModel?)? onButtonAction,
     Function(DynamicFormModel)?
     onComponentUpdate, // Add callback for component updates
+    bool isSharedForm = false, // Add parameter to indicate shared form mode
   }) {
     debugPrint(
       '🔍 [ReusedWidget] Building component: ${component.id}, type: ${component.type}',
@@ -58,6 +59,8 @@ class ReusedWidget {
     debugPrint('  - Key: ${key.toString()}');
     debugPrint('  - Label: ${component.config?.label}');
     debugPrint('  - Placeholder: ${component.config?.placeholder}');
+    debugPrint('  - Config editing enabled: ${onComponentUpdate != null}');
+    debugPrint('  - Is shared form: $isSharedForm');
 
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
@@ -68,7 +71,9 @@ class ReusedWidget {
             key: key ?? Key(component.id), // Use provided key or default
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
-            onComponentUpdate: onComponentUpdate, // Pass the callback
+            onComponentUpdate:
+                onComponentUpdate, // Pass the callback (can be null)
+            isSharedForm: isSharedForm, // Pass the shared form flag
           ),
         );
 
@@ -80,6 +85,7 @@ class ReusedWidget {
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
             onComponentUpdate: onComponentUpdate,
+            isSharedForm: isSharedForm, // Pass the shared form flag
           ),
         );
 
@@ -91,6 +97,7 @@ class ReusedWidget {
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
             onComponentUpdate: onComponentUpdate,
+            isSharedForm: isSharedForm, // Pass the shared form flag
           ),
         );
 
@@ -103,6 +110,7 @@ class ReusedWidget {
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
             onComponentUpdate: onComponentUpdate,
+            isSharedForm: isSharedForm, // Pass the shared form flag
           ),
         );
 

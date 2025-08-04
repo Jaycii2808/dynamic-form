@@ -6,19 +6,20 @@ class AppRouter {
   static GoRouter get router => _router;
 
   static final GoRouter _router = GoRouter(
-    initialLocation: '/',
+    initialLocation: HomeScreen.routeName,
     debugLogDiagnostics: true,
     routes: [
       // Home route
       GoRoute(
-        path: '/',
+        path: HomeScreen.routeName,
         builder: (context, state) => const HomeScreen(),
       ),
       // Shared form route with form ID parameter
       GoRoute(
-        path: '/forms/:formId',
+        path: SharedFormScreen.routePath,
+        name: SharedFormScreen.routeName,
         builder: (context, state) {
-          final formId = state.pathParameters['formId'] ?? '';
+          final String formId = state.pathParameters['formId']!;
           return SharedFormScreen(formId: formId);
         },
       ),

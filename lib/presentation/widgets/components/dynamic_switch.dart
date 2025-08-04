@@ -13,21 +13,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicSwitch extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic) onComplete;
+  final Function(dynamic)? onComplete;
   final Function(DynamicFormModel)?
   onComponentUpdate; // Add callback for component updates
+  final bool isSharedForm; // Add parameter to indicate shared form mode
 
   DynamicSwitch({
     super.key,
     required this.component,
-    required this.onComplete,
+    this.onComplete,
     this.onComponentUpdate, // Add this parameter
+    this.isSharedForm = false, // Default to false for backward compatibility
   }) {
     debugPrint(
       '🏗️ [DynamicSwitch] Constructor called for component: ${component.id}',
     );
     debugPrint('  - Label: ${component.config?.label}');
-    debugPrint('  - Value: ${component.config?.value}');
+    debugPrint('  - Is shared form: $isSharedForm');
   }
 
   @override
@@ -78,7 +80,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
           if (state is DynamicSwitchSuccess) {
             // Pass simple value instead of valueMap
             final simpleValue = state.component?.config?.value ?? false;
-            widget.onComplete(simpleValue);
+            widget.onComplete?.call(simpleValue);
           } else if (state is DynamicSwitchError) {
             DialogUtils.showErrorDialog(context, state.errorMessage!);
           } else if (state is DynamicSwitchLoading ||
@@ -89,7 +91,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
           } else {
             // Pass simple value instead of valueMap
             final simpleValue = state.component?.config?.value ?? false;
-            widget.onComplete(simpleValue);
+            widget.onComplete?.call(simpleValue);
             DialogUtils.showErrorDialog(context, "Another Error");
           }
         },
@@ -176,8 +178,9 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
                         ],
                       ),
                     ),
-                    // Show edit icon in form builder mode
-                    if (widget.component.labelFormBuilder != null)
+                    // Show edit icon in form builder mode (but not in shared form mode)
+                    if (widget.component.labelFormBuilder != null &&
+                        !widget.isSharedForm)
                       GestureDetector(
                         onTap: () => _showEditLabelDialog(context),
                         child: Container(

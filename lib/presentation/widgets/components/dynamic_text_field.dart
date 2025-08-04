@@ -21,18 +21,21 @@ class DynamicTextField extends StatefulWidget {
   final Function(dynamic)? onComplete;
   final Function(DynamicFormModel)?
   onComponentUpdate; // Add callback for component updates
+  final bool isSharedForm; // Add parameter to indicate shared form mode
 
   DynamicTextField({
     super.key,
     required this.component,
     this.onComplete,
     this.onComponentUpdate, // Add this parameter
+    this.isSharedForm = false, // Default to false for backward compatibility
   }) {
     debugPrint(
       '🏗️ [DynamicTextField] Constructor called for component: ${component.id}',
     );
     debugPrint('  - Label: ${component.config?.label}');
     debugPrint('  - Placeholder: ${component.config?.placeholder}');
+    debugPrint('  - Is shared form: $isSharedForm');
   }
 
   @override
@@ -236,8 +239,8 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
               ),
             ),
           ),
-          // Show edit icon in form builder mode
-          if (widget.component.labelFormBuilder != null)
+          // Show edit icon in form builder mode (but not in shared form mode)
+          if (widget.component.labelFormBuilder != null && !widget.isSharedForm)
             GestureDetector(
               onTap: () => _showEditLabelDialog(),
               child: Container(

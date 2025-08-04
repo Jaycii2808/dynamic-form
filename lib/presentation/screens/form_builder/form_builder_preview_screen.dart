@@ -146,24 +146,29 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
       // Generate shareable link
       final shareableLink = firestoreService.generateFormShareLink(formId);
+      if (mounted) {
+        // Close loading dialog
+        Navigator.of(context).pop();
 
-      // Close loading dialog
-      Navigator.of(context).pop();
+      }
 
       // Show success dialog with options
       _showShareSuccessDialog(shareableLink, formId, jsonOutput);
     } catch (e) {
-      // Close loading dialog
-      Navigator.of(context).pop();
 
-      debugPrint('Error saving form to Firestore: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving form: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      if (mounted) {
+        // Close loading dialog
+        Navigator.of(context).pop();
+        debugPrint('Error saving form to Firestore: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving form: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
     }
   }
 
@@ -312,12 +317,16 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       }
     } catch (e) {
       debugPrint('Error opening browser link: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error opening link: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      //if contet mounted
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening link: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
     }
   }
 
@@ -326,13 +335,14 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     final tempConfigKey = 'temp_form_${DateTime.now().millisecondsSinceEpoch}';
     final jsonString = const JsonEncoder.withIndent('  ').convert(jsonOutput);
 
-    // Set temporary defaults for this session
-    FirebaseRemoteConfig.instance
-        .setDefaults({
-          tempConfigKey: jsonString,
-        })
-        .then((_) {
-          // Navigate to actual dynamic form multiscreen
+      // Set temporary defaults for this session
+      FirebaseRemoteConfig.instance
+          .setDefaults({
+        tempConfigKey: jsonString,
+      })
+          .then((_) {
+        // Navigate to actual dynamic form multiscreen
+        if ( mounted){
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -340,16 +350,23 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
                   DynamicFormMultiScreen(configKey: tempConfigKey),
             ),
           );
-        })
-        .catchError((e) {
-          debugPrint('Error setting temp config: $e');
+        }
+
+      })
+          .catchError((e) {
+        debugPrint('Error setting temp config: $e');
+        if ( mounted){
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error opening live form: $e'),
               backgroundColor: Colors.red,
             ),
           );
-        });
+        }
+
+      });
+
+
   }
 
   void _copyToClipboard(String text) {
@@ -573,11 +590,11 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.info, color: Colors.blue),
-            const SizedBox(width: 8),
-            const Flexible(
+            Icon(Icons.info, color: Colors.blue),
+            SizedBox(width: 8),
+            Flexible(
               child: Text('Firebase Export Instructions'),
             ),
           ],

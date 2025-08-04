@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/components/component_values_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:flutter/material.dart';
 
 class FormSubmissionConverter {
   /// Convert ComponentValuesModel and DynamicMultiPageFormModel to readable FormSubmissionModel
@@ -76,8 +77,7 @@ class FormSubmissionConverter {
       case FormTypeEnum.container:
         return 'Container';
       case FormTypeEnum.unknown:
-      default:
-        return 'Field';
+      return 'Field';
     }
   }
 
@@ -88,15 +88,15 @@ class FormSubmissionConverter {
 
   /// Print form submission in readable format for debugging
   static void debugPrintSubmission(FormSubmissionModel submission) {
-    print('📝 Form Submission Debug:');
-    print('Form: ${submission.formName} (${submission.formId})');
-    print('Time: ${submission.submissionTime}');
-    print('Fields (${submission.fields.length}):');
+    debugPrint('📝 Form Submission Debug:');
+    debugPrint('Form: ${submission.formName} (${submission.formId})');
+    debugPrint('Time: ${submission.submissionTime}');
+    debugPrint('Fields (${submission.fields.length}):');
 
     for (int i = 0; i < submission.fields.length; i++) {
       final field = submission.fields[i];
-      print('  ${i + 1}. ${field.label}: ${field.displayValue}');
+      debugPrint('  ${i + 1}. ${field.label}: ${field.displayValue}');
     }
-    print('─' * 50);
+    debugPrint('─' * 50);
   }
 }

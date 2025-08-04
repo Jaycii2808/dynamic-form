@@ -13,21 +13,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicSelectorButton extends StatefulWidget {
   final DynamicFormModel component;
-  final Function(dynamic) onComplete;
+  final Function(dynamic)? onComplete;
   final Function(DynamicFormModel)?
   onComponentUpdate; // Add callback for component updates
+  final bool isSharedForm; // Add parameter to indicate shared form mode
 
   DynamicSelectorButton({
     super.key,
     required this.component,
-    required this.onComplete,
+    this.onComplete,
     this.onComponentUpdate, // Add this parameter
+    this.isSharedForm = false, // Default to false for backward compatibility
   }) {
     debugPrint(
       '🏗️ [DynamicSelectorButton] Constructor called for component: ${component.id}',
     );
     debugPrint('  - Label: ${component.config?.label}');
-    debugPrint('  - Value: ${component.config?.value}');
+    debugPrint('  - Is shared form: $isSharedForm');
   }
 
   @override
@@ -82,7 +84,7 @@ class _DynamicSelectorButtonState extends State<DynamicSelectorButton> {
           if (state is DynamicSelectorButtonSuccess) {
             // Pass simple value instead of valueMap
             final simpleValue = state.component?.config?.value ?? false;
-            widget.onComplete(simpleValue);
+            widget.onComplete?.call(simpleValue);
           } else if (state is DynamicSelectorButtonError) {
             DialogUtils.showErrorDialog(context, state.errorMessage!);
           } else if (state is DynamicSelectorButtonLoading ||
@@ -93,7 +95,7 @@ class _DynamicSelectorButtonState extends State<DynamicSelectorButton> {
           } else {
             // Pass simple value instead of valueMap
             final simpleValue = state.component?.config?.value ?? false;
-            widget.onComplete(simpleValue);
+            widget.onComplete?.call(simpleValue);
             DialogUtils.showErrorDialog(context, "Another Error");
           }
         },
@@ -201,15 +203,16 @@ class _DynamicSelectorButtonState extends State<DynamicSelectorButton> {
                           ],
                         ),
                       ),
-                      // Show edit icon in form builder mode
-                      if (widget.component.labelFormBuilder != null)
+                      // Show edit icon in form builder mode (but not in shared form mode)
+                      if (widget.component.labelFormBuilder != null &&
+                          !widget.isSharedForm)
                         GestureDetector(
                           onTap: () => _showEditLabelDialog(context),
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             child: Icon(
                               Icons.edit,
-                              size: 14,
+                              size: 16,
                               color: (styleModel.labelColor ?? Colors.white)
                                   .withValues(alpha: 0.7),
                             ),

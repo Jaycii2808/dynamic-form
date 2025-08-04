@@ -118,15 +118,15 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
       );
     }
 
-    final previewComponents = _buildPreviewComponents(
-      widget.pages,
-      componentValues,
-    );
+    // final previewComponents = _buildPreviewComponents(
+    //   widget.pages,
+    //   componentValues,
+    // );
 
-    final isFormValid = isAllRequiredFilled(
-      previewComponents,
-      componentValues,
-    );
+    // final isFormValid = isAllRequiredFilled(
+    //   previewComponents,
+    //   componentValues,
+    // );
 
     return Stack(
       children: [
@@ -453,38 +453,38 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
   }
 }
 
-List<DynamicFormModel> _buildPreviewComponents(
-  List<DynamicFormPageModel> pages,
-  ComponentValuesModel allComponentValues,
-) {
-  final List<DynamicFormModel> allComponents = [];
-
-  // Process each page
-  for (final page in pages) {
-    // Process each component in the page
-    for (final componentItem in page.components) {
-      final value = allComponentValues.values[componentItem.id];
-      final updatedConfig = componentItem.config?.copyWith(value: value);
-
-      final processedComponent = DynamicFormModel(
-        id: componentItem.id,
-        type: componentItem.type,
-        order: componentItem.order,
-        config: updatedConfig,
-        style: componentItem.style,
-        inputTypes: componentItem.inputTypes,
-        variants: componentItem.variants,
-        states: componentItem.states,
-        validation: componentItem.validation,
-        children: componentItem.children,
-      );
-
-      allComponents.add(processedComponent);
-    }
-  }
-
-  return allComponents;
-}
+// List<DynamicFormModel> _buildPreviewComponents(
+//   List<DynamicFormPageModel> pages,
+//   ComponentValuesModel allComponentValues,
+// ) {
+//   final List<DynamicFormModel> allComponents = [];
+//
+//   // Process each page
+//   for (final page in pages) {
+//     // Process each component in the page
+//     for (final componentItem in page.components) {
+//       final value = allComponentValues.values[componentItem.id];
+//       final updatedConfig = componentItem.config?.copyWith(value: value);
+//
+//       final processedComponent = DynamicFormModel(
+//         id: componentItem.id,
+//         type: componentItem.type,
+//         order: componentItem.order,
+//         config: updatedConfig,
+//         style: componentItem.style,
+//         inputTypes: componentItem.inputTypes,
+//         variants: componentItem.variants,
+//         states: componentItem.states,
+//         validation: componentItem.validation,
+//         children: componentItem.children,
+//       );
+//
+//       allComponents.add(processedComponent);
+//     }
+//   }
+//
+//   return allComponents;
+// }
 
 // DynamicFormModel? buildRemoteButton(RemoteButtonConfigKey key) {
 //   final jsonString = RemoteConfigService().getString(key.key);

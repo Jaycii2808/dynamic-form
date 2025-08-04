@@ -10,7 +10,6 @@ import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_fo
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
-import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
 
 class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
   final RemoteConfigService _remoteConfigService;

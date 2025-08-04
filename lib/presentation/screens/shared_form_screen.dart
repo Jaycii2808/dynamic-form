@@ -1,13 +1,12 @@
-import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/domain/services/firestore_form_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class SharedFormScreen extends StatefulWidget {
+  static const String routePath = '/forms/:formId';
   static const String routeName = '/forms';
   final String formId;
 
@@ -15,6 +14,12 @@ class SharedFormScreen extends StatefulWidget {
     super.key,
     required this.formId,
   });
+
+  // Example navigation:
+  // context.pushNamed(
+  //   SharedFormScreen.routeName,
+  //   pathParameters: {'formId': 'your-form-id'},
+  // );
 
   @override
   State<SharedFormScreen> createState() => _SharedFormScreenState();
@@ -26,8 +31,9 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
   String? _errorMessage;
   Map<String, dynamic>? _formData;
   String _formName = '';
-  bool _isPreviewMode = false; // Toggle between preview and input mode
-  ComponentValuesModel _componentValues = ComponentValuesModel(values: {});
+  ComponentValuesModel _componentValues = const ComponentValuesModel(
+    values: {},
+  );
   int _currentPageIndex = 0;
 
   @override
@@ -82,12 +88,6 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
       debugPrint('Error converting form data: $e');
       return [];
     }
-  }
-
-  void _toggleMode() {
-    setState(() {
-      _isPreviewMode = !_isPreviewMode;
-    });
   }
 
   void _handleFieldChanged(String componentId, dynamic value) {
@@ -145,7 +145,7 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
             'Form Submitted Successfully!',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             height: 400,
             child: Column(
@@ -258,44 +258,6 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
         onPressed: () => context.go('/'),
         icon: const Icon(Icons.home),
       ),
-      actions: [
-        if (!_isLoading && _formData != null)
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: _toggleMode,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: _isPreviewMode ? Colors.red : Colors.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isPreviewMode ? Icons.visibility : Icons.edit,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isPreviewMode ? 'Preview Mode' : 'Input Mode',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 
@@ -384,17 +346,8 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
 
     final dynamicPages = _convertToDynamicPages();
 
-    if (_isPreviewMode) {
-      // Preview mode - read-only
-      final emptyComponentValues = ComponentValuesModel(values: {});
-      return PreviewPageScreen(
-        pages: dynamicPages,
-        allComponentValues: emptyComponentValues,
-      );
-    } else {
-      // Input mode - user can fill the form
-      return _buildInputMode(dynamicPages);
-    }
+    // Shared forms only allow input mode - no preview mode
+    return _buildInputMode(dynamicPages);
   }
 
   Widget _buildInputMode(List<DynamicFormPageModel> pages) {
@@ -425,7 +378,7 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.description,
                     color: Colors.blue,
                     size: 20,
@@ -455,6 +408,7 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
                 final updatedConfig = component.config?.copyWith(value: value);
                 final updatedComponent = component.copyWith(
                   config: updatedConfig,
+                  labelFormBuilder: null,
                 );
 
                 return Container(
@@ -463,6 +417,8 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
                     component: updatedComponent,
                     onFieldChanged: _handleFieldChanged,
                     onButtonAction: _handleButtonAction,
+                    isSharedForm:
+                        true, // Enable shared form mode to disable config editing
                   ),
                 );
               },
@@ -470,88 +426,90 @@ class _SharedFormScreenState extends State<SharedFormScreen> {
           ),
 
           // Navigation buttons
-          if (pages.length > 1)
-            Container(
-              margin: const EdgeInsets.only(top: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Previous button
-                  if (_currentPageIndex > 0)
-                    GestureDetector(
-                      onTap: _previousPage,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Previous',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox(width: 100),
+          // if (pages.length > 1)
+          //   //buildNavigationButtons(pages),
+        ],
+      ),
+    );
+  }
 
-                  // Next/Submit button
-                  GestureDetector(
-                    onTap: _currentPageIndex < pages.length - 1
-                        ? _nextPage
-                        : _handleFormSubmit,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _currentPageIndex < pages.length - 1
-                            ? Colors.blue
-                            : Colors.green,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _currentPageIndex < pages.length - 1
-                                ? 'Next'
-                                : 'Submit',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            _currentPageIndex < pages.length - 1
-                                ? Icons.arrow_forward
-                                : Icons.check,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ],
-                      ),
+  Widget buildNavigationButtons(List<DynamicFormPageModel> pages) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Previous button
+          if (_currentPageIndex > 0)
+            GestureDetector(
+              onTap: _previousPage,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 16,
                     ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Previous',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            const SizedBox(width: 100),
+
+          // Next/Submit button
+          GestureDetector(
+            onTap: _currentPageIndex < pages.length - 1
+                ? _nextPage
+                : _handleFormSubmit,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: _currentPageIndex < pages.length - 1
+                    ? Colors.blue
+                    : Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _currentPageIndex < pages.length - 1 ? 'Next' : 'Submit',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _currentPageIndex < pages.length - 1
+                        ? Icons.arrow_forward
+                        : Icons.check,
+                    color: Colors.white,
+                    size: 16,
                   ),
                 ],
               ),
             ),
+          ),
         ],
       ),
     );
