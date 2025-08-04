@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to active shared forms for everyone
+    // Allow write access for creating/updating shared forms (temporary for development)
+    match /shared_forms/{formId} {
+      allow read: if resource.data.isActive == true;
+      allow create: if true; // Allow anonymous form creation for now
+      allow update: if true; // Allow anonymous form updates for now
+      allow delete: if false; // Never allow deletion
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

@@ -1,0 +1,14 @@
+{
+    "conditions": [],
+    "parameters": {},
+    "parameterGroups": {},
+    "version": {
+        "versionNumber": "1",
+        "updateTime": "2024-01-01T00:00:00.000Z",
+        "updateUser": {
+            "email": "system@example.com"
+        },
+        "updateOrigin": "CONSOLE",
+        "updateType": "INCREMENTAL_UPDATE"
+    }
+}

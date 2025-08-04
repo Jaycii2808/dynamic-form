@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
-import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/domain/services/firestore_form_service.dart';
+import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FormBuilderPreviewScreen extends StatefulWidget {
   final FormBuilderModel formBuilderModel;
@@ -101,7 +102,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Test Live Form'),
+            label: const Text('Test Live Form and Share'),
           ),
         ),
       ],
@@ -109,12 +110,220 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   }
 
   // Open actual dynamic form multiscreen with current data
-  void _openActualDynamicForm() {
+  void _openActualDynamicForm() async {
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Saving form and generating link...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Convert current form to JSON
+      final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
+      final formName = widget.formBuilderModel.name;
+
+      debugPrint('Saving form to Firestore: $formName');
+
+      // Save to Firestore and get form ID
+      final firestoreService = FirestoreFormService();
+      final formId = await firestoreService.saveSharedForm(
+        formData: jsonOutput,
+        formName: formName,
+      );
+
+      // Generate shareable link
+      final shareableLink = firestoreService.generateFormShareLink(formId);
+
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      // Show success dialog with options
+      _showShareSuccessDialog(shareableLink, formId, jsonOutput);
+    } catch (e) {
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      debugPrint('Error saving form to Firestore: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving form: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _showShareSuccessDialog(
+    String shareableLink,
+    String formId,
+    Map<String, dynamic> jsonOutput,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D2D),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text(
+              'Form Shared Successfully!',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your form has been saved and is now shareable:',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      shareableLink,
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _copyLinkToClipboard(shareableLink),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      child: const Icon(
+                        Icons.copy,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Form ID: $formId',
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          GestureDetector(
+            onTap: () => _copyLinkToClipboard(shareableLink),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Copy Link',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _openBrowserLink(shareableLink),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Open in Browser',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              _testFormLocally(jsonOutput);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Test Locally',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyLinkToClipboard(String link) {
+    Clipboard.setData(ClipboardData(text: link));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link copied to clipboard!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _openBrowserLink(String link) async {
+    try {
+      final uri = Uri.parse(link);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $link';
+      }
+    } catch (e) {
+      debugPrint('Error opening browser link: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening link: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _testFormLocally(Map<String, dynamic> jsonOutput) {
     // Create a temporary config key with current timestamp
     final tempConfigKey = 'temp_form_${DateTime.now().millisecondsSinceEpoch}';
-
-    // Convert current form to JSON and set as default in RemoteConfigService
-    final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
     final jsonString = const JsonEncoder.withIndent('  ').convert(jsonOutput);
 
     // Set temporary defaults for this session
