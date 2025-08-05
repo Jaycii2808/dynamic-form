@@ -1,54 +1,56 @@
-import 'dart:convert';
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
+
+import 'package:dio/dio.dart';
 import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
+import 'package:flutter/foundation.dart';
 
 class EmailService {
   static final EmailService _instance = EmailService._internal();
   factory EmailService() => _instance;
   EmailService._internal();
 
-  // Use working API credentials
-  static const String _apiKey = 'e3c5b0d1a9c15674c88e9ee7aabec0cc';
-  static const String _apiSecret = 'bb03af67a0e72adc02d26997cf185bf3';
+  // Email configuration
   static const String _fromEmail = 'dinhthongchau@gmail.com';
   static const String _fromName = 'Dynamic Form BI';
+  static const String _backendBaseUrl = 'https://be-mail-dynamic-form.vercel.app/';
 
-  /// Initialize email service with environment variables
+  // Dio instance for HTTP requests
+  late final Dio _dio;
+
+  /// Initialize email service
   Future<void> initialize() async {
     try {
+      // Initialize Dio với cấu hình cho backend
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: _backendBaseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      // Add interceptors for logging
+      _dio.interceptors.add(
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          logPrint: (obj) => debugPrint('📡 [Dio] $obj'),
+        ),
+      );
+
       debugPrint('✅ Email service initialized successfully');
       debugPrint('  - From: $_fromEmail ($_fromName)');
+      debugPrint('  - Backend: $_backendBaseUrl');
+
     } catch (e) {
       debugPrint('❌ Error initializing email service: $e');
     }
   }
 
-  /// Check network connectivity
-  Future<bool> checkNetworkConnectivity() async {
-    try {
-      debugPrint('🌐 [EmailService] Checking network connectivity...');
-
-      // Try to connect to a reliable service
-      final response = await http
-          .get(Uri.parse('https://www.google.com'))
-          .timeout(const Duration(seconds: 10));
-
-      final isConnected = response.statusCode == 200;
-      debugPrint(
-        '🌐 [EmailService] Network connectivity: ${isConnected ? "✅ Connected" : "❌ Disconnected"}',
-      );
-
-      return isConnected;
-    } catch (e) {
-      debugPrint('❌ [EmailService] Network connectivity check failed: $e');
-      return false;
-    }
-  }
-
-  /// Send form submission email to recipient with retry mechanism
+  /// Send form submission email via backend
   Future<Map<String, dynamic>> sendFormSubmissionEmail({
     required String recipientEmail,
     required String recipientName,
@@ -65,10 +67,9 @@ class EmailService {
         debugPrint('  - To: $recipientEmail ($recipientName)');
         debugPrint('  - Form: ${submission.formName}');
 
-        final url = Uri.parse('https://api.mailjet.com/v3.1/send');
-
         // Create email content
         final emailContent = _createEmailContent(submission);
+        final htmlContent = _createHtmlContent(submission);
 
         final requestBody = {
           'Messages': [
@@ -85,168 +86,94 @@ class EmailService {
               ],
               'Subject': 'Form Submission: ${submission.formName}',
               'TextPart': emailContent,
-              'HTMLPart': _createHtmlContent(submission),
+              'HTMLPart': htmlContent,
             },
           ],
         };
 
-        debugPrint('📤 [EmailService] Sending request to Mailjet...');
-        debugPrint('  - URL: $url');
-        debugPrint('  - From: $_fromEmail ($_fromName)');
+        debugPrint('📤 [EmailService] Sending request to backend...');
         debugPrint('  - Subject: Form Submission: ${submission.formName}');
 
-        // Add timeout and better error handling
-        final response = await http
-            .post(
-              url,
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization':
-                    'Basic ${base64Encode(utf8.encode('$_apiKey:$_apiSecret'))}',
-              },
-              body: jsonEncode(requestBody),
-            )
-            .timeout(
-              const Duration(seconds: 30),
-              onTimeout: () {
-                debugPrint('❌ [EmailService] Request timeout after 30 seconds');
-                throw TimeoutException(
-                  'Request timeout',
-                  const Duration(seconds: 30),
-                );
-              },
-            );
+        final response = await _dio.post(
+          '/api/send-email',
+          data: requestBody,
+        );
 
-        debugPrint('📥 [EmailService] Response received');
+        debugPrint('📥 [EmailService] Response received from backend');
         debugPrint('  - Status code: ${response.statusCode}');
-        debugPrint('  - Response body: ${response.body}');
 
         if (response.statusCode == 200) {
-          final responseData = jsonDecode(response.body);
-          final messageStatus = responseData['Messages'][0]['Status'];
-          final messageId = responseData['Messages'][0]['To'][0]['MessageID'];
+          final responseData = response.data;
 
-          debugPrint('✅ [EmailService] Email sent successfully');
-          debugPrint('  - Status: $messageStatus');
-          debugPrint('  - Message ID: $messageId');
+          if (responseData['success'] == true) {
+            final mailjetResponse = responseData['data'];
+            final messageStatus = mailjetResponse['Messages'][0]['Status'];
+            final messageId = mailjetResponse['Messages'][0]['To'][0]['MessageID'];
 
-          return {
-            'success': true,
-            'status': messageStatus,
-            'messageId': messageId,
-            'response': responseData,
-            'retryCount': retryCount,
-          };
-        } else {
-          debugPrint('❌ [EmailService] Failed to send email');
-          debugPrint('  - Status code: ${response.statusCode}');
-          debugPrint('  - Response: ${response.body}');
+            debugPrint('✅ [EmailService] Email sent successfully via backend');
+            debugPrint('  - Status: $messageStatus');
+            debugPrint('  - Message ID: $messageId');
 
-          // Don't retry on client errors (4xx)
-          if (response.statusCode >= 400 && response.statusCode < 500) {
             return {
-              'success': false,
-              'statusCode': response.statusCode,
-              'error': 'HTTP ${response.statusCode}: ${response.body}',
-              'response': response.body,
+              'success': true,
+              'status': messageStatus,
+              'messageId': messageId,
+              'response': mailjetResponse,
               'retryCount': retryCount,
             };
+          } else {
+            throw DioException(
+              requestOptions: response.requestOptions,
+              message: responseData['error'] ?? 'Unknown backend error',
+            );
           }
-
-          // Retry on server errors (5xx) or network issues
-          throw Exception('HTTP ${response.statusCode}: ${response.body}');
-        }
-      } on TimeoutException catch (e) {
-        debugPrint('❌ [EmailService] Timeout error: $e');
-        retryCount++;
-
-        if (retryCount >= maxRetries) {
-          return {
-            'success': false,
-            'error': 'Request timeout after $maxRetries attempts: ${e.message}',
-            'type': 'timeout',
-            'retryCount': retryCount,
-          };
+        } else {
+          throw DioException(
+            requestOptions: response.requestOptions,
+            response: response,
+            message: 'Backend returned ${response.statusCode}',
+          );
         }
 
-        // Wait before retry with exponential backoff
-        final waitTime = Duration(seconds: 2 * retryCount);
-        debugPrint(
-          '⏳ [EmailService] Waiting ${waitTime.inSeconds}s before retry...',
-        );
-        await Future.delayed(waitTime);
-      } on FormatException catch (e) {
-        debugPrint('❌ [EmailService] Format error: $e');
-        return {
-          'success': false,
-          'error': 'Invalid response format: ${e.message}',
-          'type': 'format',
-          'retryCount': retryCount,
-        };
-      } catch (e, stackTrace) {
-        debugPrint('❌ [EmailService] Error sending email: $e');
-        debugPrint('  - Stack trace: $stackTrace');
+      } on DioException catch (e) {
+        debugPrint('❌ [EmailService] Dio error: ${e.message}');
 
-        // Check for specific network errors
-        String errorMessage = e.toString();
-        String errorType = 'unknown';
+        final errorInfo = _handleDioError(e);
 
-        if (errorMessage.contains('Failed to fetch') ||
-            errorMessage.contains('NetworkException') ||
-            errorMessage.contains('SocketException') ||
-            errorMessage.contains('HandshakeException') ||
-            errorMessage.contains('Connection refused') ||
-            errorMessage.contains('No address associated with hostname')) {
-          errorMessage =
-              'Network connection failed. Please check your internet connection.';
-          errorType = 'network';
-        } else if (errorMessage.contains('TimeoutException')) {
-          errorMessage = 'Request timeout. Please try again.';
-          errorType = 'timeout';
-        } else if (errorMessage.contains('FormatException')) {
-          errorMessage = 'Invalid response format from email service.';
-          errorType = 'format';
-        } else if (errorMessage.contains('401') ||
-            errorMessage.contains('403')) {
-          errorMessage = 'Authentication failed. Please check API credentials.';
-          errorType = 'auth';
-        } else if (errorMessage.contains('429')) {
-          errorMessage = 'Rate limit exceeded. Please try again later.';
-          errorType = 'rate_limit';
-        }
-
-        // Retry on network errors
-        if (errorType == 'network' || errorType == 'timeout') {
+        // Retry on network errors or timeouts
+        if (errorInfo['shouldRetry'] == true) {
           retryCount++;
 
           if (retryCount >= maxRetries) {
             return {
               'success': false,
-              'error': errorMessage,
-              'stackTrace': stackTrace.toString(),
-              'type': errorType,
-              'originalError': e.toString(),
+              'error': errorInfo['message'],
+              'type': errorInfo['type'],
               'retryCount': retryCount,
             };
           }
 
-          // Wait before retry with exponential backoff
-          final waitTime = Duration(seconds: 2 * retryCount);
-          debugPrint(
-            '⏳ [EmailService] Waiting ${waitTime.inSeconds}s before retry...',
-          );
-          await Future.delayed(waitTime);
+          await _waitBeforeRetry(retryCount);
         } else {
           // Don't retry on other errors
           return {
             'success': false,
-            'error': errorMessage,
-            'stackTrace': stackTrace.toString(),
-            'type': errorType,
-            'originalError': e.toString(),
+            'error': errorInfo['message'],
+            'type': errorInfo['type'],
             'retryCount': retryCount,
           };
         }
+      } catch (e, stackTrace) {
+        debugPrint('❌ [EmailService] Unexpected error: $e');
+        debugPrint('  - Stack trace: $stackTrace');
+
+        return {
+          'success': false,
+          'error': 'Unexpected error: ${e.toString()}',
+          'stackTrace': stackTrace.toString(),
+          'type': 'unexpected',
+          'retryCount': retryCount,
+        };
       }
     }
 
@@ -258,131 +185,139 @@ class EmailService {
     };
   }
 
-  /// Test Mailjet API with simple message (for debugging)
-  Future<Map<String, dynamic>> testMailjetAPI() async {
+  /// Test backend email sending
+  Future<Map<String, dynamic>> testBackendEmail() async {
     try {
-      debugPrint('🧪 [EmailService] Testing Mailjet API...');
+      debugPrint('🧪 [EmailService] Testing backend email...');
 
-      final url = Uri.parse('https://api.mailjet.com/v3.1/send');
+      final response = await _dio.post('/api/test-email');
 
-      final requestBody = {
-        'Messages': [
-          {
-            'From': {
-              'Email': _fromEmail,
-              'Name': _fromName,
-            },
-            'To': [
-              {
-                'Email': 'imprahimovic@gmail.com',
-                'Name': 'Test Recipient',
-              },
-            ],
-            'Subject': 'Test Email from Dynamic Form BI',
-            'TextPart':
-                'This is a test email to verify Mailjet API is working correctly.',
-            'HTMLPart':
-                '<h3>Test Email</h3><br />This is a test email to verify Mailjet API is working correctly.',
-          },
-        ],
-      };
-
-      debugPrint('📤 [EmailService] Sending test request...');
-      debugPrint('  - URL: $url');
-      debugPrint('  - From: $_fromEmail ($_fromName)');
-      debugPrint('  - To: imprahimovic@gmail.com');
-      debugPrint('  - Subject: Test Email from Dynamic Form BI');
-
-      // Add timeout for test request
-      final response = await http
-          .post(
-            url,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization':
-                  'Basic ${base64Encode(utf8.encode('$_apiKey:$_apiSecret'))}',
-            },
-            body: jsonEncode(requestBody),
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              debugPrint(
-                '❌ [EmailService] Test request timeout after 30 seconds',
-              );
-              throw TimeoutException(
-                'Test request timeout',
-                const Duration(seconds: 30),
-              );
-            },
-          );
-
-      debugPrint('📥 [EmailService] Test response received');
+      debugPrint('📥 [EmailService] Test response received from backend');
       debugPrint('  - Status code: ${response.statusCode}');
-      debugPrint('  - Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final messageStatus = responseData['Messages'][0]['Status'];
-        final messageId = responseData['Messages'][0]['To'][0]['MessageID'];
+        final responseData = response.data;
 
-        debugPrint('✅ [EmailService] Test email sent successfully');
-        debugPrint('  - Status: $messageStatus');
-        debugPrint('  - Message ID: $messageId');
+        if (responseData['success'] == true) {
+          final mailjetResponse = responseData['data'];
+          final messageStatus = mailjetResponse['Messages'][0]['Status'];
+          final messageId = mailjetResponse['Messages'][0]['To'][0]['MessageID'];
 
-        return {
-          'success': true,
-          'status': messageStatus,
-          'messageId': messageId,
-          'response': responseData,
-        };
+          debugPrint('✅ [EmailService] Test email sent successfully via backend');
+          debugPrint('  - Status: $messageStatus');
+          debugPrint('  - Message ID: $messageId');
+
+          return {
+            'success': true,
+            'status': messageStatus,
+            'messageId': messageId,
+            'response': mailjetResponse,
+          };
+        } else {
+          return {
+            'success': false,
+            'error': responseData['error'] ?? 'Unknown backend error',
+            'response': responseData,
+          };
+        }
       } else {
-        debugPrint('❌ [EmailService] Test email failed');
-        debugPrint('  - Status code: ${response.statusCode}');
-        debugPrint('  - Response: ${response.body}');
-
         return {
           'success': false,
           'statusCode': response.statusCode,
-          'error': 'HTTP ${response.statusCode}: ${response.body}',
-          'response': response.body,
+          'error': 'Backend error ${response.statusCode}: ${response.data}',
+          'response': response.data,
         };
       }
-    } on TimeoutException catch (e) {
-      debugPrint('❌ [EmailService] Test timeout error: $e');
+    } on DioException catch (e) {
+      debugPrint('❌ [EmailService] Test Dio error: ${e.message}');
+
+      final errorInfo = _handleDioError(e);
+
       return {
         'success': false,
-        'error': 'Test request timeout: ${e.message}',
-        'type': 'timeout',
-      };
-    } on FormatException catch (e) {
-      debugPrint('❌ [EmailService] Test format error: $e');
-      return {
-        'success': false,
-        'error': 'Invalid test response format: ${e.message}',
-        'type': 'format',
+        'error': errorInfo['message'],
+        'type': errorInfo['type'],
       };
     } catch (e, stackTrace) {
-      debugPrint('❌ [EmailService] Test email error: $e');
-      debugPrint('  - Stack trace: $stackTrace');
-
-      // Check for specific network errors
-      String errorMessage = e.toString();
-      if (errorMessage.contains('Failed to fetch')) {
-        errorMessage =
-            'Network connection failed. Please check your internet connection.';
-      } else if (errorMessage.contains('SocketException')) {
-        errorMessage =
-            'Unable to connect to email service. Please try again later.';
-      }
+      debugPrint('❌ [EmailService] Test unexpected error: $e');
 
       return {
         'success': false,
-        'error': errorMessage,
+        'error': 'Unexpected test error: ${e.toString()}',
         'stackTrace': stackTrace.toString(),
-        'type': 'network',
+        'type': 'unexpected',
       };
     }
+  }
+
+  /// Handle Dio errors and categorize them
+  Map<String, dynamic> _handleDioError(DioException e) {
+    String message = e.message ?? 'Unknown error';
+    String type = 'unknown';
+    bool shouldRetry = false;
+
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        message = 'Request timeout. Please try again.';
+        type = 'timeout';
+        shouldRetry = true;
+        break;
+
+      case DioExceptionType.connectionError:
+        message = 'Network connection failed. Please check your internet connection.';
+        type = 'network';
+        shouldRetry = true;
+        break;
+
+      case DioExceptionType.badResponse:
+        final statusCode = e.response?.statusCode;
+        if (statusCode == 401 || statusCode == 403) {
+          message = 'Authentication failed. Please check backend configuration.';
+          type = 'auth';
+          shouldRetry = false;
+        } else if (statusCode == 429) {
+          message = 'Rate limit exceeded. Please try again later.';
+          type = 'rate_limit';
+          shouldRetry = true;
+        } else if (statusCode != null && statusCode >= 500) {
+          message = 'Backend server error. Please try again.';
+          type = 'server_error';
+          shouldRetry = true;
+        } else {
+          message = 'Backend error $statusCode: ${e.response?.data}';
+          type = 'http_error';
+          shouldRetry = false;
+        }
+        break;
+
+      case DioExceptionType.cancel:
+        message = 'Request was cancelled.';
+        type = 'cancelled';
+        shouldRetry = false;
+        break;
+
+      default:
+        message = 'Unknown network error: ${e.message}';
+        type = 'unknown';
+        shouldRetry = false;
+    }
+
+    return {
+      'message': message,
+      'type': type,
+      'shouldRetry': shouldRetry,
+    };
+  }
+
+  /// Wait before retry with exponential backoff
+  Future<void> _waitBeforeRetry(int retryCount) async {
+    final waitTime = Duration(seconds: 2 * retryCount);
+    debugPrint(
+      '⏳ [EmailService] Waiting ${waitTime.inSeconds}s before retry...',
+    );
+    await Future.delayed(waitTime);
   }
 
   /// Create plain text email content
