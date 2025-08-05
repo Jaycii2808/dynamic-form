@@ -16,7 +16,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //
   // Configure URL strategy for web (removes # from URLs)
   if (kIsWeb) {
     usePathUrlStrategy();
@@ -38,19 +37,23 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: _buildBlocProviders(),
       child: MaterialApp.router(
-        title: 'Dynamic Form Builder2',
+        title: 'Dynamic Form Builder V3',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: Colors.black,
-        ),
+        theme: _buildThemeData(),
         routerConfig: AppRouter.router,
       ),
     );
+  }
+
+  ThemeData _buildThemeData() {
+    return ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
+      );
   }
 
   List<SingleChildWidget> _buildBlocProviders() {

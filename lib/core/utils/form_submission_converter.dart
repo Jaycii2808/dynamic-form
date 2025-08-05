@@ -20,7 +20,7 @@ class FormSubmissionConverter {
           final value = componentValues.getValue(component.id);
 
           // Only include components that have values (skip empty fields)
-          if (value != null && value.toString().isNotEmpty) {
+          if (value != null && _hasValidValue(value)) {
             final fieldData = FormFieldData(
               label:
                   component.config.label ??
@@ -55,6 +55,31 @@ class FormSubmissionConverter {
     return !nonInputTypes.contains(type);
   }
 
+  /// Check if value is valid for form submission
+  static bool _hasValidValue(dynamic value) {
+    if (value == null) return false;
+
+    try {
+      if (value is String) {
+        return value.trim().isNotEmpty;
+      }
+      if (value is List) {
+        return value.isNotEmpty;
+      }
+      if (value is bool) {
+        return true; // Include both true and false values
+      }
+      if (value is num) {
+        return true; // Include all numbers
+      }
+      // For other types, check if toString() produces a non-empty string
+      return value.toString().trim().isNotEmpty;
+    } catch (e) {
+      debugPrint('❌ Error checking value validity: $e');
+      return false;
+    }
+  }
+
   /// Generate readable label from component type if no label is provided
   static String _generateLabelFromType(FormTypeEnum type) {
     switch (type) {
@@ -77,7 +102,7 @@ class FormSubmissionConverter {
       case FormTypeEnum.container:
         return 'Container';
       case FormTypeEnum.unknown:
-      return 'Field';
+        return 'Field';
     }
   }
 

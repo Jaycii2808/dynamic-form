@@ -1,6 +1,8 @@
 import 'package:dynamic_form_bi/core/services/email_service.dart';
+import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:dynamic_form_bi/data/models/email/email_details_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_state.dart';
@@ -8,7 +10,7 @@ import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
+
 class SharedFormScreen extends StatelessWidget {
   static const String routePath = '/forms/:formId';
   static const String routeName = '/forms';
@@ -54,7 +56,9 @@ class SharedFormScreen extends StatelessWidget {
         builder: (context, state) {
           return AppBar(
             title: Text(
-              state is SharedFormLoading ? 'Loading...' : 'Shared Form: ${state.formName}',
+              state is SharedFormLoading
+                  ? 'Loading...'
+                  : 'Shared Form: ${state.formName}',
             ),
             backgroundColor: const Color(0xFF000000),
             foregroundColor: Colors.white,
@@ -81,7 +85,7 @@ class SharedFormScreen extends StatelessWidget {
       return _buildEmpty();
     }
 
-    final pages = _convertToDynamicPages(state.formData);
+    final pages = state.formData!.pages;
     return _buildInputMode(context, pages, state);
   }
 
@@ -92,7 +96,10 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 16),
-          Text('Loading shared form...', style: TextStyle(color: Colors.white70)),
+          Text(
+            'Loading shared form...',
+            style: TextStyle(color: Colors.white70),
+          ),
         ],
       ),
     );
@@ -115,7 +122,11 @@ class SharedFormScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               'Error',
-              style: TextStyle(color: Colors.red, fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -125,7 +136,9 @@ class SharedFormScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             GestureDetector(
-              onTap: () => context.read<SharedFormBloc>().add(LoadSharedFormEvent(formId)),
+              onTap: () => context.read<SharedFormBloc>().add(
+                LoadSharedFormEvent(formId),
+              ),
               child: _buildButton('Retry', Colors.blue),
             ),
           ],
@@ -136,7 +149,10 @@ class SharedFormScreen extends StatelessWidget {
 
   Widget _buildEmpty() {
     return const Center(
-      child: Text('No form data available', style: TextStyle(color: Colors.white70)),
+      child: Text(
+        'No form data available',
+        style: TextStyle(color: Colors.white70),
+      ),
     );
   }
 
@@ -147,7 +163,10 @@ class SharedFormScreen extends StatelessWidget {
   ) {
     if (pages.isEmpty) {
       return const Center(
-        child: Text('No form pages found', style: TextStyle(color: Colors.white70)),
+        child: Text(
+          'No form pages found',
+          style: TextStyle(color: Colors.white70),
+        ),
       );
     }
 
@@ -157,7 +176,11 @@ class SharedFormScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildPageHeader(currentPage.title, state.currentPageIndex, pages.length),
+          _buildPageHeader(
+            currentPage.title,
+            state.currentPageIndex,
+            pages.length,
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: currentPage.components.length,
@@ -165,17 +188,23 @@ class SharedFormScreen extends StatelessWidget {
                 final component = currentPage.components[index];
                 final value = state.componentValues.values[component.id];
                 final updatedConfig = component.config.copyWith(value: value);
-                final updatedComponent = component.copyWith(config: updatedConfig);
-                final dynamicComponent = _convertToDynamicFormModel(updatedComponent);
+                final updatedComponent = component.copyWith(
+                  config: updatedConfig,
+                );
+                final dynamicComponent = _convertToDynamicFormModel(
+                  updatedComponent,
+                );
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   child: DynamicFormRenderer(
                     component: dynamicComponent,
-                    onFieldChanged: (id, value) =>
-                        context.read<SharedFormBloc>().add(FieldChangedEvent(id, value)),
-                    onButtonAction: (action, data) =>
-                        context.read<SharedFormBloc>().add(ButtonActionEvent(action, data)),
+                    onFieldChanged: (id, value) => context
+                        .read<SharedFormBloc>()
+                        .add(FieldChangedEvent(id, value)),
+                    onButtonAction: (action, data) => context
+                        .read<SharedFormBloc>()
+                        .add(ButtonActionEvent(action, data)),
                     isSharedForm: true,
                   ),
                 );
@@ -203,7 +232,11 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           if (totalPages > 1)
             Text(
@@ -227,7 +260,8 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           if (state.currentPageIndex > 0)
             GestureDetector(
-              onTap: () => context.read<SharedFormBloc>().add(const PreviousPageEvent()),
+              onTap: () =>
+                  context.read<SharedFormBloc>().add(const PreviousPageEvent()),
               child: _buildButton(
                 'Previous',
                 Colors.grey.withValues(alpha: 0.2),
@@ -238,12 +272,18 @@ class SharedFormScreen extends StatelessWidget {
             const SizedBox(width: 100),
           GestureDetector(
             onTap: () => context.read<SharedFormBloc>().add(
-              state.currentPageIndex < pages.length - 1 ? const NextPageEvent() : const SubmitFormEvent(),
+              state.currentPageIndex < pages.length - 1
+                  ? const NextPageEvent()
+                  : const SubmitFormEvent(),
             ),
             child: _buildButton(
               state.currentPageIndex < pages.length - 1 ? 'Next' : 'Submit',
-              state.currentPageIndex < pages.length - 1 ? Colors.blue : Colors.green,
-              icon: state.currentPageIndex < pages.length - 1 ? Icons.arrow_forward : Icons.check,
+              state.currentPageIndex < pages.length - 1
+                  ? Colors.blue
+                  : Colors.green,
+              icon: state.currentPageIndex < pages.length - 1
+                  ? Icons.arrow_forward
+                  : Icons.check,
             ),
           ),
         ],
@@ -307,9 +347,9 @@ class SharedFormScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          if (emailDetails['emailSent'] != true &&
-              emailDetails['emailResponse'] != null &&
-              emailDetails['emailResponse']['type'] == 'network')
+          if (emailDetails.emailSent != true &&
+              emailDetails.emailResponse != null &&
+              emailDetails.emailResponse!.type == 'network')
             GestureDetector(
               onTap: () {
                 Navigator.of(context).pop();
@@ -326,16 +366,19 @@ class SharedFormScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmailStatusSection(Map<String, dynamic> emailDetails, BuildContext context) {
+  Widget _buildEmailStatusSection(
+    EmailDetailsModel emailDetails,
+    BuildContext context,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: emailDetails['emailSent'] == true
+        color: emailDetails.emailSent
             ? Colors.green.withValues(alpha: 0.1)
             : Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: emailDetails['emailSent'] == true
+          color: emailDetails.emailSent
               ? Colors.green.withValues(alpha: 0.3)
               : Colors.red.withValues(alpha: 0.3),
         ),
@@ -346,15 +389,17 @@ class SharedFormScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                emailDetails['emailSent'] == true ? Icons.check_circle : Icons.error,
-                color: emailDetails['emailSent'] == true ? Colors.green : Colors.red,
+                emailDetails.emailSent ? Icons.check_circle : Icons.error,
+                color: emailDetails.emailSent ? Colors.green : Colors.red,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
-                emailDetails['emailSent'] == true ? 'Email Sent Successfully' : 'Email Status',
+                emailDetails.emailSent
+                    ? 'Email Sent Successfully'
+                    : 'Email Status',
                 style: TextStyle(
-                  color: emailDetails['emailSent'] == true ? Colors.green : Colors.red,
+                  color: emailDetails.emailSent ? Colors.green : Colors.red,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -362,70 +407,70 @@ class SharedFormScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          if (emailDetails['recipientEmail'] != null) ...[
+          if (emailDetails.recipientEmail != null) ...[
             Text(
-              '📧 Recipient: ${emailDetails['recipientName'] ?? 'Unknown'} (${emailDetails['recipientEmail']})',
+              '📧 Recipient: ${emailDetails.recipientName ?? 'Unknown'} (${emailDetails.recipientEmail})',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             const SizedBox(height: 4),
           ],
-          if (emailDetails['emailSent'] == true) ...[
+          if (emailDetails.emailSent) ...[
             const Text(
               '✅ Form data has been sent to the form owner.',
               style: TextStyle(color: Colors.green, fontSize: 12),
             ),
-            if (emailDetails['emailResponse'] != null) ...[
+            if (emailDetails.emailResponse != null) ...[
               const SizedBox(height: 4),
               Text(
-                '📤 Status: ${emailDetails['emailResponse']['status']}',
+                '📤 Status: ${emailDetails.emailResponse!.status}',
                 style: const TextStyle(color: Colors.green, fontSize: 12),
               ),
-              if (emailDetails['emailResponse']['messageId'] != null) ...[
+              if (emailDetails.emailResponse!.messageId != null) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '🆔 Message ID: ${emailDetails['emailResponse']['messageId']}',
+                  '🆔 Message ID: ${emailDetails.emailResponse!.messageId}',
                   style: const TextStyle(color: Colors.blue, fontSize: 10),
                 ),
               ],
-              if (emailDetails['emailResponse']['retryCount'] != null &&
-                  emailDetails['emailResponse']['retryCount'] > 0) ...[
+              if (emailDetails.emailResponse!.retryCount != null &&
+                  emailDetails.emailResponse!.retryCount! > 0) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '🔄 Retry attempts: ${emailDetails['emailResponse']['retryCount']}',
+                  '🔄 Retry attempts: ${emailDetails.emailResponse!.retryCount}',
                   style: const TextStyle(color: Colors.orange, fontSize: 10),
                 ),
               ],
             ],
-          ] else if (emailDetails['emailError'] != null) ...[
+          ] else if (emailDetails.emailError != null) ...[
             Text(
-              '❌ ${emailDetails['emailError']}',
+              '❌ ${emailDetails.emailError}',
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
-            if (emailDetails['emailResponse'] != null) ...[
-              if (emailDetails['emailResponse']['statusCode'] != null) ...[
+            if (emailDetails.emailResponse != null) ...[
+              if (emailDetails.emailResponse!.statusCode != null) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '🔍 HTTP ${emailDetails['emailResponse']['statusCode']}',
+                  '🔍 HTTP ${emailDetails.emailResponse!.statusCode}',
                   style: const TextStyle(color: Colors.orange, fontSize: 10),
                 ),
               ],
-              if (emailDetails['emailResponse']['retryCount'] != null) ...[
+              if (emailDetails.emailResponse!.retryCount != null) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '🔄 Retry attempts: ${emailDetails['emailResponse']['retryCount']}',
+                  '🔄 Retry attempts: ${emailDetails.emailResponse!.retryCount}',
                   style: const TextStyle(color: Colors.orange, fontSize: 10),
                 ),
               ],
-              if (emailDetails['emailResponse']['type'] != null) ...[
+              if (emailDetails.emailResponse!.type != null) ...[
                 const SizedBox(height: 2),
                 Text(
-                  '🔧 Error type: ${emailDetails['emailResponse']['type']}',
+                  '🔧 Error type: ${emailDetails.emailResponse!.type}',
                   style: const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
               ],
             ],
-            if (emailDetails['emailResponse'] != null &&
-                emailDetails['emailResponse']['type'] == 'network') ...[
+            if (emailDetails.emailResponse != null &&
+                emailDetails.emailResponse!.type == 'network') ...[
               const SizedBox(height: 8),
               _buildNetworkErrorSuggestions(),
             ],
@@ -455,7 +500,11 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           Text(
             '💡 Suggestions:',
-            style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.orange,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: 4),
           Text(
@@ -488,7 +537,11 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           Text(
             '💡 How to fix:',
-            style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.orange,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: 4),
           Text(
@@ -530,10 +583,17 @@ class SharedFormScreen extends StatelessWidget {
         children: [
           Text(
             key,
-            style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(displayValue, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          Text(
+            displayValue,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
         ],
       ),
     );
@@ -548,7 +608,10 @@ class SharedFormScreen extends StatelessWidget {
           'Error',
           style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         ),
-        content: Text(errorMessage, style: const TextStyle(color: Colors.white70)),
+        content: Text(
+          errorMessage,
+          style: const TextStyle(color: Colors.white70),
+        ),
         actions: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
@@ -559,7 +622,9 @@ class SharedFormScreen extends StatelessWidget {
     );
   }
 
-  DynamicFormModel _convertToDynamicFormModel(FormComponentMultiPageModel component) {
+  DynamicFormModel _convertToDynamicFormModel(
+    FormComponentMultiPageModel component,
+  ) {
     return DynamicFormModel(
       id: component.id,
       type: component.type,
@@ -569,17 +634,5 @@ class SharedFormScreen extends StatelessWidget {
       validation: component.validation,
       children: component.children?.map(_convertToDynamicFormModel).toList(),
     );
-  }
-
-  List<FormForMultiPageModel> _convertToDynamicPages(Map<String, dynamic>? formData) {
-    if (formData == null) return [];
-    try {
-      final pages = formData['pages'] as List<dynamic>;
-      return pages
-          .map((pageData) => FormForMultiPageModel.fromJson(pageData as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      return [];
-    }
   }
 }

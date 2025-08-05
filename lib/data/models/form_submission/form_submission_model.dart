@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 /// Model for readable form submission data
 /// Used for email sending and data display instead of complex component IDs
@@ -132,15 +133,32 @@ class FormFieldData extends Equatable {
   String get displayValue {
     if (value == null) return 'No value';
 
-    if (value is List) {
-      return (value as List).join(', ');
-    }
+    try {
+      if (value is List) {
+        return (value as List)
+            .map((item) => item?.toString() ?? 'null')
+            .join(', ');
+      }
 
-    if (value is bool) {
-      return value ? 'Yes' : 'No';
-    }
+      if (value is bool) {
+        return value ? 'Yes' : 'No';
+      }
 
-    return value.toString();
+      if (value is num) {
+        // Handle large integers and numbers safely
+        if (value is int && value > 999999999) {
+          // Large integers might be timestamps or IDs, format them safely
+          return 'ID: ${value.toString()}';
+        }
+        return value.toString();
+      }
+
+      // For all other types, convert to string safely
+      return value.toString();
+    } catch (e) {
+      debugPrint('❌ Error converting value to display string: $e');
+      return 'Error displaying value';
+    }
   }
 
   @override

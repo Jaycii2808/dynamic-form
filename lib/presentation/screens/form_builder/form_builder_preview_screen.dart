@@ -406,7 +406,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'Multi-Page JSON Export',
+                  'JSON Export',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

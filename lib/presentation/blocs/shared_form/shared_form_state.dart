@@ -86,7 +86,7 @@ class SharedFormInitial extends SharedFormState {
       componentValues: componentValues ?? this.componentValues,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       emailServiceInitialized:
-      emailServiceInitialized ?? this.emailServiceInitialized,
+          emailServiceInitialized ?? this.emailServiceInitialized,
       emailDetails: emailDetails ?? this.emailDetails,
     );
   }
@@ -106,17 +106,17 @@ class SharedFormLoading extends SharedFormState {
   });
 
   SharedFormLoading.fromState({required SharedFormState state})
-      : super(
-    formId: state.formId,
-    formData: state.formData,
-    formName: state.formName,
-    recipientEmail: state.recipientEmail,
-    recipientName: state.recipientName,
-    componentValues: state.componentValues,
-    currentPageIndex: state.currentPageIndex,
-    emailServiceInitialized: state.emailServiceInitialized,
-    emailDetails: state.emailDetails,
-  );
+    : super(
+        formId: state.formId,
+        formData: state.formData,
+        formName: state.formName,
+        recipientEmail: state.recipientEmail,
+        recipientName: state.recipientName,
+        componentValues: state.componentValues,
+        currentPageIndex: state.currentPageIndex,
+        emailServiceInitialized: state.emailServiceInitialized,
+        emailDetails: state.emailDetails,
+      );
 
   @override
   SharedFormState copyWith({
@@ -139,7 +139,7 @@ class SharedFormLoading extends SharedFormState {
       componentValues: componentValues ?? this.componentValues,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       emailServiceInitialized:
-      emailServiceInitialized ?? this.emailServiceInitialized,
+          emailServiceInitialized ?? this.emailServiceInitialized,
       emailDetails: emailDetails ?? this.emailDetails,
     );
   }
@@ -179,7 +179,7 @@ class SharedFormSuccess extends SharedFormState {
       componentValues: componentValues ?? this.componentValues,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       emailServiceInitialized:
-      emailServiceInitialized ?? this.emailServiceInitialized,
+          emailServiceInitialized ?? this.emailServiceInitialized,
       emailDetails: emailDetails ?? this.emailDetails,
     );
   }
@@ -238,7 +238,7 @@ class SharedFormError extends SharedFormState {
       componentValues: componentValues ?? this.componentValues,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       emailServiceInitialized:
-      emailServiceInitialized ?? this.emailServiceInitialized,
+          emailServiceInitialized ?? this.emailServiceInitialized,
       emailDetails: emailDetails ?? this.emailDetails,
     );
   }

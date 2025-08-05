@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dynamic_form_bi/data/models/shared_form/shared_form_model.dart';
 
 class FirestoreFormService {
   static final FirestoreFormService _instance =
@@ -42,7 +43,7 @@ class FirestoreFormService {
   }
 
   /// Get shared form data by ID
-  Future<Map<String, dynamic>?> getSharedForm(String formId) async {
+  Future<SharedFormModel?> getSharedForm(String formId) async {
     try {
       debugPrint('=== Getting shared form from Firestore ===');
       debugPrint('Form ID: $formId');
@@ -64,13 +65,13 @@ class FirestoreFormService {
       }
 
       debugPrint('Form data retrieved successfully');
-      return {
+      return SharedFormModel.fromFirestoreResult({
         'formData': data['formData'],
         'formName': data['formName'],
         'recipientEmail': data['recipientEmail'],
         'recipientName': data['recipientName'],
         'createdAt': data['createdAt'],
-      };
+      });
     } catch (e, stackTrace) {
       debugPrint('Error getting shared form: $e');
       debugPrint('Stack trace: $stackTrace');

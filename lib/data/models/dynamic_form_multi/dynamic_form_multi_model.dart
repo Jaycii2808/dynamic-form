@@ -8,13 +8,12 @@ import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 class DynamicMultiPageFormModel extends Equatable {
   final String formId;
   final String name;
-  final String navigationType;
+  // final String navigationType;
   final List<FormForMultiPageModel> pages;
 
   const DynamicMultiPageFormModel({
     required this.formId,
     required this.name,
-    required this.navigationType,
     required this.pages,
   });
 
@@ -34,20 +33,18 @@ class DynamicMultiPageFormModel extends Equatable {
     return DynamicMultiPageFormModel(
       formId: json['formId'] ?? '',
       name: json['name'] ?? '',
-      navigationType: json['navigationType'] ?? 'sequential',
       pages: pageList,
     );
     //empty factory
   }
 
   @override
-  List<Object?> get props => [formId, name, navigationType, pages];
+  List<Object?> get props => [formId, name, pages];
 
   Map<String, dynamic> toJson() {
     return {
       'formId': formId,
       'name': name,
-      'navigationType': navigationType,
       'pages': pages.map((page) => page.toJson()).toList(),
     };
   }
@@ -61,7 +58,6 @@ class DynamicMultiPageFormModel extends Equatable {
     return DynamicMultiPageFormModel(
       formId: formId ?? this.formId,
       name: name ?? this.name,
-      navigationType: navigationType ?? this.navigationType,
       pages: pages ?? this.pages,
     );
   }
