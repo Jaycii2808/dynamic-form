@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dynamic_form_bi/data/models/shared_form/shared_form_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FirestoreFormService {
   static final FirestoreFormService _instance =
@@ -81,7 +82,7 @@ class FirestoreFormService {
 
   /// Generate shareable link for form
   String generateFormShareLink(String formId) {
-    const baseUrl = 'https://dynamicformbiwo.web.app';
+    final baseUrl = dotenv.env['BACKEND_URL'];
     final shareUrl = '$baseUrl/forms/$formId';
     debugPrint('Generated share link: $shareUrl');
     return shareUrl;

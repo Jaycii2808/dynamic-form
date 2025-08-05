@@ -1,8 +1,7 @@
-import 'package:dynamic_form_bi/core/router/app_router.dart';
+import 'package:dynamic_form_bi/presentation/app_router.dart';
 import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/core/services/email_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
@@ -25,7 +24,6 @@ void main() async {
   await RemoteConfigService().initialize();
   await dotenv.load(fileName: "lib/dotenv");
   await FormMemoryRepository.loadTemplatesFromStorage();
-  await EmailService().initialize(); // Initialize email service
   runApp(const MyApp());
 }
 
@@ -47,13 +45,13 @@ class MyApp extends StatelessWidget {
 
   ThemeData _buildThemeData() {
     return ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.black,
-      );
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: Colors.black,
+    );
   }
 
   List<SingleChildWidget> _buildBlocProviders() {

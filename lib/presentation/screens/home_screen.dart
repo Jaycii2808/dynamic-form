@@ -1,5 +1,4 @@
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/existing_forms_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/existing_forms_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'package:flutter/material.dart';
@@ -13,36 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<String> configKeys = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadConfigKeys();
-  }
 
-  Future<void> _loadConfigKeys() async {
-    final keys = RemoteConfigService().getAll().keys.toList();
-    setState(
-      () => configKeys = keys,
-    );
-  }
-
-  Future<void> _reloadConfig() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-    await RemoteConfigService().initialize();
-    await Future.delayed(const Duration(milliseconds: 50));
-    if (mounted) {
-      Navigator.of(context).pop();
-      await _loadConfigKeys();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildHeroSection(),
             _buildFeaturesSection(),
             _buildHowToUseSection(),
-            const SizedBox(height: 100), // Space for FAB
           ],
         ),
       ),
@@ -92,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
       actions: [
         _buildExistingFormsButton(),
         _buildSavedFormsButton(),
-        _buildReloadButton(onReload: _reloadConfig),
       ],
     );
   }
@@ -470,13 +439,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildReloadButton({required Future<void> Function() onReload}) {
-    return Builder(
-      builder: (context) => IconButton(
-        onPressed: onReload,
-        icon: const Icon(Icons.restart_alt),
-        tooltip: 'Reload Online',
-      ),
-    );
-  }
+
 }

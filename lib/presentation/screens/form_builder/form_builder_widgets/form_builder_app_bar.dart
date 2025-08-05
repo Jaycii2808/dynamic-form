@@ -292,7 +292,7 @@ Widget _buildActionButtons(
           margin: const EdgeInsets.only(right: 6, top: 8, bottom: 8),
           child: IconButton(
             onPressed: () => formBuilderBloc.add(const ClearCanvasEvent()),
-            icon: const Icon(Icons.clear, size: 18),
+            icon: const Icon(Icons.cleaning_services, size: 18),
             style: IconButton.styleFrom(
               backgroundColor: Colors.red.shade100,
               foregroundColor: Colors.red,
