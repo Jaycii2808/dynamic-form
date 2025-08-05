@@ -9,7 +9,6 @@ import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_state
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class SharedFormScreen extends StatelessWidget {
   static const String routePath = '/forms/:formId';
@@ -55,18 +54,32 @@ class SharedFormScreen extends StatelessWidget {
       child: BlocBuilder<SharedFormBloc, SharedFormState>(
         builder: (context, state) {
           return AppBar(
-            title: Text(
-              state is SharedFormLoading
-                  ? 'Loading...'
-                  : 'Shared Form: ${state.formName}',
+            title: state is SharedFormLoading
+                ? const Text('Loading...')
+                : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  state.formName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Dyna Forms',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
             ),
             backgroundColor: const Color(0xFF000000),
             foregroundColor: Colors.white,
-            leading: GestureDetector(
-              onTap: () => context.go('/'),
-              child: const Icon(Icons.home),
-            ),
           );
+
         },
       ),
     );
@@ -313,7 +326,7 @@ class SharedFormScreen extends StatelessWidget {
   }
 
   void _showSubmittedValuesDialog(BuildContext context, SharedFormState state) {
-    final values = state.componentValues.values;
+    //final values = state.componentValues.values;
     final emailDetails = state.emailDetails!;
 
     showDialog(
@@ -332,17 +345,6 @@ class SharedFormScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildEmailStatusSection(emailDetails, context),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: values.entries.map((entry) {
-                      return _buildValueItem(entry.key, entry.value);
-                    }).toList(),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -551,48 +553,6 @@ class SharedFormScreen extends StatelessWidget {
           Text(
             '• Contact the form owner to add email',
             style: TextStyle(color: Colors.white70, fontSize: 9),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildValueItem(String key, dynamic value) {
-    String displayValue = value == null
-        ? 'Not filled'
-        : value is String
-        ? value.isEmpty
-              ? 'Not filled'
-              : value
-        : value is List
-        ? value.isEmpty
-              ? 'Not filled'
-              : value.join(', ')
-        : value.toString();
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            key,
-            style: const TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            displayValue,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),

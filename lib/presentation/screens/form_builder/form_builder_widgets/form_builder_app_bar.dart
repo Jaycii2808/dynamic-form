@@ -7,7 +7,10 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_p
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-PreferredSizeWidget formBuilderAppBar(BuildContext context, FormBuilderBloc formBuilderBloc) {
+PreferredSizeWidget formBuilderAppBar(
+  BuildContext context,
+  FormBuilderBloc formBuilderBloc,
+) {
   return AppBar(
     title: BlocBuilder<FormBuilderBloc, FormBuilderState>(
       builder: (context, state) => _buildTitle(context, state, formBuilderBloc),
@@ -16,29 +19,44 @@ PreferredSizeWidget formBuilderAppBar(BuildContext context, FormBuilderBloc form
     foregroundColor: Colors.white,
     elevation: 1,
     toolbarHeight: 80,
-    leading: Container(
-      margin: const EdgeInsets.all(8),
-      child: IconButton(
-        icon: const Icon(Icons.arrow_back, size: 20),
-        onPressed: () => Navigator.of(context).pop(),
-        style: IconButton.styleFrom(
-          backgroundColor: Colors.grey[800],
-          padding: const EdgeInsets.all(8),
-          minimumSize: const Size(32, 32),
+    leading: Padding(
+      padding: const EdgeInsets.all(8),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.arrow_back,
+            size: 20,
+            color: Colors.white,
+          ),
         ),
       ),
     ),
+
     actions: [
       BlocBuilder<FormBuilderBloc, FormBuilderState>(
-        builder: (context, state) => _buildActionButtons(context, state, formBuilderBloc),
+        builder: (context, state) =>
+            _buildActionButtons(context, state, formBuilderBloc),
       ),
     ],
   );
 }
 
-Widget _buildTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildTitle(
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   final isMultiPage = state.pages.length > 1;
-  final currentPageIndex = state.pages.indexWhere((page) => page.pageId == state.currentPageId);
+  final currentPageIndex = state.pages.indexWhere(
+    (page) => page.pageId == state.currentPageId,
+  );
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +84,12 @@ Widget _buildTitle(BuildContext context, FormBuilderState state, FormBuilderBloc
               child: _buildEditablePageTitle(context, state, formBuilderBloc),
             ),
             const SizedBox(width: 12),
-            _buildPageNavigation(context, state, formBuilderBloc, currentPageIndex),
+            _buildPageNavigation(
+              context,
+              state,
+              formBuilderBloc,
+              currentPageIndex,
+            ),
           ],
         ),
       ],
@@ -74,7 +97,11 @@ Widget _buildTitle(BuildContext context, FormBuilderState state, FormBuilderBloc
   );
 }
 
-Widget _buildEditableFormTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildEditableFormTitle(
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return GestureDetector(
     onTap: () => _showEditFormTitleDialog(context, state, formBuilderBloc),
     child: Container(
@@ -107,7 +134,11 @@ Widget _buildEditableFormTitle(BuildContext context, FormBuilderState state, For
   );
 }
 
-Widget _buildEditablePageTitle(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildEditablePageTitle(
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return GestureDetector(
     onTap: () => _showEditPageTitleDialog(context, state, formBuilderBloc),
     child: Container(
@@ -159,7 +190,11 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
 }
 
 Widget _buildPageNavigation(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc, int currentPageIndex) {
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+  int currentPageIndex,
+) {
   final hasPrevious = currentPageIndex > 0;
   final hasNext = currentPageIndex < state.pages.length - 1;
 
@@ -203,7 +238,11 @@ Widget _buildPageNavigation(
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.arrow_back_ios, color: Colors.blue, size: 12),
+            child: const Icon(
+              Icons.arrow_back_ios,
+              color: Colors.blue,
+              size: 12,
+            ),
           ),
         ),
 
@@ -223,16 +262,26 @@ Widget _buildPageNavigation(
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
             ),
-            child: const Icon(Icons.arrow_forward_ios, color: Colors.blue, size: 12),
+            child: const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.blue,
+              size: 12,
+            ),
           ),
         ),
     ],
   );
 }
 
-Widget _buildActionButtons(BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+Widget _buildActionButtons(
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   // Check if current page has components
-  final currentPage = state.pages.firstWhere((page) => page.pageId == state.currentPageId);
+  final currentPage = state.pages.firstWhere(
+    (page) => page.pageId == state.currentPageId,
+  );
   final hasComponents = currentPage.components.isNotEmpty;
 
   return Row(
@@ -257,22 +306,33 @@ Widget _buildActionButtons(BuildContext context, FormBuilderState state, FormBui
         margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
         child: IconButton(
           onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
-          icon: const Icon(Icons.preview, size: 18),
+          icon: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.preview, size: 16),
+              SizedBox(width: 4),
+              Icon(Icons.share, size: 16),
+            ],
+          ),
           style: IconButton.styleFrom(
             backgroundColor: Colors.green.shade100,
             foregroundColor: Colors.green,
-            padding: const EdgeInsets.all(8),
-            minimumSize: const Size(32, 32),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            minimumSize: const Size(40, 36),
           ),
-          tooltip: 'Preview Form',
+          tooltip: 'Preview & Share',
         ),
       ),
+
     ],
   );
 }
 
 void _showEditFormTitleDialog(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   final controller = TextEditingController(text: state.formTitle);
   showDialog(
     context: context,
@@ -309,7 +369,10 @@ void _showEditFormTitleDialog(
 }
 
 void _showEditPageTitleDialog(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   final controller = TextEditingController(text: state.currentPageTitle);
   showDialog(
     context: context,
@@ -334,7 +397,10 @@ void _showEditPageTitleDialog(
               final newTitle = controller.text.trim();
               if (newTitle.isNotEmpty) {
                 formBuilderBloc.add(
-                  UpdatePageTitleEvent(pageId: state.currentPageId, title: newTitle),
+                  UpdatePageTitleEvent(
+                    pageId: state.currentPageId,
+                    title: newTitle,
+                  ),
                 );
               }
               Navigator.of(context).pop();
@@ -348,7 +414,10 @@ void _showEditPageTitleDialog(
 }
 
 void _showPageSelectorDialog(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -390,19 +459,24 @@ void _showPageSelectorDialog(
                 title: Text(
                   page.title,
                   style: TextStyle(
-                    fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isCurrentPage
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color: isCurrentPage ? Colors.blue : Colors.black,
                   ),
                 ),
                 subtitle: componentCount > 0
                     ? Text(
-                  '$componentCount component${componentCount > 1 ? 's' : ''}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                )
+                        '$componentCount component${componentCount > 1 ? 's' : ''}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      )
                     : const Text(
-                  'Empty page',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+                        'Empty page',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                 trailing: isCurrentPage
                     ? const Icon(Icons.check_circle, color: Colors.blue)
                     : null,
@@ -426,9 +500,16 @@ void _showPageSelectorDialog(
 }
 
 void _handleSubmitForm(
-    BuildContext context, FormBuilderState state, FormBuilderBloc formBuilderBloc) {
-  if (state.pages.isEmpty || state.pages.every((page) => page.components.isEmpty)) {
-    DialogUtils.showErrorDialog(context, 'Please add at least one component to the form');
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
+  if (state.pages.isEmpty ||
+      state.pages.every((page) => page.components.isEmpty)) {
+    DialogUtils.showErrorDialog(
+      context,
+      'Please add at least one component to the form',
+    );
     return;
   }
   final formBuilderModel = FormBuilderModel(
@@ -441,7 +522,8 @@ void _handleSubmitForm(
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => FormBuilderPreviewScreen(formBuilderModel: formBuilderModel),
+      builder: (context) =>
+          FormBuilderPreviewScreen(formBuilderModel: formBuilderModel),
     ),
   );
 }

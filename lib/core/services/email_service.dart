@@ -138,43 +138,6 @@ class EmailService {
     };
   }
 
-  Future<Map<String, dynamic>> testBackendEmail() async {
-    try {
-      final response = await _dio.post('/api/test-email');
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        final mailjetResponse = response.data['data'];
-        return {
-          'success': true,
-          'status': mailjetResponse['Messages'][0]['Status'],
-          'messageId': _safeStringConversion(
-            mailjetResponse['Messages'][0]['To'][0]['MessageID'],
-          ),
-          'response': mailjetResponse,
-        };
-      }
-      return {
-        'success': false,
-        'error':
-            response.data['error'] ?? 'Backend error ${response.statusCode}',
-        'statusCode': response.statusCode,
-        'response': response.data,
-      };
-    } on DioException catch (e) {
-      final errorInfo = _handleDioError(e);
-      return {
-        'success': false,
-        'error': errorInfo['message'],
-        'type': errorInfo['type'],
-      };
-    } catch (e, stackTrace) {
-      return {
-        'success': false,
-        'error': 'Unexpected test error: $e',
-        'stackTrace': stackTrace.toString(),
-        'type': 'unexpected',
-      };
-    }
-  }
 
   Map<String, dynamic> _handleDioError(DioException e) {
     String message = e.message ?? 'Unknown error';
@@ -243,7 +206,7 @@ class EmailService {
       final buffer = StringBuffer();
       buffer.writeln('📝 Form Submission: ${submission.formName}');
       buffer.writeln('🕒 Submitted at: ${submission.submissionTime.toLocal()}');
-     // buffer.writeln('📋 Form ID: ${submission.formId}');
+      // buffer.writeln('📋 Form ID: ${submission.formId}');
       buffer.writeln('─' * 50);
       for (int i = 0; i < submission.fields.length; i++) {
         final field = submission.fields[i];

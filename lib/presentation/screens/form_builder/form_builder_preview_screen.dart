@@ -1,12 +1,11 @@
 import 'dart:convert';
+
+import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
-import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dialogs/email_input_dialog.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -103,7 +102,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Test Live Form and Share'),
+            label: const Text('Share Form'),
           ),
         ),
       ],
@@ -124,27 +123,16 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         // User cancelled the dialog
         return;
       }
-      if(mounted){
+      if (mounted) {
         showDialog(
           context: context,
           barrierDismissible: false,
           builder: (context) => const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(
-                  'Saving form and generating link...',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
+            child:    CircularProgressIndicator(),
           ),
         );
       }
       // Show loading dialog
-
 
       // Convert current form to JSON
       final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
@@ -195,119 +183,130 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2D2D2D),
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 8),
-            Text(
-              'Form Shared Successfully!',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Your form has been saved and is now shareable:',
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue, width: 1),
+      builder: (context) => Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D2D2D),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Form Shared Successfully!',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      shareableLink,
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontSize: 12,
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Your form is now shareable:',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha:0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.link, size: 16, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        shareableLink,
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _copyLinkToClipboard(shareableLink),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _copyLinkToClipboard(shareableLink),
                       child: const Icon(
                         Icons.copy,
                         color: Colors.blue,
                         size: 16,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Form ID: $formId',
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+
+            Row(
+              spacing: 15,
+              //space betwween
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => _copyLinkToClipboard(shareableLink),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Copy Link',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _openBrowserLink(shareableLink),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Open in Browser',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Form ID: $formId',
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            const SizedBox(height:12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-          GestureDetector(
-            onTap: () => _copyLinkToClipboard(shareableLink),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'Copy Link',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _openBrowserLink(shareableLink),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'Open in Browser',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-              _testFormLocally(jsonOutput);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'Test Locally',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -344,42 +343,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       }
     }
   }
-
-  void _testFormLocally(Map<String, dynamic> jsonOutput) {
-    // Create a temporary config key with current timestamp
-    final tempConfigKey = 'temp_form_${DateTime.now().millisecondsSinceEpoch}';
-    final jsonString = const JsonEncoder.withIndent('  ').convert(jsonOutput);
-
-    // Set temporary defaults for this session
-    FirebaseRemoteConfig.instance
-        .setDefaults({
-          tempConfigKey: jsonString,
-        })
-        .then((_) {
-          // Navigate to actual dynamic form multiscreen
-          if (mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    DynamicFormMultiScreen(configKey: tempConfigKey),
-              ),
-            );
-          }
-        })
-        .catchError((e) {
-          debugPrint('Error setting temp config: $e');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error opening live form: $e'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        });
-  }
-
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -524,7 +487,18 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export to Firebase Remote Config'),
+        title: const Row(
+          children: [
+            Icon(Icons.info, color: Colors.blue),
+            SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Export to Firebase Remote Config',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
