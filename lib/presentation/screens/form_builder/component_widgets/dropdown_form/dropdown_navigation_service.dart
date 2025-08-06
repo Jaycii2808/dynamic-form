@@ -45,12 +45,8 @@ class DropdownNavigationService {
     );
   }
 
-  /// Get target page based on dropdown selections when next button is pressed
-  String? getTargetPageOnNext(String currentPageId, List<String> pageIds) {
-    debugPrint(
-      '🎯 [DropdownNavigationService] Checking navigation for page $currentPageId',
-    );
-
+  /// Get next page ID based on dropdown selections
+  String? getNextPageId(String currentPageId, List<String> pageIds) {
     final pageSelections = getPageDropdownSelections(currentPageId);
     if (pageSelections.isEmpty) {
       debugPrint(
@@ -61,7 +57,7 @@ class DropdownNavigationService {
 
     // Check for goto actions first
     for (final selection in pageSelections.values) {
-      final action = DropdownActionOptionsEnum.fromString(selection.action);
+      final action = selection.action;
       if (action == DropdownActionOptionsEnum.goto &&
           selection.targetSection != null) {
         debugPrint(
@@ -74,7 +70,7 @@ class DropdownNavigationService {
     // Check for continue/next actions
     bool hasNextAction = pageSelections.values.any(
       (selection) {
-        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        final action = selection.action;
         return action == DropdownActionOptionsEnum.next;
       },
     );
@@ -89,7 +85,7 @@ class DropdownNavigationService {
     // Check for submit actions
     bool hasSubmitAction = pageSelections.values.any(
       (selection) {
-        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        final action = selection.action;
         return action == DropdownActionOptionsEnum.submit;
       },
     );
@@ -122,7 +118,7 @@ class DropdownNavigationService {
     final pageSelections = getPageDropdownSelections(currentPageId);
     return pageSelections.values.any(
       (selection) {
-        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        final action = selection.action;
         return action == DropdownActionOptionsEnum.submit;
       },
     );
@@ -138,11 +134,11 @@ class DropdownNavigationService {
       final selection = entry.value;
 
       if (selection.action != null) {
-        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        final action = selection.action;
         actions.add(
           DropdownNavigationAction(
             componentId: componentId,
-            action: action.value,
+            action: action.toString(),
             targetSection: selection.targetSection,
             optionLabel: selection.label,
           ),
@@ -159,11 +155,9 @@ class DropdownNavigationService {
     for (final pageEntry in _pageDropdownSelections.entries) {
       debugPrint('  Page: ${pageEntry.key}');
       for (final componentEntry in pageEntry.value.entries) {
-        final action = DropdownActionOptionsEnum.fromString(
-          componentEntry.value.action,
-        );
+        final action = componentEntry.value.action;
         debugPrint(
-          '    Component: ${componentEntry.key} -> ${componentEntry.value.label} (${action.value})',
+          '    Component: ${componentEntry.key} -> ${componentEntry.value.label} ($action)',
         );
       }
     }

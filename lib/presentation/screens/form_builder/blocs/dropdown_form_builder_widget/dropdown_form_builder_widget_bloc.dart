@@ -1,4 +1,3 @@
-
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
@@ -38,7 +37,7 @@ class DropdownFormBuilderWidgetBloc
 
     try {
       final component = event.component;
-      final question = component.config?.label ?? 'Dropdown Question';
+      final question = component.config?.label ?? '';
       final placeholder = component.config?.placeholder ?? 'Select an option';
       final options = List<Option>.from(component.config?.options ?? []);
       final isRequired = component.config?.isRequired ?? false;
@@ -56,7 +55,7 @@ class DropdownFormBuilderWidgetBloc
 
       // Check if navigation feature is enabled by checking if any option has action
       final navigationFeatureEnabled = finalOptions.any(
-        (option) => option.action != null && option.action!.isNotEmpty,
+        (option) => option.action != null,
       );
 
       emit(
@@ -171,7 +170,7 @@ class DropdownFormBuilderWidgetBloc
           order: newOrder,
           // Add default navigation action if feature is enabled
           action: currentState.navigationFeatureEnabled
-              ? DropdownActionOptionsEnum.next.value
+              ? DropdownActionOptionsEnum.next
               : null,
           targetSection: currentState.navigationFeatureEnabled ? null : null,
         );
@@ -302,7 +301,7 @@ class DropdownFormBuilderWidgetBloc
     Emitter<DropdownFormBuilderWidgetState> emit,
   ) async {
     debugPrint(
-      '🔄 [DropdownFormBuilderBloc] Updating option navigation: ${event.optionIndex} -> ${event.action} -> ${event.targetSection}',
+      '🔄 [DropdownFormBuilderBloc] Updating option navigation: ${event.optionIndex} -> ${event.action}',
     );
 
     try {
@@ -310,27 +309,19 @@ class DropdownFormBuilderWidgetBloc
         final currentState = state as DropdownFormBuilderWidgetSuccess;
         final updatedOptions = List<Option>.from(currentState.options);
 
-        // Enable navigation feature if not already enabled
-        bool navigationFeatureEnabled = currentState.navigationFeatureEnabled;
-        if (!navigationFeatureEnabled) {
-          navigationFeatureEnabled = true;
+        if (event.optionIndex >= 0 &&
+            event.optionIndex < updatedOptions.length) {
+          final updatedOption = updatedOptions[event.optionIndex].copyWith(
+            action: event.action,
+            targetSection: event.targetSection,
+          );
+          updatedOptions[event.optionIndex] = updatedOption;
+
+          emit(currentState.copyWith(options: updatedOptions));
+          debugPrint(
+            '✅ [DropdownFormBuilderBloc] Updated option navigation: ${updatedOption.label}',
+          );
         }
-
-        updatedOptions[event.optionIndex] = updatedOptions[event.optionIndex]
-            .copyWith(
-              action: event.action,
-              targetSection: event.targetSection,
-            );
-
-        emit(
-          currentState.copyWith(
-            options: updatedOptions,
-            navigationFeatureEnabled: navigationFeatureEnabled,
-          ),
-        );
-        debugPrint(
-          '✅ [DropdownFormBuilderBloc] Updated option navigation successfully',
-        );
       }
     } catch (e) {
       debugPrint(
@@ -355,12 +346,11 @@ class DropdownFormBuilderWidgetBloc
         final currentState = state as DropdownFormBuilderWidgetSuccess;
         final updatedOptions = List<Option>.from(currentState.options);
 
-        // Set default navigation action for all existing options
+        // Enable navigation feature for all options if not already enabled
         for (int i = 0; i < updatedOptions.length; i++) {
-          if (updatedOptions[i].action == null ||
-              updatedOptions[i].action!.isEmpty) {
+          if (updatedOptions[i].action == null) {
             updatedOptions[i] = updatedOptions[i].copyWith(
-              action: DropdownActionOptionsEnum.next.value,
+              action: DropdownActionOptionsEnum.next,
               targetSection: null,
             );
           }

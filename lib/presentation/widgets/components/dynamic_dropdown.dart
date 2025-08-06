@@ -413,23 +413,15 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
       '🔄 [DynamicDropdown] Handling option action: ${selectedOption.label}',
     );
 
-    final action = DropdownActionOptionsEnum.fromString(selectedOption.action);
+    final action = selectedOption.action ?? DropdownActionOptionsEnum.next;
     final targetSection = selectedOption.targetSection;
-
-    // Store the action in component config for later use
-    // //final updatedConfig = widget.component.config?.copyWith(
-    //   action: action.value,
-    //   title: targetSection, // Use title field to store targetSection
-    // );
-
-    //final updatedComponent = widget.component.copyWith(config: updatedConfig);
 
     // Update the component using the existing event
     if (context.mounted) {
       context.read<DynamicDropdownBloc>().add(
         DropdownOptionSelectedEvent(
           value: selectedOption.value,
-          action: action.value,
+          action: action,
           targetSection: targetSection,
         ),
       );

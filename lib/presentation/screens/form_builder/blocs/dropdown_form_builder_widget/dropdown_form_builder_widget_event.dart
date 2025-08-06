@@ -1,4 +1,5 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DropdownFormBuilderWidgetEvent extends Equatable {
@@ -90,7 +91,7 @@ class ReorderOptionsEvent extends DropdownFormBuilderWidgetEvent {
 
 class UpdateOptionNavigationEvent extends DropdownFormBuilderWidgetEvent {
   final int optionIndex;
-  final String action;
+  final DropdownActionOptionsEnum action;
   final String? targetSection;
 
   const UpdateOptionNavigationEvent({

@@ -1,3 +1,4 @@
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class DynamicDropdownEvent extends Equatable {
@@ -36,7 +37,7 @@ class DropdownValidationEvent extends DynamicDropdownEvent {
 
 class DropdownOptionSelectedEvent extends DynamicDropdownEvent {
   final String value;
-  final String? action;
+  final DropdownActionOptionsEnum? action;
   final String? targetSection;
 
   const DropdownOptionSelectedEvent({

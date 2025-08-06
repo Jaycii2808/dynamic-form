@@ -268,13 +268,12 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
             orElse: () => options.first,
           );
 
-          if (selectedOption.action != null &&
-              selectedOption.action!.isNotEmpty) {
+          if (selectedOption.action != null) {
             debugPrint(
               '🎯 [SharedFormBloc] Found dropdown navigation for component ${component.id}: ${selectedOption.action} -> ${selectedOption.targetSection}',
             );
             return DropdownNavigationResult(
-              action: selectedOption.action!,
+              action: selectedOption.action.toString(),
               targetSection: selectedOption.targetSection,
             );
           }

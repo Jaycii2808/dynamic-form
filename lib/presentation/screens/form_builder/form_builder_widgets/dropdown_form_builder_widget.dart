@@ -395,6 +395,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
             ],
@@ -575,7 +576,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       _buildNavigationOption(
         context,
         'Continue to next section',
-        DropdownActionOptionsEnum.next.value,
+        DropdownActionOptionsEnum.next,
         null,
         optionIndex,
       ),
@@ -589,7 +590,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
           _buildNavigationOption(
             context,
             'Go to $pageName',
-            DropdownActionOptionsEnum.goto.value,
+            DropdownActionOptionsEnum.goto,
             'page_${index + 1}',
             optionIndex,
           ),
@@ -602,14 +603,14 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         _buildNavigationOption(
           context,
           'Go to page 1',
-          DropdownActionOptionsEnum.goto.value,
+          DropdownActionOptionsEnum.goto,
           'page_1',
           optionIndex,
         ),
         _buildNavigationOption(
           context,
           'Go to page 2',
-          DropdownActionOptionsEnum.goto.value,
+          DropdownActionOptionsEnum.goto,
           'page_2',
           optionIndex,
         ),
@@ -620,7 +621,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       _buildNavigationOption(
         context,
         'Submit page',
-        DropdownActionOptionsEnum.submit.value,
+        DropdownActionOptionsEnum.submit,
         null,
         optionIndex,
       ),
@@ -661,7 +662,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   Widget _buildNavigationOption(
     BuildContext context,
     String title,
-    String action,
+    DropdownActionOptionsEnum action,
     String? targetSection,
     int optionIndex,
   ) {
@@ -704,8 +705,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     final action = option.action;
     final targetSection = option.targetSection;
 
-    if (action == DropdownActionOptionsEnum.goto.value &&
-        targetSection != null) {
+    if (action == DropdownActionOptionsEnum.goto && targetSection != null) {
       // Try to show actual page name if available
       if (targetSection.startsWith('page_') && availablePages != null) {
         try {
@@ -718,9 +718,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         }
       }
       return 'Go to $targetSection';
-    } else if (action == DropdownActionOptionsEnum.next.value) {
+    } else if (action == DropdownActionOptionsEnum.next) {
       return 'Continue';
-    } else if (action == DropdownActionOptionsEnum.submit.value) {
+    } else if (action == DropdownActionOptionsEnum.submit) {
       return 'Submit';
     }
     return 'Continue'; // Default
@@ -728,6 +728,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // More options dialog
   void _showMoreOptionsDialog(BuildContext context) {
+    // Capture the bloc reference before showing dialog
+    final bloc = context.read<DropdownFormBuilderWidgetBloc>();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -745,7 +748,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                context.read<DropdownFormBuilderWidgetBloc>().add(
+                bloc.add(
                   const EnableNavigationFeatureEvent(),
                 );
                 _updateComponent();

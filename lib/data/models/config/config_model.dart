@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 
 class Condition extends Equatable {
   final String componentId;
@@ -49,7 +50,7 @@ class Condition extends Equatable {
 class Option extends Equatable {
   final String value;
   final String label;
-  final String? action; // continue, goto, submit
+  final DropdownActionOptionsEnum? action; // Use enum instead of String
   final String? targetSection; // section/page to go to
   final bool? isRequired;
   final int? order; // for shuffling options
@@ -67,7 +68,9 @@ class Option extends Equatable {
     return Option(
       value: json['value'] as String? ?? '',
       label: json['label'] as String? ?? '',
-      action: json['action'] as String?,
+      action: json['action'] != null
+          ? DropdownActionOptionsEnum.fromString(json['action'] as String)
+          : null,
       targetSection:
           json['target_section'] as String? ?? json['targetSection'] as String?,
       isRequired: json['is_required'] as bool? ?? json['isRequired'] as bool?,
@@ -79,7 +82,7 @@ class Option extends Equatable {
     return {
       'value': value,
       'label': label,
-      if (action != null) 'action': action,
+      if (action != null) 'action': action.toString(),
       if (targetSection != null) 'target_section': targetSection,
       if (isRequired != null) 'is_required': isRequired,
       if (order != null) 'order': order,
@@ -90,7 +93,7 @@ class Option extends Equatable {
   Option copyWith({
     String? value,
     String? label,
-    String? action,
+    DropdownActionOptionsEnum? action,
     String? targetSection,
     bool? isRequired,
     int? order,

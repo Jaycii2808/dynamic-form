@@ -1,10 +1,7 @@
 enum DropdownActionOptionsEnum {
-  next('next'),
-  goto('goto'),
-  submit('submit');
-
-  const DropdownActionOptionsEnum(this.value);
-  final String value;
+  next,
+  goto,
+  submit;
 
   static DropdownActionOptionsEnum fromString(String? value) {
     switch (value?.toLowerCase()) {
@@ -20,5 +17,14 @@ enum DropdownActionOptionsEnum {
   }
 
   @override
-  String toString() => value;
+  String toString() {
+    switch (this) {
+      case DropdownActionOptionsEnum.next:
+        return 'next';
+      case DropdownActionOptionsEnum.goto:
+        return 'goto';
+      case DropdownActionOptionsEnum.submit:
+        return 'submit';
+    }
+  }
 }

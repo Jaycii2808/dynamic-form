@@ -428,7 +428,7 @@ class SharedFormScreen extends StatelessWidget {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Submit Form',
+                            'Submit',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,

@@ -15,7 +15,7 @@ class DropdownNavigationUtils {
     );
 
     // Get target page based on dropdown selections
-    final targetPage = _navigationService.getTargetPageOnNext(
+    final targetPage = _navigationService.getNextPageId(
       currentPageId,
       pageIds,
     );
