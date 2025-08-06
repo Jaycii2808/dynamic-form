@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 
 abstract class DynamicDropdownEvent extends Equatable {
   const DynamicDropdownEvent();

@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
-import 'package:dynamic_form_bi/core/utils/form_style_utils.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicDropdown extends StatefulWidget {
   final DynamicFormModel component;
@@ -112,15 +111,31 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         children: [
           // Label
           if (component.config?.label != null) ...[
-            Text(
-              component.config!.label!,
-              style: TextStyle(
-                color: widget.isSharedForm
-                    ? Colors.white
-                    : (styleModel.labelColor ?? Colors.white),
-                fontSize: styleModel.fontSize ?? 16,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              children: [
+                Text(
+                  component.config!.label!,
+                  style: TextStyle(
+                    color: widget.isSharedForm
+                        ? Colors.white
+                        : (styleModel.labelColor ?? Colors.white),
+                    fontSize: styleModel.fontSize ?? 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                // Add red asterisk for required fields
+                if (component.config?.isRequired == true) ...[
+                  const SizedBox(width: 4),
+                  const Text(
+                    '*',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 8),
           ],

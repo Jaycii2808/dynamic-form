@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
-import 'package:dynamic_form_bi/data/models/style/style_model.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:flutter/material.dart';
 
 class DropdownFormBuilderWidget extends StatefulWidget {
   final DynamicFormModel component;
@@ -43,9 +42,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     // Add default options if empty
     if (_options.isEmpty) {
       _options = [
-        Option(value: 'option1', label: 'Option 1', order: 1),
-        Option(value: 'option2', label: 'Option 2', order: 2),
-        Option(value: 'option3', label: 'Option 3', order: 3),
+        const Option(value: 'option1', label: 'Option 1', order: 1),
+        const Option(value: 'option2', label: 'Option 2', order: 2),
+        const Option(value: 'option3', label: 'Option 3', order: 3),
       ];
     }
   }
@@ -125,11 +124,11 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1F2937),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.image, color: Colors.blue, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.image, color: Colors.blue, size: 24),
+              SizedBox(width: 8),
+              Text(
                 'Image Feature Coming Soon',
                 style: TextStyle(
                   color: Colors.white,
@@ -297,15 +296,15 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.arrow_drop_down,
                         color: Colors.grey,
                         size: 20,
                       ),
-                      const Text(
+                      Text(
                         'Dropdown',
                         style: TextStyle(
                           color: Colors.grey,
@@ -313,7 +312,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios,
                         color: Colors.grey,
                         size: 12,
@@ -512,10 +511,10 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                 const Spacer(),
 
                 // More options
-                Container(
+                const SizedBox(
                   width: 32,
                   height: 32,
-                  child: const Icon(
+                  child: Icon(
                     Icons.more_vert,
                     color: Colors.grey,
                     size: 20,

@@ -63,3 +63,23 @@ class InitializeEmailServiceEvent extends SharedFormEvent {
   @override
   List<Object?> get props => [];
 }
+
+class ValidationErrorEvent extends SharedFormEvent {
+  final String errorMessage;
+  final List<String> missingFields;
+
+  const ValidationErrorEvent({
+    required this.errorMessage,
+    required this.missingFields,
+  });
+
+  @override
+  List<Object?> get props => [errorMessage, missingFields];
+}
+
+class ReturnToPreviousStateEvent extends SharedFormEvent {
+  const ReturnToPreviousStateEvent();
+
+  @override
+  List<Object?> get props => [];
+}

@@ -243,3 +243,67 @@ class SharedFormError extends SharedFormState {
     );
   }
 }
+
+class SharedFormValidationError extends SharedFormState {
+  final String errorMessage;
+  final List<String> missingFields;
+
+  const SharedFormValidationError({
+    required this.errorMessage,
+    required this.missingFields,
+    super.formId,
+    super.formData,
+    super.formName,
+    super.recipientEmail,
+    super.recipientName,
+    super.componentValues,
+    super.currentPageIndex,
+    super.emailServiceInitialized,
+    super.emailDetails,
+  });
+
+  @override
+  List<Object?> get props => [
+    errorMessage,
+    missingFields,
+    formId,
+    formData,
+    formName,
+    recipientEmail,
+    recipientName,
+    componentValues,
+    currentPageIndex,
+    emailServiceInitialized,
+    emailDetails,
+  ];
+
+  @override
+  SharedFormValidationError copyWith({
+    String? formId,
+    FormDataModel? formData,
+    String? formName,
+    String? recipientEmail,
+    String? recipientName,
+    ComponentValuesModel? componentValues,
+    int? currentPageIndex,
+    bool? emailServiceInitialized,
+    EmailDetailsModel? emailDetails,
+    String? errorMessage,
+    List<String>? missingFields,
+  }) {
+    return SharedFormValidationError(
+      errorMessage: errorMessage ?? this.errorMessage,
+      missingFields: missingFields ?? this.missingFields,
+      formId: formId ?? this.formId,
+      formData: formData ?? this.formData,
+      formName: formName ?? this.formName,
+      recipientEmail: recipientEmail ?? this.recipientEmail,
+      recipientName: recipientName ?? this.recipientName,
+      componentValues: componentValues ?? this.componentValues,
+      currentPageIndex: currentPageIndex ?? this.currentPageIndex,
+      emailServiceInitialized:
+          emailServiceInitialized ?? this.emailServiceInitialized,
+      emailDetails: emailDetails ?? this.emailDetails,
+    );
+  }
+}

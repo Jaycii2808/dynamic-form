@@ -9,6 +9,19 @@ import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_state
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Validation result for required fields
+class ValidationResult {
+  final bool isValid;
+  final String? errorMessage;
+  final List<String> missingFields;
+
+  const ValidationResult({
+    required this.isValid,
+    this.errorMessage,
+    this.missingFields = const [],
+  });
+}
+
 class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
   final FirestoreFormService _firestoreService;
   final EmailService _emailService;
@@ -26,6 +39,8 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     on<NextPageEvent>(_onNextPage);
     on<PreviousPageEvent>(_onPreviousPage);
     on<InitializeEmailServiceEvent>(_onInitializeEmailService);
+    on<ValidationErrorEvent>(_onValidationError);
+    on<ReturnToPreviousStateEvent>(_onReturnToPreviousState);
   }
 
   Future<void> _onInitializeEmailService(
@@ -125,12 +140,120 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     Emitter<SharedFormState> emit,
   ) {
     final action = SharedFormButtonAction.fromString(event.action);
+
+    // Validate required fields before allowing next/submit actions
+    if (action == SharedFormButtonAction.submitForm ||
+        action == SharedFormButtonAction.nextPage) {
+      final validationResult = _validateRequiredFields();
+      if (!validationResult.isValid) {
+        // Instead of emitting new state, add validation error event
+        add(
+          ValidationErrorEvent(
+            errorMessage:
+                validationResult.errorMessage ?? "Unknown validation error",
+            missingFields: validationResult.missingFields,
+          ),
+        );
+        return;
+      }
+    }
+
     if (action == SharedFormButtonAction.submitForm) {
       add(const SubmitFormEvent());
     } else if (action == SharedFormButtonAction.nextPage) {
       add(const NextPageEvent());
     } else if (action == SharedFormButtonAction.previousPage) {
       add(const PreviousPageEvent());
+    }
+  }
+
+  /// Validate all required fields on current page
+  ValidationResult _validateRequiredFields() {
+    if (state.formData == null || state.formData!.pages.isEmpty) {
+      return const ValidationResult(isValid: true);
+    }
+
+    final currentPage = state.formData!.pages[state.currentPageIndex];
+    final List<String> missingFields = [];
+
+    debugPrint(
+      '🔍 [Validation] Checking required fields on page: ${currentPage.title}',
+    );
+
+    for (final component in currentPage.components) {
+      final isRequired = component.config.isRequired ?? false;
+      if (isRequired) {
+        final value = state.componentValues.values[component.id];
+        final isEmpty =
+            value == null ||
+            (value is bool ? value == false : value.toString().trim().isEmpty);
+
+        debugPrint(
+          '🔍 [Validation] Field ${component.id}: required=$isRequired, value=$value, isEmpty=$isEmpty',
+        );
+
+        if (isEmpty) {
+          missingFields.add(component.config.label ?? component.id);
+        }
+      }
+    }
+
+    if (missingFields.isNotEmpty) {
+      final errorMessage =
+          'Please fill in all required fields:\n${missingFields.map((field) => '• $field').join('\n')}';
+      debugPrint('❌ [Validation] Missing required fields: $missingFields');
+      return ValidationResult(
+        isValid: false,
+        errorMessage: errorMessage,
+        missingFields: missingFields,
+      );
+    }
+
+    debugPrint('✅ [Validation] All required fields are filled');
+    return const ValidationResult(isValid: true);
+  }
+
+  void _onValidationError(
+    ValidationErrorEvent event,
+    Emitter<SharedFormState> emit,
+  ) {
+    // Emit validation error state while preserving current form state
+    emit(
+      SharedFormValidationError(
+        errorMessage: event.errorMessage,
+        missingFields: event.missingFields,
+        formId: state.formId,
+        formData: state.formData,
+        formName: state.formName,
+        recipientEmail: state.recipientEmail,
+        recipientName: state.recipientName,
+        componentValues: state.componentValues,
+        currentPageIndex: state.currentPageIndex,
+        emailServiceInitialized: state.emailServiceInitialized,
+        emailDetails: state.emailDetails,
+      ),
+    );
+  }
+
+  void _onReturnToPreviousState(
+    ReturnToPreviousStateEvent event,
+    Emitter<SharedFormState> emit,
+  ) {
+    // Return to the previous success state
+    if (state.formData != null) {
+      emit(
+        SharedFormSuccess(
+          formId: state.formId,
+          formData: state.formData,
+          formName: state.formName,
+          recipientEmail: state.recipientEmail,
+          recipientName: state.recipientName,
+          componentValues: state.componentValues,
+          currentPageIndex: state.currentPageIndex,
+          emailServiceInitialized: state.emailServiceInitialized,
+          emailDetails: state.emailDetails,
+        ),
+      );
     }
   }
 

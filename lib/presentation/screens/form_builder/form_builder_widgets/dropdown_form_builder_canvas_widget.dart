@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 
 class DropdownFormBuilderCanvasWidget extends StatelessWidget {
   final DynamicFormModel component;

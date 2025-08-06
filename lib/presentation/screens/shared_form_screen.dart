@@ -38,6 +38,14 @@ class SharedFormScreen extends StatelessWidget {
               _showSubmittedValuesDialog(context, state);
             } else if (state is SharedFormError) {
               _showErrorDialog(context, state.errorMessage);
+            } else if (state is SharedFormValidationError) {
+              _showValidationErrorDialog(context, state);
+              // Return to previous state after showing dialog
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                context.read<SharedFormBloc>().add(
+                  const ReturnToPreviousStateEvent(),
+                );
+              });
             }
           },
           builder: (context, state) {
@@ -493,6 +501,72 @@ class SharedFormScreen extends StatelessWidget {
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: _buildButton('Close', Colors.blue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showValidationErrorDialog(
+    BuildContext context,
+    SharedFormValidationError state,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2937),
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.orange, size: 24),
+            SizedBox(width: 8),
+            Text(
+              'Required Fields Missing',
+              style: TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Please fill in the following required fields:',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            ...state.missingFields.map(
+              (field) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '• ',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                    Expanded(
+                      child: Text(
+                        field,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: _buildButton('OK', Colors.blue),
           ),
         ],
       ),

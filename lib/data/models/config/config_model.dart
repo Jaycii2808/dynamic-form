@@ -300,8 +300,9 @@ class ConfigModel extends Equatable {
     if (height != null) result['height'] = height;
     if (statusText != null) result['status_text'] = statusText;
     if (validate != null) result['validate'] = validate;
-    if (labelFormBuilder != null)
+    if (labelFormBuilder != null) {
       result['label_form_builder'] = labelFormBuilder;
+    }
     return result;
   }
 

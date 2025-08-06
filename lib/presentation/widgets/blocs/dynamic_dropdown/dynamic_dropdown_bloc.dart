@@ -6,7 +6,6 @@ import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.d
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_state.dart';
-import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:dynamic_form_bi/core/services/dropdown_navigation_service.dart';
 
 class DynamicDropdownBloc
@@ -182,7 +181,7 @@ class DynamicDropdownBloc
       // Store selection in navigation service if we have a page ID
       if (_currentPageId != null) {
         _navigationService.storeDropdownSelection(
-          _currentPageId!,
+          _currentPageId,
           state.component.id,
           selectedOption,
         );
