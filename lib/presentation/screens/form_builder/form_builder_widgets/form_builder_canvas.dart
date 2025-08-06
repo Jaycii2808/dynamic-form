@@ -351,8 +351,12 @@ Widget _buildComponentWidget(
 ) {
   // Check if component is dropdown type
   if (component.type == FormTypeEnum.dropdownFormType) {
+    // Get available pages for navigation options
+    final availablePages = state.pages.map((page) => page.title).toList();
+
     return DropdownFormBuilderWidget(
       component: component,
+      availablePages: availablePages, // Pass available pages
       onComponentUpdate: (updatedComponent) {
         // Update the component in the form builder
         formBuilderBloc.add(

@@ -117,7 +117,7 @@ class SharedFormScreen extends StatelessWidget {
           CircularProgressIndicator(),
           SizedBox(height: 16),
           Text(
-            'Loading shared form...',
+            'Loading...',
             style: TextStyle(color: Colors.white70),
           ),
         ],
@@ -191,10 +191,12 @@ class SharedFormScreen extends StatelessWidget {
     }
 
     final currentPage = pages[state.currentPageIndex];
+    final isSubmitPage = state.currentPageIndex == pages.length - 1;
 
     // Debug widget to show form structure
     debugPrint('🔍 [SharedFormScreen] Current page: ${currentPage.title}');
     debugPrint('🔍 [SharedFormScreen] Page ID: ${currentPage.pageId}');
+    debugPrint('🔍 [SharedFormScreen] Is submit page: $isSubmitPage');
     debugPrint(
       '🔍 [SharedFormScreen] Components count: ${currentPage.components.length}',
     );
@@ -218,58 +220,64 @@ class SharedFormScreen extends StatelessWidget {
             state.currentPageIndex,
             pages.length,
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: currentPage.components.length,
-              itemBuilder: (context, index) {
-                final component = currentPage.components[index];
-                final value = state.componentValues.values[component.id];
-                final updatedConfig = component.config.copyWith(value: value);
-                final updatedComponent = component.copyWith(
-                  config: updatedConfig,
-                );
-                final dynamicComponent = _convertToDynamicFormModel(
-                  updatedComponent,
-                );
 
-                debugPrint(
-                  '🔍 [SharedFormScreen] Component ${index + 1}: ${component.id}',
-                );
-                debugPrint(
-                  '🔍 [SharedFormScreen] Component type: ${component.type}',
-                );
-                debugPrint(
-                  '🔍 [SharedFormScreen] Component config: ${component.config.toJson()}',
-                );
-                debugPrint(
-                  '🔍 [SharedFormScreen] Dynamic component config: ${dynamicComponent.config?.toJson()}',
-                );
+          // Show submit page content or form components
+          if (isSubmitPage)
+            _buildSubmitPage(context, state)
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: currentPage.components.length,
+                itemBuilder: (context, index) {
+                  final component = currentPage.components[index];
+                  final value = state.componentValues.values[component.id];
+                  final updatedConfig = component.config.copyWith(value: value);
+                  final updatedComponent = component.copyWith(
+                    config: updatedConfig,
+                  );
+                  final dynamicComponent = _convertToDynamicFormModel(
+                    updatedComponent,
+                  );
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: DynamicFormRenderer(
-                    component: dynamicComponent,
-                    onFieldChanged: (id, value) => context
-                        .read<SharedFormBloc>()
-                        .add(FieldChangedEvent(id, value)),
-                    onButtonAction: (action, data) => context
-                        .read<SharedFormBloc>()
-                        .add(ButtonActionEvent(action, data)),
-                    isSharedForm: true,
-                    currentPageId:
-                        currentPage.pageId, // Pass the current page ID
-                  ),
-                );
-              },
+                  debugPrint(
+                    '🔍 [SharedFormScreen] Component ${index + 1}: ${component.id}',
+                  );
+                  debugPrint(
+                    '🔍 [SharedFormScreen] Component type: ${component.type}',
+                  );
+                  debugPrint(
+                    '🔍 [SharedFormScreen] Component config: ${component.config.toJson()}',
+                  );
+                  debugPrint(
+                    '🔍 [SharedFormScreen] Dynamic component config: ${dynamicComponent.config?.toJson()}',
+                  );
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: DynamicFormRenderer(
+                      component: dynamicComponent,
+                      onFieldChanged: (id, value) => context
+                          .read<SharedFormBloc>()
+                          .add(FieldChangedEvent(id, value)),
+                      onButtonAction: (action, data) => context
+                          .read<SharedFormBloc>()
+                          .add(ButtonActionEvent(action, data)),
+                      isSharedForm: true,
+                      currentPageId:
+                          currentPage.pageId, // Pass the current page ID
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          // if (pages.length > 1) _buildNavigationButtons(context, pages, state),
         ],
       ),
     );
   }
 
   Widget _buildPageHeader(String title, int currentIndex, int totalPages) {
+    final isSubmitPage = title == 'Submit Form';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -290,58 +298,155 @@ class SharedFormScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          if (totalPages > 1)
+          if (totalPages > 1 && !isSubmitPage)
             Text(
-              'Page ${currentIndex + 1} of $totalPages',
+              'Page ${currentIndex + 1} of ${totalPages - 1}',
               style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          if (isSubmitPage)
+            const Text(
+              'Final Step',
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
         ],
       ),
     );
   }
 
-  // Widget _buildNavigationButtons(
-  //   BuildContext context,
-  //   List<FormForMultiPageModel> pages,
-  //   SharedFormState state,
-  // ) {
-  //   return Container(
-  //     margin: const EdgeInsets.only(top: 16),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         if (state.currentPageIndex > 0)
-  //           GestureDetector(
-  //             onTap: () =>
-  //                 context.read<SharedFormBloc>().add(const PreviousPageEvent()),
-  //             child: _buildButton(
-  //               'Previous',
-  //               Colors.grey.withValues(alpha: 0.2),
-  //               icon: Icons.arrow_back,
-  //             ),
-  //           )
-  //         else
-  //           const SizedBox(width: 100),
-  //         GestureDetector(
-  //           onTap: () => context.read<SharedFormBloc>().add(
-  //             state.currentPageIndex < pages.length - 1
-  //                 ? const NextPageEvent()
-  //                 : const SubmitFormEvent(),
-  //           ),
-  //           child: _buildButton(
-  //             state.currentPageIndex < pages.length - 1 ? 'Next' : 'Submit',
-  //             state.currentPageIndex < pages.length - 1
-  //                 ? Colors.blue
-  //                 : Colors.green,
-  //             icon: state.currentPageIndex < pages.length - 1
-  //                 ? Icons.arrow_forward
-  //                 : Icons.check,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  Widget _buildSubmitPage(BuildContext context, SharedFormState state) {
+    return Expanded(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 64,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Do you want to submit?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'The form will be sent to admin',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Back button
+                  GestureDetector(
+                    onTap: () => context.read<SharedFormBloc>().add(
+                      const PreviousPageEvent(),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Back',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Submit button
+                  GestureDetector(
+                    onTap: () => context.read<SharedFormBloc>().add(
+                      const SubmitFormEvent(),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.send,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Submit Form',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildButton(String text, Color color, {IconData? icon}) {
     return Container(

@@ -1,4 +1,5 @@
 import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/dropdown_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -408,21 +409,40 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
   }
 
   void _handleOptionAction(Option selectedOption) {
-    final action = selectedOption.action;
+    debugPrint(
+      '🔄 [DynamicDropdown] Handling option action: ${selectedOption.label}',
+    );
+
+    final action = DropdownActionOptionsEnum.fromString(selectedOption.action);
     final targetSection = selectedOption.targetSection;
 
-    debugPrint('🎯 [DynamicDropdown] Handling option action: $action');
-    debugPrint('🎯 [DynamicDropdown] Target section: $targetSection');
-    debugPrint('🎯 [DynamicDropdown] Current page ID: ${widget.currentPageId}');
+    // Store the action in component config for later use
+    // //final updatedConfig = widget.component.config?.copyWith(
+    //   action: action.value,
+    //   title: targetSection, // Use title field to store targetSection
+    // );
 
-    switch (action?.toLowerCase()) {
-      case 'continue':
+    //final updatedComponent = widget.component.copyWith(config: updatedConfig);
+
+    // Update the component using the existing event
+    if (context.mounted) {
+      context.read<DynamicDropdownBloc>().add(
+        DropdownOptionSelectedEvent(
+          value: selectedOption.value,
+          action: action.value,
+          targetSection: targetSection,
+        ),
+      );
+    }
+
+    switch (action) {
+      case DropdownActionOptionsEnum.next:
         // Continue to next section - will be handled when next button is pressed
         debugPrint(
           '➡️ [DynamicDropdown] Continue action stored for next button',
         );
         break;
-      case 'goto':
+      case DropdownActionOptionsEnum.goto:
         // Go to specific section - will be handled when next button is pressed
         if (targetSection != null) {
           debugPrint(
@@ -430,15 +450,9 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
           );
         }
         break;
-      case 'submit':
+      case DropdownActionOptionsEnum.submit:
         // Submit form - will be handled when next button is pressed
         debugPrint('📤 [DynamicDropdown] Submit action stored for next button');
-        break;
-      default:
-        // Default behavior - just update value
-        debugPrint(
-          '✅ [DynamicDropdown] Option selected: ${selectedOption.label}',
-        );
         break;
     }
   }

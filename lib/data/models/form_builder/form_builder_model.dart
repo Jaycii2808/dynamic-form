@@ -100,11 +100,35 @@ class FormBuilderModel extends Equatable {
 
   /// Convert to multi-page JSON format with automatic navigation
   Map<String, dynamic> toExportMultiPageJson() {
+    debugPrint('🔄 [FormBuilderModel] Converting form to multi-page JSON');
+    debugPrint('🔄 [FormBuilderModel] Original pages count: ${pages.length}');
+
+    // Create a copy of pages and add submit page
+    final List<FormBuilderPageModel> pagesWithSubmit = List.from(pages);
+
+    // Add submit page if not already exists
+    final submitPageId = 'submit_page_${DateTime.now().millisecondsSinceEpoch}';
+    final submitPage = FormBuilderPageModel(
+      pageId: submitPageId,
+      title: 'Submit Form',
+      order: pagesWithSubmit.length + 1,
+      showPreviousButton: true,
+      showNextButton: false,
+      showSubmitButton: true,
+      components: const [], // Empty components for submit page
+    );
+
+    pagesWithSubmit.add(submitPage);
+
+    debugPrint(
+      '🔄 [FormBuilderModel] Added submit page, total pages: ${pagesWithSubmit.length}',
+    );
+
     return {
       'formId': formId,
       'name': name,
-      'pages': pages
-          .map((page) => _convertPageToMultiPageFormat(page))
+      'pages': pagesWithSubmit
+          .map((page) => _convertPageToMultiPageFormat(page, pagesWithSubmit))
           .toList(),
     };
   }
@@ -112,15 +136,16 @@ class FormBuilderModel extends Equatable {
   /// Convert page to multi-page format with automatic navigation buttons
   Map<String, dynamic> _convertPageToMultiPageFormat(
     FormBuilderPageModel page,
+    List<FormBuilderPageModel> allPages,
   ) {
     debugPrint('🔄 [FormBuilderModel] Converting page: ${page.title}');
     debugPrint(
       '🔄 [FormBuilderModel] Page components count: ${page.components.length}',
     );
 
-    final pageIndex = pages.indexOf(page);
+    final pageIndex = allPages.indexOf(page);
     final isFirstPage = pageIndex == 0;
-    final isLastPage = pageIndex == pages.length - 1;
+    final isLastPage = pageIndex == allPages.length - 1;
 
     // Convert components and add navigation buttons
     final convertedComponents = <Map<String, dynamic>>[];
@@ -156,7 +181,7 @@ class FormBuilderModel extends Equatable {
           'previous',
           ButtonAction.previousPage.value,
           'Back',
-          pageIndex > 0 ? pages[pageIndex - 1].pageId : '',
+          pageIndex > 0 ? allPages[pageIndex - 1].pageId : '',
         ),
       );
     }
@@ -167,13 +192,11 @@ class FormBuilderModel extends Equatable {
           'next',
           ButtonAction.nextPage.value,
           'Next',
-          pageIndex < pages.length - 1 ? pages[pageIndex + 1].pageId : '',
+          pageIndex < allPages.length - 1 ? allPages[pageIndex + 1].pageId : '',
         ),
       );
-    } else {
-      // Add submit button on last page
-      convertedComponents.add(_createSubmitButton());
     }
+    // Remove submit button from last content page since we have dedicated submit page
 
     final result = {
       'pageId': page.pageId,
@@ -181,7 +204,7 @@ class FormBuilderModel extends Equatable {
       'order': page.order,
       'show_previous_button': !isFirstPage,
       'show_next_button': !isLastPage,
-      'show_submit_button': isLastPage,
+      'show_submit_button': false, // Never show submit button on content pages
       'components': convertedComponents,
     };
 
@@ -265,63 +288,63 @@ class FormBuilderModel extends Equatable {
   }
 
   /// Create submit button for the last page
-  Map<String, dynamic> _createSubmitButton() {
-    return {
-      'id': 'submit_btn_${DateTime.now().millisecondsSinceEpoch}',
-      'type': 'buttonFormType',
-      'config': {
-        'label': 'Submit',
-        'value': null,
-        'icon': 'check_circle',
-        'action': ButtonAction.submitForm.value,
-        'is_icon_right_position': 'true',
-      },
-      'validate': {
-        'condition': [],
-      },
-      'style': {
-        'width': '120px',
-        'height': '40px',
-        'background_color': '0xFF059669',
-        'text_color': '0xFFFFFFFF',
-        'border_color': 'transparent',
-        'font_size': 15,
-        'font_weight': '600',
-        'margin': '8px 6px',
-        'padding': '8px 12px',
-        'icon_size': 14,
-        'elevation': 4,
-        'shadow_color': '0xFF059669',
-      },
-      'variants': {},
-      'states': {
-        'disabled': {
-          'style': {
-            'background_color': '0xFFF3F4F6',
-            'text_color': '0xFF9CA3AF',
-            'border_color': 'transparent',
-            'elevation': 0,
-            'shadow_color': 'transparent',
-          },
-        },
-        'base': {
-          'style': {
-            'background_color': '0xFF059669',
-            'text_color': '0xFFFFFFFF',
-            'border_color': 'transparent',
-            'elevation': 4,
-            'shadow_color': '0xFF059669',
-          },
-        },
-        'loading': {
-          'style': {
-            'background_color': '0xFF047857',
-            'elevation': 2,
-          },
-        },
-      },
-    };
-  }
+  // Map<String, dynamic> _createSubmitButton() {
+  //   return {
+  //     'id': 'submit_btn_${DateTime.now().millisecondsSinceEpoch}',
+  //     'type': 'buttonFormType',
+  //     'config': {
+  //       'label': 'Submit',
+  //       'value': null,
+  //       'icon': 'check_circle',
+  //       'action': ButtonAction.submitForm.value,
+  //       'is_icon_right_position': 'true',
+  //     },
+  //     'validate': {
+  //       'condition': [],
+  //     },
+  //     'style': {
+  //       'width': '120px',
+  //       'height': '40px',
+  //       'background_color': '0xFF059669',
+  //       'text_color': '0xFFFFFFFF',
+  //       'border_color': 'transparent',
+  //       'font_size': 15,
+  //       'font_weight': '600',
+  //       'margin': '8px 6px',
+  //       'padding': '8px 12px',
+  //       'icon_size': 14,
+  //       'elevation': 4,
+  //       'shadow_color': '0xFF059669',
+  //     },
+  //     'variants': {},
+  //     'states': {
+  //       'disabled': {
+  //         'style': {
+  //           'background_color': '0xFFF3F4F6',
+  //           'text_color': '0xFF9CA3AF',
+  //           'border_color': 'transparent',
+  //           'elevation': 0,
+  //           'shadow_color': 'transparent',
+  //         },
+  //       },
+  //       'base': {
+  //         'style': {
+  //           'background_color': '0xFF059669',
+  //           'text_color': '0xFFFFFFFF',
+  //           'border_color': 'transparent',
+  //           'elevation': 4,
+  //           'shadow_color': '0xFF059669',
+  //         },
+  //       },
+  //       'loading': {
+  //         'style': {
+  //           'background_color': '0xFF047857',
+  //           'elevation': 2,
+  //         },
+  //       },
+  //     },
+  //   };
+  // }
 
   /// Get all components from all pages
   List<DynamicFormModel> getAllComponents() {

@@ -83,3 +83,16 @@ class ReturnToPreviousStateEvent extends SharedFormEvent {
   @override
   List<Object?> get props => [];
 }
+
+class NavigationActionEvent extends SharedFormEvent {
+  final String action;
+  final String? targetSection;
+
+  const NavigationActionEvent({
+    required this.action,
+    this.targetSection,
+  });
+
+  @override
+  List<Object?> get props => [action, targetSection];
+}

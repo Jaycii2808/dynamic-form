@@ -1,4 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/shared_form_button_action.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/dropdown_action_enum.dart';
 import 'package:dynamic_form_bi/core/services/email_service.dart';
 import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
@@ -22,6 +24,17 @@ class ValidationResult {
   });
 }
 
+/// Result for dropdown navigation action
+class DropdownNavigationResult {
+  final String action;
+  final String? targetSection;
+
+  const DropdownNavigationResult({
+    required this.action,
+    this.targetSection,
+  });
+}
+
 class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
   final FirestoreFormService _firestoreService;
   final EmailService _emailService;
@@ -41,6 +54,7 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     on<InitializeEmailServiceEvent>(_onInitializeEmailService);
     on<ValidationErrorEvent>(_onValidationError);
     on<ReturnToPreviousStateEvent>(_onReturnToPreviousState);
+    on<NavigationActionEvent>(_onNavigationAction);
   }
 
   Future<void> _onInitializeEmailService(
@@ -158,6 +172,27 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
       }
     }
 
+    // Check for dropdown navigation actions before proceeding
+    if (action == SharedFormButtonAction.submitForm ||
+        action == SharedFormButtonAction.nextPage) {
+      final dropdownNavigationResult = _checkDropdownNavigationActions();
+      if (dropdownNavigationResult != null) {
+        debugPrint(
+          '🎯 [SharedFormBloc] Found dropdown navigation action: ${dropdownNavigationResult.action} -> ${dropdownNavigationResult.targetSection}',
+        );
+
+        // Trigger the dropdown navigation action
+        add(
+          NavigationActionEvent(
+            action: dropdownNavigationResult.action,
+            targetSection: dropdownNavigationResult.targetSection,
+          ),
+        );
+        return; // Don't proceed with normal navigation
+      }
+    }
+
+    // Normal navigation logic
     if (action == SharedFormButtonAction.submitForm) {
       add(const SubmitFormEvent());
     } else if (action == SharedFormButtonAction.nextPage) {
@@ -211,6 +246,43 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
 
     debugPrint('✅ [Validation] All required fields are filled');
     return const ValidationResult(isValid: true);
+  }
+
+  /// Check if any dropdown component has navigation action for the selected option
+  DropdownNavigationResult? _checkDropdownNavigationActions() {
+    if (state.formData == null || state.formData!.pages.isEmpty) {
+      return null;
+    }
+
+    final currentPage = state.formData!.pages[state.currentPageIndex];
+
+    for (final component in currentPage.components) {
+      // Check if this is a dropdown component with navigation action
+      if (component.type == FormTypeEnum.dropdownFormType) {
+        final selectedValue = state.componentValues.values[component.id];
+        if (selectedValue != null) {
+          // Find the selected option to get its navigation action
+          final options = component.config.options ?? [];
+          final selectedOption = options.firstWhere(
+            (option) => option.value == selectedValue,
+            orElse: () => options.first,
+          );
+
+          if (selectedOption.action != null &&
+              selectedOption.action!.isNotEmpty) {
+            debugPrint(
+              '🎯 [SharedFormBloc] Found dropdown navigation for component ${component.id}: ${selectedOption.action} -> ${selectedOption.targetSection}',
+            );
+            return DropdownNavigationResult(
+              action: selectedOption.action!,
+              targetSection: selectedOption.targetSection,
+            );
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   void _onValidationError(
@@ -392,5 +464,111 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
         pages: state.formData?.pages ?? [],
       );
     }
+  }
+
+  void _onNavigationAction(
+    NavigationActionEvent event,
+    Emitter<SharedFormState> emit,
+  ) {
+    debugPrint(
+      '🔄 [SharedFormBloc] Navigation action: ${event.action} -> ${event.targetSection}',
+    );
+
+    try {
+      final action = DropdownActionOptionsEnum.fromString(event.action);
+
+      switch (action) {
+        case DropdownActionOptionsEnum.next:
+          // Continue to next page (including submit page)
+          final pages = state.formData?.pages ?? [];
+          if (state.currentPageIndex < pages.length - 1) {
+            emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+            debugPrint(
+              '🔄 [SharedFormBloc] Navigated to next page: ${state.currentPageIndex + 1}',
+            );
+          } else {
+            // If we're already on the last page (submit page), submit the form
+            debugPrint(
+              '🔄 [SharedFormBloc] Already on submit page, submitting form',
+            );
+            add(const SubmitFormEvent());
+          }
+          break;
+
+        case DropdownActionOptionsEnum.goto:
+          // Go to specific page
+          if (event.targetSection != null) {
+            final pages = state.formData?.pages ?? [];
+            final targetPageIndex = _findPageIndexBySection(
+              event.targetSection!,
+              pages,
+            );
+            if (targetPageIndex != -1) {
+              emit(state.copyWith(currentPageIndex: targetPageIndex));
+              debugPrint(
+                '🔄 [SharedFormBloc] Navigated to page: $targetPageIndex (${event.targetSection})',
+              );
+            } else {
+              debugPrint(
+                '❌ [SharedFormBloc] Target page not found: ${event.targetSection}',
+              );
+            }
+          }
+          break;
+
+        case DropdownActionOptionsEnum.submit:
+          // Go to submit page (last page)
+          final pages = state.formData?.pages ?? [];
+          final submitPageIndex = pages.length - 1;
+          emit(state.copyWith(currentPageIndex: submitPageIndex));
+          debugPrint(
+            '🔄 [SharedFormBloc] Navigated to submit page: $submitPageIndex',
+          );
+          break;
+      }
+    } catch (e) {
+      debugPrint('❌ [SharedFormBloc] Navigation error: $e');
+    }
+  }
+
+  int _findPageIndexBySection(String targetSection, List<dynamic> pages) {
+    debugPrint(
+      '🔍 [SharedFormBloc] Finding page index for target: $targetSection',
+    );
+    debugPrint(
+      '🔍 [SharedFormBloc] Available pages: ${pages.map((p) => '${p.pageId} (${p.title})').toList()}',
+    );
+
+    for (int i = 0; i < pages.length; i++) {
+      final page = pages[i];
+
+      // Check if pageId matches
+      if (page.pageId == targetSection) {
+        debugPrint('🔍 [SharedFormBloc] Found page by pageId: $i');
+        return i;
+      }
+
+      // Check if title matches
+      if (page.title == targetSection) {
+        debugPrint('🔍 [SharedFormBloc] Found page by title: $i');
+        return i;
+      }
+
+      // Check if page number matches (e.g., "page_1" -> page 0)
+      if (targetSection.startsWith('page_')) {
+        try {
+          final pageNumber = int.parse(targetSection.substring(5));
+          if (pageNumber == i + 1) {
+            debugPrint('🔍 [SharedFormBloc] Found page by number: $i');
+            return i;
+          }
+        } catch (e) {
+          debugPrint('🔍 [SharedFormBloc] Error parsing page number: $e');
+        }
+      }
+    }
+
+    debugPrint('❌ [SharedFormBloc] Target page not found: $targetSection');
+    return -1;
   }
 }
