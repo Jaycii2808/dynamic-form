@@ -48,11 +48,39 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     LoadSharedFormEvent event,
     Emitter<SharedFormState> emit,
   ) async {
+    debugPrint('🔄 [SharedFormBloc] Loading shared form: ${event.formId}');
     emit(SharedFormLoading.fromState(state: state));
     try {
       final sharedForm = await _firestoreService.getSharedForm(event.formId);
       if (sharedForm == null) {
         throw Exception('Form not found or has been deactivated');
+      }
+
+      debugPrint('🔄 [SharedFormBloc] Form loaded successfully');
+      debugPrint('🔄 [SharedFormBloc] Form name: ${sharedForm.formName}');
+      debugPrint(
+        '🔄 [SharedFormBloc] Form data pages count: ${sharedForm.formData.pages.length}',
+      );
+
+      // Debug each page and component
+      for (int i = 0; i < sharedForm.formData.pages.length; i++) {
+        final page = sharedForm.formData.pages[i];
+        debugPrint(
+          '🔄 [SharedFormBloc] Page $i: ${page.title} (${page.pageId})',
+        );
+        debugPrint(
+          '🔄 [SharedFormBloc] Page $i components count: ${page.components.length}',
+        );
+
+        for (int j = 0; j < page.components.length; j++) {
+          final component = page.components[j];
+          debugPrint(
+            '🔄 [SharedFormBloc] Page $i Component $j: ${component.id} - ${component.type}',
+          );
+          debugPrint(
+            '🔄 [SharedFormBloc] Page $i Component $j config: ${component.config.toJson()}',
+          );
+        }
       }
 
       emit(
@@ -73,6 +101,7 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
       } else {
         errorMessage = 'Unknown error: $e';
       }
+      debugPrint('❌ [SharedFormBloc] Error loading form: $errorMessage');
       emit(SharedFormError(errorMessage: errorMessage));
     }
   }

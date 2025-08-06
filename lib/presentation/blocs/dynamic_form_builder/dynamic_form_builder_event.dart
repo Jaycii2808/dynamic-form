@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart'; // Add import for Option
 import 'package:equatable/equatable.dart';
 
 abstract class FormBuilderEvent extends Equatable {
@@ -108,6 +109,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
   final dynamic value; // Change from String? to dynamic
   final bool? isRequired;
   final String? errorText;
+  final List<Option>? options; // Add options for dropdown
 
   const EditComponentConfigEvent({
     required this.componentId,
@@ -116,6 +118,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     this.value,
     this.isRequired,
     this.errorText,
+    this.options, // Add options parameter
   });
 
   @override
@@ -126,6 +129,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     value,
     isRequired,
     errorText,
+    options, // Add options to props
   ];
 }
 

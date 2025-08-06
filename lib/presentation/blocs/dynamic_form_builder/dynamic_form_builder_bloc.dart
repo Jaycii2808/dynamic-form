@@ -705,6 +705,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                   value: event.value,
                   isRequired: event.isRequired,
                   errorText: event.errorText,
+                  options: event.options, // Add options support
                 ) ??
                 ConfigModel(
                   label: event.label,
@@ -712,6 +713,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                   value: event.value,
                   isRequired: event.isRequired,
                   errorText: event.errorText,
+                  options: event.options, // Add options support
                 );
 
             return component.copyWith(config: updatedConfig);
@@ -727,11 +729,10 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),
     );
-
-    // Force rebuild UI after updating component
-    add(const ForceRebuildUIEvent());
   }
 
   /// Edit component label

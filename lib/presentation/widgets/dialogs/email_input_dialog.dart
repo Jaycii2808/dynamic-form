@@ -12,7 +12,14 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
   final TextEditingController _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
 
+
+    _emailController.text = 'imprahimovic@gmail.com';
+    _nameController.text = 'tEST B5 ';
+  }
   @override
   void dispose() {
     _emailController.dispose();

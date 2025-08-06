@@ -1,0 +1,45 @@
+[
+    {
+        "id": "dropdown_google_style",
+        "type": "dropdownFormType",
+        "label_form_builder": "Dropdown",
+        "order": 7,
+        "config": {
+            "label": "Dropdown Question",
+            "placeholder": "Select an option",
+            "description": "",
+            "is_required": false,
+            "shuffle_options": false,
+            "options": [
+                {
+                    "value": "option1",
+                    "label": "Option 1",
+                    "order": 1
+                },
+                {
+                    "value": "option2",
+                    "label": "Option 2",
+                    "order": 2
+                },
+                {
+                    "value": "option3",
+                    "label": "Option 3",
+                    "order": 3
+                }
+            ]
+        },
+        "style": {
+            "border_color": "0xFFE8EAED",
+            "border_radius": 8,
+            "font_size": 16,
+            "text_color": "0xFF202124",
+            "background_color": "0xFFFFFFFF",
+            "label_color": "0xFF202124",
+            "helper_text_color": "0xFF5F6368",
+            "content_vertical_padding": 12.0,
+            "content_horizontal_padding": 16.0,
+            "question_font_size": 18,
+            "question_font_weight": "500"
+        }
+    }
+]

@@ -34,6 +34,7 @@ class DynamicFormRenderer extends StatefulWidget {
   final Function(String componentId, dynamic value)? onFieldChanged;
   final Function(String action, FormActionDataModel? data)? onButtonAction;
   final bool isSharedForm; // Add parameter to indicate shared form mode
+  final String? currentPageId; // Add currentPageId parameter
 
   const DynamicFormRenderer({
     super.key,
@@ -43,6 +44,7 @@ class DynamicFormRenderer extends StatefulWidget {
     this.onFieldChanged,
     this.onButtonAction,
     this.isSharedForm = false, // Default to false for backward compatibility
+    this.currentPageId, // Add currentPageId parameter
   });
 
   @override
@@ -82,6 +84,7 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
           handleFormFieldUpdate(context, widget.component, value),
       onButtonAction: widget.onButtonAction,
       isSharedForm: widget.isSharedForm, // Pass the shared form flag
+      currentPageId: widget.currentPageId, // Pass the currentPageId
       // Remove onComponentUpdate to disable config editing in shared forms
     );
   }

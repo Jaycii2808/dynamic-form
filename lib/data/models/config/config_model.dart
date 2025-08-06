@@ -49,16 +49,29 @@ class Condition extends Equatable {
 class Option extends Equatable {
   final String value;
   final String label;
+  final String? action; // continue, goto, submit
+  final String? targetSection; // section/page to go to
+  final bool? isRequired;
+  final int? order; // for shuffling options
 
   const Option({
     required this.value,
     required this.label,
+    this.action,
+    this.targetSection,
+    this.isRequired,
+    this.order,
   });
 
   factory Option.fromJson(Map<String, dynamic> json) {
     return Option(
       value: json['value'] as String? ?? '',
       label: json['label'] as String? ?? '',
+      action: json['action'] as String?,
+      targetSection:
+          json['target_section'] as String? ?? json['targetSection'] as String?,
+      isRequired: json['is_required'] as bool? ?? json['isRequired'] as bool?,
+      order: json['order'] as int?,
     );
   }
 
@@ -66,16 +79,47 @@ class Option extends Equatable {
     return {
       'value': value,
       'label': label,
+      if (action != null) 'action': action,
+      if (targetSection != null) 'target_section': targetSection,
+      if (isRequired != null) 'is_required': isRequired,
+      if (order != null) 'order': order,
     };
   }
 
+  // Add copyWith method
+  Option copyWith({
+    String? value,
+    String? label,
+    String? action,
+    String? targetSection,
+    bool? isRequired,
+    int? order,
+  }) {
+    return Option(
+      value: value ?? this.value,
+      label: label ?? this.label,
+      action: action ?? this.action,
+      targetSection: targetSection ?? this.targetSection,
+      isRequired: isRequired ?? this.isRequired,
+      order: order ?? this.order,
+    );
+  }
+
   @override
-  List<Object?> get props => [value, label];
+  List<Object?> get props => [
+    value,
+    label,
+    action,
+    targetSection,
+    isRequired,
+    order,
+  ];
 }
 
 class ConfigModel extends Equatable {
   final String? label;
   final String? placeholder;
+  final String? description; // Add description for dropdown
   final bool? isRequired;
   final dynamic value;
   final StatesEnum? currentState;
@@ -97,14 +141,17 @@ class ConfigModel extends Equatable {
   final String? action;
   final List<Condition>? conditions;
   final List<Option>? options;
+  final bool? shuffleOptions; // Add shuffle options property
   final String? hint;
   final String? height;
   final String? statusText;
   final dynamic validate;
+  final String? labelFormBuilder; // Add label_form_builder property
 
   const ConfigModel({
     this.label,
     this.placeholder,
+    this.description,
     this.isRequired,
     this.value,
     this.currentState,
@@ -126,10 +173,12 @@ class ConfigModel extends Equatable {
     this.action,
     this.conditions,
     this.options,
+    this.shuffleOptions,
     this.hint,
     this.height,
     this.statusText,
     this.validate,
+    this.labelFormBuilder,
   });
 
   factory ConfigModel.fromJson(Map<String, dynamic>? json) {
@@ -168,15 +217,21 @@ class ConfigModel extends Equatable {
     return ConfigModel(
       label: json['label'] as String?,
       placeholder: json['placeholder'] as String?,
-      isRequired: json['is_required'] as bool?,
+      description: json['description'] as String?,
+      isRequired: json['is_required'] as bool? ?? json['isRequired'] as bool?,
       value: json['value'],
-      currentState: parseState(json['current_state']),
-      errorText: json['error_text'] as String?,
-      defaultFormat: json['default_format'] as String?,
-      initialTags: (json['initial_tags'] as List<dynamic>?)?.cast<String>(),
-      textSeparators: (json['text_separators'] as List<dynamic>?)
-          ?.cast<String>(),
-      pickerMode: json['picker_mode'] as String?,
+      currentState: parseState(json['current_state'] ?? json['currentState']),
+      errorText: json['error_text'] as String? ?? json['errorText'] as String?,
+      defaultFormat:
+          json['default_format'] as String? ?? json['defaultFormat'] as String?,
+      initialTags:
+          (json['initial_tags'] as List<dynamic>?)?.cast<String>() ??
+          (json['initialTags'] as List<dynamic>?)?.cast<String>(),
+      textSeparators:
+          (json['text_separators'] as List<dynamic>?)?.cast<String>() ??
+          (json['textSeparators'] as List<dynamic>?)?.cast<String>(),
+      pickerMode:
+          json['picker_mode'] as String? ?? json['pickerMode'] as String?,
       selected: json['selected'] as bool?,
       range: json['range'] as bool?,
       min: (json['min'] as num?)?.toDouble(),
@@ -185,9 +240,11 @@ class ConfigModel extends Equatable {
       prefix: json['prefix'] as String?,
       icon: json['icon'] as String?,
       title: json['title'] as String?,
-      buttonText: json['button_text'] as String?,
-      allowedExtensions: (json['allowed_extensions'] as List<dynamic>?)
-          ?.cast<String>(),
+      buttonText:
+          json['button_text'] as String? ?? json['buttonText'] as String?,
+      allowedExtensions:
+          (json['allowed_extensions'] as List<dynamic>?)?.cast<String>() ??
+          (json['allowedExtensions'] as List<dynamic>?)?.cast<String>(),
       action: json['action'] as String?,
       conditions: (json['conditions'] as List<dynamic>?)
           ?.map((e) => Condition.fromJson(e as Map<String, dynamic>))
@@ -195,10 +252,14 @@ class ConfigModel extends Equatable {
       options: (json['options'] as List<dynamic>?)
           ?.map((e) => Option.fromJson(e as Map<String, dynamic>))
           .toList(),
+      shuffleOptions:
+          json['shuffle_options'] as bool? ?? json['shuffleOptions'] as bool?,
       hint: json['hint'] as String?,
       height: json['height'] as String?,
-      statusText: json['status_text'] as String?,
+      statusText:
+          json['status_text'] as String? ?? json['statusText'] as String?,
       validate: json['validate'],
+      labelFormBuilder: json['label_form_builder'] as String?,
     );
   }
 
@@ -206,6 +267,7 @@ class ConfigModel extends Equatable {
     final result = <String, dynamic>{};
     if (label != null) result['label'] = label;
     if (placeholder != null) result['placeholder'] = placeholder;
+    if (description != null) result['description'] = description;
     if (isRequired != null) result['is_required'] = isRequired;
     result['value'] = value; // Always include value, even if null
     if (currentState != null) result['current_state'] = currentState;
@@ -233,16 +295,20 @@ class ConfigModel extends Equatable {
     if (options != null) {
       result['options'] = options!.map((e) => e.toJson()).toList();
     }
+    if (shuffleOptions != null) result['shuffle_options'] = shuffleOptions;
     if (hint != null) result['hint'] = hint;
     if (height != null) result['height'] = height;
     if (statusText != null) result['status_text'] = statusText;
     if (validate != null) result['validate'] = validate;
+    if (labelFormBuilder != null)
+      result['label_form_builder'] = labelFormBuilder;
     return result;
   }
 
   ConfigModel copyWith({
     String? label,
     String? placeholder,
+    String? description,
     bool? isRequired,
     dynamic value,
     StatesEnum? currentState,
@@ -264,14 +330,17 @@ class ConfigModel extends Equatable {
     String? action,
     List<Condition>? conditions,
     List<Option>? options,
+    bool? shuffleOptions,
     String? hint,
     String? height,
     String? statusText,
     dynamic validate,
+    String? labelFormBuilder,
   }) {
     return ConfigModel(
       label: label ?? this.label,
       placeholder: placeholder ?? this.placeholder,
+      description: description ?? this.description,
       isRequired: isRequired ?? this.isRequired,
       value: value ?? this.value,
       currentState: currentState ?? this.currentState,
@@ -293,10 +362,12 @@ class ConfigModel extends Equatable {
       action: action ?? this.action,
       conditions: conditions ?? this.conditions,
       options: options ?? this.options,
+      shuffleOptions: shuffleOptions ?? this.shuffleOptions,
       hint: hint ?? this.hint,
       height: height ?? this.height,
       statusText: statusText ?? this.statusText,
       validate: validate ?? this.validate,
+      labelFormBuilder: labelFormBuilder ?? this.labelFormBuilder,
     );
   }
 
@@ -329,5 +400,6 @@ class ConfigModel extends Equatable {
     height,
     statusText,
     validate,
+    labelFormBuilder,
   ];
 }

@@ -9,6 +9,7 @@ import 'package:dynamic_form_bi/presentation/widgets/dialogs/email_input_dialog.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
 
 class FormBuilderPreviewScreen extends StatefulWidget {
   final FormBuilderModel formBuilderModel;
@@ -128,7 +129,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           context: context,
           barrierDismissible: false,
           builder: (context) => const Center(
-            child:    CircularProgressIndicator(),
+            child: CircularProgressIndicator(),
           ),
         );
       }
@@ -214,9 +215,12 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
               ),
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha:0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.blue, width: 1),
                 ),
@@ -258,7 +262,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           ),
 
           actions: [
-
             Row(
               spacing: 15,
               //space betwween
@@ -300,7 +303,34 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
                 ),
               ],
             ),
-            const SizedBox(height:12),
+            const SizedBox(height: 12),
+            // Add button to navigate directly to shared form
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop(); // Close dialog
+                _navigateToSharedForm(formId);
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Open Form in App',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),
@@ -343,6 +373,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       }
     }
   }
+
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -638,6 +669,15 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             child: const Text('Got it!'),
           ),
         ],
+      ),
+    );
+  }
+
+  // Navigate to the shared form screen
+  void _navigateToSharedForm(String formId) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => SharedFormScreen(formId: formId),
       ),
     );
   }

@@ -5,6 +5,8 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/dropdown_form_builder_widget.dart'; // Add import
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart'; // Add import
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -347,6 +349,44 @@ Widget _buildComponentWidget(
   BuildContext context,
   FormBuilderState state,
 ) {
+  // Check if component is dropdown type
+  if (component.type == FormTypeEnum.dropdownFormType) {
+    return DropdownFormBuilderWidget(
+      component: component,
+      onComponentUpdate: (updatedComponent) {
+        // Update the component in the form builder
+        formBuilderBloc.add(
+          EditComponentConfigEvent(
+            componentId: updatedComponent.id,
+            label: updatedComponent.config?.label,
+            placeholder: updatedComponent.config?.placeholder,
+            value: updatedComponent.config?.value,
+            errorText: updatedComponent.config?.errorText,
+            isRequired: updatedComponent.config?.isRequired,
+            options: updatedComponent.config?.options, // Add options
+          ),
+        );
+      },
+      onDuplicate: () {
+        // Handle duplicate for dropdown
+        final duplicatedComponent = component.copyWith(
+          id: '${component.id}_${DateTime.now().millisecondsSinceEpoch}',
+        );
+        formBuilderBloc.add(AddComponentEvent(duplicatedComponent));
+      },
+      onDelete: () {
+        // Handle delete for dropdown
+        final index = state.canvasComponents.indexWhere(
+          (c) => c.id == component.id,
+        );
+        if (index != -1) {
+          formBuilderBloc.add(RemoveComponentEvent(index));
+        }
+      },
+    );
+  }
+
+  // Default component widget for other types
   return GestureDetector(
     onTap: () => _showEditLabelDialog(component, formBuilderBloc, context),
     child: Container(

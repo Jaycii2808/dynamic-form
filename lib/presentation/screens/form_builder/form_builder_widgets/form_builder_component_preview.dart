@@ -16,6 +16,8 @@ Widget buildComponentPreview(DynamicFormModel component) {
       return _buildDateTimePickerPreview(component);
     case FormTypeEnum.dateTimeRangePickerFormType:
       return _buildDateTimeRangePickerPreview(component);
+    case FormTypeEnum.dropdownFormType:
+      return _buildDropdownPreview(component);
     case FormTypeEnum.buttonFormType:
       return _buildButtonPreview(component);
     default:
@@ -175,7 +177,11 @@ Widget _buildSelectorButtonPreview(DynamicFormModel component) {
           child: Row(
             children: [
               const SizedBox(width: 8),
-              const Icon(Icons.radio_button_checked, color: Colors.blue, size: 12),
+              const Icon(
+                Icons.radio_button_checked,
+                color: Colors.blue,
+                size: 12,
+              ),
               const SizedBox(width: 8),
               if (component.config?.label != null)
                 Expanded(
@@ -296,6 +302,37 @@ Widget _buildDateTimeRangePickerPreview(DynamicFormModel component) {
             ],
           ),
         ),
+      ],
+    ),
+  );
+}
+
+Widget _buildDropdownPreview(DynamicFormModel component) {
+  return Container(
+    height: 40,
+    decoration: BoxDecoration(
+      color: Colors.grey[800],
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: Colors.grey[600]!),
+    ),
+    child: Row(
+      children: [
+        const SizedBox(width: 8),
+        const Icon(Icons.arrow_drop_down, color: Colors.blue, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            component.config?.placeholder ?? 'Select an option',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
       ],
     ),
   );

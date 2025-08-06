@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_text_area/dynamic_text_area_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_text_field_ta
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_dropdown.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
@@ -52,6 +54,7 @@ class ReusedWidget {
     Function(DynamicFormModel)?
     onComponentUpdate, // Add callback for component updates
     bool isSharedForm = false, // Add parameter to indicate shared form mode
+    String? currentPageId, // Add page ID for navigation tracking
   }) {
     debugPrint(
       '🔍 [ReusedWidget] Building component: ${component.id}, type: ${component.type}',
@@ -61,6 +64,7 @@ class ReusedWidget {
     debugPrint('  - Placeholder: ${component.config?.placeholder}');
     debugPrint('  - Config editing enabled: ${onComponentUpdate != null}');
     debugPrint('  - Is shared form: $isSharedForm');
+    debugPrint('  - Current page ID: $currentPageId');
 
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
@@ -151,6 +155,31 @@ class ReusedWidget {
             key: key ?? Key(component.id),
             component: component,
             onComplete: (value) => onComponentValueChange(component.id, value),
+          ),
+        );
+
+      case FormTypeEnum.dropdownFormType:
+        debugPrint(
+          '🔍 [ReusedWidget] Creating dropdown component: ${component.id}',
+        );
+        debugPrint(
+          '🔍 [ReusedWidget] Component config: ${component.config?.toJson()}',
+        );
+        debugPrint('🔍 [ReusedWidget] Is shared form: $isSharedForm');
+        debugPrint('🔍 [ReusedWidget] Current page ID: $currentPageId');
+
+        return BlocProvider(
+          create: (context) => DynamicDropdownBloc(
+            initialComponent: component,
+            currentPageId: currentPageId,
+          ),
+          child: DynamicDropdown(
+            key: key ?? Key(component.id),
+            component: component,
+            onComplete: (value) => onComponentValueChange(component.id, value),
+            onComponentUpdate: onComponentUpdate,
+            isSharedForm: isSharedForm,
+            currentPageId: currentPageId,
           ),
         );
 

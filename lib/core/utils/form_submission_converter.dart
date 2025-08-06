@@ -97,6 +97,8 @@ class FormSubmissionConverter {
         return 'Switch';
       case FormTypeEnum.textFieldTagsFormType:
         return 'Tags';
+      case FormTypeEnum.dropdownFormType:
+        return 'Dropdown';
       case FormTypeEnum.buttonFormType:
         return 'Button';
       case FormTypeEnum.container:

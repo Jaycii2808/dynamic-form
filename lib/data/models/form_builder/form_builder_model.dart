@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 class FormBuilderModel extends Equatable {
   final String formId;
@@ -112,6 +113,11 @@ class FormBuilderModel extends Equatable {
   Map<String, dynamic> _convertPageToMultiPageFormat(
     FormBuilderPageModel page,
   ) {
+    debugPrint('🔄 [FormBuilderModel] Converting page: ${page.title}');
+    debugPrint(
+      '🔄 [FormBuilderModel] Page components count: ${page.components.length}',
+    );
+
     final pageIndex = pages.indexOf(page);
     final isFirstPage = pageIndex == 0;
     final isLastPage = pageIndex == pages.length - 1;
@@ -121,13 +127,27 @@ class FormBuilderModel extends Equatable {
 
     // Add main components (excluding navigation buttons)
     for (final component in page.components) {
+      debugPrint(
+        '🔄 [FormBuilderModel] Processing component: ${component.id} - ${component.type}',
+      );
       if (component.type != FormTypeEnum.buttonFormType ||
           (component.config?.action != ButtonAction.nextPage.value &&
               component.config?.action != ButtonAction.previousPage.value &&
               component.config?.action != ButtonAction.submitForm.value)) {
+        debugPrint(
+          '🔄 [FormBuilderModel] Converting component: ${component.id}',
+        );
         convertedComponents.add(_convertComponentToMultiPageFormat(component));
+      } else {
+        debugPrint(
+          '🔄 [FormBuilderModel] Skipping navigation button: ${component.id}',
+        );
       }
     }
+
+    debugPrint(
+      '🔄 [FormBuilderModel] Converted ${convertedComponents.length} components',
+    );
 
     // Add navigation buttons based on page position
     if (!isFirstPage) {
@@ -155,7 +175,7 @@ class FormBuilderModel extends Equatable {
       convertedComponents.add(_createSubmitButton());
     }
 
-    return {
+    final result = {
       'pageId': page.pageId,
       'title': page.title,
       'order': page.order,
@@ -164,12 +184,22 @@ class FormBuilderModel extends Equatable {
       'show_submit_button': isLastPage,
       'components': convertedComponents,
     };
+
+    debugPrint('🔄 [FormBuilderModel] Final page JSON: $result');
+    return result;
   }
 
   /// Convert component to multi-page format
   Map<String, dynamic> _convertComponentToMultiPageFormat(
     DynamicFormModel component,
   ) {
+    debugPrint(
+      '🔄 [FormBuilderModel] Converting component: ${component.id} - ${component.type}',
+    );
+    debugPrint(
+      '🔄 [FormBuilderModel] Component config: ${component.config?.toJson()}',
+    );
+
     final Map<String, dynamic> json = {
       'id': component.id,
       'type': component.type.toJson(),
@@ -189,6 +219,7 @@ class FormBuilderModel extends Equatable {
       json['validate'] = component.validation!.toJson();
     }
 
+    debugPrint('🔄 [FormBuilderModel] Converted component JSON: $json');
     return json;
   }
 

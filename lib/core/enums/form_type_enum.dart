@@ -8,7 +8,7 @@ enum FormTypeEnum {
   textFieldTagsFormType,
   buttonFormType,
   container,
-  //dropdownFormType,
+  dropdownFormType,
   //checkboxFormType,
   //radioFormType,
   //selectFormType,

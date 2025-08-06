@@ -30,10 +30,35 @@ class RemoteConfigFormBuilderEnum {
           .where((key) => key.isNotEmpty)
           .toList();
 
+      // If no keys found from remote config, use fallback keys
+      if (keys.isEmpty) {
+        debugPrint(
+          '⚠️ No component keys found in remote config, using fallback keys',
+        );
+        return [
+          'text_field_component_v4',
+          'text_area_component_v4',
+          'switch_component_v4',
+          'selector_button_components_v4',
+          'date_time_picker_components_v4',
+          'date_time_range_picker_single_component_v4',
+          'dropdown_component_v4', // Add dropdown component
+        ];
+      }
+
       return keys;
     } catch (e) {
-      debugPrint('❌ Error getting remote config: $e, returning empty list');
-      return [];
+      debugPrint('❌ Error getting remote config: $e, using fallback keys');
+      // Return fallback keys when remote config fails
+      return [
+        'text_field_component_v4',
+        'text_area_component_v4',
+        'switch_component_v4',
+        'selector_button_components_v4',
+        'date_time_picker_components_v4',
+        'date_time_range_picker_single_component_v4',
+        'dropdown_component_v4', // Add dropdown component
+      ];
     }
   }
 

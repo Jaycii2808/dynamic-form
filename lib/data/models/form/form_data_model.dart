@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
+import 'package:flutter/foundation.dart';
 
 class FormDataModel extends Equatable {
   final String? id;
@@ -21,15 +22,27 @@ class FormDataModel extends Equatable {
   });
 
   factory FormDataModel.fromJson(Map<String, dynamic> json) {
+    debugPrint('🔄 [FormDataModel] Converting from JSON');
+    debugPrint('🔄 [FormDataModel] JSON keys: ${json.keys.toList()}');
+
+    final List<FormForMultiPageModel> pages = json['pages'] != null
+        ? (json['pages'] as List<dynamic>).map((pageData) {
+            debugPrint(
+              '🔄 [FormDataModel] Converting page: ${pageData['title']}',
+            );
+            return FormForMultiPageModel.fromJson(
+              pageData as Map<String, dynamic>,
+            );
+          }).toList()
+        : <FormForMultiPageModel>[];
+
+    debugPrint('🔄 [FormDataModel] Converted ${pages.length} pages');
+
     return FormDataModel(
       id: json['id'] as String?,
       name: json['name'] as String?,
       description: json['description'] as String?,
-      pages: json['pages'] != null
-          ? (json['pages'] as List<dynamic>)
-              .map((pageData) => FormForMultiPageModel.fromJson(pageData as Map<String, dynamic>))
-              .toList()
-          : [],
+      pages: pages,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
@@ -74,12 +87,12 @@ class FormDataModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        pages,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
-} 
+    id,
+    name,
+    description,
+    pages,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
+}

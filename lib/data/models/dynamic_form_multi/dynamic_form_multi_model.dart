@@ -4,6 +4,7 @@ import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_factory.dart';
 import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
+import 'package:flutter/foundation.dart';
 
 class DynamicMultiPageFormModel extends Equatable {
   final String formId;
@@ -83,17 +84,26 @@ class FormForMultiPageModel extends Equatable {
   });
 
   factory FormForMultiPageModel.fromJson(Map<String, dynamic> json) {
+    debugPrint('🔄 [FormForMultiPageModel] Converting page: ${json['title']}');
+
     var componentList =
-        (json['components'] as List<dynamic>?)
-            ?.map(
-              (compJson) => FormComponentMultiPageModel.fromJson(
-                compJson as Map<String, dynamic>,
-              ),
-            )
-            .toList() ??
+        (json['components'] as List<dynamic>?)?.map(
+          (compJson) {
+            debugPrint(
+              '🔄 [FormForMultiPageModel] Converting component: ${compJson['id']} - ${compJson['type']}',
+            );
+            return FormComponentMultiPageModel.fromJson(
+              compJson as Map<String, dynamic>,
+            );
+          },
+        ).toList() ??
         [];
 
     componentList.sort((a, b) => a.order.compareTo(b.order));
+
+    debugPrint(
+      '🔄 [FormForMultiPageModel] Converted ${componentList.length} components',
+    );
 
     return FormForMultiPageModel(
       pageId: json['pageId'] ?? '',
@@ -170,6 +180,12 @@ class FormComponentMultiPageModel extends Equatable {
   });
 
   factory FormComponentMultiPageModel.fromJson(Map<String, dynamic> json) {
+    debugPrint(
+      '🔍 [FormComponentMultiPageModel] Parsing component: ${json['id']}',
+    );
+    debugPrint('🔍 [FormComponentMultiPageModel] Type: ${json['type']}');
+    debugPrint('🔍 [FormComponentMultiPageModel] Order: ${json['order']}');
+
     return FormComponentMultiPageModel(
       id: json['id'] ?? '',
       type: FormTypeEnum.fromJson(json['type']),

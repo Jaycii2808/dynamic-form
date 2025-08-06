@@ -184,6 +184,23 @@ class SharedFormScreen extends StatelessWidget {
 
     final currentPage = pages[state.currentPageIndex];
 
+    // Debug widget to show form structure
+    debugPrint('🔍 [SharedFormScreen] Current page: ${currentPage.title}');
+    debugPrint('🔍 [SharedFormScreen] Page ID: ${currentPage.pageId}');
+    debugPrint(
+      '🔍 [SharedFormScreen] Components count: ${currentPage.components.length}',
+    );
+
+    for (int i = 0; i < currentPage.components.length; i++) {
+      final component = currentPage.components[i];
+      debugPrint(
+        '🔍 [SharedFormScreen] Component $i: ${component.id} - ${component.type}',
+      );
+      debugPrint(
+        '🔍 [SharedFormScreen] Component $i config: ${component.config.toJson()}',
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -207,6 +224,19 @@ class SharedFormScreen extends StatelessWidget {
                   updatedComponent,
                 );
 
+                debugPrint(
+                  '🔍 [SharedFormScreen] Component ${index + 1}: ${component.id}',
+                );
+                debugPrint(
+                  '🔍 [SharedFormScreen] Component type: ${component.type}',
+                );
+                debugPrint(
+                  '🔍 [SharedFormScreen] Component config: ${component.config.toJson()}',
+                );
+                debugPrint(
+                  '🔍 [SharedFormScreen] Dynamic component config: ${dynamicComponent.config?.toJson()}',
+                );
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   child: DynamicFormRenderer(
@@ -218,12 +248,14 @@ class SharedFormScreen extends StatelessWidget {
                         .read<SharedFormBloc>()
                         .add(ButtonActionEvent(action, data)),
                     isSharedForm: true,
+                    currentPageId:
+                        currentPage.pageId, // Pass the current page ID
                   ),
                 );
               },
             ),
           ),
-         // if (pages.length > 1) _buildNavigationButtons(context, pages, state),
+          // if (pages.length > 1) _buildNavigationButtons(context, pages, state),
         ],
       ),
     );
@@ -470,14 +502,30 @@ class SharedFormScreen extends StatelessWidget {
   DynamicFormModel _convertToDynamicFormModel(
     FormComponentMultiPageModel component,
   ) {
-    return DynamicFormModel(
+    debugPrint('🔄 [SharedFormScreen] Converting component: ${component.id}');
+    debugPrint('🔄 [SharedFormScreen] Component type: ${component.type}');
+    debugPrint(
+      '🔄 [SharedFormScreen] Component config: ${component.config.toJson()}',
+    );
+
+    final dynamicComponent = DynamicFormModel(
       id: component.id,
       type: component.type,
+      labelFormBuilder: component.config.label, // Add labelFormBuilder
       order: component.order,
       config: component.config,
       style: component.style,
       validation: component.validation,
       children: component.children?.map(_convertToDynamicFormModel).toList(),
     );
+
+    debugPrint(
+      '🔄 [SharedFormScreen] Converted to DynamicFormModel: ${dynamicComponent.id}',
+    );
+    debugPrint(
+      '🔄 [SharedFormScreen] Dynamic component config: ${dynamicComponent.config?.toJson()}',
+    );
+
+    return dynamicComponent;
   }
 }

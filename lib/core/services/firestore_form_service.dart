@@ -66,6 +66,36 @@ class FirestoreFormService {
       }
 
       debugPrint('Form data retrieved successfully');
+      debugPrint('Form data keys: ${data.keys.toList()}');
+
+      // Debug the form data structure
+      if (data['formData'] != null) {
+        final formData = data['formData'] as Map<String, dynamic>;
+        debugPrint('Form data structure: ${formData.keys.toList()}');
+
+        if (formData['pages'] != null) {
+          final pages = formData['pages'] as List<dynamic>;
+          debugPrint('Pages count: ${pages.length}');
+
+          for (int i = 0; i < pages.length; i++) {
+            final page = pages[i] as Map<String, dynamic>;
+            debugPrint('Page $i: ${page['title']} (${page['pageId']})');
+
+            if (page['components'] != null) {
+              final components = page['components'] as List<dynamic>;
+              debugPrint('Page $i components count: ${components.length}');
+
+              for (int j = 0; j < components.length; j++) {
+                final component = components[j] as Map<String, dynamic>;
+                debugPrint(
+                  'Page $i Component $j: ${component['id']} - ${component['type']}',
+                );
+              }
+            }
+          }
+        }
+      }
+
       return SharedFormModel.fromFirestoreResult({
         'formData': data['formData'],
         'formName': data['formName'],
@@ -82,7 +112,7 @@ class FirestoreFormService {
 
   /// Generate shareable link for form
   String generateFormShareLink(String formId) {
-    final baseUrl = dotenv.env['BACKEND_URL'];
+    final baseUrl = dotenv.env['BASE_URL'];
     final shareUrl = '$baseUrl/forms/$formId';
     debugPrint('Generated share link: $shareUrl');
     return shareUrl;
