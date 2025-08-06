@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 
 class DropdownNavigationService {
   static final DropdownNavigationService _instance =
@@ -60,7 +61,8 @@ class DropdownNavigationService {
 
     // Check for goto actions first
     for (final selection in pageSelections.values) {
-      if (selection.action?.toLowerCase() == 'goto' &&
+      final action = DropdownActionOptionsEnum.fromString(selection.action);
+      if (action == DropdownActionOptionsEnum.goto &&
           selection.targetSection != null) {
         debugPrint(
           '🎯 [DropdownNavigationService] Found goto action to: ${selection.targetSection}',
@@ -69,12 +71,15 @@ class DropdownNavigationService {
       }
     }
 
-    // Check for continue actions
-    bool hasContinueAction = pageSelections.values.any(
-      (selection) => selection.action?.toLowerCase() == 'continue',
+    // Check for continue/next actions
+    bool hasNextAction = pageSelections.values.any(
+      (selection) {
+        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        return action == DropdownActionOptionsEnum.next;
+      },
     );
 
-    if (hasContinueAction) {
+    if (hasNextAction) {
       debugPrint(
         '➡️ [DropdownNavigationService] Found continue action, proceeding to next page',
       );
@@ -83,7 +88,10 @@ class DropdownNavigationService {
 
     // Check for submit actions
     bool hasSubmitAction = pageSelections.values.any(
-      (selection) => selection.action?.toLowerCase() == 'submit',
+      (selection) {
+        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        return action == DropdownActionOptionsEnum.submit;
+      },
     );
 
     if (hasSubmitAction) {
@@ -113,7 +121,10 @@ class DropdownNavigationService {
   bool shouldSubmitForm(String currentPageId) {
     final pageSelections = getPageDropdownSelections(currentPageId);
     return pageSelections.values.any(
-      (selection) => selection.action?.toLowerCase() == 'submit',
+      (selection) {
+        final action = DropdownActionOptionsEnum.fromString(selection.action);
+        return action == DropdownActionOptionsEnum.submit;
+      },
     );
   }
 
@@ -127,10 +138,11 @@ class DropdownNavigationService {
       final selection = entry.value;
 
       if (selection.action != null) {
+        final action = DropdownActionOptionsEnum.fromString(selection.action);
         actions.add(
           DropdownNavigationAction(
             componentId: componentId,
-            action: selection.action!,
+            action: action.value,
             targetSection: selection.targetSection,
             optionLabel: selection.label,
           ),
@@ -147,8 +159,11 @@ class DropdownNavigationService {
     for (final pageEntry in _pageDropdownSelections.entries) {
       debugPrint('  Page: ${pageEntry.key}');
       for (final componentEntry in pageEntry.value.entries) {
+        final action = DropdownActionOptionsEnum.fromString(
+          componentEntry.value.action,
+        );
         debugPrint(
-          '    Component: ${componentEntry.key} -> ${componentEntry.value.label} (${componentEntry.value.action})',
+          '    Component: ${componentEntry.key} -> ${componentEntry.value.label} (${action.value})',
         );
       }
     }

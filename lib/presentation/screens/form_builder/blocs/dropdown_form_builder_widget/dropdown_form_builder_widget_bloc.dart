@@ -1,0 +1,425 @@
+
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_event.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class DropdownFormBuilderWidgetBloc
+    extends
+        Bloc<DropdownFormBuilderWidgetEvent, DropdownFormBuilderWidgetState> {
+  DropdownFormBuilderWidgetBloc()
+    : super(
+        const DropdownFormBuilderWidgetInitial(),
+      ) {
+    on<InitializeDropdownFormBuilderEvent>(_onInitialize);
+    on<UpdateQuestionEvent>(_onUpdateQuestion);
+    on<UpdatePlaceholderEvent>(_onUpdatePlaceholder);
+    on<UpdateRequiredEvent>(_onUpdateRequired);
+    on<AddOptionEvent>(_onAddOption);
+    on<RemoveOptionEvent>(_onRemoveOption);
+    on<UpdateOptionLabelEvent>(_onUpdateOptionLabel);
+    on<ReorderOptionsEvent>(_onReorderOptions);
+    on<UpdateOptionNavigationEvent>(_onUpdateOptionNavigation);
+    on<EnableNavigationFeatureEvent>(_onEnableNavigationFeature);
+    on<UpdateComponentEvent>(_onUpdateComponent);
+  }
+
+  Future<void> _onInitialize(
+    InitializeDropdownFormBuilderEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Initializing with component: ${event.component.id}',
+    );
+
+    emit(DropdownFormBuilderWidgetLoading.fromState(state: state));
+
+    try {
+      final component = event.component;
+      final question = component.config?.label ?? 'Dropdown Question';
+      final placeholder = component.config?.placeholder ?? 'Select an option';
+      final options = List<Option>.from(component.config?.options ?? []);
+      final isRequired = component.config?.isRequired ?? false;
+      final availablePages = event.availablePages;
+
+      // Add default options if empty
+      List<Option> finalOptions = options;
+      if (finalOptions.isEmpty) {
+        finalOptions = [
+          const Option(value: 'option1', label: 'Option 1', order: 1),
+          const Option(value: 'option2', label: 'Option 2', order: 2),
+          const Option(value: 'option3', label: 'Option 3', order: 3),
+        ];
+      }
+
+      // Check if navigation feature is enabled by checking if any option has action
+      final navigationFeatureEnabled = finalOptions.any(
+        (option) => option.action != null && option.action!.isNotEmpty,
+      );
+
+      emit(
+        DropdownFormBuilderWidgetSuccess(
+          question: question,
+          placeholder: placeholder,
+          options: finalOptions,
+          isRequired: isRequired,
+          navigationFeatureEnabled: navigationFeatureEnabled,
+          availablePages: availablePages,
+          component: component,
+        ),
+      );
+
+      debugPrint(
+        '✅ [DropdownFormBuilderBloc] Initialized successfully with ${finalOptions.length} options',
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error initializing: $e');
+      debugPrint('Stack trace: $stackTrace');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage:
+              'Failed to initialize dropdown form builder: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateQuestion(
+    UpdateQuestionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating question: ${event.question}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(question: event.question));
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating question: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update question: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdatePlaceholder(
+    UpdatePlaceholderEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating placeholder: ${event.placeholder}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(placeholder: event.placeholder));
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating placeholder: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update placeholder: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateRequired(
+    UpdateRequiredEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating required: ${event.isRequired}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(isRequired: event.isRequired));
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating required: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update required: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onAddOption(
+    AddOptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Adding new option');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final newOrder = currentState.options.length + 1;
+        final newOption = Option(
+          value: 'option$newOrder',
+          label: 'Option $newOrder',
+          order: newOrder,
+          // Add default navigation action if feature is enabled
+          action: currentState.navigationFeatureEnabled
+              ? DropdownActionOptionsEnum.next.value
+              : null,
+          targetSection: currentState.navigationFeatureEnabled ? null : null,
+        );
+
+        final updatedOptions = List<Option>.from(currentState.options)
+          ..add(newOption);
+
+        emit(currentState.copyWith(options: updatedOptions));
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Added option: ${newOption.label}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error adding option: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to add option: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onRemoveOption(
+    RemoveOptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Removing option at index: ${event.index}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+        updatedOptions.removeAt(event.index);
+
+        // Reorder remaining options
+        for (int i = 0; i < updatedOptions.length; i++) {
+          updatedOptions[i] = updatedOptions[i].copyWith(order: i + 1);
+        }
+
+        emit(currentState.copyWith(options: updatedOptions));
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Removed option, remaining: ${updatedOptions.length}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error removing option: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to remove option: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateOptionLabel(
+    UpdateOptionLabelEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating option label at index ${event.index}: ${event.label}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+        updatedOptions[event.index] = updatedOptions[event.index].copyWith(
+          label: event.label,
+        );
+
+        emit(currentState.copyWith(options: updatedOptions));
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating option label: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update option label: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onReorderOptions(
+    ReorderOptionsEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Reordering options: ${event.oldIndex} -> ${event.newIndex}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+
+        int newIndex = event.newIndex;
+        if (newIndex > event.oldIndex) {
+          newIndex -= 1;
+        }
+
+        final item = updatedOptions.removeAt(event.oldIndex);
+        updatedOptions.insert(newIndex, item);
+
+        // Update order numbers
+        for (int i = 0; i < updatedOptions.length; i++) {
+          updatedOptions[i] = updatedOptions[i].copyWith(order: i + 1);
+        }
+
+        emit(currentState.copyWith(options: updatedOptions));
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Reordered options successfully',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error reordering options: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to reorder options: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateOptionNavigation(
+    UpdateOptionNavigationEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating option navigation: ${event.optionIndex} -> ${event.action} -> ${event.targetSection}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+
+        // Enable navigation feature if not already enabled
+        bool navigationFeatureEnabled = currentState.navigationFeatureEnabled;
+        if (!navigationFeatureEnabled) {
+          navigationFeatureEnabled = true;
+        }
+
+        updatedOptions[event.optionIndex] = updatedOptions[event.optionIndex]
+            .copyWith(
+              action: event.action,
+              targetSection: event.targetSection,
+            );
+
+        emit(
+          currentState.copyWith(
+            options: updatedOptions,
+            navigationFeatureEnabled: navigationFeatureEnabled,
+          ),
+        );
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Updated option navigation successfully',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error updating option navigation: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update option navigation: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onEnableNavigationFeature(
+    EnableNavigationFeatureEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Enabling navigation feature');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+
+        // Set default navigation action for all existing options
+        for (int i = 0; i < updatedOptions.length; i++) {
+          if (updatedOptions[i].action == null ||
+              updatedOptions[i].action!.isEmpty) {
+            updatedOptions[i] = updatedOptions[i].copyWith(
+              action: DropdownActionOptionsEnum.next.value,
+              targetSection: null,
+            );
+          }
+        }
+
+        emit(
+          currentState.copyWith(
+            options: updatedOptions,
+            navigationFeatureEnabled: true,
+          ),
+        );
+        debugPrint('✅ [DropdownFormBuilderBloc] Navigation feature enabled');
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error enabling navigation feature: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to enable navigation feature: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateComponent(
+    UpdateComponentEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Updating component');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final component = currentState.component;
+
+        if (component != null) {
+          final updatedComponent = component.copyWith(
+            config: component.config?.copyWith(
+              label: currentState.question,
+              placeholder: currentState.placeholder,
+              isRequired: currentState.isRequired,
+              options: currentState.options,
+            ),
+          );
+
+          emit(currentState.copyWith(component: updatedComponent));
+          debugPrint(
+            '✅ [DropdownFormBuilderBloc] Component updated successfully',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating component: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update component: ${e.toString()}',
+        ),
+      );
+    }
+  }
+}

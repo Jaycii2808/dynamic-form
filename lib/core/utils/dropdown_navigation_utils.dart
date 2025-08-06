@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:dynamic_form_bi/core/services/dropdown_navigation_service.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_navigation_service.dart';
 
 class DropdownNavigationUtils {
   static final DropdownNavigationService _navigationService =

@@ -6,7 +6,7 @@ import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.d
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_state.dart';
-import 'package:dynamic_form_bi/core/services/dropdown_navigation_service.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_navigation_service.dart';
 
 class DynamicDropdownBloc
     extends Bloc<DynamicDropdownEvent, DynamicDropdownState> {

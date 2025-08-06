@@ -1,5 +1,5 @@
 enum DropdownActionOptionsEnum {
-  next('continue'),
+  next('next'),
   goto('goto'),
   submit('submit');
 
@@ -8,7 +8,7 @@ enum DropdownActionOptionsEnum {
 
   static DropdownActionOptionsEnum fromString(String? value) {
     switch (value?.toLowerCase()) {
-      case 'continue':
+      case 'next':
         return DropdownActionOptionsEnum.next;
       case 'goto':
         return DropdownActionOptionsEnum.goto;

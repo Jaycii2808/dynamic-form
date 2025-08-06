@@ -67,6 +67,7 @@ class MyApp extends StatelessWidget {
           remoteConfigService: RemoteConfigService(),
         ),
       ),
+
     ];
   }
 }

@@ -622,14 +622,18 @@ class SharedFormScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F2937),
         title: const Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.warning, color: Colors.orange, size: 24),
-            SizedBox(width: 8),
-            Text(
-              'Required Fields Missing',
-              style: TextStyle(
-                color: Colors.orange,
-                fontWeight: FontWeight.bold,
+            Icon(Icons.warning, color: Colors.orange, size: 20),
+            SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                'Required Fields Missing',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ],
