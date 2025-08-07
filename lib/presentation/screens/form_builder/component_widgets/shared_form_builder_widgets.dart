@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SharedFormBuilderWidgets {
   // Question header widget - reusable across different form types
-  static Widget buildQuestionHeader({
+  static Widget buildTitleHeader({
     required Widget imageIcon,
     required Widget questionInput,
     Widget? formTypeIcon,
@@ -334,7 +334,6 @@ class SharedFormBuilderWidgets {
         ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           // Duplicate button
           GestureDetector(
@@ -366,7 +365,7 @@ class SharedFormBuilderWidgets {
             ),
           ),
 
-          // Required toggle - make it flexible
+          // Required toggle - make it flexible and wrap if needed
           Flexible(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -416,7 +415,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onDropdownTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildDropdownIcon(onTap: onDropdownTap),
       formTypeLabel: 'Dropdown',
@@ -430,7 +429,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onTextFieldTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildTextFieldIcon(onTap: onTextFieldTap),
       formTypeLabel: 'Text Field',
@@ -444,7 +443,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onSwitchTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildSwitchIcon(onTap: onSwitchTap),
       formTypeLabel: 'Switch',
@@ -458,7 +457,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onDatePickerTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildDatePickerIcon(onTap: onDatePickerTap),
       formTypeLabel: 'Date Picker',
@@ -472,7 +471,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onTextAreaTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildTextAreaIcon(onTap: onTextAreaTap),
       formTypeLabel: 'Text Area',
@@ -486,7 +485,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onButtonTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildButtonIcon(onTap: onButtonTap),
       formTypeLabel: 'Button',
@@ -504,7 +503,7 @@ class SharedFormBuilderWidgets {
     VoidCallback? onImageTap,
     VoidCallback? onFormTypeTap,
   }) {
-    return buildQuestionHeader(
+    return buildTitleHeader(
       imageIcon: buildImageIcon(onTap: onImageTap),
       formTypeIcon: buildFormTypeIcon(
         icon: formTypeIcon,
@@ -517,4 +516,48 @@ class SharedFormBuilderWidgets {
       questionInput: questionInput,
     );
   }
+
+  /*
+   * USAGE EXAMPLES FOR DIFFERENT FORM TYPES:
+   *
+   * 1. For Dropdown:
+   *    SharedFormBuilderWidgets.buildDropdownQuestionHeader(
+   *      questionInput: questionInputWidget,
+   *      onImageTap: () => showImageDialog(),
+   *      onDropdownTap: () => showDropdownInfo(),
+   *    );
+   *
+   * 2. For Text Field:
+   *    SharedFormBuilderWidgets.buildTextFieldQuestionHeader(
+   *      questionInput: questionInputWidget,
+   *      onImageTap: () => showImageDialog(),
+   *      onTextFieldTap: () => showTextFieldInfo(),
+   *    );
+   *
+   * 3. For Switch:
+   *    SharedFormBuilderWidgets.buildSwitchQuestionHeader(
+   *      questionInput: questionInputWidget,
+   *      onImageTap: () => showImageDialog(),
+   *      onSwitchTap: () => showSwitchInfo(),
+   *    );
+   *
+   * 4. For Custom Form Type:
+   *    SharedFormBuilderWidgets.buildFormTypeQuestionHeader(
+   *      questionInput: questionInputWidget,
+   *      formTypeIcon: Icons.radio_button_checked,
+   *      formTypeLabel: 'Radio Button',
+   *      formTypeIconColor: Colors.purple,
+   *      formTypeIconBackgroundColor: Colors.purple.withValues(alpha: 0.2),
+   *      onImageTap: () => showImageDialog(),
+   *      onFormTypeTap: () => showRadioInfo(),
+   *    );
+   *
+   * 5. For Generic Usage:
+   *    SharedFormBuilderWidgets.buildTitleHeader(
+   *      imageIcon: customImageIcon,
+   *      formTypeIcon: customFormTypeIcon,
+   *      formTypeLabel: 'Custom Type',
+   *      questionInput: questionInputWidget,
+   *    );
+   */
 }

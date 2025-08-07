@@ -205,13 +205,18 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
         children: [
           Expanded(
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: styleModel.labelTextSize,
-                    color: styleModel.labelColor,
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: styleModel.labelTextSize,
+                      color: styleModel.labelColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
                 if (isRequired)

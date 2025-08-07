@@ -144,147 +144,99 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     }
   }
 
-  Future<void> _onAddComponent(
+  void _onAddComponent(
     AddComponentEvent event,
     Emitter<FormBuilderState> emit,
-  ) async {
-    try {
-      // Create a new component with unique ID
-      final newComponent = event.component.copyWith(
-        id: '${event.component.type}_${DateTime.now().millisecondsSinceEpoch}',
-      );
+  ) {
+    debugPrint(
+      '➕ [FormBuilderBloc] Adding component: ${event.component.type} to page: ${state.currentPageId}',
+    );
 
-      // Update the current page with the new component
-      final updatedPages = state.pages.map((page) {
-        if (page.pageId == state.currentPageId) {
-          final updatedComponents = List<DynamicFormModel>.from(page.components)
-            ..add(newComponent);
-          return page.copyWith(components: updatedComponents);
-        }
-        return page;
-      }).toList();
+    // Add component to the current page
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = List<DynamicFormModel>.from(page.components)
+          ..add(event.component);
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
 
-      emit(
-        FormBuilderSuccess.fromState(state: state).copyWith(
-          pages: updatedPages,
-        ),
-      );
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
 
-      debugPrint(
-        'Component added to page ${state.currentPageId}: ${newComponent.type}',
-      );
-    } catch (e, stackTrace) {
-      String errorMessage = 'Failed to add component: $e';
-      debugPrint('Stack trace: $stackTrace');
-      emit(
-        FormBuilderError(
-          errorMessage: errorMessage,
-          components: state.components,
-          pages: state.pages,
-          currentPageId: state.currentPageId,
-          availableComponents: state.availableComponents,
-          isDragging: state.isDragging,
-          showComponentsPanel: state.showComponentsPanel,
-        ),
-      );
-    }
+    debugPrint(
+      '✅ [FormBuilderBloc] Component added to page ${state.currentPageId}. Total components: ${updatedPages.firstWhere((p) => p.pageId == state.currentPageId).components.length}',
+    );
   }
 
-  Future<void> _onMoveComponent(
+  void _onMoveComponent(
     MoveComponentEvent event,
     Emitter<FormBuilderState> emit,
-  ) async {
-    try {
-      // Update the current page with moved component
-      final updatedPages = state.pages.map((page) {
-        if (page.pageId == state.currentPageId) {
-          final updatedComponents = List<DynamicFormModel>.from(
-            page.components,
-          );
+  ) {
+    debugPrint(
+      '🔄 [FormBuilderBloc] Moving component from index ${event.oldIndex} to ${event.newIndex} on page: ${state.currentPageId}',
+    );
 
-          if (event.oldIndex >= 0 &&
-              event.oldIndex < updatedComponents.length &&
-              event.newIndex >= 0 &&
-              event.newIndex < updatedComponents.length) {
-            final component = updatedComponents.removeAt(event.oldIndex);
-            updatedComponents.insert(event.newIndex, component);
-          }
-
-          return page.copyWith(components: updatedComponents);
+    // Move component within the current page
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = List<DynamicFormModel>.from(page.components);
+        if (event.oldIndex >= 0 &&
+            event.oldIndex < updatedComponents.length &&
+            event.newIndex >= 0 &&
+            event.newIndex < updatedComponents.length) {
+          final component = updatedComponents.removeAt(event.oldIndex);
+          updatedComponents.insert(event.newIndex, component);
         }
-        return page;
-      }).toList();
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
 
-      emit(
-        FormBuilderSuccess.fromState(state: state).copyWith(
-          pages: updatedPages,
-        ),
-      );
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
 
-      debugPrint(
-        'Component moved from index ${event.oldIndex} to ${event.newIndex} on page ${state.currentPageId}',
-      );
-    } catch (e, stackTrace) {
-      String errorMessage = 'Failed to move component: $e';
-      debugPrint('Stack trace: $stackTrace');
-      emit(
-        FormBuilderError(
-          errorMessage: errorMessage,
-          components: state.components,
-          pages: state.pages,
-          currentPageId: state.currentPageId,
-          availableComponents: state.availableComponents,
-          isDragging: state.isDragging,
-          showComponentsPanel: state.showComponentsPanel,
-        ),
-      );
-    }
+    debugPrint(
+      '✅ [FormBuilderBloc] Component moved on page ${state.currentPageId}',
+    );
   }
 
-  Future<void> _onRemoveComponent(
+  void _onRemoveComponent(
     RemoveComponentEvent event,
     Emitter<FormBuilderState> emit,
-  ) async {
-    try {
-      // Update the current page with removed component
-      final updatedPages = state.pages.map((page) {
-        if (page.pageId == state.currentPageId) {
-          final updatedComponents = List<DynamicFormModel>.from(
-            page.components,
-          );
+  ) {
+    debugPrint(
+      '➖ [FormBuilderBloc] Removing component at index: ${event.index} from page: ${state.currentPageId}',
+    );
 
-          if (event.index >= 0 && event.index < updatedComponents.length) {
-            final removedComponent = updatedComponents.removeAt(event.index);
-            debugPrint(
-              'Component removed from page ${state.currentPageId}: ${removedComponent.type}',
-            );
-          }
-
-          return page.copyWith(components: updatedComponents);
+    // Remove component from the current page
+    final updatedPages = state.pages.map((page) {
+      if (page.pageId == state.currentPageId) {
+        final updatedComponents = List<DynamicFormModel>.from(page.components);
+        if (event.index >= 0 && event.index < updatedComponents.length) {
+          updatedComponents.removeAt(event.index);
         }
-        return page;
-      }).toList();
+        return page.copyWith(components: updatedComponents);
+      }
+      return page;
+    }).toList();
 
-      emit(
-        FormBuilderSuccess.fromState(state: state).copyWith(
-          pages: updatedPages,
-        ),
-      );
-    } catch (e, stackTrace) {
-      String errorMessage = 'Failed to remove component: $e';
-      debugPrint('Stack trace: $stackTrace');
-      emit(
-        FormBuilderError(
-          errorMessage: errorMessage,
-          components: state.components,
-          pages: state.pages,
-          currentPageId: state.currentPageId,
-          availableComponents: state.availableComponents,
-          isDragging: state.isDragging,
-          showComponentsPanel: state.showComponentsPanel,
-        ),
-      );
-    }
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+      ),
+    );
+
+    debugPrint(
+      '✅ [FormBuilderBloc] Component removed from page ${state.currentPageId}. Remaining components: ${updatedPages.firstWhere((p) => p.pageId == state.currentPageId).components.length}',
+    );
   }
 
   void _onStartDrag(
@@ -851,15 +803,25 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       );
       debugPrint('💾 [FormBuilderBloc] Form title: ${existingForm.name}');
 
+      // Clear any existing state and load fresh form data
       emit(
-        FormBuilderSuccess.fromState(state: state).copyWith(
+        FormBuilderSuccess(
+          components: const [], // Clear components
           pages: existingForm.pages,
           currentPageId: existingForm.pages.isNotEmpty
               ? existingForm.pages.first.pageId
               : 'page_1',
-          formTitle: existingForm.name,
           availableComponents: _remoteConfigService.getAllConfigs(),
           availableButtonComponents: _remoteConfigService.getAllButtonConfigs(),
+          isDragging: false,
+          showComponentsPanel: true,
+          showButtonComponentsPanel: false,
+          formTitle: existingForm.name,
+          insertIndicatorIndex: null,
+          isHovering: false,
+          hoveredComponent: null,
+          hoverTargetIndex: null,
+          rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
         ),
       );
 

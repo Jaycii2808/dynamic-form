@@ -74,25 +74,6 @@ Widget _buildTitle(
           ],
         ],
       ),
-
-      // Page Navigation Row (only show if multi-page)
-      if (isMultiPage) ...[
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildEditablePageTitle(context, state, formBuilderBloc),
-            ),
-            const SizedBox(width: 12),
-            _buildPageNavigation(
-              context,
-              state,
-              formBuilderBloc,
-              currentPageIndex,
-            ),
-          ],
-        ),
-      ],
     ],
   );
 }
@@ -134,43 +115,6 @@ Widget _buildEditableFormTitle(
   );
 }
 
-Widget _buildEditablePageTitle(
-  BuildContext context,
-  FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
-  return GestureDetector(
-    onTap: () => _showEditPageTitleDialog(context, state, formBuilderBloc),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.description, color: Colors.green, size: 14),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              state.currentPageTitle,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -186,90 +130,6 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
         fontWeight: FontWeight.w500,
       ),
     ),
-  );
-}
-
-Widget _buildPageNavigation(
-  BuildContext context,
-  FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-  int currentPageIndex,
-) {
-  final hasPrevious = currentPageIndex > 0;
-  final hasNext = currentPageIndex < state.pages.length - 1;
-
-  return Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      // Page Selector
-      GestureDetector(
-        onTap: () => _showPageSelectorDialog(context, state, formBuilderBloc),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.list, color: Colors.blue, size: 12),
-              SizedBox(width: 2),
-              Icon(Icons.arrow_drop_down, color: Colors.blue, size: 14),
-            ],
-          ),
-        ),
-      ),
-
-      const SizedBox(width: 4),
-
-      // Previous Button
-      if (hasPrevious)
-        GestureDetector(
-          onTap: () {
-            final previousPage = state.pages[currentPageIndex - 1];
-            formBuilderBloc.add(SwitchPageEvent(previousPage.pageId));
-          },
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios,
-              color: Colors.blue,
-              size: 12,
-            ),
-          ),
-        ),
-
-      if (hasPrevious && hasNext) const SizedBox(width: 4),
-
-      // Next Button
-      if (hasNext)
-        GestureDetector(
-          onTap: () {
-            final nextPage = state.pages[currentPageIndex + 1];
-            formBuilderBloc.add(SwitchPageEvent(nextPage.pageId));
-          },
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-            ),
-            child: const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.blue,
-              size: 12,
-            ),
-          ),
-        ),
-    ],
   );
 }
 
@@ -323,7 +183,6 @@ Widget _buildActionButtons(
           tooltip: 'Preview & Share',
         ),
       ),
-
     ],
   );
 }
@@ -361,137 +220,6 @@ void _showEditFormTitleDialog(
               Navigator.of(context).pop();
             },
             child: const Text('Save'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showEditPageTitleDialog(
-  BuildContext context,
-  FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
-  final controller = TextEditingController(text: state.currentPageTitle);
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Edit Page Title'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Page Title',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final newTitle = controller.text.trim();
-              if (newTitle.isNotEmpty) {
-                formBuilderBloc.add(
-                  UpdatePageTitleEvent(
-                    pageId: state.currentPageId,
-                    title: newTitle,
-                  ),
-                );
-              }
-              Navigator.of(context).pop();
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showPageSelectorDialog(
-  BuildContext context,
-  FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.view_list, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Select Page'),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: state.pages.length,
-            itemBuilder: (context, index) {
-              final page = state.pages[index];
-              final isCurrentPage = page.pageId == state.currentPageId;
-              final componentCount = page.components.length;
-              return ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isCurrentPage ? Colors.blue : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: isCurrentPage ? Colors.white : Colors.grey[600],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  page.title,
-                  style: TextStyle(
-                    fontWeight: isCurrentPage
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: isCurrentPage ? Colors.blue : Colors.black,
-                  ),
-                ),
-                subtitle: componentCount > 0
-                    ? Text(
-                        '$componentCount component${componentCount > 1 ? 's' : ''}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      )
-                    : const Text(
-                        'Empty page',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                trailing: isCurrentPage
-                    ? const Icon(Icons.check_circle, color: Colors.blue)
-                    : null,
-                onTap: () {
-                  formBuilderBloc.add(SwitchPageEvent(page.pageId));
-                  Navigator.of(context).pop();
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
           ),
         ],
       );

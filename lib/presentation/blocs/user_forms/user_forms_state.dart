@@ -1,17 +1,14 @@
 import 'package:equatable/equatable.dart';
-import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 
 abstract class UserFormsState extends Equatable {
   final List<Map<String, dynamic>> userForms;
   final List<Map<String, dynamic>> formTemplates;
   final bool isLoading;
-  final String? errorMessage;
 
   const UserFormsState({
     this.userForms = const [],
     this.formTemplates = const [],
     this.isLoading = false,
-    this.errorMessage,
   });
 
   @override
@@ -19,7 +16,6 @@ abstract class UserFormsState extends Equatable {
     userForms,
     formTemplates,
     isLoading,
-    errorMessage,
   ];
 }
 
@@ -38,7 +34,6 @@ class UserFormsLoading extends UserFormsState {
         userForms: state.userForms,
         formTemplates: state.formTemplates,
         isLoading: true,
-        errorMessage: state.errorMessage,
       );
 }
 
@@ -53,7 +48,6 @@ class UserFormsSuccess extends UserFormsState {
         userForms: state.userForms,
         formTemplates: state.formTemplates,
         isLoading: false,
-        errorMessage: state.errorMessage,
       );
 
   UserFormsSuccess copyWith({
@@ -70,6 +64,7 @@ class UserFormsSuccess extends UserFormsState {
 }
 
 class UserFormsError extends UserFormsState {
+
   final String errorMessage;
 
   const UserFormsError({
@@ -85,7 +80,6 @@ class UserFormsError extends UserFormsState {
          userForms: state.userForms,
          formTemplates: state.formTemplates,
          isLoading: false,
-         errorMessage: errorMessage,
        );
 
   @override

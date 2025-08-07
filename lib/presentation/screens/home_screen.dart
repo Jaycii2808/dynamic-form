@@ -883,9 +883,9 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Description:',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -896,9 +896,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Category:',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -922,9 +922,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
               if (template['formData'] != null) ...[
-                Text(
+                const Text(
                   'Form Structure:',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -982,9 +982,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           if (pages.isNotEmpty) ...[
-            Text(
+            const Text(
               'Pages:',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 4),
             ...pages.map<Widget>((page) {
@@ -997,7 +997,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(fontSize: 12),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ],
       );
@@ -1017,10 +1017,10 @@ class _HomeScreenState extends State<HomeScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.add_circle, color: Colors.green),
-              const SizedBox(width: 8),
+              Icon(Icons.add_circle, color: Colors.green),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Create Form from Template',

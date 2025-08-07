@@ -193,7 +193,7 @@ class UserFormsService {
       final formBuilderModel = FormBuilderModel(
         formId: 'user_form_${DateTime.now().millisecondsSinceEpoch}',
         name: 'Copy of $templateName',
-        pages: [], // Will be populated from template
+        pages: const [], // Will be populated from template
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -275,7 +275,7 @@ class UserFormsService {
                           componentData['config']?['placeholder'] ?? '',
                       isRequired: componentData['config']?['required'] ?? false,
                     ),
-                    style: StyleModel(), // Use default style
+                    style: const StyleModel(), // Use default style
                   );
                 }
               }).toList();
@@ -299,7 +299,7 @@ class UserFormsService {
               pageId: 'page_${DateTime.now().millisecondsSinceEpoch}',
               title: 'Error Page',
               order: 1,
-              components: [],
+              components: const [],
             );
           }
         }).toList();

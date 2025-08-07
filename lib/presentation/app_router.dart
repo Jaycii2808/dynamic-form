@@ -12,15 +12,15 @@ class AppRouter {
       // Home route
       GoRoute(
         path: HomeScreen.routeName,
-        builder: (context, state) => const HomeScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
       ),
       // Shared form route with form ID parameter
       GoRoute(
         path: SharedFormScreen.routePath,
         name: SharedFormScreen.routeName,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final String formId = state.pathParameters['formId']!;
-          return SharedFormScreen(formId: formId);
+          return NoTransitionPage(child: SharedFormScreen(formId: formId));
         },
       ),
     ],
