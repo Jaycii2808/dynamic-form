@@ -3,11 +3,20 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_app_bar.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_body.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_floating_action_buttons.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 
 class FormBuilderScreen extends StatefulWidget {
-  const FormBuilderScreen({super.key});
+  final FormBuilderModel? existingForm;
+  final bool isEditing;
+
+  const FormBuilderScreen({
+    super.key,
+    this.existingForm,
+    this.isEditing = false,
+  });
 
   @override
   State<FormBuilderScreen> createState() => _FormBuilderScreenState();
@@ -20,27 +29,66 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
   void initState() {
     super.initState();
     formBuilderBloc = context.read<FormBuilderBloc>();
+
+    // Always load components first
     formBuilderBloc.add(const LoadComponentsEvent());
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showFirstPageNameDialog();
+      if (widget.isEditing && widget.existingForm != null) {
+        // Wait a bit for components to load, then load existing form
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _loadExistingForm();
+        });
+      } else {
+        _showFirstPageNameDialog();
+      }
     });
   }
 
+  void _loadExistingForm() {
+    try {
+      debugPrint(
+        '🔄 [FormBuilderScreen] Loading existing form: ${widget.existingForm!.name}',
+      );
+      debugPrint(
+        '🔄 [FormBuilderScreen] Form has ${widget.existingForm!.pages.length} pages',
+      );
+
+      // Load existing form data into the bloc
+      formBuilderBloc.add(LoadExistingFormEvent(widget.existingForm!));
+
+      debugPrint('✅ [FormBuilderScreen] Existing form loaded successfully');
+    } catch (e) {
+      debugPrint('❌ [FormBuilderScreen] Error loading existing form: $e');
+      // Fallback to new form dialog
+      _showFirstPageNameDialog();
+    }
+  }
+
   void _showFirstPageNameDialog() {
-    final formController = TextEditingController(text: 'Untitled form');
-    final pageController = TextEditingController(text: 'Page 1');
+    final formController = TextEditingController(
+      text: widget.existingForm?.name ?? 'Untitled form',
+    );
+    final pageController = TextEditingController(
+      text: widget.existingForm?.pages.isNotEmpty == true
+          ? widget.existingForm!.pages.first.title
+          : 'Page 1',
+    );
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Create Your Form'),
+          title: Text(widget.isEditing ? 'Edit Your Form' : 'Create Your Form'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Let\'s start by naming your form and first page:',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+              Text(
+                widget.isEditing
+                    ? 'Update your form and first page names:'
+                    : 'Let\'s start by naming your form and first page:',
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -74,7 +122,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: const Text('Create Form'),
+              child: Text(widget.isEditing ? 'Update Form' : 'Create Form'),
             ),
           ],
         );
@@ -87,7 +135,10 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     return Scaffold(
       appBar: formBuilderAppBar(context, formBuilderBloc),
       backgroundColor: const Color(0xFF000000),
-      floatingActionButton: formBuilderFloatingActionButtons(context, formBuilderBloc),
+      floatingActionButton: formBuilderFloatingActionButtons(
+        context,
+        formBuilderBloc,
+      ),
       body: formBuilderBody(context, formBuilderBloc),
     );
   }

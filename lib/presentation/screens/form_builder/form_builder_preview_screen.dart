@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
+import 'package:dynamic_form_bi/core/services/user_forms_service.dart'; // Added import for UserFormsService
 
 class FormBuilderPreviewScreen extends StatefulWidget {
   final FormBuilderModel formBuilderModel;
@@ -94,20 +95,102 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           pages: dynamicPages,
           allComponentValues: componentValues,
         ),
-        // Floating action button to open actual dynamic form
+        // Floating action buttons
         Positioned(
           bottom: 16,
           right: 16,
-          child: FloatingActionButton.extended(
-            onPressed: () => _openActualDynamicForm(),
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Share Form'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Save Form button
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: FloatingActionButton.extended(
+                  heroTag: 'save_form_button',
+                  onPressed: () => _saveUserForm(),
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Save Form'),
+                ),
+              ),
+              // Share Form button
+              FloatingActionButton.extended(
+                heroTag: 'share_form_button',
+                onPressed: () => _openActualDynamicForm(),
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Share Form'),
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  // Save user form to Firebase
+  void _saveUserForm() async {
+    try {
+      debugPrint(
+        '🔄 [FormBuilderPreviewScreen] Saving user form: ${widget.formBuilderModel.name}',
+      );
+
+      // Show loading dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // Save to Firebase using UserFormsService
+      final userFormsService = UserFormsService();
+      final formId = await userFormsService.saveUserForm(
+        formBuilderModel: widget.formBuilderModel,
+        userId: 'user001', // Default user ID
+      );
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] User form saved with ID: $formId',
+      );
+
+      if (mounted) {
+        // Close loading dialog
+        Navigator.of(context).pop();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Form saved successfully! You can find it in My Forms.',
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] Error saving user form: $e');
+
+      if (mounted) {
+        // Close loading dialog
+        Navigator.of(context).pop();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving form: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   // Open actual dynamic form multiscreen with current data

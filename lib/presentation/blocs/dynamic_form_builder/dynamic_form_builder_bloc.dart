@@ -64,6 +64,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<EditComponentPlaceholderEvent>(_onEditComponentPlaceholder);
     // Force rebuild UI event
     on<ForceRebuildUIEvent>(_onForceRebuildUI);
+    // Load existing form event
+    on<LoadExistingFormEvent>(_onLoadExistingForm);
   }
 
   Future<void> _onLoadComponents(
@@ -830,5 +832,56 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
       ),
     );
+  }
+
+  /// Load existing form
+  void _onLoadExistingForm(
+    LoadExistingFormEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint(
+      '💾 [FormBuilderBloc] Loading existing form: ${event.form.name}',
+    );
+    try {
+      // Load the existing form data directly
+      final existingForm = event.form;
+
+      debugPrint(
+        '💾 [FormBuilderBloc] Form has ${existingForm.pages.length} pages',
+      );
+      debugPrint('💾 [FormBuilderBloc] Form title: ${existingForm.name}');
+
+      emit(
+        FormBuilderSuccess.fromState(state: state).copyWith(
+          pages: existingForm.pages,
+          currentPageId: existingForm.pages.isNotEmpty
+              ? existingForm.pages.first.pageId
+              : 'page_1',
+          formTitle: existingForm.name,
+          availableComponents: _remoteConfigService.getAllConfigs(),
+          availableButtonComponents: _remoteConfigService.getAllButtonConfigs(),
+        ),
+      );
+
+      debugPrint('✅ [FormBuilderBloc] Existing form loaded successfully');
+    } catch (e, stackTrace) {
+      String errorMessage = 'Failed to load existing form: $e';
+      debugPrint('❌ [FormBuilderBloc] Error loading existing form: $e');
+      debugPrint('❌ [FormBuilderBloc] Stack trace: $stackTrace');
+      emit(
+        FormBuilderError(
+          errorMessage: errorMessage,
+          components: state.components,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
+          availableComponents: state.availableComponents,
+          availableButtonComponents: state.availableButtonComponents,
+          isDragging: state.isDragging,
+          showComponentsPanel: state.showComponentsPanel,
+          showButtonComponentsPanel: state.showButtonComponentsPanel,
+          formTitle: state.formTitle,
+        ),
+      );
+    }
   }
 }

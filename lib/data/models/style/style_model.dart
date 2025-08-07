@@ -93,11 +93,14 @@ class StyleModel {
       return null;
     }
 
-    // ✨ FIXED: Simplified to only handle "0x..." color strings.
+    // ✨ FIXED: Handle both uppercase and lowercase "0x" color strings.
     Color? parseColor(dynamic v) {
-      if (v is String && v.toUpperCase().startsWith('0X')) {
-        final intVal = int.tryParse(v.substring(2), radix: 16);
-        return intVal != null ? Color(intVal) : null;
+      if (v is String) {
+        final upperV = v.toUpperCase();
+        if (upperV.startsWith('0X')) {
+          final intVal = int.tryParse(upperV.substring(2), radix: 16);
+          return intVal != null ? Color(intVal) : null;
+        }
       }
       return null;
     }

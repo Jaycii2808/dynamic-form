@@ -364,6 +364,40 @@ class FormBuilderModel extends Equatable {
     return page.components;
   }
 
+  /// Convert to JSON format
+  Map<String, dynamic> toJson() {
+    return {
+      'formId': formId,
+      'name': name,
+      'pages': pages.map((page) => page.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  /// Create FormBuilderModel from JSON
+  factory FormBuilderModel.fromJson(Map<String, dynamic> json) {
+    List<FormBuilderPageModel> pages = [];
+    if (json['pages'] != null) {
+      pages = List<FormBuilderPageModel>.from(
+        json['pages'].map((x) => FormBuilderPageModel.fromJson(x)),
+      );
+      pages.sort((a, b) => a.order.compareTo(b.order));
+    }
+
+    return FormBuilderModel(
+      formId: json['formId'] ?? '',
+      name: json['name'] ?? '',
+      pages: pages,
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
+    );
+  }
+
   @override
   List<Object?> get props => [
     formId,

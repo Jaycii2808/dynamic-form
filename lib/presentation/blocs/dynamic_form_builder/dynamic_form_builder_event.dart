@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart'; // Add import for Option
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class FormBuilderEvent extends Equatable {
@@ -270,4 +271,13 @@ class HideInsertIndicatorEvent extends FormBuilderEvent {
 
 class ForceRebuildUIEvent extends FormBuilderEvent {
   const ForceRebuildUIEvent();
+}
+
+class LoadExistingFormEvent extends FormBuilderEvent {
+  final FormBuilderModel form;
+
+  const LoadExistingFormEvent(this.form);
+
+  @override
+  List<Object?> get props => [form];
 }
