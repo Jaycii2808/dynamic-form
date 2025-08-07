@@ -36,33 +36,33 @@ Widget formBuilderFloatingActionButtons(BuildContext context, FormBuilderBloc fo
               ),
             ),
           ),
-          FloatingActionButton(
-            heroTag: HeroTagFormBuilderEnum.buttonComponents.value,
-            onPressed: () {
-              if (state.showComponentsPanel) {
-                formBuilderBloc.add(const ToggleComponentsPanelEvent());
-              }
-              formBuilderBloc.add(const LoadButtonComponentsEvent());
-              formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
-            },
-            backgroundColor: state.showButtonComponentsPanel
-                ? Colors.green.shade600
-                : Colors.blue.shade100,
-            foregroundColor: state.showButtonComponentsPanel ? Colors.white : Colors.blue,
-            elevation: state.showButtonComponentsPanel ? 8 : 4,
-            child: Container(
-              decoration: state.showButtonComponentsPanel
-                  ? BoxDecoration(
-                border: Border.all(color: Colors.white, width: 2),
-                borderRadius: BorderRadius.circular(28),
-              )
-                  : null,
-              child: Icon(
-                Icons.next_week_outlined,
-                size: state.showButtonComponentsPanel ? 24 : 20,
-              ),
-            ),
-          ),
+          // FloatingActionButton(
+          //   heroTag: HeroTagFormBuilderEnum.buttonComponents.value,
+          //   onPressed: () {
+          //     if (state.showComponentsPanel) {
+          //       formBuilderBloc.add(const ToggleComponentsPanelEvent());
+          //     }
+          //     formBuilderBloc.add(const LoadButtonComponentsEvent());
+          //     formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
+          //   },
+          //   backgroundColor: state.showButtonComponentsPanel
+          //       ? Colors.green.shade600
+          //       : Colors.blue.shade100,
+          //   foregroundColor: state.showButtonComponentsPanel ? Colors.white : Colors.blue,
+          //   elevation: state.showButtonComponentsPanel ? 8 : 4,
+          //   child: Container(
+          //     decoration: state.showButtonComponentsPanel
+          //         ? BoxDecoration(
+          //       border: Border.all(color: Colors.white, width: 2),
+          //       borderRadius: BorderRadius.circular(28),
+          //     )
+          //         : null,
+          //     child: Icon(
+          //       Icons.next_week_outlined,
+          //       size: state.showButtonComponentsPanel ? 24 : 20,
+          //     ),
+          //   ),
+          // ),
           FloatingActionButton(
             heroTag: HeroTagFormBuilderEnum.addPage.value,
             onPressed: () => _showAddPageDialog(context, formBuilderBloc),
