@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
+import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 class Condition extends Equatable {
   final String componentId;
@@ -189,6 +190,11 @@ class ConfigModel extends Equatable {
       return const ConfigModel();
     }
 
+    // Debug print for description
+    debugPrint(
+      '🔍 [ConfigModel] fromJson - raw description: ${json['description']}',
+    );
+
     // Helper function to parse StatesEnum from string
     StatesEnum? parseState(dynamic stateValue) {
       if (stateValue == null) return null;
@@ -217,7 +223,7 @@ class ConfigModel extends Equatable {
       }
     }
 
-    return ConfigModel(
+    final configModel = ConfigModel(
       label: json['label'] as String?,
       placeholder: json['placeholder'] as String?,
       description: json['description'] as String?,
@@ -264,13 +270,22 @@ class ConfigModel extends Equatable {
       validate: json['validate'],
       labelFormBuilder: json['label_form_builder'] as String?,
     );
+
+    // Debug print for final description
+    debugPrint(
+      '🔍 [ConfigModel] fromJson - final description: ${configModel.description}',
+    );
+
+    return configModel;
   }
 
   Map<String, dynamic> toJson() {
     final result = <String, dynamic>{};
     if (label != null) result['label'] = label;
     if (placeholder != null) result['placeholder'] = placeholder;
-    if (description != null) result['description'] = description;
+    // Include description even if it's empty string
+    if (description != null || description == '')
+      result['description'] = description ?? '';
     if (isRequired != null) result['is_required'] = isRequired;
     result['value'] = value; // Always include value, even if null
     if (currentState != null) result['current_state'] = currentState;
@@ -306,6 +321,13 @@ class ConfigModel extends Equatable {
     if (labelFormBuilder != null) {
       result['label_form_builder'] = labelFormBuilder;
     }
+
+    // Debug print for description
+    debugPrint('🔍 [ConfigModel] toJson - description: $description');
+    debugPrint(
+      '🔍 [ConfigModel] toJson - description in result: ${result['description']}',
+    );
+
     return result;
   }
 
@@ -379,6 +401,7 @@ class ConfigModel extends Equatable {
   List<Object?> get props => [
     label,
     placeholder,
+    description, // Add description to props
     isRequired,
     value,
     currentState,
@@ -400,6 +423,7 @@ class ConfigModel extends Equatable {
     action,
     conditions,
     options,
+    shuffleOptions, // Add shuffleOptions to props
     hint,
     height,
     statusText,

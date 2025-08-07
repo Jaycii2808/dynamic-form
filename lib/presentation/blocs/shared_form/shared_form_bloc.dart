@@ -214,9 +214,19 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     debugPrint(
       '🔍 [Validation] Checking required fields on page: ${currentPage.title}',
     );
+    debugPrint(
+      '🔍 [Validation] Current component values: ${state.componentValues.values}',
+    );
 
     for (final component in currentPage.components) {
       final isRequired = component.config.isRequired ?? false;
+      final componentType = component.type;
+      
+      debugPrint(
+        '🔍 [Validation] Component ${component.id}: type=$componentType, required=$isRequired',
+      );
+      
+      // Check required fields
       if (isRequired) {
         final value = state.componentValues.values[component.id];
         final isEmpty =
@@ -224,11 +234,47 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
             (value is bool ? value == false : value.toString().trim().isEmpty);
 
         debugPrint(
-          '🔍 [Validation] Field ${component.id}: required=$isRequired, value=$value, isEmpty=$isEmpty',
+          '🔍 [Validation] Field ${component.id}: required=$isRequired, value=$value, isEmpty=$isEmpty, type=${value.runtimeType}',
         );
 
         if (isEmpty) {
-          missingFields.add(component.config.label ?? component.id);
+          final fieldName = component.config.label ?? component.id;
+          missingFields.add(fieldName);
+          debugPrint(
+            '❌ [Validation] Missing required field: $fieldName (${component.id})',
+          );
+        } else {
+          debugPrint(
+            '✅ [Validation] Required field filled: ${component.config.label ?? component.id}',
+          );
+        }
+      } else {
+        debugPrint(
+          '⏭️ [Validation] Field ${component.id} is not required, skipping validation',
+        );
+      }
+      
+      // Additional validation for dropdown fields - ensure they have a selection
+      if (componentType == FormTypeEnum.dropdownFormType) {
+        final value = state.componentValues.values[component.id];
+        final hasSelection = value != null && value.toString().trim().isNotEmpty;
+        
+        debugPrint(
+          '🔍 [Validation] Dropdown ${component.id}: hasSelection=$hasSelection, value=$value',
+        );
+        
+        if (!hasSelection) {
+          final fieldName = component.config.label ?? component.id;
+          if (!missingFields.contains(fieldName)) {
+            missingFields.add(fieldName);
+            debugPrint(
+              '❌ [Validation] Dropdown not selected: $fieldName (${component.id})',
+            );
+          }
+        } else {
+          debugPrint(
+            '✅ [Validation] Dropdown selected: ${component.config.label ?? component.id}',
+          );
         }
       }
     }

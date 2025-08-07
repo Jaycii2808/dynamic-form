@@ -15,6 +15,9 @@ class DropdownFormBuilderWidgetBloc
     on<InitializeDropdownFormBuilderEvent>(_onInitialize);
     on<UpdateQuestionEvent>(_onUpdateQuestion);
     on<UpdatePlaceholderEvent>(_onUpdatePlaceholder);
+    on<UpdateDescriptionEvent>(
+      _onUpdateDescription,
+    ); // Add description event handler
     on<UpdateRequiredEvent>(_onUpdateRequired);
     on<AddOptionEvent>(_onAddOption);
     on<RemoveOptionEvent>(_onRemoveOption);
@@ -32,6 +35,9 @@ class DropdownFormBuilderWidgetBloc
     debugPrint(
       '🔄 [DropdownFormBuilderBloc] Initializing with component: ${event.component.id}',
     );
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Component config description: ${event.component.config?.description}',
+    );
 
     emit(DropdownFormBuilderWidgetLoading.fromState(state: state));
 
@@ -39,9 +45,15 @@ class DropdownFormBuilderWidgetBloc
       final component = event.component;
       final question = component.config?.label ?? '';
       final placeholder = component.config?.placeholder ?? 'Select an option';
+      final description =
+          component.config?.description ?? ''; // Add description
       final options = List<Option>.from(component.config?.options ?? []);
       final isRequired = component.config?.isRequired ?? false;
       final availablePages = event.availablePages;
+
+      debugPrint(
+        '🔄 [DropdownFormBuilderBloc] Loaded description: $description',
+      );
 
       // Add default options if empty
       List<Option> finalOptions = options;
@@ -62,6 +74,7 @@ class DropdownFormBuilderWidgetBloc
         DropdownFormBuilderWidgetSuccess(
           question: question,
           placeholder: placeholder,
+          description: description, // Add description
           options: finalOptions,
           isRequired: isRequired,
           navigationFeatureEnabled: navigationFeatureEnabled,
@@ -72,6 +85,9 @@ class DropdownFormBuilderWidgetBloc
 
       debugPrint(
         '✅ [DropdownFormBuilderBloc] Initialized successfully with ${finalOptions.length} options',
+      );
+      debugPrint(
+        '✅ [DropdownFormBuilderBloc] Initialized with description: $description',
       );
     } catch (e, stackTrace) {
       debugPrint('❌ [DropdownFormBuilderBloc] Error initializing: $e');
@@ -126,6 +142,44 @@ class DropdownFormBuilderWidgetBloc
       emit(
         DropdownFormBuilderWidgetError(
           errorMessage: 'Failed to update placeholder: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateDescription(
+    UpdateDescriptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating description: ${event.description}',
+    );
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Current state description: ${state.description}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        debugPrint(
+          '🔄 [DropdownFormBuilderBloc] Current state description: ${currentState.description}',
+        );
+
+        final newState = currentState.copyWith(description: event.description);
+        debugPrint(
+          '🔄 [DropdownFormBuilderBloc] New state description: ${newState.description}',
+        );
+
+        emit(newState);
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Description updated successfully: ${event.description}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [DropdownFormBuilderBloc] Error updating description: $e');
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update description: ${e.toString()}',
         ),
       );
     }
@@ -381,6 +435,9 @@ class DropdownFormBuilderWidgetBloc
     Emitter<DropdownFormBuilderWidgetState> emit,
   ) async {
     debugPrint('🔄 [DropdownFormBuilderBloc] Updating component');
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Current description: ${state.description}',
+    );
 
     try {
       if (state is DropdownFormBuilderWidgetSuccess) {
@@ -388,18 +445,49 @@ class DropdownFormBuilderWidgetBloc
         final component = currentState.component;
 
         if (component != null) {
-          final updatedComponent = component.copyWith(
-            config: component.config?.copyWith(
-              label: currentState.question,
-              placeholder: currentState.placeholder,
-              isRequired: currentState.isRequired,
-              options: currentState.options,
-            ),
+          debugPrint(
+            '🔄 [DropdownFormBuilderBloc] Component before update - description: ${component.config?.description}',
+          );
+          debugPrint(
+            '🔄 [DropdownFormBuilderBloc] Current state description: ${currentState.description}',
           );
 
-          emit(currentState.copyWith(component: updatedComponent));
+          // Create updated config with all current state values
+          final updatedConfig =
+              component.config?.copyWith(
+                label: currentState.question,
+                placeholder: currentState.placeholder,
+                description:
+                    currentState.description, // Ensure description is set
+                isRequired: currentState.isRequired,
+                options: currentState.options,
+              ) ??
+              ConfigModel(
+                label: currentState.question,
+                placeholder: currentState.placeholder,
+                description:
+                    currentState.description, // Ensure description is set
+                isRequired: currentState.isRequired,
+                options: currentState.options,
+              );
+
+          final updatedComponent = component.copyWith(
+            config: updatedConfig,
+          );
+
+          debugPrint(
+            '🔄 [DropdownFormBuilderBloc] Updated component description: ${updatedComponent.config?.description}',
+          );
+
+          // Emit new state with updated component
+          final newState = currentState.copyWith(component: updatedComponent);
+          emit(newState);
+
           debugPrint(
             '✅ [DropdownFormBuilderBloc] Component updated successfully',
+          );
+          debugPrint(
+            '✅ [DropdownFormBuilderBloc] Final component description: ${updatedComponent.config?.description}',
           );
         }
       }

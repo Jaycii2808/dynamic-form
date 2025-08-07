@@ -29,6 +29,9 @@ class DialogUtils {
     final TextEditingController placeholderController = TextEditingController(
       text: currentConfig['placeholder'] ?? '',
     );
+    final TextEditingController descriptionController = TextEditingController(
+      text: currentConfig['description'] ?? '',
+    );
     final TextEditingController valueController = TextEditingController(
       text: currentConfig['value']?.toString() ?? '',
     );
@@ -59,6 +62,16 @@ class DialogUtils {
                   decoration: const InputDecoration(
                     labelText: 'Placeholder',
                     border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter description for this field...',
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -100,6 +113,7 @@ class DialogUtils {
                 Navigator.of(context).pop({
                   'label': labelController.text,
                   'placeholder': placeholderController.text,
+                  'description': descriptionController.text, // Add description
                   'value': valueController.text,
                   'errorText': errorTextController.text,
                   'isRequired': isRequired,

@@ -107,6 +107,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
   final String componentId;
   final String? label;
   final String? placeholder;
+  final String? description; // Add description field
   final dynamic value; // Change from String? to dynamic
   final bool? isRequired;
   final String? errorText;
@@ -116,6 +117,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     required this.componentId,
     this.label,
     this.placeholder,
+    this.description, // Add description parameter
     this.value,
     this.isRequired,
     this.errorText,
@@ -127,6 +129,7 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     componentId,
     label,
     placeholder,
+    description, // Add description to props
     value,
     isRequired,
     errorText,

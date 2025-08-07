@@ -600,6 +600,8 @@ Widget _buildComponentWidget(
               componentId: updatedComponent.id,
               label: updatedComponent.config?.label,
               placeholder: updatedComponent.config?.placeholder,
+              description:
+                  updatedComponent.config?.description, // Add description
               value: updatedComponent.config?.value,
               errorText: updatedComponent.config?.errorText,
               isRequired: updatedComponent.config?.isRequired,
@@ -647,12 +649,20 @@ Widget _buildComponentWidget(
           UpdateComponentValueEvent(componentId: componentId, value: value),
         ),
         onComponentUpdate: (updatedComponent) {
+          debugPrint(
+            '🔍 [FormBuilderCanvas] onComponentUpdate called with description: ${updatedComponent.config?.description}',
+          );
+          debugPrint(
+            '🔍 [FormBuilderCanvas] Component config: ${updatedComponent.config}',
+          );
           // Update the component in the form builder
           formBuilderBloc.add(
             EditComponentConfigEvent(
               componentId: updatedComponent.id,
               label: updatedComponent.config?.label,
               placeholder: updatedComponent.config?.placeholder,
+              description:
+                  updatedComponent.config?.description, // Add description
               value: updatedComponent.config?.value,
               // Keep original type
               errorText: updatedComponent.config?.errorText,
@@ -728,7 +738,7 @@ Widget _buildComponentActions(
 
         if (index < currentPage.components.length) {
           final component = currentPage.components[index];
-          _showEditConfigDialog(component, formBuilderBloc, context);
+          _showEditComponentConfigDialog(component, formBuilderBloc, context);
         }
       } else {
         formBuilderBloc.add(
@@ -769,7 +779,7 @@ Widget _buildComponentActions(
   );
 }
 
-void _showEditConfigDialog(
+void _showEditComponentConfigDialog(
   DynamicFormModel component,
   FormBuilderBloc formBuilderBloc,
   BuildContext context,
@@ -777,6 +787,7 @@ void _showEditConfigDialog(
   final currentConfig = {
     'label': component.config?.label ?? component.labelFormBuilder ?? '',
     'placeholder': component.config?.placeholder ?? '',
+    'description': component.config?.description ?? '', // Add description
     'value': component.config?.value ?? '',
     'errorText': component.config?.errorText ?? '',
     'isRequired': component.config?.isRequired ?? false,
@@ -792,6 +803,7 @@ void _showEditConfigDialog(
           componentId: component.id,
           label: result['label'],
           placeholder: result['placeholder'],
+          description: result['description'], // Add description
           value: result['value'],
           errorText: result['errorText'],
           isRequired: result['isRequired'],

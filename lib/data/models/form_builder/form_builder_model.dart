@@ -147,6 +147,10 @@ class FormBuilderModel extends Equatable {
     final isFirstPage = pageIndex == 0;
     final isLastPage = pageIndex == allPages.length - 1;
 
+    // Check if this is a content page (not submit page)
+    final isContentPage = !page.title.toLowerCase().contains('submit');
+    final isSubmitPage = !isContentPage;
+
     // Convert components and add navigation buttons
     final convertedComponents = <Map<String, dynamic>>[];
 
@@ -186,13 +190,29 @@ class FormBuilderModel extends Equatable {
       );
     }
 
-    if (!isLastPage) {
+    // Only add next button for content pages (not submit page)
+    if (!isLastPage && isContentPage) {
+      // Find next content page (skip submit page)
+      String? nextContentPageId;
+      for (int i = pageIndex + 1; i < allPages.length; i++) {
+        final nextPage = allPages[i];
+        if (!nextPage.title.toLowerCase().contains('submit')) {
+          nextContentPageId = nextPage.pageId;
+          break;
+        }
+      }
+
+      // If no next content page found, go to submit page
+      if (nextContentPageId == null) {
+        nextContentPageId = allPages.last.pageId;
+      }
+
       convertedComponents.add(
         _createNavigationButton(
           'next',
           ButtonAction.nextPage.value,
           'Next',
-          pageIndex < allPages.length - 1 ? allPages[pageIndex + 1].pageId : '',
+          nextContentPageId,
         ),
       );
     }
@@ -203,7 +223,7 @@ class FormBuilderModel extends Equatable {
       'title': page.title,
       'order': page.order,
       'show_previous_button': !isFirstPage,
-      'show_next_button': !isLastPage,
+      'show_next_button': !isLastPage && isContentPage,
       'show_submit_button': false, // Never show submit button on content pages
       'components': convertedComponents,
     };
@@ -221,6 +241,9 @@ class FormBuilderModel extends Equatable {
     );
     debugPrint(
       '🔄 [FormBuilderModel] Component config: ${component.config?.toJson()}',
+    );
+    debugPrint(
+      '🔄 [FormBuilderModel] Component description: ${component.config?.description}',
     );
 
     final Map<String, dynamic> json = {
@@ -243,6 +266,9 @@ class FormBuilderModel extends Equatable {
     }
 
     debugPrint('🔄 [FormBuilderModel] Converted component JSON: $json');
+    debugPrint(
+      '🔄 [FormBuilderModel] Final JSON description: ${json['config']['description']}',
+    );
     return json;
   }
 

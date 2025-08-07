@@ -86,6 +86,19 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
     debugPrint(
       '🔍 [DynamicDropdown] Options count: ${state.component.config?.options?.length ?? 0}',
     );
+    debugPrint(
+      '🔍 [DynamicDropdown] Description: ${state.component.config?.description}',
+    );
+    debugPrint(
+      '🔍 [DynamicDropdown] Description length: ${state.component.config?.description?.length ?? 0}',
+    );
+    debugPrint('🔍 [DynamicDropdown] Is shared form: ${widget.isSharedForm}');
+    debugPrint(
+      '🔍 [DynamicDropdown] Component config: ${state.component.config?.toJson()}',
+    );
+    debugPrint(
+      '🔍 [DynamicDropdown] Description condition check: null=${state.component.config?.description == null}, empty=${state.component.config?.description?.isEmpty ?? true}',
+    );
 
     try {
       final styleModel = state.component.style;
@@ -120,8 +133,10 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     color: widget.isSharedForm
                         ? Colors.white
                         : (styleModel.labelColor ?? Colors.white),
-                    fontSize: styleModel.fontSize ?? 16,
-                    fontWeight: FontWeight.w500,
+                    fontSize:
+                        (styleModel.fontSize ?? 16) + 4, // Larger font size
+                    fontWeight: FontWeight.w600, // Bolder font weight
+                    height: 1.3, // Better line height
                   ),
                 ),
                 // Add red asterisk for required fields
@@ -131,28 +146,43 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     '*',
                     style: TextStyle(
                       color: Colors.red,
-                      fontSize: 16,
+                      fontSize: 18, // Larger asterisk
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // More spacing
           ],
 
           // Description
-          if (component.config?.description != null) ...[
-            Text(
-              component.config!.description!,
-              style: TextStyle(
-                color: widget.isSharedForm
-                    ? Colors.white
-                    : (styleModel.helperTextColor ?? Colors.grey),
-                fontSize: 12,
+          if (component.config?.description != null &&
+              component.config!.description!.isNotEmpty) ...[
+            Container(
+              width: double.infinity, // Take full width
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4,
+              ), // Add some padding
+              child: Text(
+                component.config!.description!,
+                style: TextStyle(
+                  color: widget.isSharedForm
+                      ? Colors.white.withValues(
+                          alpha: 0.8,
+                        ) // More transparent for shared form
+                      : (styleModel.helperTextColor ?? Colors.grey),
+                  fontSize: 15, // Larger description text
+                  fontStyle: FontStyle.italic,
+                  height: 1.4, // Better line height
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: null, // Allow unlimited lines
+                overflow: TextOverflow.visible, // Show full text
+                softWrap: true, // Enable text wrapping
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // More spacing
           ],
 
           // Dropdown field
@@ -181,17 +211,19 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     'Please select',
                 hintStyle: TextStyle(
                   color: widget.isSharedForm
-                      ? Colors.white.withValues(alpha: 0.7)
-                      : Colors.grey,
+                      ? Colors.white.withValues(
+                          alpha: 0.5,
+                        ) // More transparent placeholder
+                      : const Color(0xFF757575).withValues(
+                          alpha: 0.6,
+                        ), // More transparent for regular form
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w400,
                 ),
                 // Set transparent background to avoid conflicts with container
                 filled: widget.isSharedForm,
                 fillColor: widget.isSharedForm ? Colors.transparent : null,
-                // Add default dropdown arrow icon
-                suffixIcon: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: widget.isSharedForm ? Colors.white : Colors.grey,
-                ),
                 prefixIcon: _buildPrefixIcon(component, currentState),
                 prefixIconConstraints: const BoxConstraints(
                   minWidth: 40,
@@ -221,7 +253,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     : _getTextColor(styleModel, currentState, component),
               ),
               dropdownColor: widget.isSharedForm
-                  ? Colors.white
+                  ? Colors.black
                   : (styleModel.backgroundColor ?? Colors.white),
               items: options.map((option) {
                 return DropdownMenuItem<String>(
@@ -231,7 +263,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                     style: TextStyle(
                       fontSize: styleModel.fontSize ?? 16,
                       // Use dark text for dropdown items to ensure visibility
-                      color: Colors.black,
+                      color: Colors.white,
                     ),
                   ),
                 );

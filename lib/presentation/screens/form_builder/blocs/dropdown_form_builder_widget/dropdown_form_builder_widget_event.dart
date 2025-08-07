@@ -41,6 +41,15 @@ class UpdatePlaceholderEvent extends DropdownFormBuilderWidgetEvent {
   List<Object?> get props => [placeholder];
 }
 
+class UpdateDescriptionEvent extends DropdownFormBuilderWidgetEvent {
+  final String description;
+
+  const UpdateDescriptionEvent(this.description);
+
+  @override
+  List<Object?> get props => [description];
+}
+
 class UpdateRequiredEvent extends DropdownFormBuilderWidgetEvent {
   final bool isRequired;
 

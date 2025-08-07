@@ -45,9 +45,32 @@ class DropdownFormBuilderCanvasWidget extends StatelessWidget {
                 child: Text(
                   component.config!.label!,
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 20, // Larger font size for label
+                    fontWeight: FontWeight.w600, // Bolder font weight
                     color: Color(0xFF202124),
+                    height: 1.3, // Better line height
+                  ),
+                ),
+              ),
+
+            // Description
+            if (component.config?.description != null &&
+                component.config!.description!.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  12,
+                ), // More bottom padding
+                child: Text(
+                  component.config!.description!,
+                  style: const TextStyle(
+                    fontSize: 15, // Slightly larger description
+                    color: Color(0xFF5F6368),
+                    fontStyle: FontStyle.italic,
+                    height: 1.4, // Better line height
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
@@ -68,16 +91,21 @@ class DropdownFormBuilderCanvasWidget extends StatelessWidget {
                       component.config?.placeholder ?? 'Select an option',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey[600],
+                        color: const Color(0xFF757575).withValues(
+                          alpha: 0.7,
+                        ), // More transparent placeholder
                         fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.grey,
+                      color: const Color(
+                        0xFF9E9E9E,
+                      ).withValues(alpha: 0.6), // More transparent icon
                       size: 24,
                     ),
                   ),

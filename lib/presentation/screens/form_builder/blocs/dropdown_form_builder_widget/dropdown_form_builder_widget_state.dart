@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 abstract class DropdownFormBuilderWidgetState extends Equatable {
   final String question;
   final String placeholder;
+  final String description; // Add description field
   final List<Option> options;
   final bool isRequired;
   final bool navigationFeatureEnabled;
@@ -14,6 +15,7 @@ abstract class DropdownFormBuilderWidgetState extends Equatable {
   const DropdownFormBuilderWidgetState({
     this.question = '',
     this.placeholder = '',
+    this.description = '', // Add description field
     this.options = const [],
     this.isRequired = false,
     this.navigationFeatureEnabled = false,
@@ -25,6 +27,7 @@ abstract class DropdownFormBuilderWidgetState extends Equatable {
   List<Object?> get props => [
     question,
     placeholder,
+    description, // Add description to props
     options,
     isRequired,
     navigationFeatureEnabled,
@@ -37,6 +40,7 @@ class DropdownFormBuilderWidgetInitial extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetInitial({
     super.question,
     super.placeholder,
+    super.description, // Add description parameter
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
@@ -49,6 +53,7 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetLoading({
     super.question,
     super.placeholder,
+    super.description, // Add description parameter
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
@@ -62,6 +67,7 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
   }) : super(
          question: state.question,
          placeholder: state.placeholder,
+         description: state.description, // Add description
          options: state.options,
          isRequired: state.isRequired,
          navigationFeatureEnabled: state.navigationFeatureEnabled,
@@ -74,6 +80,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetSuccess({
     super.question,
     super.placeholder,
+    super.description, // Add description parameter
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
@@ -87,6 +94,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
   }) : super(
          question: state.question,
          placeholder: state.placeholder,
+         description: state.description, // Add description
          options: state.options,
          isRequired: state.isRequired,
          navigationFeatureEnabled: state.navigationFeatureEnabled,
@@ -97,6 +105,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
   DropdownFormBuilderWidgetSuccess copyWith({
     String? question,
     String? placeholder,
+    String? description, // Add description parameter
     List<Option>? options,
     bool? isRequired,
     bool? navigationFeatureEnabled,
@@ -106,6 +115,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
     return DropdownFormBuilderWidgetSuccess(
       question: question ?? this.question,
       placeholder: placeholder ?? this.placeholder,
+      description: description ?? this.description, // Add description
       options: options ?? this.options,
       isRequired: isRequired ?? this.isRequired,
       navigationFeatureEnabled:
@@ -122,6 +132,7 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetError({
     super.question,
     super.placeholder,
+    super.description, // Add description parameter
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
@@ -134,6 +145,7 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
   List<Object?> get props => [
     question,
     placeholder,
+    description, // Add description to props
     options,
     isRequired,
     navigationFeatureEnabled,

@@ -647,15 +647,23 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     debugPrint(
       '⚙️ [FormBuilderBloc] Editing component config: ${event.componentId}',
     );
+    debugPrint(
+      '⚙️ [FormBuilderBloc] Description: ${event.description}',
+    );
 
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
         final updatedComponents = page.components.map((component) {
           if (component.id == event.componentId) {
+            debugPrint(
+              '⚙️ [FormBuilderBloc] Component before update - description: ${component.config?.description}',
+            );
+
             final updatedConfig =
                 component.config?.copyWith(
                   label: event.label,
                   placeholder: event.placeholder,
+                  description: event.description, // Add description
                   value: event.value,
                   isRequired: event.isRequired,
                   errorText: event.errorText,
@@ -664,11 +672,16 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                 ConfigModel(
                   label: event.label,
                   placeholder: event.placeholder,
+                  description: event.description, // Add description
                   value: event.value,
                   isRequired: event.isRequired,
                   errorText: event.errorText,
                   options: event.options, // Add options support
                 );
+
+            debugPrint(
+              '⚙️ [FormBuilderBloc] Component after update - description: ${updatedConfig.description}',
+            );
 
             return component.copyWith(config: updatedConfig);
           }

@@ -32,12 +32,16 @@ class DropdownFormBuilderWidget extends StatefulWidget {
 class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   late TextEditingController _questionController;
   late TextEditingController _placeholderController;
+  late TextEditingController
+  _descriptionController; // Add description controller
 
   @override
   void initState() {
     super.initState();
     _questionController = TextEditingController();
     _placeholderController = TextEditingController();
+    _descriptionController =
+        TextEditingController(); // Initialize description controller
 
     // Initialize the bloc
     context.read<DropdownFormBuilderWidgetBloc>().add(
@@ -52,15 +56,30 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   void dispose() {
     _questionController.dispose();
     _placeholderController.dispose();
+    _descriptionController.dispose(); // Dispose description controller
     super.dispose();
   }
 
   void _updateComponent() {
-    if (widget.onComponentUpdate != null) {
-      context.read<DropdownFormBuilderWidgetBloc>().add(
-        const UpdateComponentEvent(),
+    debugPrint('🔍 [DropdownFormBuilderWidget] Updating component');
+    debugPrint(
+      '🔍 [DropdownFormBuilderWidget] Current description: ${_descriptionController.text}',
+    );
+    debugPrint(
+      '🔍 [DropdownFormBuilderWidget] Current state description: ${context.read<DropdownFormBuilderWidgetBloc>().state.description}',
+    );
+
+    // Use current state description instead of controller text
+    final currentState = context.read<DropdownFormBuilderWidgetBloc>().state;
+    if (currentState is DropdownFormBuilderWidgetSuccess) {
+      debugPrint(
+        '🔍 [DropdownFormBuilderWidget] Using state description: ${currentState.description}',
       );
     }
+
+    context.read<DropdownFormBuilderWidgetBloc>().add(
+      const UpdateComponentEvent(),
+    );
   }
 
   @override
@@ -87,6 +106,22 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildQuestionHeader(),
+                SharedFormBuilderWidgets.buildDescriptionSection(
+                  descriptionController: _descriptionController,
+                  currentDescription: state.description,
+                  onDescriptionChanged: (value) {
+                    debugPrint(
+                      '🔍 [DropdownFormBuilderWidget] Description changed: $value',
+                    );
+                    context.read<DropdownFormBuilderWidgetBloc>().add(
+                      UpdateDescriptionEvent(value),
+                    );
+                    debugPrint(
+                      '🔍 [DropdownFormBuilderWidget] Calling _updateComponent after description change',
+                    );
+                    _updateComponent();
+                  },
+                ),
                 _buildOptionsSection(state),
                 _buildBottomControls(state),
               ],
@@ -112,10 +147,38 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       if (_placeholderController.text != state.placeholder) {
         _placeholderController.text = state.placeholder;
       }
+      if (_descriptionController.text != state.description) {
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] Updating description controller: ${state.description}',
+        );
+        // Add description controller update
+        _descriptionController.text = state.description;
+      }
 
-      // Call onComponentUpdate if component changed
+      // Call onComponentUpdate if component changed and has description
       if (widget.onComponentUpdate != null && state.component != null) {
-        widget.onComponentUpdate!(state.component!);
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] Calling onComponentUpdate with description: ${state.component?.config?.description}',
+        );
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] State description: ${state.description}',
+        );
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] Component config description: ${state.component?.config?.description}',
+        );
+
+        // Ensure component has the latest description from state
+        final updatedComponent = state.component!.copyWith(
+          config: state.component!.config?.copyWith(
+            description: state.description,
+          ),
+        );
+
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] Updated component description: ${updatedComponent.config?.description}',
+        );
+
+        widget.onComponentUpdate!(updatedComponent);
       }
     }
   }
@@ -374,6 +437,8 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         );
         _updateComponent();
       },
+      onDescriptionTap: () =>
+          _showDescriptionDialog(context, state), // Add description tap
       onMoreOptions: () => _showMoreOptionsDialog(context),
     );
   }
@@ -747,6 +812,20 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                // Show description dialog
+                final currentState = bloc.state;
+                if (currentState is DropdownFormBuilderWidgetSuccess) {
+                  _showDescriptionDialog(context, currentState);
+                }
+              },
+              child: const Text(
+                'Description',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
                 bloc.add(
                   const EnableNavigationFeatureEvent(),
                 );
@@ -769,6 +848,34 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
           ],
         );
       },
+    );
+  }
+
+  // Description dialog
+  void _showDescriptionDialog(
+    BuildContext context,
+    DropdownFormBuilderWidgetState state,
+  ) {
+    debugPrint('🔍 [DropdownFormBuilderWidget] Showing description dialog');
+    debugPrint(
+      '🔍 [DropdownFormBuilderWidget] Current description: ${state.description}',
+    );
+    debugPrint(
+      '🔍 [DropdownFormBuilderWidget] Description controller text: ${_descriptionController.text}',
+    );
+
+    SharedFormBuilderWidgets.showDescriptionDialog(
+      context: context,
+      currentDescription: state.description,
+      onDescriptionChanged: (String newDescription) {
+        debugPrint(
+          '🔍 [DropdownFormBuilderWidget] Saving new description: $newDescription',
+        );
+        context.read<DropdownFormBuilderWidgetBloc>().add(
+          UpdateDescriptionEvent(newDescription),
+        );
+      },
+      formType: FormType.dropdown,
     );
   }
 }
