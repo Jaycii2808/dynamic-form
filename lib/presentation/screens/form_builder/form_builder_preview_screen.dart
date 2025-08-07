@@ -11,6 +11,16 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
 import 'package:dynamic_form_bi/core/services/user_forms_service.dart'; // Added import for UserFormsService
+import 'package:dynamic_form_bi/data/models/validation/composite_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
+
+// Validation result class
+class ValidationResult {
+  final bool isValid;
+  final String? errorMessage;
+
+  ValidationResult({required this.isValid, this.errorMessage});
+}
 
 class FormBuilderPreviewScreen extends StatefulWidget {
   final FormBuilderModel formBuilderModel;
@@ -196,6 +206,17 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   // Open actual dynamic form multiscreen with current data
   void _openActualDynamicForm() async {
     try {
+      // Validate form before sharing
+      final validationResult = _validateFormBeforeShare();
+      if (!validationResult.isValid) {
+        _showValidationErrorDialog(validationResult.errorMessage!);
+        return;
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Form validation passed, proceeding with share',
+      );
+
       // Show email input dialog first
       final emailData = await showDialog<Map<String, String>>(
         context: context,
@@ -258,6 +279,628 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         );
       }
     }
+  }
+
+  // Validate form before sharing
+  ValidationResult _validateFormBeforeShare() {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Starting form validation for share',
+    );
+
+    try {
+      final pages = widget.formBuilderModel.pages;
+      if (pages.isEmpty) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Form must have at least one page',
+        );
+      }
+
+      for (final page in pages) {
+        final components = page.components;
+        if (components.isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Page "${page.title}" must have at least one component',
+          );
+        }
+
+        for (final component in components) {
+          // Check all components that need validation
+          final validationResult = _validateComponent(component);
+          if (!validationResult.isValid) {
+            return validationResult;
+          }
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Form validation completed successfully',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] Validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate individual component
+  ValidationResult _validateComponent(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating component: ${component.id} - ${component.type}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Component "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields for all components
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required component "${component.id}" must have a label',
+          );
+        }
+      }
+
+      // Check placeholder text for input components
+      if (component.type.toString() == 'FormTypeEnum.textFieldFormType' ||
+          component.type.toString() == 'FormTypeEnum.textAreaFormType' ||
+          component.type.toString() == 'FormTypeEnum.dropdownFormType') {
+        if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
+          debugPrint(
+            '⚠️ [FormBuilderPreviewScreen] Component "${component.id}" has no placeholder',
+          );
+        }
+      }
+
+      // Component-specific validation
+      switch (component.type.toString()) {
+        case 'FormTypeEnum.textFieldFormType':
+          return _validateTextField(component);
+        case 'FormTypeEnum.dropdownFormType':
+          return _validateDropdown(component);
+        case 'FormTypeEnum.textAreaFormType':
+          return _validateTextArea(component);
+        case 'FormTypeEnum.dateTimePickerFormType':
+          return _validateDateTimePicker(component);
+        case 'FormTypeEnum.dateTimeRangePickerFormType':
+          return _validateDateTimeRangePicker(component);
+        case 'FormTypeEnum.switchFormType':
+          return _validateSwitch(component);
+        case 'FormTypeEnum.selectorButtonFormType':
+          return _validateSelectorButton(component);
+        default:
+          // For other components, just do basic validation
+          debugPrint(
+            '⚠️ [FormBuilderPreviewScreen] Unknown component type: ${component.type}, using basic validation',
+          );
+          return _validateBasicComponent(component);
+      }
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] Component validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Component "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate dropdown component specifically
+  ValidationResult _validateDropdown(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating dropdown: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Dropdown "${component.id}" has no configuration',
+        );
+      }
+
+      // Check if dropdown has label (required for all dropdowns)
+      if (config.label == null || config.label!.trim().isEmpty) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Dropdown "${component.id}" must have a label',
+        );
+      }
+
+      // Check if dropdown has options
+      if (config.options == null || config.options!.isEmpty) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage:
+              'Dropdown "${component.id}" must have at least one option',
+        );
+      }
+
+      // Check if options have valid labels
+      for (int i = 0; i < config.options!.length; i++) {
+        final option = config.options![i];
+        if (option.label.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Dropdown "${component.id}" option ${i + 1} must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Dropdown "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] Dropdown validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Dropdown "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate TextField component (existing logic)
+  ValidationResult _validateTextField(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating TextField: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'TextField "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required TextField "${component.id}" must have a label',
+          );
+        }
+      }
+
+      // Check placeholder text
+      if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
+        debugPrint(
+          '⚠️ [FormBuilderPreviewScreen] TextField "${component.id}" has no placeholder',
+        );
+      }
+
+      // Check validation rules if present
+      if (component.validation != null) {
+        final validation = component.validation!;
+
+        // Check if it's a composite validation
+        if (validation is CompositeValidationModel) {
+          final requiredValidation = validation.required;
+          if (requiredValidation != null && requiredValidation.isRequired) {
+            if (config.label == null || config.label!.trim().isEmpty) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'Required TextField "${component.id}" must have a label',
+              );
+            }
+          }
+        }
+
+        // Check if it's a required validation
+        if (validation is RequiredValidation) {
+          if (validation.isRequired) {
+            if (config.label == null || config.label!.trim().isEmpty) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'Required TextField "${component.id}" must have a label',
+              );
+            }
+          }
+        }
+      }
+
+      // Check input types validation if present
+      if (component.inputTypes != null) {
+        final inputTypes = component.inputTypes!;
+
+        // Check text validation
+        if (inputTypes.text != null) {
+          final textValidation = inputTypes.text!;
+          if (textValidation.minLength != null &&
+              textValidation.minLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'TextField "${component.id}" has invalid minimum length',
+            );
+          }
+          if (textValidation.maxLength != null &&
+              textValidation.maxLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'TextField "${component.id}" has invalid maximum length',
+            );
+          }
+          if (textValidation.minLength != null &&
+              textValidation.maxLength != null) {
+            if (textValidation.minLength! > textValidation.maxLength!) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'TextField "${component.id}" minimum length cannot be greater than maximum length',
+              );
+            }
+          }
+          if (textValidation.regex != null &&
+              textValidation.regex!.isNotEmpty) {
+            try {
+              RegExp(textValidation.regex!);
+            } catch (e) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'TextField "${component.id}" has invalid regex pattern',
+              );
+            }
+          }
+        }
+
+        // Check email validation
+        if (inputTypes.email != null) {
+          final emailValidation = inputTypes.email!;
+          if (emailValidation.minLength != null &&
+              emailValidation.minLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'Email field "${component.id}" has invalid minimum length',
+            );
+          }
+          if (emailValidation.maxLength != null &&
+              emailValidation.maxLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'Email field "${component.id}" has invalid maximum length',
+            );
+          }
+        }
+
+        // Check password validation
+        if (inputTypes.password != null) {
+          final passwordValidation = inputTypes.password!;
+          if (passwordValidation.minLength != null &&
+              passwordValidation.minLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'Password field "${component.id}" has invalid minimum length',
+            );
+          }
+          if (passwordValidation.maxLength != null &&
+              passwordValidation.maxLength! < 0) {
+            return ValidationResult(
+              isValid: false,
+              errorMessage:
+                  'Password field "${component.id}" has invalid maximum length',
+            );
+          }
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] TextField "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] TextField validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'TextField "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate TextArea component
+  ValidationResult _validateTextArea(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating TextArea: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'TextArea "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required TextArea "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] TextArea "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] TextArea validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'TextArea "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate DateTimePicker component
+  ValidationResult _validateDateTimePicker(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating DateTimePicker: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'DateTimePicker "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required DateTimePicker "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] DateTimePicker "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint(
+        '❌ [FormBuilderPreviewScreen] DateTimePicker validation error: $e',
+      );
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'DateTimePicker "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate DateTimeRangePicker component
+  ValidationResult _validateDateTimeRangePicker(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating DateTimeRangePicker: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage:
+              'DateTimeRangePicker "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required DateTimeRangePicker "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] DateTimeRangePicker "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint(
+        '❌ [FormBuilderPreviewScreen] DateTimeRangePicker validation error: $e',
+      );
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'DateTimeRangePicker "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate Switch component
+  ValidationResult _validateSwitch(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating Switch: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Switch "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage: 'Required Switch "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Switch "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint('❌ [FormBuilderPreviewScreen] Switch validation error: $e');
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Switch "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate SelectorButton component
+  ValidationResult _validateSelectorButton(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating SelectorButton: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'SelectorButton "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required SelectorButton "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] SelectorButton "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint(
+        '❌ [FormBuilderPreviewScreen] SelectorButton validation error: $e',
+      );
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'SelectorButton "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate basic component (fallback for other types)
+  ValidationResult _validateBasicComponent(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating basic component: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Component "${component.id}" has no configuration',
+        );
+      }
+
+      // Check required fields
+      if (config.isRequired == true) {
+        if (config.label == null || config.label!.trim().isEmpty) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Required component "${component.id}" must have a label',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Basic component "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint(
+        '❌ [FormBuilderPreviewScreen] Basic component validation error: $e',
+      );
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Component "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Show validation error dialog
+  void _showValidationErrorDialog(String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D2D),
+        title: const Row(
+          children: [
+            Icon(Icons.error, color: Colors.red),
+            SizedBox(width: 8),
+            Text(
+              'Form Validation Error',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+        content: Text(
+          errorMessage,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showShareSuccessDialog(

@@ -334,6 +334,7 @@ class SharedFormBuilderWidgets {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Duplicate button
           GestureDetector(
