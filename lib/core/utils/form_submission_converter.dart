@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/components/component_values_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/form_submission/form_submission_model.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:flutter/material.dart';
 
 class FormSubmissionConverter {
@@ -12,29 +13,76 @@ class FormSubmissionConverter {
   }) {
     final List<FormFieldData> fields = [];
 
+    debugPrint('🔄 [FormSubmissionConverter] Starting conversion...');
+    debugPrint(
+      '🔄 [FormSubmissionConverter] Total component values: ${componentValues.length}',
+    );
+    debugPrint(
+      '🔄 [FormSubmissionConverter] Component values: ${componentValues.values}',
+    );
+
     // Iterate through all pages and components to extract readable data
-    for (final page in formModel.pages) {
-      for (final component in page.components) {
+    for (int pageIndex = 0; pageIndex < formModel.pages.length; pageIndex++) {
+      final page = formModel.pages[pageIndex];
+      debugPrint(
+        '🔄 [FormSubmissionConverter] Processing page ${pageIndex + 1}: ${page.components.length} components',
+      );
+
+      for (int compIndex = 0; compIndex < page.components.length; compIndex++) {
+        final component = page.components[compIndex];
+        debugPrint(
+          '🔄 [FormSubmissionConverter] Processing component: ${component.id} (${component.type})',
+        );
+
         // Skip buttons and non-input components
         if (_isInputComponent(component.type)) {
           final value = componentValues.getValue(component.id);
+          debugPrint(
+            '🔄 [FormSubmissionConverter] Component ${component.id} value: $value',
+          );
 
-          // Only include components that have values (skip empty fields)
-          if (value != null && _hasValidValue(value)) {
-            final fieldData = FormFieldData(
-              label:
-                  component.config.label ??
-                  _generateLabelFromType(component.type),
-              value: value,
-              componentType: _getReadableComponentType(component.type),
-              isRequired: component.config.isRequired ?? false,
-              placeholder: component.config.placeholder,
+          final emailFieldType = EmailFieldTypeEnum.fromFormType(
+            component.type,
+          );
+
+          // Convert dropdown values to labels if needed
+          final processedValue = _processComponentValue(
+            value: value,
+            componentType: component.type,
+            componentConfig: component.config,
+          );
+
+          // Include ALL input components, even empty ones for complete email data
+          final fieldData = FormFieldData(
+            label: component.config.label?.isNotEmpty == true
+                ? component.config.label!
+                : emailFieldType.displayName,
+            value: processedValue ?? _getDefaultValueForType(component.type),
+            componentType: emailFieldType.displayName,
+            isRequired: component.config.isRequired ?? false,
+            placeholder: component.config.placeholder,
+            description: component.config.description, // Add description field
+          );
+          fields.add(fieldData);
+          debugPrint(
+            '✅ [FormSubmissionConverter] Added field: ${fieldData.label} = ${fieldData.displayValue}',
+          );
+          if (component.config.description?.isNotEmpty == true) {
+            debugPrint(
+              '📝 [FormSubmissionConverter] Field has description: ${component.config.description}',
             );
-            fields.add(fieldData);
           }
+        } else {
+          debugPrint(
+            '⏭️ [FormSubmissionConverter] Skipped non-input component: ${component.type}',
+          );
         }
       }
     }
+
+    debugPrint(
+      '✅ [FormSubmissionConverter] Conversion complete. Total fields: ${fields.length}',
+    );
 
     return FormSubmissionModel(
       formId: formModel.formId,
@@ -44,74 +92,99 @@ class FormSubmissionConverter {
     );
   }
 
-  /// Check if component type is an input component (not button, container, etc.)
-  static bool _isInputComponent(FormTypeEnum type) {
-    const nonInputTypes = {
-      FormTypeEnum.buttonFormType,
-      FormTypeEnum.container,
-      FormTypeEnum.unknown,
-    };
-
-    return !nonInputTypes.contains(type);
-  }
-
-  /// Check if value is valid for form submission
-  static bool _hasValidValue(dynamic value) {
-    if (value == null) return false;
+  /// Process component value based on component type
+  /// For dropdowns, convert value to label
+  static dynamic _processComponentValue({
+    required dynamic value,
+    required FormTypeEnum componentType,
+    required ConfigModel? componentConfig,
+  }) {
+    if (value == null) return null;
 
     try {
-      if (value is String) {
-        return value.trim().isNotEmpty;
+      // Handle dropdown values - convert to label
+      if (componentType == FormTypeEnum.dropdownFormType && value is String) {
+        final options = componentConfig?.options ?? [];
+        debugPrint(
+          '🔄 [FormSubmissionConverter] Processing dropdown value: $value',
+        );
+        debugPrint(
+          '🔄 [FormSubmissionConverter] Available options: ${options.map((opt) => '${opt.value}->${opt.label}').join(', ')}',
+        );
+
+        final selectedOption = options.firstWhere(
+          (option) => option.value == value,
+          orElse: () {
+            debugPrint(
+              '⚠️ [FormSubmissionConverter] No matching option found for value: $value, using fallback',
+            );
+            return Option(
+              value: value,
+              label: value,
+            ); // Fallback to value as label
+          },
+        );
+
+        debugPrint(
+          '🔄 [FormSubmissionConverter] Dropdown value: $value -> label: ${selectedOption.label}',
+        );
+        return selectedOption.label; // Return the label instead of value
       }
-      if (value is List) {
-        return value.isNotEmpty;
-      }
-      if (value is bool) {
-        return true; // Include both true and false values
-      }
-      if (value is num) {
-        return true; // Include all numbers
-      }
-      // For other types, check if toString() produces a non-empty string
-      return value.toString().trim().isNotEmpty;
+
+      // For other component types, return value as is
+      return value;
     } catch (e) {
-      debugPrint('❌ Error checking value validity: $e');
-      return false;
+      debugPrint(
+        '❌ [FormSubmissionConverter] Error processing component value: $e',
+      );
+      return value; // Return original value on error
     }
   }
 
-  /// Generate readable label from component type if no label is provided
-  static String _generateLabelFromType(FormTypeEnum type) {
+  /// Check if component type is an input component (not button, container, etc.)
+  static bool _isInputComponent(FormTypeEnum type) {
+    switch (type) {
+      case FormTypeEnum.buttonFormType:
+      case FormTypeEnum.container:
+      case FormTypeEnum.unknown:
+        return false;
+      case FormTypeEnum.textFieldFormType:
+      case FormTypeEnum.textAreaFormType:
+      case FormTypeEnum.dateTimePickerFormType:
+      case FormTypeEnum.dateTimeRangePickerFormType:
+      case FormTypeEnum.selectorButtonFormType:
+      case FormTypeEnum.switchFormType:
+      case FormTypeEnum.textFieldTagsFormType:
+      case FormTypeEnum.dropdownFormType:
+        return true;
+    }
+  }
+
+
+  /// Get default value for component type when no value is provided
+  static dynamic _getDefaultValueForType(FormTypeEnum type) {
     switch (type) {
       case FormTypeEnum.textFieldFormType:
-        return 'Text Field';
       case FormTypeEnum.textAreaFormType:
-        return 'Text Area';
+        return '(No value entered)';
       case FormTypeEnum.dateTimePickerFormType:
-        return 'Date & Time';
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return 'Date Range';
+        return '(No date selected)';
       case FormTypeEnum.selectorButtonFormType:
-        return 'Selector';
       case FormTypeEnum.switchFormType:
-        return 'Switch';
+        return false;
       case FormTypeEnum.textFieldTagsFormType:
-        return 'Tags';
+        return <String>[];
       case FormTypeEnum.dropdownFormType:
-        return 'Dropdown';
+        return '(No option selected)';
       case FormTypeEnum.buttonFormType:
-        return 'Button';
       case FormTypeEnum.container:
-        return 'Container';
       case FormTypeEnum.unknown:
-        return 'Field';
+        return '(No value)';
     }
   }
 
-  /// Get readable component type name
-  static String _getReadableComponentType(FormTypeEnum type) {
-    return type.toString().split('.').last.replaceAll('FormType', '');
-  }
+
 
   /// Print form submission in readable format for debugging
   static void debugPrintSubmission(FormSubmissionModel submission) {

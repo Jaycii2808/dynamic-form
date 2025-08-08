@@ -25,6 +25,7 @@ class DropdownFormBuilderWidgetBloc
     on<ReorderOptionsEvent>(_onReorderOptions);
     on<UpdateOptionNavigationEvent>(_onUpdateOptionNavigation);
     on<EnableNavigationFeatureEvent>(_onEnableNavigationFeature);
+    on<DisableNavigationFeatureEvent>(_onDisableNavigationFeature);
     on<UpdateComponentEvent>(_onUpdateComponent);
   }
 
@@ -425,6 +426,47 @@ class DropdownFormBuilderWidgetBloc
       emit(
         DropdownFormBuilderWidgetError(
           errorMessage: 'Failed to enable navigation feature: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDisableNavigationFeature(
+    DisableNavigationFeatureEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Disabling navigation feature');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final updatedOptions = List<Option>.from(currentState.options);
+
+        // Disable navigation feature for all options if not already disabled
+        for (int i = 0; i < updatedOptions.length; i++) {
+          if (updatedOptions[i].action != null) {
+            updatedOptions[i] = updatedOptions[i].copyWith(
+              action: null,
+              targetSection: null,
+            );
+          }
+        }
+
+        emit(
+          currentState.copyWith(
+            options: updatedOptions,
+            navigationFeatureEnabled: false,
+          ),
+        );
+        debugPrint('✅ [DropdownFormBuilderBloc] Navigation feature disabled');
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error disabling navigation feature: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to disable navigation feature: ${e.toString()}',
         ),
       );
     }

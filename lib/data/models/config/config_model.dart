@@ -284,8 +284,9 @@ class ConfigModel extends Equatable {
     if (label != null) result['label'] = label;
     if (placeholder != null) result['placeholder'] = placeholder;
     // Include description even if it's empty string
-    if (description != null || description == '')
+    if (description != null || description == '') {
       result['description'] = description ?? '';
+    }
     if (isRequired != null) result['is_required'] = isRequired;
     result['value'] = value; // Always include value, even if null
     if (currentState != null) result['current_state'] = currentState;

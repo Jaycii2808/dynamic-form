@@ -117,6 +117,10 @@ class EnableNavigationFeatureEvent extends DropdownFormBuilderWidgetEvent {
   const EnableNavigationFeatureEvent();
 }
 
+class DisableNavigationFeatureEvent extends DropdownFormBuilderWidgetEvent {
+  const DisableNavigationFeatureEvent();
+}
+
 class UpdateComponentEvent extends DropdownFormBuilderWidgetEvent {
   const UpdateComponentEvent();
 }

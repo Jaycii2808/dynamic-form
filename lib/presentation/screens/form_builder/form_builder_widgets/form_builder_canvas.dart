@@ -1,5 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
-import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
@@ -389,11 +387,11 @@ Widget _buildComponentWithDropZone(
                       ),
                     ),
                   ),
-                  _buildComponentActions(
-                    componentIndex,
-                    formBuilderBloc,
-                    context,
-                  ),
+                  // _buildComponentActions(
+                  //   componentIndex,
+                  //   formBuilderBloc,
+                  //   context,
+                  // ),
                 ],
               ),
             ),
@@ -722,114 +720,8 @@ void _showEditLabelDialog(
   );
 }
 
-Widget _buildComponentActions(
-  int index,
-  FormBuilderBloc formBuilderBloc,
-  BuildContext context,
-) {
-  return PopupMenuButton<ComponentActionEnum>(
-    onSelected: (value) {
-      if (value == ComponentActionEnum.editConfig) {
-        // Get the current page components to find the correct component
-        final currentState = formBuilderBloc.state;
-        final currentPage = currentState.pages.firstWhere(
-          (page) => page.pageId == currentState.currentPageId,
-        );
 
-        if (index < currentPage.components.length) {
-          final component = currentPage.components[index];
-          _showEditComponentConfigDialog(component, formBuilderBloc, context);
-        }
-      } else {
-        formBuilderBloc.add(
-          HandleComponentActionEvent(action: value, index: index),
-        );
-      }
-    },
-    itemBuilder: (context) => [
-      _buildActionMenuItem(
-        ComponentActionEnum.moveUp,
-        Icons.arrow_upward,
-        'Move Up',
-        Colors.blue,
-      ),
-      _buildActionMenuItem(
-        ComponentActionEnum.moveDown,
-        Icons.arrow_downward,
-        'Move Down',
-        Colors.blue,
-      ),
-      _buildActionMenuItem(
-        ComponentActionEnum.editConfig,
-        Icons.edit,
-        'Edit Config',
-        Colors.green,
-      ),
-      _buildActionMenuItem(
-        ComponentActionEnum.delete,
-        Icons.delete,
-        'Delete',
-        Colors.red,
-      ),
-    ],
-    child: Container(
-      margin: const EdgeInsets.all(8),
-      child: const Icon(Icons.more_vert, color: Colors.grey),
-    ),
-  );
-}
 
-void _showEditComponentConfigDialog(
-  DynamicFormModel component,
-  FormBuilderBloc formBuilderBloc,
-  BuildContext context,
-) {
-  final currentConfig = {
-    'label': component.config?.label ?? component.labelFormBuilder ?? '',
-    'placeholder': component.config?.placeholder ?? '',
-    'description': component.config?.description ?? '', // Add description
-    'value': component.config?.value ?? '',
-    'errorText': component.config?.errorText ?? '',
-    'isRequired': component.config?.isRequired ?? false,
-  };
-
-  DialogUtils.showComponentConfigDialog(
-    context,
-    currentConfig,
-  ).then((result) {
-    if (result != null) {
-      formBuilderBloc.add(
-        EditComponentConfigEvent(
-          componentId: component.id,
-          label: result['label'],
-          placeholder: result['placeholder'],
-          description: result['description'], // Add description
-          value: result['value'],
-          errorText: result['errorText'],
-          isRequired: result['isRequired'],
-        ),
-      );
-    }
-  });
-}
-
-PopupMenuItem<ComponentActionEnum> _buildActionMenuItem(
-  ComponentActionEnum action,
-  IconData icon,
-  String text,
-  Color color,
-) {
-  return PopupMenuItem(
-    value: action,
-    child: Row(
-      children: [
-        Icon(icon, color: color),
-        const SizedBox(width: 8),
-        Text(text, style: TextStyle(color: color)),
-      ],
-    ),
-  );
-}
 
 void _showEditPageTitleDialog(
   BuildContext context,

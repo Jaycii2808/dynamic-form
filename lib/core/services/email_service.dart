@@ -70,8 +70,25 @@ class EmailService {
 
     while (retryCount < maxRetries) {
       try {
+        debugPrint(
+          '🔄 [EmailService] Creating email content for: ${submission.formName}',
+        );
+        debugPrint(
+          '🔄 [EmailService] Submission has ${submission.fields.length} fields',
+        );
+
         final emailContent = _createEmailContent(submission);
         final htmlContent = _createHtmlContent(submission);
+
+        debugPrint(
+          '📧 [EmailService] Text content length: ${emailContent.length}',
+        );
+        debugPrint(
+          '📧 [EmailService] HTML content length: ${htmlContent.length}',
+        );
+        debugPrint(
+          '📧 [EmailService] Text content preview: ${emailContent.length > 200 ? "${emailContent.substring(0, 200)}..." : emailContent}',
+        );
 
         final requestBody = {
           'Messages': [
@@ -86,6 +103,11 @@ class EmailService {
             },
           ],
         };
+
+        debugPrint('📤 [EmailService] Sending email to: $recipientEmail');
+        debugPrint(
+          '📤 [EmailService] Subject: Form Submission: ${submission.formName}',
+        );
 
         final response = await _dio.post('/api/send-email', data: requestBody);
 
@@ -107,6 +129,10 @@ class EmailService {
           );
         }
       } on DioException catch (e) {
+        debugPrint('❌ [EmailService] DioException occurred: ${e.message}');
+        debugPrint('❌ [EmailService] Response: ${e.response?.data}');
+        debugPrint('❌ [EmailService] Status code: ${e.response?.statusCode}');
+
         final errorInfo = _handleDioError(e);
         retryCount++;
         if (errorInfo['shouldRetry'] == true && retryCount < maxRetries) {
@@ -120,6 +146,8 @@ class EmailService {
           'retryCount': retryCount,
         };
       } catch (e, stackTrace) {
+        debugPrint('❌ [EmailService] Unexpected error: $e');
+        debugPrint('❌ [EmailService] Stack trace: $stackTrace');
         return {
           'success': false,
           'error': 'Unexpected error: $e',
@@ -137,7 +165,6 @@ class EmailService {
       'retryCount': retryCount,
     };
   }
-
 
   Map<String, dynamic> _handleDioError(DioException e) {
     String message = e.message ?? 'Unknown error';
@@ -206,62 +233,165 @@ class EmailService {
       final buffer = StringBuffer();
       buffer.writeln('📝 Form Submission: ${submission.formName}');
       buffer.writeln('🕒 Submitted at: ${submission.submissionTime.toLocal()}');
-      // buffer.writeln('📋 Form ID: ${submission.formId}');
+      buffer.writeln('📋 Form ID: ${submission.formId}');
+      buffer.writeln('📊 Total Fields: ${submission.fields.length}');
       buffer.writeln('─' * 50);
+
+      if (submission.fields.isEmpty) {
+        buffer.writeln('⚠️ No form fields found or all fields are empty.');
+        return buffer.toString();
+      }
+
       for (int i = 0; i < submission.fields.length; i++) {
         final field = submission.fields[i];
         try {
           buffer.writeln('${i + 1}. ${field.label}');
           buffer.writeln('   Value: ${field.displayValue}');
+          buffer.writeln('   Type: ${field.componentType}');
+          if (field.isRequired) {
+            buffer.writeln('   Required: Yes');
+          }
+          if (field.placeholder?.isNotEmpty == true) {
+            buffer.writeln('   Placeholder: ${field.placeholder}');
+          }
+          if (field.description?.isNotEmpty == true) {
+            debugPrint(
+              '📝 [EmailService] Adding description to field ${field.label}: ${field.description}',
+            );
+            buffer.writeln('   Description: ${field.description}');
+          }
           if (i < submission.fields.length - 1) buffer.writeln();
         } catch (e) {
           debugPrint('❌ Error processing field ${field.label}: $e');
           buffer.writeln('${i + 1}. ${field.label}');
-          buffer.writeln('   Value: [Error displaying value]');
+          buffer.writeln('   Value: [Error displaying value: $e]');
           if (i < submission.fields.length - 1) buffer.writeln();
         }
       }
+
+      buffer.writeln('─' * 50);
+      buffer.writeln('✅ Form submission processed successfully');
+
       return buffer.toString();
     } catch (e) {
       debugPrint('❌ Error creating email content: $e');
-      return 'Error creating email content: $e';
+      return 'Error creating email content: $e\n\nForm: ${submission.formName}\nTime: ${submission.submissionTime}\nFields: ${submission.fields.length}';
     }
   }
 
   String _createHtmlContent(FormSubmissionModel submission) {
     try {
       final buffer = StringBuffer();
-      buffer.writeln('<h2>📝 Form Submission: ${submission.formName}</h2>');
+      buffer.writeln(
+        '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">',
+      );
+      buffer.writeln(
+        '<h2 style="color: #2c5282;">📝 Form Submission: ${submission.formName}</h2>',
+      );
+      buffer.writeln(
+        '<div style="background-color: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">',
+      );
       buffer.writeln(
         '<p><strong>🕒 Submitted at:</strong> ${submission.submissionTime.toLocal()}</p>',
       );
-      // buffer.writeln(
-      //   '<p><strong>📋 Form ID:</strong> ${submission.formId}</p>',
-      // );
-      buffer.writeln('<hr style="border: 1px solid #ccc;">');
+      buffer.writeln(
+        '<p><strong>📋 Form ID:</strong> ${submission.formId}</p>',
+      );
+      buffer.writeln(
+        '<p><strong>📊 Total Fields:</strong> ${submission.fields.length}</p>',
+      );
+      buffer.writeln('</div>');
+
+      if (submission.fields.isEmpty) {
+        buffer.writeln(
+          '<div style="background-color: #fed7d7; padding: 15px; border-radius: 8px; border-left: 4px solid #e53e3e;">',
+        );
+        buffer.writeln(
+          '<p><strong>⚠️ Warning:</strong> No form fields found or all fields are empty.</p>',
+        );
+        buffer.writeln('</div>');
+        buffer.writeln('</body></html>');
+        return buffer.toString();
+      }
+
+      buffer.writeln(
+        '<div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">',
+      );
+
       for (int i = 0; i < submission.fields.length; i++) {
         final field = submission.fields[i];
         try {
-          buffer.writeln('<div style="margin-bottom: 15px;">');
-          buffer.writeln('<h3>${i + 1}. ${field.label}</h3>');
+          final bgColor = i % 2 == 0 ? '#f7fafc' : 'white';
           buffer.writeln(
-            '<p><strong>Value:</strong> ${field.displayValue}</p>',
+            '<div style="padding: 15px; background-color: $bgColor; border-bottom: 1px solid #e2e8f0;">',
           );
+          buffer.writeln(
+            '<h3 style="margin: 0 0 10px 0; color: #2d3748;">${i + 1}. ${field.label}</h3>',
+          );
+          buffer.writeln('<div style="margin-left: 20px;">');
+          buffer.writeln(
+            '<p style="margin: 5px 0;"><strong>Value:</strong> <span style="color: #2b6cb0;">${field.displayValue}</span></p>',
+          );
+          buffer.writeln(
+            '<p style="margin: 5px 0;"><strong>Type:</strong> ${field.componentType}</p>',
+          );
+          if (field.isRequired) {
+            buffer.writeln(
+              '<p style="margin: 5px 0;"><strong>Required:</strong> <span style="color: #e53e3e;">Yes</span></p>',
+            );
+          }
+          if (field.placeholder?.isNotEmpty == true) {
+            buffer.writeln(
+              '<p style="margin: 5px 0;"><strong>Placeholder:</strong> <em>${field.placeholder}</em></p>',
+            );
+          }
+          if (field.description?.isNotEmpty == true) {
+            debugPrint(
+              '📝 [EmailService] Adding description to HTML field ${field.label}: ${field.description}',
+            );
+            buffer.writeln(
+              '<p style="margin: 5px 0;"><strong>Description:</strong> <em style="color: #718096;">${field.description}</em></p>',
+            );
+          }
+          buffer.writeln('</div>');
           buffer.writeln('</div>');
         } catch (e) {
           debugPrint('❌ Error processing field ${field.label} in HTML: $e');
-          buffer.writeln('<div style="margin-bottom: 15px;">');
-          buffer.writeln('<h3>${i + 1}. ${field.label}</h3>');
           buffer.writeln(
-            '<p><strong>Value:</strong> [Error displaying value]</p>',
+            '<div style="padding: 15px; background-color: #fed7d7; border-bottom: 1px solid #e2e8f0;">',
+          );
+          buffer.writeln(
+            '<h3 style="margin: 0 0 10px 0; color: #e53e3e;">${i + 1}. ${field.label}</h3>',
+          );
+          buffer.writeln(
+            '<p style="margin: 5px 0;"><strong>Value:</strong> <span style="color: #e53e3e;">[Error displaying value: $e]</span></p>',
           );
           buffer.writeln('</div>');
         }
       }
+
+      buffer.writeln('</div>');
+      buffer.writeln(
+        '<div style="margin-top: 20px; padding: 15px; background-color: #c6f6d5; border-radius: 8px; border-left: 4px solid #38a169;">',
+      );
+      buffer.writeln(
+        '<p style="margin: 0;"><strong>✅ Status:</strong> Form submission processed successfully</p>',
+      );
+      buffer.writeln('</div>');
+      buffer.writeln('</body></html>');
+
       return buffer.toString();
     } catch (e) {
       debugPrint('❌ Error creating HTML content: $e');
-      return '<p>Error creating email content: $e</p>';
+      return '''
+        <html><body style="font-family: Arial, sans-serif;">
+          <h2 style="color: #e53e3e;">❌ Error Creating Email Content</h2>
+          <p><strong>Error:</strong> $e</p>
+          <p><strong>Form:</strong> ${submission.formName}</p>
+          <p><strong>Time:</strong> ${submission.submissionTime}</p>
+          <p><strong>Fields:</strong> ${submission.fields.length}</p>
+        </body></html>
+      ''';
     }
   }
 

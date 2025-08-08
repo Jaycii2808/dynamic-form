@@ -149,7 +149,7 @@ class FormBuilderModel extends Equatable {
 
     // Check if this is a content page (not submit page)
     final isContentPage = !page.title.toLowerCase().contains('submit');
-    final isSubmitPage = !isContentPage;
+    //final isSubmitPage = !isContentPage;
 
     // Convert components and add navigation buttons
     final convertedComponents = <Map<String, dynamic>>[];
@@ -203,9 +203,7 @@ class FormBuilderModel extends Equatable {
       }
 
       // If no next content page found, go to submit page
-      if (nextContentPageId == null) {
-        nextContentPageId = allPages.last.pageId;
-      }
+      nextContentPageId ??= allPages.last.pageId;
 
       convertedComponents.add(
         _createNavigationButton(

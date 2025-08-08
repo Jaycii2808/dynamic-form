@@ -32,16 +32,16 @@ class DropdownFormBuilderWidget extends StatefulWidget {
 class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   late TextEditingController _questionController;
   late TextEditingController _placeholderController;
-  late TextEditingController
-  _descriptionController; // Add description controller
+  late TextEditingController _descriptionController;
+  bool _isEditingDescription = false;
+  bool _isDescriptionEnabled = true; // Add enabled state
 
   @override
   void initState() {
     super.initState();
     _questionController = TextEditingController();
     _placeholderController = TextEditingController();
-    _descriptionController =
-        TextEditingController(); // Initialize description controller
+    _descriptionController = TextEditingController();
 
     // Initialize the bloc
     context.read<DropdownFormBuilderWidgetBloc>().add(
@@ -121,6 +121,20 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                     );
                     _updateComponent();
                   },
+                  isEditing: _isEditingDescription,
+                  isEnabled: _isDescriptionEnabled,
+                  onEditTap: () {
+                    setState(() {
+                      _isEditingDescription = true;
+                    });
+                  },
+                  onCancelEdit: () {
+                    setState(() {
+                      _isEditingDescription = false;
+                      // Reset controller to current state description
+                      _descriptionController.text = state.description;
+                    });
+                  },
                 ),
                 _buildOptionsSection(state),
                 _buildBottomControls(state),
@@ -153,6 +167,17 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         );
         // Add description controller update
         _descriptionController.text = state.description;
+      }
+
+      // Initialize enabled state based on description
+      if (_isDescriptionEnabled && state.description.isEmpty) {
+        setState(() {
+          _isDescriptionEnabled = false;
+        });
+      } else if (!_isDescriptionEnabled && state.description.isNotEmpty) {
+        setState(() {
+          _isDescriptionEnabled = true;
+        });
       }
 
       // Call onComponentUpdate if component changed and has description
@@ -437,8 +462,12 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         );
         _updateComponent();
       },
-      onDescriptionTap: () =>
-          _showDescriptionDialog(context, state), // Add description tap
+      onDescriptionTap: () {
+        // Start inline description editing
+        setState(() {
+          _isEditingDescription = true;
+        });
+      },
       onMoreOptions: () => _showMoreOptionsDialog(context),
     );
   }
@@ -792,90 +821,69 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // More options dialog
   void _showMoreOptionsDialog(BuildContext context) {
-    // Capture the bloc reference before showing dialog
-    final bloc = context.read<DropdownFormBuilderWidgetBloc>();
-
-    showDialog(
+    SharedFormBuilderWidgets.showMoreOptionsBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1F2937),
-          title: const Text(
-            'More Options',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: const Text(
-            'Select an option to configure:',
-            style: TextStyle(color: Colors.white),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Show description dialog
-                final currentState = bloc.state;
-                if (currentState is DropdownFormBuilderWidgetSuccess) {
-                  _showDescriptionDialog(context, currentState);
-                }
-              },
-              child: const Text(
-                'Description',
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                bloc.add(
-                  const EnableNavigationFeatureEvent(),
-                );
-                _updateComponent();
-              },
-              child: const Text(
-                'Go to page based on answer',
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
+      getOptions: () {
+        final currentState = context
+            .read<DropdownFormBuilderWidgetBloc>()
+            .state;
+        if (currentState is! DropdownFormBuilderWidgetSuccess) {
+          return [];
+        }
+
+        return SharedFormBuilderWidgets.getDropdownMoreOptions(
+          onDescriptionTap: () {
+            // Start inline description editing instead of showing dialog
+            setState(() {
+              _isEditingDescription = true;
+            });
+          },
+          onNavigationFeatureTap: () {
+            context.read<DropdownFormBuilderWidgetBloc>().add(
+              const EnableNavigationFeatureEvent(),
+            );
+            _updateComponent();
+          },
+          isNavigationEnabled: currentState.navigationFeatureEnabled,
+          isDescriptionEnabled: _isDescriptionEnabled,
+          onNavigationToggle: () {
+            // Toggle navigation feature
+            if (currentState.navigationFeatureEnabled) {
+              // Disable navigation feature
+              context.read<DropdownFormBuilderWidgetBloc>().add(
+                const DisableNavigationFeatureEvent(),
+              );
+            } else {
+              // Enable navigation feature
+              context.read<DropdownFormBuilderWidgetBloc>().add(
+                const EnableNavigationFeatureEvent(),
+              );
+            }
+            _updateComponent();
+          },
+          onDescriptionToggle: () {
+            // Toggle description editing
+            if (_isDescriptionEnabled) {
+              // If currently enabled, disable and clear description
+              setState(() {
+                _isDescriptionEnabled = false;
+                _isEditingDescription = false;
+              });
+              // Clear description by setting it to empty string
+              context.read<DropdownFormBuilderWidgetBloc>().add(
+                const UpdateDescriptionEvent(''),
+              );
+              _updateComponent();
+            } else {
+              // If not enabled, enable editing mode
+              setState(() {
+                _isDescriptionEnabled = true;
+                _isEditingDescription = true;
+              });
+            }
+          },
         );
       },
-    );
-  }
-
-  // Description dialog
-  void _showDescriptionDialog(
-    BuildContext context,
-    DropdownFormBuilderWidgetState state,
-  ) {
-    debugPrint('🔍 [DropdownFormBuilderWidget] Showing description dialog');
-    debugPrint(
-      '🔍 [DropdownFormBuilderWidget] Current description: ${state.description}',
-    );
-    debugPrint(
-      '🔍 [DropdownFormBuilderWidget] Description controller text: ${_descriptionController.text}',
-    );
-
-    SharedFormBuilderWidgets.showDescriptionDialog(
-      context: context,
-      currentDescription: state.description,
-      onDescriptionChanged: (String newDescription) {
-        debugPrint(
-          '🔍 [DropdownFormBuilderWidget] Saving new description: $newDescription',
-        );
-        context.read<DropdownFormBuilderWidgetBloc>().add(
-          UpdateDescriptionEvent(newDescription),
-        );
-      },
-      formType: FormType.dropdown,
     );
   }
 }

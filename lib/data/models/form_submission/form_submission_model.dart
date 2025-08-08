@@ -50,7 +50,8 @@ class FormSubmissionModel extends Equatable {
     final buffer = StringBuffer();
     buffer.writeln('📝 Form Submission: $formName');
     buffer.writeln('🕒 Submitted at: ${submissionTime.toLocal()}');
-    buffer.writeln('📋 Form ID: $formId');
+    // hide it
+    //buffer.writeln('📋 Form ID: $formId');
     buffer.writeln('─' * 50);
 
     for (int i = 0; i < fields.length; i++) {
@@ -100,6 +101,7 @@ class FormFieldData extends Equatable {
   final String componentType;
   final bool isRequired;
   final String? placeholder;
+  final String? description; // Add description field
 
   const FormFieldData({
     required this.label,
@@ -107,6 +109,7 @@ class FormFieldData extends Equatable {
     required this.componentType,
     this.isRequired = false,
     this.placeholder,
+    this.description, // Add description parameter
   });
 
   factory FormFieldData.fromJson(Map<String, dynamic> json) {
@@ -116,6 +119,7 @@ class FormFieldData extends Equatable {
       componentType: json['componentType'] as String? ?? '',
       isRequired: json['isRequired'] as bool? ?? false,
       placeholder: json['placeholder'] as String?,
+      description: json['description'] as String?, // Add description from JSON
     );
   }
 
@@ -126,38 +130,80 @@ class FormFieldData extends Equatable {
       'componentType': componentType,
       'isRequired': isRequired,
       'placeholder': placeholder,
+      'description': description, // Add description to JSON
     };
   }
 
   /// Get display value for different component types
   String get displayValue {
-    if (value == null) return 'No value';
+    if (value == null) return '(No value)';
 
     try {
+      // Handle empty strings
+      if (value is String) {
+        final stringValue = (value as String).trim();
+        if (stringValue.isEmpty) {
+          return '(Empty)';
+        }
+        return stringValue;
+      }
+
+      // Handle lists (tags, multi-select, etc.)
       if (value is List) {
-        return (value as List)
-            .map((item) => item?.toString() ?? 'null')
+        final list = value as List;
+        if (list.isEmpty) {
+          return '(No items selected)';
+        }
+        return list
+            .map((item) => item?.toString().trim() ?? 'null')
+            .where((item) => item.isNotEmpty && item != 'null')
             .join(', ');
       }
 
+      // Handle boolean values (switches, checkboxes)
       if (value is bool) {
         return value ? 'Yes' : 'No';
       }
 
+      // Handle numbers
       if (value is num) {
         // Handle large integers and numbers safely
         if (value is int && value > 999999999) {
           // Large integers might be timestamps or IDs, format them safely
           return 'ID: ${value.toString()}';
         }
+        // Format decimal numbers nicely
+        if (value is double) {
+          return value % 1 == 0 ? value.toInt().toString() : value.toString();
+        }
         return value.toString();
       }
 
+      // Handle Maps (complex objects)
+      if (value is Map) {
+        final map = value as Map;
+        if (map.isEmpty) {
+          return '(No data)';
+        }
+        // Convert map to readable format
+        final entries = map.entries
+            .map((entry) => '${entry.key}: ${entry.value}')
+            .join(', ');
+        return entries.isNotEmpty ? entries : '(No data)';
+      }
+
+      // Handle DateTime objects
+      if (value is DateTime) {
+        return (value as DateTime).toLocal().toString();
+      }
+
       // For all other types, convert to string safely
-      return value.toString();
+      final stringValue = value.toString().trim();
+      return stringValue.isNotEmpty ? stringValue : '(No value)';
     } catch (e) {
       debugPrint('❌ Error converting value to display string: $e');
-      return 'Error displaying value';
+      debugPrint('❌ Value type: ${value.runtimeType}, Value: $value');
+      return 'Error displaying value: ${e.toString()}';
     }
   }
 
@@ -168,5 +214,6 @@ class FormFieldData extends Equatable {
     componentType,
     isRequired,
     placeholder,
+    description, // Add description to props
   ];
 }
