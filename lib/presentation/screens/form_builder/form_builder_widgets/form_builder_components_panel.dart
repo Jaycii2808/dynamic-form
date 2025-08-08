@@ -16,7 +16,7 @@ Widget formBuilderComponentsPanel(
       curve: Curves.easeInOut,
       right: 16,
       top: 0,
-      width: 300,
+      width: 250,
       height: 600,
       // Fixed height for floating window
       child: Container(
@@ -109,15 +109,24 @@ Widget _buildComponentsList(
   FormBuilderState state,
   FormBuilderBloc formBuilderBloc,
 ) {
-  return ListView.builder(
-    padding: const EdgeInsets.only(bottom: 32), // Add bottom padding
-    itemCount: state.availableComponents.length,
-    itemBuilder: (context, index) {
-      return _buildDraggableComponent(
-        state.availableComponents[index],
-        formBuilderBloc,
-      );
-    },
+  return Container(
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Colors.grey,
+        width: 3,
+      ),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: ListView.builder(
+      padding: const EdgeInsets.only(bottom: 32), // Add bottom padding
+      itemCount: state.availableComponents.length,
+      itemBuilder: (context, index) {
+        return _buildDraggableComponent(
+          state.availableComponents[index],
+          formBuilderBloc,
+        );
+      },
+    ),
   );
 }
 
@@ -144,9 +153,19 @@ Widget _buildComponentListItem(
     child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue),
+        border: Border.all(
+          color: Colors.blue.withValues(alpha: 0.4),
+          width: 2,
+        ),
         borderRadius: BorderRadius.circular(8),
         color: const Color(0xFF000000).withValues(alpha: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Container(
         margin: const EdgeInsets.all(12),
@@ -180,7 +199,10 @@ Widget _buildComponentListItem(
               decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.grey[700]!),
+                border: Border.all(
+                  color: Colors.blue.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: buildComponentPreview(component),
             ),

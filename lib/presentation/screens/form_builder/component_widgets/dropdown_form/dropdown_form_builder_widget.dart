@@ -14,6 +14,8 @@ class DropdownFormBuilderWidget extends StatefulWidget {
   final VoidCallback? onDuplicate;
   final VoidCallback? onDelete;
   final List<String>? availablePages;
+  final String? currentPageId; // Add current page ID for navigation logic
+  final int? currentPageIndex; // Add current page index for navigation logic
 
   const DropdownFormBuilderWidget({
     super.key,
@@ -22,6 +24,8 @@ class DropdownFormBuilderWidget extends StatefulWidget {
     this.onDuplicate,
     this.onDelete,
     this.availablePages,
+    this.currentPageId, // Add current page ID parameter
+    this.currentPageIndex, // Add current page index parameter
   });
 
   @override
@@ -43,6 +47,10 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     _questionController = TextEditingController();
     _placeholderController = TextEditingController();
     _descriptionController = TextEditingController();
+
+    debugPrint(
+      '🔄 [DropdownFormBuilderWidget] Initializing with current page index: ${widget.currentPageIndex}',
+    );
 
     // Initialize the bloc
     context.read<DropdownFormBuilderWidgetBloc>().add(
@@ -339,7 +347,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Options section widget
   Widget _buildOptionsSection(DropdownFormBuilderWidgetSuccess state) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12), // Reduced from 16
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -380,7 +388,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   ) {
     return Container(
       key: ValueKey(option.value),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8), // Reduced from 12
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -407,13 +415,13 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Drag handle widget
   Widget _buildDragHandle() {
     return Container(
-      width: 24,
-      height: 24,
-      margin: const EdgeInsets.only(right: 8),
+      width: 20, // Reduced from 24
+      height: 20, // Reduced from 24
+      margin: const EdgeInsets.only(right: 6), // Reduced from 8
       child: const Icon(
         Icons.drag_handle,
         color: Color(0xFF9CA3AF),
-        size: 20,
+        size: 16, // Reduced from 20
       ),
     );
   }
@@ -421,14 +429,14 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Option number widget
   Widget _buildOptionNumber(int index) {
     return Container(
-      width: 24,
-      height: 24,
-      margin: const EdgeInsets.only(right: 8),
+      width: 20, // Reduced from 24
+      height: 20, // Reduced from 24
+      margin: const EdgeInsets.only(right: 6), // Reduced from 8
       child: Text(
         '${index + 1}.',
         style: const TextStyle(
           color: Color(0xFF9CA3AF),
-          fontSize: 14,
+          fontSize: 12, // Reduced from 14
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -442,14 +450,14 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         controller: _getControllerForOption(option.value, option.label),
         focusNode: _getFocusNodeForOption(option.value),
         style: const TextStyle(
-          fontSize: 16,
+          fontSize: 14, // Reduced from 16
           color: Colors.white,
         ),
         decoration: const InputDecoration(
           hintText: 'Option',
           hintStyle: TextStyle(
             color: Color(0xFF9CA3AF),
-            fontSize: 16,
+            fontSize: 14, // Reduced from 16
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
@@ -477,13 +485,13 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         _updateComponent();
       },
       child: Container(
-        width: 24,
-        height: 24,
-        margin: const EdgeInsets.only(left: 8),
+        width: 20, // Reduced from 24
+        height: 20, // Reduced from 24
+        margin: const EdgeInsets.only(left: 6), // Reduced from 8
         child: const Icon(
           Icons.close,
           color: Color(0xFF9CA3AF),
-          size: 20,
+          size: 16, // Reduced from 20
         ),
       ),
     );
@@ -498,8 +506,11 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     return GestureDetector(
       onTap: () => _displayPageNavigationOptions(context, index),
       child: Container(
-        margin: const EdgeInsets.only(top: 8, left: 56),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: const EdgeInsets.only(top: 6, left: 46), // Reduced from 8, 56
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 4,
+        ), // Reduced from 12, 6
         decoration: BoxDecoration(
           color: Colors.blue.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(4),
@@ -511,22 +522,30 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.navigation, color: Colors.blue, size: 14),
-            const SizedBox(width: 6),
+            const Icon(
+              Icons.navigation,
+              color: Colors.blue,
+              size: 12,
+            ), // Reduced from 14
+            const SizedBox(width: 4), // Reduced from 6
             Flexible(
               child: Text(
                 _getNavigationActionText(option, state.availablePages),
                 style: const TextStyle(
                   color: Colors.blue,
-                  fontSize: 12,
+                  fontSize: 10, // Reduced from 12
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
             ),
-            const SizedBox(width: 4),
-            const Icon(Icons.edit, color: Colors.blue, size: 12),
+            const SizedBox(width: 3), // Reduced from 4
+            const Icon(
+              Icons.edit,
+              color: Colors.blue,
+              size: 10,
+            ), // Reduced from 12
           ],
         ),
       ),
@@ -543,16 +562,16 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         _updateComponent();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 6), // Reduced from 8
         child: const Row(
           children: [
-            Icon(Icons.add, color: Colors.blue, size: 20),
-            SizedBox(width: 8),
+            Icon(Icons.add, color: Colors.blue, size: 16), // Reduced from 20
+            SizedBox(width: 6), // Reduced from 8
             Text(
               'Add option',
               style: TextStyle(
                 color: Colors.blue,
-                fontSize: 14,
+                fontSize: 12, // Reduced from 14
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -773,6 +792,12 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     debugPrint(
       '🔄 [DropdownFormBuilder] Showing navigation options for option $optionIndex',
     );
+    debugPrint(
+      '🔄 [DropdownFormBuilder] Widget current page index: ${widget.currentPageIndex}',
+    );
+    debugPrint(
+      '🔄 [DropdownFormBuilder] Widget current page ID: ${widget.currentPageId}',
+    );
 
     final currentState = context.read<DropdownFormBuilderWidgetBloc>().state;
     if (currentState is! DropdownFormBuilderWidgetSuccess) return;
@@ -780,31 +805,56 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     debugPrint(
       '🔄 [DropdownFormBuilder] Available pages: ${currentState.availablePages}',
     );
+    debugPrint(
+      '🔄 [DropdownFormBuilder] Current page ID: ${widget.currentPageId}',
+    );
 
     final List<Widget> navigationOptions = [
       _buildNavigationOption(
         context,
-        'Continue to next section',
+        'Continue to next page',
         DropdownActionOptionsEnum.next,
         null,
         optionIndex,
       ),
     ];
 
-    // Add available pages if provided
+    // Add available pages if provided, excluding current page and next page
     if (currentState.availablePages != null) {
-      //int index = 0;
       final pages = currentState.availablePages ?? const <String>[];
-      for (final pageName in pages) {
+
+      // Use the provided current page index
+      int currentPageIndex = widget.currentPageIndex ?? 0;
+
+      final nextPageIndex = currentPageIndex + 1;
+
+      debugPrint(
+        '🔄 [DropdownFormBuilder] Current page index: $currentPageIndex, Next page index: $nextPageIndex',
+      );
+      debugPrint(
+        '🔄 [DropdownFormBuilder] Total pages: ${pages.length}',
+      );
+
+      for (int i = 0; i < pages.length; i++) {
+        // Skip current page and next page
+        if (i == currentPageIndex || i == nextPageIndex) {
+          debugPrint(
+            '🔄 [DropdownFormBuilder] Skipping page at index $i (current: $currentPageIndex, next: $nextPageIndex)',
+          );
+          continue;
+        }
+
+        final pageName = pages[i];
         debugPrint(
-          '🔄 [DropdownFormBuilder] Adding navigation option for page: $pageName',
+          '🔄 [DropdownFormBuilder] Adding navigation option for page: $pageName (index: $i)',
         );
+
         navigationOptions.add(
           _buildNavigationOption(
             context,
-            'Go to $pageName',
+            'Go to ${i + 1} ($pageName)',
             DropdownActionOptionsEnum.goto,
-            pageName, // Use actual page name instead of page_${index + 1}
+            pageName,
             optionIndex,
           ),
         );
@@ -814,29 +864,26 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         '🔄 [DropdownFormBuilder] No available pages provided, using fallback',
       );
       // Fallback to hardcoded pages if no available pages provided
-      navigationOptions.addAll([
-        _buildNavigationOption(
-          context,
-          'Go to Page 1',
-          DropdownActionOptionsEnum.goto,
-          'Page 1', // Use actual page name
-          optionIndex,
-        ),
-        _buildNavigationOption(
-          context,
-          'Go to Page 2',
-          DropdownActionOptionsEnum.goto,
-          'Page 2', // Use actual page name
-          optionIndex,
-        ),
-        _buildNavigationOption(
-          context,
-          'Go to Page 3',
-          DropdownActionOptionsEnum.goto,
-          'Page 3', // Use actual page name
-          optionIndex,
-        ),
-      ]);
+      // Only show pages that are not current or next
+      final currentPageIndex = 0; // Assume we're on page 1
+      final nextPageIndex = 1;
+
+      final fallbackPages = ['Page 1', 'Page 2', 'Page 3'];
+      for (int i = 0; i < fallbackPages.length; i++) {
+        if (i == currentPageIndex || i == nextPageIndex) {
+          continue;
+        }
+
+        navigationOptions.add(
+          _buildNavigationOption(
+            context,
+            'Go to ${i + 1} (${fallbackPages[i]})',
+            DropdownActionOptionsEnum.goto,
+            fallbackPages[i],
+            optionIndex,
+          ),
+        );
+      }
     }
 
     navigationOptions.add(
@@ -862,6 +909,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 12),

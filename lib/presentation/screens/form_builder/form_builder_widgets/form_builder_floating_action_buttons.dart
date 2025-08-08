@@ -1,107 +1,140 @@
-import 'package:dynamic_form_bi/core/enums/hero_tag_form_builder_enum.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-Widget formBuilderFloatingActionButtons(
+Widget formBuilderBottomNavigation(
   BuildContext context,
   FormBuilderBloc formBuilderBloc,
 ) {
   return BlocBuilder<FormBuilderBloc, FormBuilderState>(
     builder: (context, state) {
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(width: 10), // Add left padding
-            FloatingActionButton.extended(
-              heroTag: HeroTagFormBuilderEnum.componentsPanel.value,
-              onPressed: () {
-                if (state.showButtonComponentsPanel) {
-                  formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
-                }
-                formBuilderBloc.add(const ToggleComponentsPanelEvent());
-              },
-              backgroundColor: state.showComponentsPanel
-                  ? Colors.blue.shade600
-                  : Colors.blue.shade100,
-              foregroundColor: state.showComponentsPanel
-                  ? Colors.white
-                  : Colors.blue,
-              elevation: state.showComponentsPanel ? 8 : 4,
-              icon: Container(
-                decoration: state.showComponentsPanel
-                    ? BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 2),
-                        borderRadius: BorderRadius.circular(28),
-                      )
-                    : null,
-                child: Icon(
-                  state.showComponentsPanel ? Icons.hide_source : Icons.widgets,
-                  size: state.showComponentsPanel ? 24 : 20,
-                ),
-              ),
-              label: Text(
-                state.showComponentsPanel
-                    ? 'Hide Components'
-                    : 'Show Components',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+      return Container(
+        height: 55,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.withValues(alpha: 0.2),
+              width: 1,
             ),
-            const SizedBox(width: 10),
-            // FloatingActionButton(
-            //   heroTag: HeroTagFormBuilderEnum.buttonComponents.value,
-            //   onPressed: () {
-            //     if (state.showComponentsPanel) {
-            //       formBuilderBloc.add(const ToggleComponentsPanelEvent());
-            //     }
-            //     formBuilderBloc.add(const LoadButtonComponentsEvent());
-            //     formBuilderBloc.add(const ToggleButtonComponentsPanelEvent());
-            //   },
-            //   backgroundColor: state.showButtonComponentsPanel
-            //       ? Colors.green.shade600
-            //       : Colors.blue.shade100,
-            //   foregroundColor: state.showButtonComponentsPanel ? Colors.white : Colors.blue,
-            //   elevation: state.showButtonComponentsPanel ? 8 : 4,
-            //   child: Container(
-            //     decoration: state.showButtonComponentsPanel
-            //         ? BoxDecoration(
-            //       border: Border.all(color: Colors.white, width: 2),
-            //       borderRadius: BorderRadius.circular(28),
-            //     )
-            //         : null,
-            //     child: Icon(
-            //       Icons.next_week_outlined,
-            //       size: state.showButtonComponentsPanel ? 24 : 20,
-            //     ),
-            //   ),
-            // ),
-            FloatingActionButton.extended(
-              heroTag: HeroTagFormBuilderEnum.addPage.value,
-              onPressed: () => _showAddPageDialog(context, formBuilderBloc),
-              backgroundColor: Colors.green.shade100,
-              foregroundColor: Colors.green,
-              icon: const Icon(Icons.add),
-              label: const Text(
-                'Add Page',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, -1),
             ),
-            const SizedBox(width: 10),
           ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                // Components Panel Button
+                Expanded(
+                  child: _buildNavigationButton(
+                    context: context,
+                    icon: state.showComponentsPanel
+                        ? Icons.hide_source
+                        : Icons.widgets,
+                    label: state.showComponentsPanel ? 'Hide' : 'Components',
+                    isActive: state.showComponentsPanel,
+                    onTap: () {
+                      if (state.showButtonComponentsPanel) {
+                        formBuilderBloc.add(
+                          const ToggleButtonComponentsPanelEvent(),
+                        );
+                      }
+                      formBuilderBloc.add(const ToggleComponentsPanelEvent());
+                    },
+                    activeColor: Colors.blue,
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // Add Page Button
+                Expanded(
+                  child: _buildNavigationButton(
+                    context: context,
+                    icon: Icons.add_box,
+                    label: 'Add Page',
+                    isActive: false,
+                    onTap: () => _showAddPageDialog(context, formBuilderBloc),
+                    activeColor: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     },
   );
+}
+
+Widget _buildNavigationButton({
+  required BuildContext context,
+  required IconData icon,
+  required String label,
+  required bool isActive,
+  required VoidCallback onTap,
+  required Color activeColor,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+      decoration: BoxDecoration(
+        color: isActive
+            ? activeColor.withValues(alpha: 0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isActive
+              ? activeColor.withValues(alpha: 0.3)
+              : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: isActive ? activeColor : Colors.grey.withValues(alpha: 0.7),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+              color: isActive
+                  ? activeColor
+                  : Colors.grey.withValues(alpha: 0.7),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// Keep the old function for backward compatibility
+Widget formBuilderFloatingActionButtons(
+  BuildContext context,
+  FormBuilderBloc formBuilderBloc,
+) {
+  return formBuilderBottomNavigation(context, formBuilderBloc);
 }
 
 void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {

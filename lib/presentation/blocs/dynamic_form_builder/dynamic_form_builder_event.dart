@@ -225,6 +225,15 @@ class RemovePageEvent extends FormBuilderEvent {
   List<Object?> get props => [pageId];
 }
 
+class CopyPageEvent extends FormBuilderEvent {
+  final String pageId;
+
+  const CopyPageEvent(this.pageId);
+
+  @override
+  List<Object?> get props => [pageId];
+}
+
 class SubmitFormEvent extends FormBuilderEvent {
   const SubmitFormEvent();
 }

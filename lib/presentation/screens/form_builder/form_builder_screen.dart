@@ -3,7 +3,8 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_app_bar.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_body.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_floating_action_buttons.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_widgets/form_builder_floating_action_buttons.dart'
+    show formBuilderBottomNavigation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,7 +40,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
           _loadExistingForm();
         });
       } else {
-        _showFirstPageNameDialog();
+        //_showFirstPageNameDialog();
       }
     });
   }
@@ -135,13 +136,16 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
       resizeToAvoidBottomInset: true,
       appBar: formBuilderAppBar(context, formBuilderBloc),
       backgroundColor: const Color(0xFF000000),
-      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
-          ? null
-          : formBuilderFloatingActionButtons(
-              context,
-              formBuilderBloc,
-            ),
-      body: formBuilderBody(context, formBuilderBloc),
+      body: Column(
+        children: [
+          Expanded(
+            child: formBuilderBody(context, formBuilderBloc),
+          ),
+          // Show bottom navigation only when keyboard is not open
+          if (MediaQuery.of(context).viewInsets.bottom == 0)
+            formBuilderBottomNavigation(context, formBuilderBloc),
+        ],
+      ),
     );
   }
 }

@@ -49,6 +49,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<SwitchPageEvent>(_onSwitchPage);
     on<AddPageEvent>(_onAddPage);
     on<RemovePageEvent>(_onRemovePage);
+    on<CopyPageEvent>(_onCopyPage);
     on<SubmitFormEvent>(_onSubmitForm);
     on<AddPageWithTitleEvent>(_onAddPageWithTitle);
     on<UpdateFirstPageTitleEvent>(_onUpdateFirstPageTitle);
@@ -529,6 +530,53 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
         currentPageId: newCurrentPageId,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
+      ),
+    );
+  }
+
+  /// Copy a page
+  void _onCopyPage(
+    CopyPageEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('📋 [FormBuilderBloc] Copying page: ${event.pageId}');
+
+    final pageToCopy = state.pages.firstWhere(
+      (page) => page.pageId == event.pageId,
+    );
+
+    // Deep copy components with new IDs
+    final copiedComponents = pageToCopy.components.map((component) {
+      final newComponentId =
+          '${component.id}_${DateTime.now().millisecondsSinceEpoch}';
+      return component.copyWith(id: newComponentId);
+    }).toList();
+
+    final newPageId = 'page_${DateTime.now().millisecondsSinceEpoch}';
+    final newPage = pageToCopy.copyWith(
+      pageId: newPageId,
+      title: '${pageToCopy.title} Copy',
+      order: state.pages.length + 1,
+      components: copiedComponents,
+    );
+
+    final updatedPages = List<FormBuilderPageModel>.from(state.pages)
+      ..add(newPage);
+
+    final availablePages = updatedPages.map((page) => page.title).toList();
+    debugPrint(
+      '🔄 [FormBuilderBloc] Available pages after copying page: $availablePages',
+    );
+    debugPrint(
+      '📋 [FormBuilderBloc] Copied ${copiedComponents.length} components to new page',
+    );
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: updatedPages,
+        currentPageId: newPageId,
         rebuildTimestamp:
             DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),

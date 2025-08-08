@@ -142,10 +142,13 @@ Widget _buildPageHeader(
   return Container(
     width: double.infinity,
     margin: const EdgeInsets.symmetric(horizontal: 16),
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 8,
+    ), // Reduced padding
     decoration: BoxDecoration(
       color: isCurrentPage ? Colors.grey[800] : Colors.grey[900],
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(8), // Reduced from 12
       border: Border.all(
         color: isCurrentPage
             ? Colors.blue.withValues(alpha: 0.3)
@@ -153,143 +156,138 @@ Widget _buildPageHeader(
         width: 1,
       ),
     ),
-    child: Column(
+    child: Row(
+      spacing: 8,
       children: [
-        // Page indicator "Page X of Y" - centered at top
+        // Page indicator "Page X of Y"
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 2,
+          ), // Reduced padding
           decoration: BoxDecoration(
             color: Colors.orange.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6), // Reduced from 12
             border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
           ),
           child: Text(
             'Page ${pageIndex + 1} of $totalPages',
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 9, // Reduced from 11
               fontWeight: FontWeight.w500,
               color: Colors.orange,
             ),
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // Main content row
-        Row(
-          children: [
-            // Editable Page title
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _showEditPageTitleDialog(
-                  context,
-                  page,
-                  pageIndex,
-                  formBuilderBloc,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isCurrentPage
-                        ? Colors.green.withValues(alpha: 0.1)
-                        : Colors.grey[800],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isCurrentPage
-                          ? Colors.green.withValues(alpha: 0.3)
-                          : Colors.grey[700]!,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isCurrentPage) ...[
-                        const Icon(Icons.edit, color: Colors.green, size: 14),
-                        const SizedBox(width: 6),
-                      ],
-                      Expanded(
-                        child: Text(
-                          page.title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isCurrentPage
-                                ? Colors.white
-                                : Colors.white70,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+        // Reduced from 12
+        // Editable Page title
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _showEditPageTitleDialog(
+              context,
+              page,
+              pageIndex,
+              formBuilderBloc,
             ),
-
-            const SizedBox(width: 12),
-
-            // Component count for this specific page
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8, // Reduced from 12
+                vertical: 4, // Reduced from 6
+              ),
               decoration: BoxDecoration(
                 color: isCurrentPage
-                    ? Colors.blue.withValues(alpha: 0.1)
+                    ? Colors.green.withValues(alpha: 0.1)
                     : Colors.grey[800],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '$componentCount component${componentCount != 1 ? 's' : ''}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isCurrentPage ? Colors.blue : Colors.grey[400],
+                borderRadius: BorderRadius.circular(6), // Reduced from 8
+                border: Border.all(
+                  color: isCurrentPage
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : Colors.grey[700]!,
                 ),
               ),
-            ),
-
-            // Remove page button (only show for page 2 and above)
-            if (pageIndex > 0) ...[
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () =>
-                    _showRemovePageDialog(context, page, formBuilderBloc),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.3),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isCurrentPage) ...[
+                    const Icon(
+                      Icons.edit,
+                      color: Colors.green,
+                      size: 12,
+                    ), // Reduced from 14
+                    const SizedBox(width: 4), // Reduced from 6
+                  ],
+                  Expanded(
+                    child: Text(
+                      page.title,
+                      style: TextStyle(
+                        fontSize: 14, // Reduced from 18
+                        fontWeight: FontWeight.bold,
+                        color: isCurrentPage ? Colors.white : Colors.white70,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                        size: 16,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Remove',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-            ],
-          ],
+            ),
+          ),
+        ),
+
+        // Copy page button
+        GestureDetector(
+          onTap: () => _showCopyPageDialog(context, page, formBuilderBloc),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6, // Reduced from 8
+              vertical: 2, // Reduced from 4
+            ),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6), // Reduced from 8
+              border: Border.all(
+                color: Colors.blue.withValues(alpha: 0.3),
+              ),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.copy,
+                  color: Colors.blue,
+                  size: 20, // Reduced from 16
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Remove page button (only show for page 2 and above)
+        // Reduced from 12
+        GestureDetector(
+          onTap: () => _showRemovePageDialog(context, page, formBuilderBloc),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6, // Reduced from 8
+              vertical: 2, // Reduced from 4
+            ),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6), // Reduced from 8
+              border: Border.all(
+                color: Colors.red.withValues(alpha: 0.3),
+              ),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 20, // Reduced from 16
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     ),
@@ -389,6 +387,7 @@ Widget _buildComponentWithDropZone(
                         formBuilderBloc,
                         context,
                         state,
+                        pageIndex, // Pass the page index
                       ),
                     ),
                   ),
@@ -584,24 +583,34 @@ Widget _buildComponentWidget(
   FormBuilderBloc formBuilderBloc,
   BuildContext context,
   FormBuilderState state,
+  int pageIndex, // Add pageIndex parameter
 ) {
   // Check if component is dropdown type
   if (component.type == FormTypeEnum.dropdownFormType) {
     // Get available pages for navigation options - use current state
     final availablePages = state.pages.map((page) => page.title).toList();
 
+    // Use the page index where this component is being built
+    final currentPageIndex = pageIndex;
+
     debugPrint(
       '🔍 [FormBuilderCanvas] Building dropdown with available pages: $availablePages',
+    );
+    debugPrint(
+      '🔍 [FormBuilderCanvas] Component being built on page index: $currentPageIndex',
     );
 
     return BlocProvider(
       create: (context) => DropdownFormBuilderWidgetBloc(),
       child: DropdownFormBuilderWidget(
         key: ValueKey(
-          '${component.id}_${availablePages.join('_')}',
-        ), // Force rebuild when pages change
+          '${component.id}_${state.currentPageId}_$currentPageIndex',
+        ), // Unique key per component per page
         component: component,
         availablePages: availablePages, // Pass current available pages
+        currentPageId: state.currentPageId, // Pass current page ID
+        currentPageIndex:
+            currentPageIndex, // Pass the page index where this component is being built
         onComponentUpdate: (updatedComponent) {
           debugPrint(
             '🔍 [FormBuilderCanvas] Dropdown onComponentUpdate called',
@@ -657,7 +666,7 @@ Widget _buildComponentWidget(
       ),
       child: ReusedWidget.buildFormComponent(
         key: ValueKey(
-          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_${state.rebuildTimestamp}',
+          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_$state.rebuildTimestamp',
         ), // Force rebuild when config changes or rebuildTimestamp changes
         component: component,
         onComponentValueChange: (componentId, value) => formBuilderBloc.add(
@@ -810,6 +819,37 @@ void _showRemovePageDialog(
               Navigator.of(dialogContext).pop();
             },
             child: const Text('Remove'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _showCopyPageDialog(
+  BuildContext context,
+  dynamic page,
+  FormBuilderBloc formBuilderBloc,
+) {
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: const Text('Copy Page'),
+        content: Text(
+          'Are you sure you want to copy the page "${page.title}" with all its components?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              formBuilderBloc.add(CopyPageEvent(page.pageId));
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Copy'),
           ),
         ],
       );
