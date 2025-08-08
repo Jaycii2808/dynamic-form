@@ -5,34 +5,40 @@ import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 abstract class DropdownFormBuilderWidgetState extends Equatable {
   final String question;
   final String placeholder;
-  final String description; // Add description field
+  final String description;
   final List<Option> options;
   final bool isRequired;
   final bool navigationFeatureEnabled;
   final List<String>? availablePages;
   final DynamicFormModel? component;
+  final bool isEditingDescription; // Add editing state
+  final bool isDescriptionEnabled; // Add enabled state
 
   const DropdownFormBuilderWidgetState({
     this.question = '',
     this.placeholder = '',
-    this.description = '', // Add description field
+    this.description = '',
     this.options = const [],
     this.isRequired = false,
     this.navigationFeatureEnabled = false,
     this.availablePages,
     this.component,
+    this.isEditingDescription = false, // Add editing state
+    this.isDescriptionEnabled = false, // Add enabled state - default to false
   });
 
   @override
   List<Object?> get props => [
     question,
     placeholder,
-    description, // Add description to props
+    description,
     options,
     isRequired,
     navigationFeatureEnabled,
     availablePages,
     component,
+    isEditingDescription, // Add to props
+    isDescriptionEnabled, // Add to props
   ];
 }
 
@@ -40,12 +46,14 @@ class DropdownFormBuilderWidgetInitial extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetInitial({
     super.question,
     super.placeholder,
-    super.description, // Add description parameter
+    super.description,
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
     super.availablePages,
     super.component,
+    super.isEditingDescription, // Add parameter
+    super.isDescriptionEnabled, // Add parameter
   });
 }
 
@@ -53,12 +61,14 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetLoading({
     super.question,
     super.placeholder,
-    super.description, // Add description parameter
+    super.description,
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
     super.availablePages,
     super.component,
+    super.isEditingDescription, // Add parameter
+    super.isDescriptionEnabled, // Add parameter
   });
 
   //fromState
@@ -67,12 +77,14 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
   }) : super(
          question: state.question,
          placeholder: state.placeholder,
-         description: state.description, // Add description
+         description: state.description,
          options: state.options,
          isRequired: state.isRequired,
          navigationFeatureEnabled: state.navigationFeatureEnabled,
          availablePages: state.availablePages,
          component: state.component,
+         isEditingDescription: state.isEditingDescription, // Add from state
+         isDescriptionEnabled: state.isDescriptionEnabled, // Add from state
        );
 }
 
@@ -80,12 +92,14 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetSuccess({
     super.question,
     super.placeholder,
-    super.description, // Add description parameter
+    super.description,
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
     super.availablePages,
     super.component,
+    super.isEditingDescription, // Add parameter
+    super.isDescriptionEnabled, // Add parameter
   });
 
   //fromState
@@ -94,34 +108,42 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
   }) : super(
          question: state.question,
          placeholder: state.placeholder,
-         description: state.description, // Add description
+         description: state.description,
          options: state.options,
          isRequired: state.isRequired,
          navigationFeatureEnabled: state.navigationFeatureEnabled,
          availablePages: state.availablePages,
          component: state.component,
+         isEditingDescription: state.isEditingDescription, // Add from state
+         isDescriptionEnabled: state.isDescriptionEnabled, // Add from state
        );
 
   DropdownFormBuilderWidgetSuccess copyWith({
     String? question,
     String? placeholder,
-    String? description, // Add description parameter
+    String? description,
     List<Option>? options,
     bool? isRequired,
     bool? navigationFeatureEnabled,
     List<String>? availablePages,
     DynamicFormModel? component,
+    bool? isEditingDescription, // Add parameter
+    bool? isDescriptionEnabled, // Add parameter
   }) {
     return DropdownFormBuilderWidgetSuccess(
       question: question ?? this.question,
       placeholder: placeholder ?? this.placeholder,
-      description: description ?? this.description, // Add description
+      description: description ?? this.description,
       options: options ?? this.options,
       isRequired: isRequired ?? this.isRequired,
       navigationFeatureEnabled:
           navigationFeatureEnabled ?? this.navigationFeatureEnabled,
       availablePages: availablePages ?? this.availablePages,
       component: component ?? this.component,
+      isEditingDescription:
+          isEditingDescription ?? this.isEditingDescription, // Add to copyWith
+      isDescriptionEnabled:
+          isDescriptionEnabled ?? this.isDescriptionEnabled, // Add to copyWith
     );
   }
 }
@@ -132,12 +154,14 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
   const DropdownFormBuilderWidgetError({
     super.question,
     super.placeholder,
-    super.description, // Add description parameter
+    super.description,
     super.options,
     super.isRequired,
     super.navigationFeatureEnabled,
     super.availablePages,
     super.component,
+    super.isEditingDescription, // Add parameter
+    super.isDescriptionEnabled, // Add parameter
     required this.errorMessage,
   });
 
@@ -145,12 +169,14 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
   List<Object?> get props => [
     question,
     placeholder,
-    description, // Add description to props
+    description,
     options,
     isRequired,
     navigationFeatureEnabled,
     availablePages,
     component,
+    isEditingDescription, // Add to props
+    isDescriptionEnabled, // Add to props
     errorMessage,
   ];
 }

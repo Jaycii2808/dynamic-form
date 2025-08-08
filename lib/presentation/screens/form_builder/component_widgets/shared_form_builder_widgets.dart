@@ -380,90 +380,91 @@ class SharedFormBuilderWidgets {
     debugPrint('Building CommonBottomControls with isRequired: $isRequired');
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(
             color: Color(0xFF374151),
             width: 1,
-          ), // Dark border
+          ),
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Duplicate button
-          GestureDetector(
-            onTap: onDuplicate,
-            child: Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: 4),
-              child: const Icon(
-                Icons.content_copy,
-                color: Color(0xFF9CA3AF), // Light gray
-                size: 18,
+          // Action buttons group
+          Row(
+            children: [
+              _buildActionButton(
+                icon: Icons.content_copy,
+                color: const Color(0xFF9CA3AF),
+                onTap: onDuplicate,
               ),
-            ),
-          ),
-
-          // Delete button
-          GestureDetector(
-            onTap: onDelete,
-            child: Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: 4),
-              child: const Icon(
-                Icons.delete_outline,
+              const SizedBox(width: 8),
+              _buildActionButton(
+                icon: Icons.delete_outline,
                 color: Colors.red,
-                size: 18,
+                onTap: onDelete,
               ),
-            ),
+            ],
           ),
 
-          // Required toggle - make it flexible and wrap if needed
-          Flexible(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Required',
-                  style: TextStyle(
-                    color: Colors.white, // White text
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+          const Spacer(),
+
+          // Required toggle
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Required',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 4),
-                Switch(
+              ),
+              const SizedBox(width: 4),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
                   value: isRequired,
                   onChanged: onRequiredChanged,
                   activeColor: Colors.blue,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
 
-          // More options with popup menu
-          Builder(
-            builder: (context) => GestureDetector(
-              onTap: () => onMoreOptions?.call(),
-              child: const SizedBox(
-                width: 28,
-                height: 28,
-                child: Icon(
-                  Icons.more_vert,
-                  color: Color(0xFF9CA3AF), // Light gray
-                  size: 18,
-                ),
-              ),
-            ),
+          // More options
+          _buildActionButton(
+            icon: Icons.more_vert,
+            color: const Color(0xFF9CA3AF),
+            onTap: onMoreOptions,
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper method to build action buttons
+  static Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Icon(
+          icon,
+          color: color,
+          size: 16,
+        ),
       ),
     );
   }

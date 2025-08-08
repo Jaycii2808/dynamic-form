@@ -74,11 +74,11 @@ Widget _buildTitle(
       // Form Title Row
       Row(
         children: [
-          Expanded(
+          Flexible(
             child: _buildEditableFormTitle(context, state, formBuilderBloc),
           ),
           if (isMultiPage) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             _buildPageIndicator(currentPageIndex, state.pages.length),
           ],
         ],
@@ -104,12 +104,16 @@ Widget _buildEditableFormTitle(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            state.formTitle,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          Flexible(
+            child: Text(
+              state.formTitle,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
           const SizedBox(width: 8),
@@ -143,58 +147,32 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
 }
 
 Widget _buildActionButtons(
-  BuildContext context,
-  FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
-  // Check if current page has components
-  final currentPage = state.pages.firstWhere(
-    (page) => page.pageId == state.currentPageId,
-    orElse: () => state.pages.first,
-  );
-  final hasComponents = currentPage.components.isNotEmpty;
-
-  return Row(
-    children: [
-      if (hasComponents)
-        Container(
-          margin: const EdgeInsets.only(right: 6, top: 8, bottom: 8),
-          child: IconButton(
-            onPressed: () => formBuilderBloc.add(const ClearCanvasEvent()),
-            icon: const Icon(Icons.cleaning_services, size: 18),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.red.shade100,
-              foregroundColor: Colors.red,
-              padding: const EdgeInsets.all(8),
-              minimumSize: const Size(32, 32),
-            ),
-            tooltip: 'Clear Current Page',
-          ),
-        ),
-      Container(
-        margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
-        child: IconButton(
-          onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
-          icon: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.preview, size: 16),
-              SizedBox(width: 4),
-              Icon(Icons.share, size: 16),
-            ],
-          ),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.green.shade100,
-            foregroundColor: Colors.green,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            minimumSize: const Size(40, 36),
-          ),
-          tooltip: 'Preview & Share',
-        ),
-      ),
-    ],
+    BuildContext context,
+    FormBuilderState state,
+    FormBuilderBloc formBuilderBloc,
+    ) {
+  return IconButton(
+    onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
+    icon: const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.preview, size: 16),
+        SizedBox(width: 4),
+        Icon(Icons.share, size: 16),
+        SizedBox(width: 6),
+        Text('Share', style: TextStyle(fontSize: 14, color: Colors.black),),
+      ],
+    ),
+    style: IconButton.styleFrom(
+      backgroundColor: Colors.green.shade100,
+      foregroundColor: Colors.green,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      minimumSize: const Size(40, 36),
+    ),
+    tooltip: 'Preview & Share',
   );
 }
+
 
 void _showEditFormTitleDialog(
   BuildContext context,

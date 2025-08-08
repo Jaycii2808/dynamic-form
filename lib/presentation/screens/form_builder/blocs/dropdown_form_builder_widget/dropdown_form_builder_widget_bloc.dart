@@ -17,7 +17,7 @@ class DropdownFormBuilderWidgetBloc
     on<UpdatePlaceholderEvent>(_onUpdatePlaceholder);
     on<UpdateDescriptionEvent>(
       _onUpdateDescription,
-    ); // Add description event handler
+    );
     on<UpdateRequiredEvent>(_onUpdateRequired);
     on<AddOptionEvent>(_onAddOption);
     on<RemoveOptionEvent>(_onRemoveOption);
@@ -27,6 +27,9 @@ class DropdownFormBuilderWidgetBloc
     on<EnableNavigationFeatureEvent>(_onEnableNavigationFeature);
     on<DisableNavigationFeatureEvent>(_onDisableNavigationFeature);
     on<UpdateComponentEvent>(_onUpdateComponent);
+    on<SetEditingDescriptionEvent>(_onSetEditingDescription);
+    on<CancelEditDescriptionEvent>(_onCancelEditDescription);
+    on<ToggleDescriptionEnabledEvent>(_onToggleDescriptionEnabled);
   }
 
   Future<void> _onInitialize(
@@ -71,6 +74,9 @@ class DropdownFormBuilderWidgetBloc
         (option) => option.action != null,
       );
 
+      // Set description enabled only if there's actual description content
+      final isDescriptionEnabled = description.isNotEmpty;
+
       emit(
         DropdownFormBuilderWidgetSuccess(
           question: question,
@@ -81,6 +87,8 @@ class DropdownFormBuilderWidgetBloc
           navigationFeatureEnabled: navigationFeatureEnabled,
           availablePages: availablePages,
           component: component,
+          isDescriptionEnabled: isDescriptionEnabled, // Set based on content
+          isEditingDescription: false, // Always start with false
         ),
       );
 
@@ -538,6 +546,106 @@ class DropdownFormBuilderWidgetBloc
       emit(
         DropdownFormBuilderWidgetError(
           errorMessage: 'Failed to update component: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onSetEditingDescription(
+    SetEditingDescriptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Setting editing description: ${event.isEditing}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(isEditingDescription: event.isEditing));
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Editing description set to: ${event.isEditing}',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error setting editing description: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to set editing description: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCancelEditDescription(
+    CancelEditDescriptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Canceling edit description');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(isEditingDescription: false));
+        debugPrint('✅ [DropdownFormBuilderBloc] Edit description canceled');
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error canceling edit description: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to cancel edit description: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onToggleDescriptionEnabled(
+    ToggleDescriptionEnabledEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Toggling description enabled');
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        final newEnabled = !currentState.isDescriptionEnabled;
+
+        if (newEnabled) {
+          // Enable description and start editing
+          emit(
+            currentState.copyWith(
+              isDescriptionEnabled: true,
+              isEditingDescription: true,
+            ),
+          );
+          debugPrint(
+            '✅ [DropdownFormBuilderBloc] Description enabled and editing started',
+          );
+        } else {
+          // Disable description, clear it, and stop editing
+          emit(
+            currentState.copyWith(
+              isDescriptionEnabled: false,
+              isEditingDescription: false,
+              description: '',
+            ),
+          );
+          debugPrint(
+            '✅ [DropdownFormBuilderBloc] Description disabled and cleared',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error toggling description enabled: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to toggle description enabled: ${e.toString()}',
         ),
       );
     }

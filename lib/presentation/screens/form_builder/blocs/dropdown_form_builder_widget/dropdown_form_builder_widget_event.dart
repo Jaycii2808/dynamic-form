@@ -124,3 +124,20 @@ class DisableNavigationFeatureEvent extends DropdownFormBuilderWidgetEvent {
 class UpdateComponentEvent extends DropdownFormBuilderWidgetEvent {
   const UpdateComponentEvent();
 }
+
+class SetEditingDescriptionEvent extends DropdownFormBuilderWidgetEvent {
+  final bool isEditing;
+
+  const SetEditingDescriptionEvent(this.isEditing);
+
+  @override
+  List<Object?> get props => [isEditing];
+}
+
+class CancelEditDescriptionEvent extends DropdownFormBuilderWidgetEvent {
+  const CancelEditDescriptionEvent();
+}
+
+class ToggleDescriptionEnabledEvent extends DropdownFormBuilderWidgetEvent {
+  const ToggleDescriptionEnabledEvent();
+}

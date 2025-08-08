@@ -160,7 +160,6 @@ class FormSubmissionConverter {
     }
   }
 
-
   /// Get default value for component type when no value is provided
   static dynamic _getDefaultValueForType(FormTypeEnum type) {
     switch (type) {
@@ -183,8 +182,6 @@ class FormSubmissionConverter {
         return '(No value)';
     }
   }
-
-
 
   /// Print form submission in readable format for debugging
   static void debugPrintSubmission(FormSubmissionModel submission) {
