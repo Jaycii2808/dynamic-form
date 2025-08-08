@@ -247,6 +247,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         isDragging: true,
+        showComponentsPanel: false, // Hide components panel during drag
       ),
     );
   }

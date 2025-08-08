@@ -132,12 +132,15 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: formBuilderAppBar(context, formBuilderBloc),
       backgroundColor: const Color(0xFF000000),
-      floatingActionButton: formBuilderFloatingActionButtons(
-        context,
-        formBuilderBloc,
-      ),
+      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null
+          : formBuilderFloatingActionButtons(
+              context,
+              formBuilderBloc,
+            ),
       body: formBuilderBody(context, formBuilderBloc),
     );
   }

@@ -58,7 +58,12 @@ Widget _buildAllPagesCanvas(
   );
   debugPrint('🔄 [FormBuilderCanvas] Current page ID: ${state.currentPageId}');
 
+  final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
+
   return ListView.builder(
+    padding: EdgeInsets.only(
+      bottom: keyboardBottomInset > 0 ? keyboardBottomInset + 20 : 0,
+    ),
     itemCount: state.pages.length,
     itemBuilder: (context, pageIndex) {
       final page = state.pages[pageIndex];

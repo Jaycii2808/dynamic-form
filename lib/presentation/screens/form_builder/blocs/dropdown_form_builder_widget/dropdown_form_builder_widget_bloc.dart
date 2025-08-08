@@ -31,6 +31,7 @@ class DropdownFormBuilderWidgetBloc
     on<CancelEditDescriptionEvent>(_onCancelEditDescription);
     on<ToggleDescriptionEnabledEvent>(_onToggleDescriptionEnabled);
     on<UpdateAvailablePagesEvent>(_onUpdateAvailablePages);
+    on<ClearFocusRequestEvent>(_onClearFocusRequest);
   }
 
   Future<void> _onInitialize(
@@ -90,6 +91,7 @@ class DropdownFormBuilderWidgetBloc
           component: component,
           isDescriptionEnabled: isDescriptionEnabled, // Set based on content
           isEditingDescription: false, // Always start with false
+          focusOptionId: null,
         ),
       );
 
@@ -242,9 +244,17 @@ class DropdownFormBuilderWidgetBloc
         final updatedOptions = List<Option>.from(currentState.options)
           ..add(newOption);
 
-        emit(currentState.copyWith(options: updatedOptions));
+        emit(
+          currentState.copyWith(
+            options: updatedOptions,
+            focusOptionId: newOption.value,
+          ),
+        );
         debugPrint(
           '✅ [DropdownFormBuilderBloc] Added option: ${newOption.label}',
+        );
+        debugPrint(
+          '🎯 [DropdownFormBuilderBloc] Request focus for ${newOption.value}',
         );
       }
     } catch (e) {
@@ -276,7 +286,9 @@ class DropdownFormBuilderWidgetBloc
           updatedOptions[i] = updatedOptions[i].copyWith(order: i + 1);
         }
 
-        emit(currentState.copyWith(options: updatedOptions));
+        emit(
+          currentState.copyWith(options: updatedOptions, focusOptionId: null),
+        );
         debugPrint(
           '✅ [DropdownFormBuilderBloc] Removed option, remaining: ${updatedOptions.length}',
         );
@@ -677,6 +689,17 @@ class DropdownFormBuilderWidgetBloc
           errorMessage: 'Failed to update available pages: ${e.toString()}',
         ),
       );
+    }
+  }
+
+  Future<void> _onClearFocusRequest(
+    ClearFocusRequestEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Clearing focus request');
+    if (state is DropdownFormBuilderWidgetSuccess) {
+      final currentState = state as DropdownFormBuilderWidgetSuccess;
+      emit(currentState.copyWith(focusOptionId: null));
     }
   }
 }

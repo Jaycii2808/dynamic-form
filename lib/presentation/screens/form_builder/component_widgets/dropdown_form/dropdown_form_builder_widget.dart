@@ -25,13 +25,17 @@ class DropdownFormBuilderWidget extends StatefulWidget {
   });
 
   @override
-  State<DropdownFormBuilderWidget> createState() => _DropdownFormBuilderWidgetState();
+  State<DropdownFormBuilderWidget> createState() =>
+      _DropdownFormBuilderWidgetState();
 }
 
 class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   late TextEditingController _questionController;
   late TextEditingController _placeholderController;
   late TextEditingController _descriptionController;
+  // Manage per-option focus and controllers to enable programmatic focus
+  final Map<String, FocusNode> _optionFocusNodes = {};
+  final Map<String, TextEditingController> _optionControllers = {};
 
   @override
   void initState() {
@@ -69,6 +73,13 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     _questionController.dispose();
     _placeholderController.dispose();
     _descriptionController.dispose();
+    // Dispose created option controllers and focus nodes
+    for (final controller in _optionControllers.values) {
+      controller.dispose();
+    }
+    for (final node in _optionFocusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -97,9 +108,57 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     );
   }
 
+  // Return and cache FocusNode for a given option id
+  FocusNode _getFocusNodeForOption(String optionId) {
+    return _optionFocusNodes.putIfAbsent(optionId, () {
+      debugPrint(
+        '🧩 [DropdownFormBuilderWidget] Create FocusNode for $optionId',
+      );
+      return FocusNode();
+    });
+  }
+
+  // Return and cache Controller for a given option id
+  TextEditingController _getControllerForOption(String optionId, String label) {
+    final controller = _optionControllers.putIfAbsent(optionId, () {
+      debugPrint(
+        '🧩 [DropdownFormBuilderWidget] Create Controller for $optionId',
+      );
+      return TextEditingController(text: label);
+    });
+    if (controller.text != label) {
+      controller.text = label;
+    }
+    return controller;
+  }
+
+  // Keep controllers/focus nodes in sync with the latest options
+  void _syncOptionControllers(List<Option> options) {
+    final existingIds = options.map((o) => o.value).toSet();
+
+    // Add or update controllers for current options
+    for (final option in options) {
+      _getControllerForOption(option.value, option.label);
+      _getFocusNodeForOption(option.value);
+    }
+
+    // Clean up removed controllers and nodes
+    final removedIds = _optionControllers.keys
+        .where((id) => !existingIds.contains(id))
+        .toList();
+    for (final id in removedIds) {
+      debugPrint('🧹 [DropdownFormBuilderWidget] Dispose removed option $id');
+      _optionControllers.remove(id)?.dispose();
+      _optionFocusNodes.remove(id)?.dispose();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<DropdownFormBuilderWidgetBloc, DropdownFormBuilderWidgetState>(
+    return BlocConsumer<
+      DropdownFormBuilderWidgetBloc,
+      DropdownFormBuilderWidgetState
+    >(
       listener: _buildBlocListener,
       builder: (context, state) {
         if (state is DropdownFormBuilderWidgetLoading) {
@@ -113,42 +172,48 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         }
 
         if (state is DropdownFormBuilderWidgetSuccess) {
-          return SharedFormBuilderWidgets.buildMainContainer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildQuestionHeader(),
-                SharedFormBuilderWidgets.buildDescriptionSection(
-                  descriptionController: _descriptionController,
-                  currentDescription: state.description,
-                  onDescriptionChanged: (value) {
-                    debugPrint(
-                      '🔍 [DropdownFormBuilderWidget] Description changed: $value',
-                    );
-                    context.read<DropdownFormBuilderWidgetBloc>().add(
-                      UpdateDescriptionEvent(value),
-                    );
-                    debugPrint(
-                      '🔍 [DropdownFormBuilderWidget] Calling _updateComponent after description change',
-                    );
-                    _updateComponent();
-                  },
-                  isEditing: state.isEditingDescription,
-                  isEnabled: state.isDescriptionEnabled,
-                  onEditTap: () {
-                    context.read<DropdownFormBuilderWidgetBloc>().add(
-                      const SetEditingDescriptionEvent(true),
-                    );
-                  },
-                  onCancelEdit: () {
-                    context.read<DropdownFormBuilderWidgetBloc>().add(
-                      const CancelEditDescriptionEvent(),
-                    );
-                  },
-                ),
-                _buildOptionsSection(state),
-                _buildBottomControls(state),
-              ],
+          return GestureDetector(
+            onTap: () {
+              // Dismiss keyboard when tapping outside input fields
+              FocusScope.of(context).unfocus();
+            },
+            child: SharedFormBuilderWidgets.buildMainContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildQuestionHeader(),
+                  SharedFormBuilderWidgets.buildDescriptionSection(
+                    descriptionController: _descriptionController,
+                    currentDescription: state.description,
+                    onDescriptionChanged: (value) {
+                      debugPrint(
+                        '🔍 [DropdownFormBuilderWidget] Description changed: $value',
+                      );
+                      context.read<DropdownFormBuilderWidgetBloc>().add(
+                        UpdateDescriptionEvent(value),
+                      );
+                      debugPrint(
+                        '🔍 [DropdownFormBuilderWidget] Calling _updateComponent after description change',
+                      );
+                      _updateComponent();
+                    },
+                    isEditing: state.isEditingDescription,
+                    isEnabled: state.isDescriptionEnabled,
+                    onEditTap: () {
+                      context.read<DropdownFormBuilderWidgetBloc>().add(
+                        const SetEditingDescriptionEvent(true),
+                      );
+                    },
+                    onCancelEdit: () {
+                      context.read<DropdownFormBuilderWidgetBloc>().add(
+                        const CancelEditDescriptionEvent(),
+                      );
+                    },
+                  ),
+                  _buildOptionsSection(state),
+                  _buildBottomControls(state),
+                ],
+              ),
             ),
           );
         }
@@ -176,6 +241,47 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
           '🔍 [DropdownFormBuilderWidget] Updating description controller: ${state.description}',
         );
         _descriptionController.text = state.description;
+      }
+
+      // Sync option controllers/nodes with current options
+      _syncOptionControllers(state.options);
+
+      // Focus when bloc requests a specific option id
+      if (state.focusOptionId != null) {
+        final optionId = state.focusOptionId!;
+        final target = state.options.firstWhere(
+          (o) => o.value == optionId,
+          orElse: () => state.options.isNotEmpty
+              ? state.options.last
+              : const Option(value: '', label: ''),
+        );
+        if (target.value.isNotEmpty) {
+          final focusNode = _getFocusNodeForOption(target.value);
+          final controller = _getControllerForOption(
+            target.value,
+            target.label,
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            debugPrint(
+              '🎯 [DropdownFormBuilderWidget] Request focus on option ${target.value}',
+            );
+            FocusScope.of(context).requestFocus(focusNode);
+            controller.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: controller.text.length,
+            );
+            // Tell bloc we've handled the focus request
+            context.read<DropdownFormBuilderWidgetBloc>().add(
+              const ClearFocusRequestEvent(),
+            );
+          });
+        } else {
+          // Clear if no valid target
+          context.read<DropdownFormBuilderWidgetBloc>().add(
+            const ClearFocusRequestEvent(),
+          );
+        }
       }
 
       // Call onComponentUpdate if component changed and has description
@@ -279,7 +385,8 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildOptionRow(option, index),
-          if (state.navigationFeatureEnabled) _buildNavigationAction(option, index, state),
+          if (state.navigationFeatureEnabled)
+            _buildNavigationAction(option, index, state),
         ],
       ),
     );
@@ -332,7 +439,8 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   Widget _buildOptionInput(Option option, int index) {
     return Expanded(
       child: TextField(
-        controller: TextEditingController(text: option.label),
+        controller: _getControllerForOption(option.value, option.label),
+        focusNode: _getFocusNodeForOption(option.value),
         style: const TextStyle(
           fontSize: 16,
           color: Colors.white,
@@ -842,7 +950,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     SharedFormBuilderWidgets.showMoreOptionsBottomSheet(
       context: context,
       getOptions: () {
-        final currentState = context.read<DropdownFormBuilderWidgetBloc>().state;
+        final currentState = context
+            .read<DropdownFormBuilderWidgetBloc>()
+            .state;
         if (currentState is! DropdownFormBuilderWidgetSuccess) {
           return [];
         }

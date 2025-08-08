@@ -13,6 +13,8 @@ abstract class DropdownFormBuilderWidgetState extends Equatable {
   final DynamicFormModel? component;
   final bool isEditingDescription; // Add editing state
   final bool isDescriptionEnabled; // Add enabled state
+  final String?
+  focusOptionId; // transient UI hint: which option should receive focus
 
   const DropdownFormBuilderWidgetState({
     this.question = '',
@@ -25,6 +27,7 @@ abstract class DropdownFormBuilderWidgetState extends Equatable {
     this.component,
     this.isEditingDescription = false, // Add editing state
     this.isDescriptionEnabled = false, // Add enabled state - default to false
+    this.focusOptionId, // null by default
   });
 
   @override
@@ -39,6 +42,7 @@ abstract class DropdownFormBuilderWidgetState extends Equatable {
     component,
     isEditingDescription, // Add to props
     isDescriptionEnabled, // Add to props
+    focusOptionId, // include focus id in equality
   ];
 }
 
@@ -54,6 +58,7 @@ class DropdownFormBuilderWidgetInitial extends DropdownFormBuilderWidgetState {
     super.component,
     super.isEditingDescription, // Add parameter
     super.isDescriptionEnabled, // Add parameter
+    super.focusOptionId,
   });
 }
 
@@ -69,6 +74,7 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
     super.component,
     super.isEditingDescription, // Add parameter
     super.isDescriptionEnabled, // Add parameter
+    super.focusOptionId,
   });
 
   //fromState
@@ -85,6 +91,7 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
          component: state.component,
          isEditingDescription: state.isEditingDescription, // Add from state
          isDescriptionEnabled: state.isDescriptionEnabled, // Add from state
+         focusOptionId: state.focusOptionId,
        );
   @override
   List<Object?> get props => [
@@ -98,6 +105,7 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
     component,
     isEditingDescription,
     isDescriptionEnabled,
+    focusOptionId,
   ];
 }
 
@@ -113,6 +121,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
     super.component,
     super.isEditingDescription, // Add parameter
     super.isDescriptionEnabled, // Add parameter
+    super.focusOptionId,
   });
 
   //fromState
@@ -129,6 +138,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
          component: state.component,
          isEditingDescription: state.isEditingDescription, // Add from state
          isDescriptionEnabled: state.isDescriptionEnabled, // Add from state
+         focusOptionId: state.focusOptionId,
        );
 
   DropdownFormBuilderWidgetSuccess copyWith({
@@ -142,6 +152,7 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
     DynamicFormModel? component,
     bool? isEditingDescription, // Add parameter
     bool? isDescriptionEnabled, // Add parameter
+    String? focusOptionId, // allow overriding
   }) {
     return DropdownFormBuilderWidgetSuccess(
       question: question ?? this.question,
@@ -157,8 +168,10 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
           isEditingDescription ?? this.isEditingDescription, // Add to copyWith
       isDescriptionEnabled:
           isDescriptionEnabled ?? this.isDescriptionEnabled, // Add to copyWith
+      focusOptionId: focusOptionId,
     );
   }
+
   @override
   List<Object?> get props => [
     question,
@@ -171,8 +184,8 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
     component,
     isEditingDescription,
     isDescriptionEnabled,
+    focusOptionId,
   ];
-
 }
 
 class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
@@ -189,6 +202,7 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
     super.component,
     super.isEditingDescription, // Add parameter
     super.isDescriptionEnabled, // Add parameter
+    super.focusOptionId,
     required this.errorMessage,
   });
 
@@ -204,6 +218,7 @@ class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {
     component,
     isEditingDescription, // Add to props
     isDescriptionEnabled, // Add to props
+    focusOptionId,
     errorMessage,
   ];
 }

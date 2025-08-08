@@ -14,25 +14,25 @@ Widget formBuilderComponentsPanel(
     builder: (context, currentState) => AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      right: 0,
+      right: 16,
       top: 0,
-      bottom: 0,
       width: 300,
+      height: 600,
+      // Fixed height for floating window
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF000000),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(-2, 0),
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
-          border: Border(
-            left: BorderSide(
-              color: Colors.blue.withValues(alpha: 0.3),
-              width: 1,
-            ),
+          border: Border.all(
+            color: Colors.blue.withValues(alpha: 0.3),
+            width: 1,
           ),
         ),
         child: Column(
@@ -110,6 +110,7 @@ Widget _buildComponentsList(
   FormBuilderBloc formBuilderBloc,
 ) {
   return ListView.builder(
+    padding: const EdgeInsets.only(bottom: 32), // Add bottom padding
     itemCount: state.availableComponents.length,
     itemBuilder: (context, index) {
       return _buildDraggableComponent(
@@ -126,7 +127,6 @@ Widget _buildDraggableComponent(
 ) {
   return LongPressDraggable<DynamicFormModel>(
     data: component,
-    dragAnchorStrategy: pointerDragAnchorStrategy,
     onDragStarted: () => formBuilderBloc.add(StartDragEvent(component)),
     onDragEnd: (details) => formBuilderBloc.add(EndDragEvent(component)),
     feedback: _buildDragFeedback(component),
