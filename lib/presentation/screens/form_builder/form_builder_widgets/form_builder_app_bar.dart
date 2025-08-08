@@ -147,10 +147,10 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
 }
 
 Widget _buildActionButtons(
-    BuildContext context,
-    FormBuilderState state,
-    FormBuilderBloc formBuilderBloc,
-    ) {
+  BuildContext context,
+  FormBuilderState state,
+  FormBuilderBloc formBuilderBloc,
+) {
   return IconButton(
     onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
     icon: const Row(
@@ -160,7 +160,10 @@ Widget _buildActionButtons(
         SizedBox(width: 4),
         Icon(Icons.share, size: 16),
         SizedBox(width: 6),
-        Text('Share', style: TextStyle(fontSize: 14, color: Colors.black),),
+        Text(
+          'Share',
+          style: TextStyle(fontSize: 14, color: Colors.black),
+        ),
       ],
     ),
     style: IconButton.styleFrom(
@@ -172,7 +175,6 @@ Widget _buildActionButtons(
     tooltip: 'Preview & Share',
   );
 }
-
 
 void _showEditFormTitleDialog(
   BuildContext context,

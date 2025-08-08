@@ -9,8 +9,7 @@ abstract class DropdownFormBuilderWidgetEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class InitializeDropdownFormBuilderEvent
-    extends DropdownFormBuilderWidgetEvent {
+class InitializeDropdownFormBuilderEvent extends DropdownFormBuilderWidgetEvent {
   final DynamicFormModel component;
   final List<String>? availablePages;
 
@@ -140,4 +139,13 @@ class CancelEditDescriptionEvent extends DropdownFormBuilderWidgetEvent {
 
 class ToggleDescriptionEnabledEvent extends DropdownFormBuilderWidgetEvent {
   const ToggleDescriptionEnabledEvent();
+}
+
+class UpdateAvailablePagesEvent extends DropdownFormBuilderWidgetEvent {
+  final List<String>? availablePages;
+
+  const UpdateAvailablePagesEvent({this.availablePages});
+
+  @override
+  List<Object?> get props => [availablePages];
 }

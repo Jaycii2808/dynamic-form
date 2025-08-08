@@ -26,7 +26,7 @@ class ValidationResult {
 
 /// Result for dropdown navigation action
 class DropdownNavigationResult {
-  final String action;
+  final DropdownActionOptionsEnum action;
   final String? targetSection;
 
   const DropdownNavigationResult({
@@ -221,11 +221,11 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     for (final component in currentPage.components) {
       final isRequired = component.config.isRequired ?? false;
       final componentType = component.type;
-      
+
       debugPrint(
         '🔍 [Validation] Component ${component.id}: type=$componentType, required=$isRequired',
       );
-      
+
       // Check required fields
       if (isRequired) {
         final value = state.componentValues.values[component.id];
@@ -253,16 +253,17 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
           '⏭️ [Validation] Field ${component.id} is not required, skipping validation',
         );
       }
-      
+
       // Additional validation for dropdown fields - ensure they have a selection
       if (componentType == FormTypeEnum.dropdownFormType) {
         final value = state.componentValues.values[component.id];
-        final hasSelection = value != null && value.toString().trim().isNotEmpty;
-        
+        final hasSelection =
+            value != null && value.toString().trim().isNotEmpty;
+
         debugPrint(
           '🔍 [Validation] Dropdown ${component.id}: hasSelection=$hasSelection, value=$value',
         );
-        
+
         if (!hasSelection) {
           final fieldName = component.config.label ?? component.id;
           if (!missingFields.contains(fieldName)) {
@@ -319,7 +320,7 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
               '🎯 [SharedFormBloc] Found dropdown navigation for component ${component.id}: ${selectedOption.action} -> ${selectedOption.targetSection}',
             );
             return DropdownNavigationResult(
-              action: selectedOption.action.toString(),
+              action: selectedOption.action!,
               targetSection: selectedOption.targetSection,
             );
           }
@@ -518,18 +519,22 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     debugPrint(
       '🔄 [SharedFormBloc] Navigation action: ${event.action} -> ${event.targetSection}',
     );
+    debugPrint(
+      '🔄 [SharedFormBloc] Current page index: ${state.currentPageIndex}',
+    );
 
     try {
-      final action = DropdownActionOptionsEnum.fromString(event.action);
+      final action = event.action;
 
       switch (action) {
         case DropdownActionOptionsEnum.next:
           // Continue to next page (including submit page)
           final pages = state.formData?.pages ?? [];
           if (state.currentPageIndex < pages.length - 1) {
-            emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+            final newPageIndex = state.currentPageIndex + 1;
+            emit(state.copyWith(currentPageIndex: newPageIndex));
             debugPrint(
-              '🔄 [SharedFormBloc] Navigated to next page: ${state.currentPageIndex + 1}',
+              '🔄 [SharedFormBloc] Navigated to next page: $newPageIndex',
             );
           } else {
             // If we're already on the last page (submit page), submit the form
@@ -571,6 +576,11 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
           );
           break;
       }
+
+      // Debug: Print final state
+      debugPrint(
+        '🔄 [SharedFormBloc] Final page index: ${state.currentPageIndex}',
+      );
     } catch (e) {
       debugPrint('❌ [SharedFormBloc] Navigation error: $e');
     }
@@ -587,13 +597,13 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     for (int i = 0; i < pages.length; i++) {
       final page = pages[i];
 
-      // Check if pageId matches
+      // Check if pageId matches exactly
       if (page.pageId == targetSection) {
         debugPrint('🔍 [SharedFormBloc] Found page by pageId: $i');
         return i;
       }
 
-      // Check if title matches
+      // Check if title matches exactly
       if (page.title == targetSection) {
         debugPrint('🔍 [SharedFormBloc] Found page by title: $i');
         return i;
@@ -610,6 +620,18 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
         } catch (e) {
           debugPrint('🔍 [SharedFormBloc] Error parsing page number: $e');
         }
+      }
+
+      // Check if pageId contains the target section (for dynamic page IDs)
+      if (page.pageId.contains(targetSection)) {
+        debugPrint('🔍 [SharedFormBloc] Found page by pageId contains: $i');
+        return i;
+      }
+
+      // Check if title contains the target section (case insensitive)
+      if (page.title.toLowerCase().contains(targetSection.toLowerCase())) {
+        debugPrint('🔍 [SharedFormBloc] Found page by title contains: $i');
+        return i;
       }
     }
 

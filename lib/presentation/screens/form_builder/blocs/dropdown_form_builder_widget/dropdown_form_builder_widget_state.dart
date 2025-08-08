@@ -86,6 +86,19 @@ class DropdownFormBuilderWidgetLoading extends DropdownFormBuilderWidgetState {
          isEditingDescription: state.isEditingDescription, // Add from state
          isDescriptionEnabled: state.isDescriptionEnabled, // Add from state
        );
+  @override
+  List<Object?> get props => [
+    question,
+    placeholder,
+    description,
+    options,
+    isRequired,
+    navigationFeatureEnabled,
+    availablePages,
+    component,
+    isEditingDescription,
+    isDescriptionEnabled,
+  ];
 }
 
 class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
@@ -146,6 +159,20 @@ class DropdownFormBuilderWidgetSuccess extends DropdownFormBuilderWidgetState {
           isDescriptionEnabled ?? this.isDescriptionEnabled, // Add to copyWith
     );
   }
+  @override
+  List<Object?> get props => [
+    question,
+    placeholder,
+    description,
+    options,
+    isRequired,
+    navigationFeatureEnabled,
+    availablePages,
+    component,
+    isEditingDescription,
+    isDescriptionEnabled,
+  ];
+
 }
 
 class DropdownFormBuilderWidgetError extends DropdownFormBuilderWidgetState {

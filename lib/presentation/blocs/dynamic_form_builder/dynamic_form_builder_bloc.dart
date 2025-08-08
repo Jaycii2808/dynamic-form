@@ -388,9 +388,16 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       return page;
     }).toList();
 
+    final availablePages = updatedPages.map((page) => page.title).toList();
+    debugPrint(
+      '🔄 [FormBuilderBloc] Available pages after updating page title: $availablePages',
+    );
+
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),
     );
   }
@@ -429,10 +436,17 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     final updatedPages = List<FormBuilderPageModel>.from(state.pages)
       ..add(newPage);
 
+    final availablePages = updatedPages.map((page) => page.title).toList();
+    debugPrint(
+      '🔄 [FormBuilderBloc] Available pages after adding new page: $availablePages',
+    );
+
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
         currentPageId: newPageId,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),
     );
   }
@@ -460,10 +474,17 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     final updatedPages = List<FormBuilderPageModel>.from(state.pages)
       ..add(newPage);
 
+    final availablePages = updatedPages.map((page) => page.title).toList();
+    debugPrint(
+      '🔄 [FormBuilderBloc] Available pages after adding new page: $availablePages',
+    );
+
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
         currentPageId: newPageId,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),
     );
   }
@@ -498,10 +519,17 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       newCurrentPageId = 'page_1';
     }
 
+    final availablePages = updatedPages.map((page) => page.title).toList();
+    debugPrint(
+      '🔄 [FormBuilderBloc] Available pages after removing page: $availablePages',
+    );
+
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
         currentPageId: newCurrentPageId,
+        rebuildTimestamp:
+            DateTime.now().millisecondsSinceEpoch, // Force rebuild
       ),
     );
   }
@@ -650,6 +678,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     debugPrint(
       '⚙️ [FormBuilderBloc] Description: ${event.description}',
     );
+    debugPrint(
+      '⚙️ [FormBuilderBloc] Options: ${event.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
+    );
 
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
@@ -657,6 +688,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
           if (component.id == event.componentId) {
             debugPrint(
               '⚙️ [FormBuilderBloc] Component before update - description: ${component.config?.description}',
+            );
+            debugPrint(
+              '⚙️ [FormBuilderBloc] Component before update - options: ${component.config?.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
             );
 
             final updatedConfig =
@@ -681,6 +715,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
 
             debugPrint(
               '⚙️ [FormBuilderBloc] Component after update - description: ${updatedConfig.description}',
+            );
+            debugPrint(
+              '⚙️ [FormBuilderBloc] Component after update - options: ${updatedConfig.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
             );
 
             return component.copyWith(config: updatedConfig);

@@ -582,16 +582,28 @@ Widget _buildComponentWidget(
 ) {
   // Check if component is dropdown type
   if (component.type == FormTypeEnum.dropdownFormType) {
-    // Get available pages for navigation options
+    // Get available pages for navigation options - use current state
     final availablePages = state.pages.map((page) => page.title).toList();
+
+    debugPrint(
+      '🔍 [FormBuilderCanvas] Building dropdown with available pages: $availablePages',
+    );
 
     return BlocProvider(
       create: (context) => DropdownFormBuilderWidgetBloc(),
       child: DropdownFormBuilderWidget(
+        key: ValueKey(
+          '${component.id}_${availablePages.join('_')}',
+        ), // Force rebuild when pages change
         component: component,
-        availablePages: availablePages,
-        // Pass available pages
+        availablePages: availablePages, // Pass current available pages
         onComponentUpdate: (updatedComponent) {
+          debugPrint(
+            '🔍 [FormBuilderCanvas] Dropdown onComponentUpdate called',
+          );
+          debugPrint(
+            '🔍 [FormBuilderCanvas] Updated component options: ${updatedComponent.config?.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
+          );
           // Update the component in the form builder
           formBuilderBloc.add(
             EditComponentConfigEvent(
@@ -719,9 +731,6 @@ void _showEditLabelDialog(
     },
   );
 }
-
-
-
 
 void _showEditPageTitleDialog(
   BuildContext context,

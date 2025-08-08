@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 
 abstract class SharedFormEvent extends Equatable {
   const SharedFormEvent();
@@ -85,7 +86,7 @@ class ReturnToPreviousStateEvent extends SharedFormEvent {
 }
 
 class NavigationActionEvent extends SharedFormEvent {
-  final String action;
+  final DropdownActionOptionsEnum action;
   final String? targetSection;
 
   const NavigationActionEvent({

@@ -463,7 +463,7 @@ class SharedFormBuilderWidgets {
         child: Icon(
           icon,
           color: color,
-          size: 16,
+          size: 20,
         ),
       ),
     );

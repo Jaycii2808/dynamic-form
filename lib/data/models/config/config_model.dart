@@ -66,12 +66,23 @@ class Option extends Equatable {
   });
 
   factory Option.fromJson(Map<String, dynamic> json) {
+    // Helper function to convert string to enum
+    DropdownActionOptionsEnum? parseAction(String? actionString) {
+      if (actionString == null || actionString.isEmpty) return null;
+      try {
+        return DropdownActionOptionsEnum.values.firstWhere(
+          (e) => e.name == actionString,
+        );
+      } catch (e) {
+        debugPrint('Invalid action value: $actionString');
+        return null;
+      }
+    }
+
     return Option(
       value: json['value'] as String? ?? '',
       label: json['label'] as String? ?? '',
-      action: json['action'] != null
-          ? DropdownActionOptionsEnum.fromString(json['action'] as String)
-          : null,
+      action: parseAction(json['action'] as String?),
       targetSection:
           json['target_section'] as String? ?? json['targetSection'] as String?,
       isRequired: json['is_required'] as bool? ?? json['isRequired'] as bool?,

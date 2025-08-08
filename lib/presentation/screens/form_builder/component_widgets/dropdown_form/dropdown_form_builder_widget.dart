@@ -25,8 +25,7 @@ class DropdownFormBuilderWidget extends StatefulWidget {
   });
 
   @override
-  State<DropdownFormBuilderWidget> createState() =>
-      _DropdownFormBuilderWidgetState();
+  State<DropdownFormBuilderWidget> createState() => _DropdownFormBuilderWidgetState();
 }
 
 class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
@@ -48,6 +47,21 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         availablePages: widget.availablePages,
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(DropdownFormBuilderWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Update available pages when widget is updated
+    if (oldWidget.availablePages != widget.availablePages) {
+      debugPrint(
+        '🔄 [DropdownFormBuilderWidget] Available pages updated: ${widget.availablePages}',
+      );
+      context.read<DropdownFormBuilderWidgetBloc>().add(
+        UpdateAvailablePagesEvent(availablePages: widget.availablePages),
+      );
+    }
   }
 
   @override
@@ -73,6 +87,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       debugPrint(
         '🔍 [DropdownFormBuilderWidget] Using state description: ${currentState.description}',
       );
+      debugPrint(
+        '🔍 [DropdownFormBuilderWidget] Component options: ${currentState.options.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
+      );
     }
 
     context.read<DropdownFormBuilderWidgetBloc>().add(
@@ -82,10 +99,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<
-      DropdownFormBuilderWidgetBloc,
-      DropdownFormBuilderWidgetState
-    >(
+    return BlocConsumer<DropdownFormBuilderWidgetBloc, DropdownFormBuilderWidgetState>(
       listener: _buildBlocListener,
       builder: (context, state) {
         if (state is DropdownFormBuilderWidgetLoading) {
@@ -177,17 +191,24 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         );
 
         // Ensure component has the latest description from state
-        final updatedComponent = state.component!.copyWith(
-          config: state.component!.config?.copyWith(
+        final component = state.component;
+        final updatedComponent = component?.copyWith(
+          config: component.config?.copyWith(
             description: state.description,
           ),
         );
 
         debugPrint(
-          '🔍 [DropdownFormBuilderWidget] Updated component description: ${updatedComponent.config?.description}',
+          '🔍 [DropdownFormBuilderWidget] Updated component description: ${updatedComponent?.config?.description}',
         );
 
-        widget.onComponentUpdate!(updatedComponent);
+        // Safely invoke callback
+        if (updatedComponent != null) {
+          debugPrint(
+            '🔍 [DropdownFormBuilderWidget] onComponentUpdate invoked safely',
+          );
+          widget.onComponentUpdate?.call(updatedComponent);
+        }
       }
     }
   }
@@ -258,8 +279,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildOptionRow(option, index),
-          if (state.navigationFeatureEnabled)
-            _buildNavigationAction(option, index, state),
+          if (state.navigationFeatureEnabled) _buildNavigationAction(option, index, state),
         ],
       ),
     );
@@ -649,6 +669,10 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     final currentState = context.read<DropdownFormBuilderWidgetBloc>().state;
     if (currentState is! DropdownFormBuilderWidgetSuccess) return;
 
+    debugPrint(
+      '🔄 [DropdownFormBuilder] Available pages: ${currentState.availablePages}',
+    );
+
     final List<Widget> navigationOptions = [
       _buildNavigationOption(
         context,
@@ -661,34 +685,47 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
     // Add available pages if provided
     if (currentState.availablePages != null) {
-      int index = 0;
-      for (final pageName in currentState.availablePages!) {
+      //int index = 0;
+      final pages = currentState.availablePages ?? const <String>[];
+      for (final pageName in pages) {
+        debugPrint(
+          '🔄 [DropdownFormBuilder] Adding navigation option for page: $pageName',
+        );
         navigationOptions.add(
           _buildNavigationOption(
             context,
             'Go to $pageName',
             DropdownActionOptionsEnum.goto,
-            'page_${index + 1}',
+            pageName, // Use actual page name instead of page_${index + 1}
             optionIndex,
           ),
         );
-        index++;
       }
     } else {
+      debugPrint(
+        '🔄 [DropdownFormBuilder] No available pages provided, using fallback',
+      );
       // Fallback to hardcoded pages if no available pages provided
       navigationOptions.addAll([
         _buildNavigationOption(
           context,
-          'Go to page 1',
+          'Go to Page 1',
           DropdownActionOptionsEnum.goto,
-          'page_1',
+          'Page 1', // Use actual page name
           optionIndex,
         ),
         _buildNavigationOption(
           context,
-          'Go to page 2',
+          'Go to Page 2',
           DropdownActionOptionsEnum.goto,
-          'page_2',
+          'Page 2', // Use actual page name
+          optionIndex,
+        ),
+        _buildNavigationOption(
+          context,
+          'Go to Page 3',
+          DropdownActionOptionsEnum.goto,
+          'Page 3', // Use actual page name
           optionIndex,
         ),
       ]);
@@ -748,6 +785,9 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         debugPrint(
           '🔄 [DropdownFormBuilder] Selected navigation for option $optionIndex: $action -> $targetSection',
         );
+        debugPrint(
+          '🔄 [DropdownFormBuilder] Navigation title: $title',
+        );
         context.read<DropdownFormBuilderWidgetBloc>().add(
           UpdateOptionNavigationEvent(
             optionIndex: optionIndex,
@@ -783,17 +823,11 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     final targetSection = option.targetSection;
 
     if (action == DropdownActionOptionsEnum.goto && targetSection != null) {
-      // Try to show actual page name if available
-      if (targetSection.startsWith('page_') && availablePages != null) {
-        try {
-          final pageNumber = int.parse(targetSection.substring(5));
-          if (pageNumber > 0 && pageNumber <= availablePages.length) {
-            return 'Go to ${availablePages[pageNumber - 1]}';
-          }
-        } catch (e) {
-          debugPrint('❌ [DropdownFormBuilder] Error parsing page number: $e');
-        }
+      // Show actual page name if available
+      if (availablePages != null && availablePages.contains(targetSection)) {
+        return 'Go to $targetSection';
       }
+      // Fallback to target section name
       return 'Go to $targetSection';
     } else if (action == DropdownActionOptionsEnum.next) {
       return 'Continue';
@@ -808,9 +842,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     SharedFormBuilderWidgets.showMoreOptionsBottomSheet(
       context: context,
       getOptions: () {
-        final currentState = context
-            .read<DropdownFormBuilderWidgetBloc>()
-            .state;
+        final currentState = context.read<DropdownFormBuilderWidgetBloc>().state;
         if (currentState is! DropdownFormBuilderWidgetSuccess) {
           return [];
         }

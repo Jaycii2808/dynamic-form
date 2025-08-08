@@ -30,6 +30,7 @@ class DropdownFormBuilderWidgetBloc
     on<SetEditingDescriptionEvent>(_onSetEditingDescription);
     on<CancelEditDescriptionEvent>(_onCancelEditDescription);
     on<ToggleDescriptionEnabledEvent>(_onToggleDescriptionEnabled);
+    on<UpdateAvailablePagesEvent>(_onUpdateAvailablePages);
   }
 
   Future<void> _onInitialize(
@@ -646,6 +647,34 @@ class DropdownFormBuilderWidgetBloc
       emit(
         DropdownFormBuilderWidgetError(
           errorMessage: 'Failed to toggle description enabled: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateAvailablePages(
+    UpdateAvailablePagesEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint(
+      '🔄 [DropdownFormBuilderBloc] Updating available pages: ${event.availablePages}',
+    );
+
+    try {
+      if (state is DropdownFormBuilderWidgetSuccess) {
+        final currentState = state as DropdownFormBuilderWidgetSuccess;
+        emit(currentState.copyWith(availablePages: event.availablePages));
+        debugPrint(
+          '✅ [DropdownFormBuilderBloc] Available pages updated successfully',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '❌ [DropdownFormBuilderBloc] Error updating available pages: $e',
+      );
+      emit(
+        DropdownFormBuilderWidgetError(
+          errorMessage: 'Failed to update available pages: ${e.toString()}',
         ),
       );
     }
