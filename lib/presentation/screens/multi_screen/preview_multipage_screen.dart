@@ -1,6 +1,7 @@
 import 'package:dynamic_form_bi/core/enums/button_action_preview_multipage_enum.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/utils/component_utils.dart';
+import 'package:dynamic_form_bi/core/utils/short_answer_validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -273,12 +274,121 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
   }
 
   void _handleNextPage() {
+    // Validate current page before navigating
+    if (!_validateCurrentPage()) {
+      return; // Stop navigation if validation fails
+    }
+
     if (currentPageIndex < widget.pages.length - 1) {
       setState(() {
         currentPageIndex++;
       });
       _scrollToPage(currentPageIndex);
     }
+  }
+
+  /// Validate current page components before allowing navigation
+  bool _validateCurrentPage() {
+    if (currentPageIndex >= widget.pages.length) return true;
+
+    final currentPage = widget.pages[currentPageIndex];
+    final List<String> validationErrors = [];
+
+    debugPrint(
+      '🔍 Validating page ${currentPageIndex + 1} with ${currentPage.components.length} components',
+    );
+
+    for (final component in currentPage.components) {
+      final value = componentValues.values[component.id];
+
+      debugPrint(
+        '🔍 Component: ${component.id}, Type: ${component.type}, Value: $value, Required: ${component.config?.isRequired}',
+      );
+
+      // Check required validation
+      if (component.config?.isRequired == true) {
+        if (value == null ||
+            (value is bool
+                ? value == false
+                : value.toString().trim().isEmpty)) {
+          final fieldName = component.config?.label ?? component.id;
+          validationErrors.add('$fieldName is required');
+          debugPrint('❌ Required validation failed for: $fieldName');
+          // Don't continue here - allow other validations to run
+        }
+      }
+
+      // Check shortAnswer validation if component has a value
+      // This should run even if not required, as long as a value is entered
+      if (component.type == FormTypeEnum.shortAnswerFormType &&
+          value != null &&
+          value.toString().trim().isNotEmpty) {
+        debugPrint('🔍 Checking shortAnswer validation for value: $value');
+
+        // Convert to DynamicFormModel for validation
+        final dynamicComponent = DynamicFormModel(
+          id: component.id,
+          type: component.type,
+          order: component.order,
+          config: component.config,
+          style: component.style,
+          validation: component.validation,
+        );
+
+        final validationError =
+            ShortAnswerValidationUtils.validateShortAnswerComponent(
+              dynamicComponent,
+              value.toString(),
+            );
+
+        if (validationError != null) {
+          validationErrors.add(validationError);
+          debugPrint('❌ ShortAnswer validation failed: $validationError');
+        } else {
+          debugPrint('✅ ShortAnswer validation passed');
+        }
+      }
+    }
+
+    debugPrint('🔍 Validation complete. Errors: ${validationErrors.length}');
+
+    // Show error dialog if validation fails
+    if (validationErrors.isNotEmpty) {
+      _showValidationErrorDialog(validationErrors);
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Show validation error dialog
+  void _showValidationErrorDialog(List<String> errors) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Validation Error'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Please fix the following errors:'),
+            const SizedBox(height: 8),
+            ...errors.map(
+              (error) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('• $error'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleSubmitForm() {

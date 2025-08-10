@@ -1,11 +1,13 @@
-import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_bloc.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_bloc.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_form_builder_widget.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/short_answer_form/short_answer_form_builder_widget.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_form_builder_widget.dart'; // Add import
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart'; // Add import
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -656,6 +658,61 @@ Widget _buildComponentWidget(
     );
   }
 
+  // Check if component is short answer type
+  if (component.type == FormTypeEnum.shortAnswerFormType) {
+    debugPrint(
+      '🔍 [FormBuilderCanvas] Building short answer component: ${component.id}',
+    );
+
+    return BlocProvider(
+      create: (context) => ShortAnswerFormBuilderWidgetBloc(),
+      child: ShortAnswerFormBuilderWidget(
+        key: ValueKey(
+          '${component.id}_${state.currentPageId}_$pageIndex',
+        ),
+        component: component,
+        onComponentUpdate: (updatedComponent) {
+          debugPrint(
+            '🔍 [FormBuilderCanvas] Short answer onComponentUpdate called',
+          );
+          // Update the component in the form builder
+          formBuilderBloc.add(
+            EditComponentConfigEvent(
+              componentId: updatedComponent.id,
+              label: updatedComponent.config?.label,
+              placeholder: updatedComponent.config?.placeholder,
+              description: updatedComponent.config?.description,
+              value: updatedComponent.config?.value,
+              errorText: updatedComponent.config?.errorText,
+              isRequired: updatedComponent.config?.isRequired,
+              validation: updatedComponent.validation,
+              validate: updatedComponent.config?.validate,
+            ),
+          );
+        },
+        onDuplicate: () {
+          // Handle duplicate for short answer
+          final duplicatedComponent = component.copyWith(
+            id: '${component.id}_${DateTime.now().millisecondsSinceEpoch}',
+          );
+          formBuilderBloc.add(AddComponentEvent(duplicatedComponent));
+        },
+        onDelete: () {
+          // Handle delete for short answer - find component in current page
+          final currentPage = state.pages.firstWhere(
+            (page) => page.pageId == state.currentPageId,
+          );
+          final index = currentPage.components.indexWhere(
+            (c) => c.id == component.id,
+          );
+          if (index != -1) {
+            formBuilderBloc.add(RemoveComponentEvent(index));
+          }
+        },
+      ),
+    );
+  }
+
   // Default component widget for other types
   return GestureDetector(
     onTap: () => _showEditLabelDialog(component, formBuilderBloc, context),
@@ -722,6 +779,25 @@ void _showEditLabelDialog(
             border: OutlineInputBorder(),
           ),
           autofocus: true,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (value) {
+            formBuilderBloc.add(
+              EditComponentLabelEvent(
+                componentId: component.id,
+                label: value,
+              ),
+            );
+            Navigator.of(dialogContext).pop();
+          },
+          onEditingComplete: () {
+            formBuilderBloc.add(
+              EditComponentLabelEvent(
+                componentId: component.id,
+                label: labelController.text,
+              ),
+            );
+            Navigator.of(dialogContext).pop();
+          },
         ),
         actions: [
           TextButton(

@@ -166,6 +166,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         pages: updatedPages,
+        // Remove rebuildTimestamp to prevent infinite rebuilds
       ),
     );
 
@@ -751,6 +752,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                   isRequired: event.isRequired,
                   errorText: event.errorText,
                   options: event.options, // Add options support
+                  validate: event.validate ?? component.config?.validate,
                 ) ??
                 ConfigModel(
                   label: event.label,
@@ -760,6 +762,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                   isRequired: event.isRequired,
                   errorText: event.errorText,
                   options: event.options, // Add options support
+                  validate: event.validate,
                 );
 
             debugPrint(
@@ -769,7 +772,10 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
               '⚙️ [FormBuilderBloc] Component after update - options: ${updatedConfig.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
             );
 
-            return component.copyWith(config: updatedConfig);
+            return component.copyWith(
+              config: updatedConfig,
+              validation: event.validation ?? component.validation,
+            );
           }
           return component;
         }).toList();

@@ -70,8 +70,10 @@ class Option extends Equatable {
     DropdownActionOptionsEnum? parseAction(String? actionString) {
       if (actionString == null || actionString.isEmpty) return null;
       try {
+        // Normalize common enum string formats, e.g. "DropdownActionOptionsEnum.next" => "next"
+        final normalized = actionString.split('.').last.trim().toLowerCase();
         return DropdownActionOptionsEnum.values.firstWhere(
-          (e) => e.name == actionString,
+          (e) => e.name.toLowerCase() == normalized,
         );
       } catch (e) {
         debugPrint('Invalid action value: $actionString');
@@ -80,9 +82,9 @@ class Option extends Equatable {
     }
 
     return Option(
-      value: json['value'] as String? ?? '',
-      label: json['label'] as String? ?? '',
-      action: parseAction(json['action'] as String?),
+      value: json["value"] as String? ?? '',
+      label: json["label"] as String? ?? '',
+      action: parseAction(json["action"] as String?),
       targetSection:
           json['target_section'] as String? ?? json['targetSection'] as String?,
       isRequired: json['is_required'] as bool? ?? json['isRequired'] as bool?,
@@ -94,7 +96,7 @@ class Option extends Equatable {
     return {
       'value': value,
       'label': label,
-      if (action != null) 'action': action.toString(),
+      if (action != null) 'action': action!.name,
       if (targetSection != null) 'target_section': targetSection,
       if (isRequired != null) 'is_required': isRequired,
       if (order != null) 'order': order,

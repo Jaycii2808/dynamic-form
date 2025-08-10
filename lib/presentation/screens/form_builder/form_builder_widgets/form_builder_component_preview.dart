@@ -18,6 +18,10 @@ Widget buildComponentPreview(DynamicFormModel component) {
       return _buildDateTimeRangePickerPreview(component);
     case FormTypeEnum.dropdownFormType:
       return _buildDropdownPreview(component);
+    case FormTypeEnum.shortAnswerFormType:
+      return _buildTextFieldPreview(
+        component,
+      ); // Use same preview as text field
     case FormTypeEnum.buttonFormType:
       return _buildButtonPreview(component);
     default:

@@ -9,6 +9,7 @@ enum FormTypeEnum {
   buttonFormType,
   container,
   dropdownFormType,
+  shortAnswerFormType,
   //checkboxFormType,
   //radioFormType,
   //selectFormType,
@@ -84,10 +85,108 @@ enum EmailFieldTypeEnum {
         return EmailFieldTypeEnum.tags;
       case FormTypeEnum.dropdownFormType:
         return EmailFieldTypeEnum.dropdown;
+      case FormTypeEnum.shortAnswerFormType:
+        return EmailFieldTypeEnum.text;
       case FormTypeEnum.buttonFormType:
       case FormTypeEnum.container:
       case FormTypeEnum.unknown:
         return EmailFieldTypeEnum.unknown;
+    }
+  }
+}
+
+/// Enum for short answer validation types
+enum ShortAnswerValidationType {
+  number,
+  text,
+  length,
+  regularExpression;
+
+  String get displayName {
+    switch (this) {
+      case ShortAnswerValidationType.number:
+        return 'Number';
+      case ShortAnswerValidationType.text:
+        return 'Text';
+      case ShortAnswerValidationType.length:
+        return 'Length';
+      case ShortAnswerValidationType.regularExpression:
+        return 'Regular expression';
+    }
+  }
+}
+
+/// Enum for number validation actions
+enum NumberValidationAction {
+  greaterThan,
+  lessThan,
+  equalTo;
+
+  String get displayName {
+    switch (this) {
+      case NumberValidationAction.greaterThan:
+        return 'Greater than';
+      case NumberValidationAction.lessThan:
+        return 'Less than';
+      case NumberValidationAction.equalTo:
+        return 'Equal to';
+    }
+  }
+}
+
+/// Enum for text validation actions
+enum TextValidationAction {
+  contains,
+  doesNotContain,
+  emailAddress,
+  url;
+
+  String get displayName {
+    switch (this) {
+      case TextValidationAction.contains:
+        return 'Contains';
+      case TextValidationAction.doesNotContain:
+        return 'Does not contain';
+      case TextValidationAction.emailAddress:
+        return 'Email address';
+      case TextValidationAction.url:
+        return 'URL';
+    }
+  }
+}
+
+/// Enum for length validation types
+enum LengthValidationType {
+  minimumCharacterCount,
+  maximumCharacterCount;
+
+  String get displayName {
+    switch (this) {
+      case LengthValidationType.minimumCharacterCount:
+        return 'Minimum character count';
+      case LengthValidationType.maximumCharacterCount:
+        return 'Maximum character count';
+    }
+  }
+}
+
+/// Enum for regex validation actions
+enum RegexValidationAction {
+  contains,
+  doesNotContain,
+  matches,
+  doesNotMatch;
+
+  String get displayName {
+    switch (this) {
+      case RegexValidationAction.contains:
+        return 'Contains';
+      case RegexValidationAction.doesNotContain:
+        return 'Does not contain';
+      case RegexValidationAction.matches:
+        return 'Matches';
+      case RegexValidationAction.doesNotMatch:
+        return 'Does not match';
     }
   }
 }

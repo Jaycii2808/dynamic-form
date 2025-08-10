@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_option_editor_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -347,236 +348,43 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Options section widget
   Widget _buildOptionsSection(DropdownFormBuilderWidgetSuccess state) {
     return Container(
-      padding: const EdgeInsets.all(12), // Reduced from 16
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildOptionsList(state),
-          _buildAddOptionButton(),
-        ],
-      ),
-    );
-  }
-
-  // Options list widget
-  Widget _buildOptionsList(DropdownFormBuilderWidgetSuccess state) {
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: state.options.length,
-      onReorder: (oldIndex, newIndex) {
-        context.read<DropdownFormBuilderWidgetBloc>().add(
-          ReorderOptionsEvent(
-            oldIndex: oldIndex,
-            newIndex: newIndex,
-          ),
-        );
-        _updateComponent();
-      },
-      itemBuilder: (context, index) {
-        final option = state.options[index];
-        return _buildOptionItem(option, index, state);
-      },
-    );
-  }
-
-  // Individual option item widget
-  Widget _buildOptionItem(
-    Option option,
-    int index,
-    DropdownFormBuilderWidgetSuccess state,
-  ) {
-    return Container(
-      key: ValueKey(option.value),
-      margin: const EdgeInsets.only(bottom: 8), // Reduced from 12
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildOptionRow(option, index),
-          if (state.navigationFeatureEnabled)
-            _buildNavigationAction(option, index, state),
-        ],
-      ),
-    );
-  }
-
-  // Option row widget
-  Widget _buildOptionRow(Option option, int index) {
-    return Row(
-      children: [
-        _buildDragHandle(),
-        _buildOptionNumber(index),
-        _buildOptionInput(option, index),
-        _buildRemoveButton(index),
-      ],
-    );
-  }
-
-  // Drag handle widget
-  Widget _buildDragHandle() {
-    return Container(
-      width: 20, // Reduced from 24
-      height: 20, // Reduced from 24
-      margin: const EdgeInsets.only(right: 6), // Reduced from 8
-      child: const Icon(
-        Icons.drag_handle,
-        color: Color(0xFF9CA3AF),
-        size: 16, // Reduced from 20
-      ),
-    );
-  }
-
-  // Option number widget
-  Widget _buildOptionNumber(int index) {
-    return Container(
-      width: 20, // Reduced from 24
-      height: 20, // Reduced from 24
-      margin: const EdgeInsets.only(right: 6), // Reduced from 8
-      child: Text(
-        '${index + 1}.',
-        style: const TextStyle(
-          color: Color(0xFF9CA3AF),
-          fontSize: 12, // Reduced from 14
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  // Option input widget
-  Widget _buildOptionInput(Option option, int index) {
-    return Expanded(
-      child: TextField(
-        controller: _getControllerForOption(option.value, option.label),
-        focusNode: _getFocusNodeForOption(option.value),
-        style: const TextStyle(
-          fontSize: 14, // Reduced from 16
-          color: Colors.white,
-        ),
-        decoration: const InputDecoration(
-          hintText: 'Option',
-          hintStyle: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 14, // Reduced from 16
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) {
+      padding: const EdgeInsets.all(12),
+      child: SharedOptionsEditorList(
+        options: state.options,
+        focusOptionId: state.focusOptionId,
+        onFocusHandled: () {
           context.read<DropdownFormBuilderWidgetBloc>().add(
-            UpdateOptionLabelEvent(
-              index: index,
-              label: value,
-            ),
+            const ClearFocusRequestEvent(),
+          );
+        },
+        navigationFeatureEnabled: state.navigationFeatureEnabled,
+        onReorder: (oldIndex, newIndex) {
+          context.read<DropdownFormBuilderWidgetBloc>().add(
+            ReorderOptionsEvent(oldIndex: oldIndex, newIndex: newIndex),
           );
           _updateComponent();
         },
-      ),
-    );
-  }
-
-  // Remove button widget
-  Widget _buildRemoveButton(int index) {
-    return GestureDetector(
-      onTap: () {
-        context.read<DropdownFormBuilderWidgetBloc>().add(
-          RemoveOptionEvent(index),
-        );
-        _updateComponent();
-      },
-      child: Container(
-        width: 20, // Reduced from 24
-        height: 20, // Reduced from 24
-        margin: const EdgeInsets.only(left: 6), // Reduced from 8
-        child: const Icon(
-          Icons.close,
-          color: Color(0xFF9CA3AF),
-          size: 16, // Reduced from 20
-        ),
-      ),
-    );
-  }
-
-  // Navigation action widget
-  Widget _buildNavigationAction(
-    Option option,
-    int index,
-    DropdownFormBuilderWidgetSuccess state,
-  ) {
-    return GestureDetector(
-      onTap: () => _displayPageNavigationOptions(context, index),
-      child: Container(
-        margin: const EdgeInsets.only(top: 6, left: 46), // Reduced from 8, 56
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 4,
-        ), // Reduced from 12, 6
-        decoration: BoxDecoration(
-          color: Colors.blue.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: Colors.blue.withValues(alpha: 0.4),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.navigation,
-              color: Colors.blue,
-              size: 12,
-            ), // Reduced from 14
-            const SizedBox(width: 4), // Reduced from 6
-            Flexible(
-              child: Text(
-                _getNavigationActionText(option, state.availablePages),
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontSize: 10, // Reduced from 12
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-            const SizedBox(width: 3), // Reduced from 4
-            const Icon(
-              Icons.edit,
-              color: Colors.blue,
-              size: 10,
-            ), // Reduced from 12
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Add option button widget
-  Widget _buildAddOptionButton() {
-    return GestureDetector(
-      onTap: () {
-        context.read<DropdownFormBuilderWidgetBloc>().add(
-          const AddOptionEvent(),
-        );
-        _updateComponent();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6), // Reduced from 8
-        child: const Row(
-          children: [
-            Icon(Icons.add, color: Colors.blue, size: 16), // Reduced from 20
-            SizedBox(width: 6), // Reduced from 8
-            Text(
-              'Add option',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 12, // Reduced from 14
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+        onLabelChanged: (index, value) {
+          context.read<DropdownFormBuilderWidgetBloc>().add(
+            UpdateOptionLabelEvent(index: index, label: value),
+          );
+          _updateComponent();
+        },
+        onRemove: (index) {
+          context.read<DropdownFormBuilderWidgetBloc>().add(
+            RemoveOptionEvent(index),
+          );
+          _updateComponent();
+        },
+        onNavigateTap: (index) => _displayPageNavigationOptions(context, index),
+        onAddOption: () {
+          context.read<DropdownFormBuilderWidgetBloc>().add(
+            const AddOptionEvent(),
+          );
+          _updateComponent();
+        },
+        getNavigationLabel: (option) =>
+            _getNavigationActionText(option, state.availablePages),
       ),
     );
   }
@@ -812,7 +620,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
     final List<Widget> navigationOptions = [
       _buildNavigationOption(
         context,
-        'Continue to next page',
+        'Next page',
         DropdownActionOptionsEnum.next,
         null,
         optionIndex,
@@ -986,11 +794,11 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       // Fallback to target section name
       return 'Go to $targetSection';
     } else if (action == DropdownActionOptionsEnum.next) {
-      return 'Continue';
+      return 'Next page';
     } else if (action == DropdownActionOptionsEnum.submit) {
       return 'Submit';
     }
-    return 'Continue'; // Default
+    return 'Next page'; // Default
   }
 
   // More options dialog

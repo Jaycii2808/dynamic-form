@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart'; // Add import for Option
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/data/models/validation/base_validation.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class FormBuilderEvent extends Equatable {
@@ -112,6 +113,9 @@ class EditComponentConfigEvent extends FormBuilderEvent {
   final bool? isRequired;
   final String? errorText;
   final List<Option>? options; // Add options for dropdown
+  final BaseValidation?
+  validation; // Add validation for components like short answer
+  final dynamic validate; // Raw validate JSON to store in config
 
   const EditComponentConfigEvent({
     required this.componentId,
@@ -122,6 +126,8 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     this.isRequired,
     this.errorText,
     this.options, // Add options parameter
+    this.validation, // Add validation parameter
+    this.validate, // Add raw validate JSON parameter
   });
 
   @override
@@ -134,6 +140,8 @@ class EditComponentConfigEvent extends FormBuilderEvent {
     isRequired,
     errorText,
     options, // Add options to props
+    validation, // Add validation to props
+    validate, // Add raw validate to props
   ];
 }
 

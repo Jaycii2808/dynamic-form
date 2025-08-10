@@ -20,6 +20,8 @@ import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.d
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_short_answer.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_short_answer/dynamic_short_answer_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -180,6 +182,23 @@ class ReusedWidget {
             onComponentUpdate: onComponentUpdate,
             isSharedForm: isSharedForm,
             currentPageId: currentPageId,
+          ),
+        );
+
+      case FormTypeEnum.shortAnswerFormType:
+        debugPrint(
+          '🔍 [ReusedWidget] Creating short answer component: ${component.id}',
+        );
+        debugPrint(
+          '🔍 [ReusedWidget] Component config: ${component.config?.toJson()}',
+        );
+
+        return BlocProvider(
+          create: (context) => DynamicShortAnswerBloc(),
+          child: DynamicShortAnswer(
+            key: key ?? Key(component.id),
+            component: component,
+            onComplete: (value) => onComponentValueChange(component.id, value),
           ),
         );
 

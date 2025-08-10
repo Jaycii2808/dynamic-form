@@ -156,6 +156,7 @@ class FormSubmissionConverter {
       case FormTypeEnum.switchFormType:
       case FormTypeEnum.textFieldTagsFormType:
       case FormTypeEnum.dropdownFormType:
+      case FormTypeEnum.shortAnswerFormType:
         return true;
     }
   }
@@ -165,6 +166,7 @@ class FormSubmissionConverter {
     switch (type) {
       case FormTypeEnum.textFieldFormType:
       case FormTypeEnum.textAreaFormType:
+      case FormTypeEnum.shortAnswerFormType:
         return '(No value entered)';
       case FormTypeEnum.dateTimePickerFormType:
       case FormTypeEnum.dateTimeRangePickerFormType:

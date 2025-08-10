@@ -15,7 +15,8 @@ class DynamicFormModel extends Equatable {
   final ConfigModel? config;
   final StyleModel style;
   final InputTypesModel? inputTypes; // changed
-  final VariantsModel? variants; //use style and config from inputTypes and States
+  final VariantsModel?
+  variants; //use style and config from inputTypes and States
   final StatesModel? states; // changed
   final BaseValidation? validation;
   final List<DynamicFormModel>? children;
@@ -49,7 +50,10 @@ class DynamicFormModel extends Equatable {
       ),
       variants: VariantsModel.fromJson(json['variants']),
       states: StatesModel.fromJson(json['states']),
-      validation: ValidationFactory.fromJson(json['validation']),
+      // Accept both 'validation' and legacy 'validate' keys
+      validation: ValidationFactory.fromJson(
+        json['validation'] ?? json['validate'],
+      ),
       children: json['children'] != null
           ? List<DynamicFormModel>.from(
               json['children'].map((x) => DynamicFormModel.fromJson(x)),

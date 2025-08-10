@@ -43,6 +43,7 @@ class RemoteConfigFormBuilderEnum {
           'date_time_picker_components_v4',
           'date_time_range_picker_single_component_v4',
           'dropdown_component_v4', // Add dropdown component
+          'short_answer_component_v1', // Add short answer component
         ];
       }
 
@@ -58,6 +59,7 @@ class RemoteConfigFormBuilderEnum {
         'date_time_picker_components_v4',
         'date_time_range_picker_single_component_v4',
         'dropdown_component_v4', // Add dropdown component
+        'short_answer_component_v1', // Add short answer component
       ];
     }
   }

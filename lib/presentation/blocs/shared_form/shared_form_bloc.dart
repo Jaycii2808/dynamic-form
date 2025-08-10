@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/core/services/email_service.dart';
 import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
+import 'package:dynamic_form_bi/core/utils/short_answer_validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/email/email_details_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_event.dart';
@@ -10,6 +11,7 @@ import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_state
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 
 /// Validation result for required fields
 class ValidationResult {
@@ -278,6 +280,37 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
           );
         }
       }
+
+      // Short answer validation
+      if (componentType == FormTypeEnum.shortAnswerFormType) {
+        final value = state.componentValues.values[component.id];
+
+        // Convert FormForMultiPageModel to DynamicFormModel to access validation
+        final dynamicComponent = DynamicFormModel(
+          id: component.id,
+          type: component.type,
+          order: component.order,
+          config: component.config,
+          style: component.style,
+          validation: component.validation,
+        );
+
+        final validationError =
+            ShortAnswerValidationUtils.validateShortAnswerComponent(
+              dynamicComponent,
+              value?.toString(),
+            );
+
+        if (validationError != null) {
+          final fieldName = component.config.label ?? component.id;
+          if (!missingFields.contains(fieldName)) {
+            missingFields.add(fieldName);
+            debugPrint(
+              '❌ [Validation] Short answer validation failed: $fieldName (${component.id}) - $validationError',
+            );
+          }
+        }
+      }
     }
 
     if (missingFields.isNotEmpty) {
@@ -482,6 +515,26 @@ class SharedFormBloc extends Bloc<SharedFormEvent, SharedFormState> {
     NextPageEvent event,
     Emitter<SharedFormState> emit,
   ) {
+    // Validate current page (required + short answer rules)
+    final validation = _validateRequiredFields();
+    if (!validation.isValid) {
+      emit(
+        SharedFormValidationError(
+          errorMessage: validation.errorMessage ?? 'Validation failed',
+          missingFields: validation.missingFields ,
+          formId: state.formId,
+          formData: state.formData,
+          formName: state.formName,
+          recipientEmail: state.recipientEmail,
+          recipientName: state.recipientName,
+          componentValues: state.componentValues,
+          currentPageIndex: state.currentPageIndex,
+          emailServiceInitialized: state.emailServiceInitialized,
+          emailDetails: state.emailDetails,
+        ),
+      );
+      return;
+    }
     final pages = state.formData?.pages ?? [];
     if (state.currentPageIndex < pages.length - 1) {
       emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));

@@ -13,6 +13,8 @@ import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
 import 'package:dynamic_form_bi/core/services/user_forms_service.dart'; // Added import for UserFormsService
 import 'package:dynamic_form_bi/data/models/validation/composite_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
+import 'package:dynamic_form_bi/data/models/validation/short_answer_validation_model.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 // Validation result class
 class ValidationResult {
@@ -371,6 +373,8 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           return _validateTextField(component);
         case 'FormTypeEnum.dropdownFormType':
           return _validateDropdown(component);
+        case 'FormTypeEnum.shortAnswerFormType':
+          return _validateShortAnswer(component);
         case 'FormTypeEnum.textAreaFormType':
           return _validateTextArea(component);
         case 'FormTypeEnum.dateTimePickerFormType':
@@ -452,6 +456,104 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         isValid: false,
         errorMessage:
             'Dropdown "${component.id}" validation error: ${e.toString()}',
+      );
+    }
+  }
+
+  // Validate short answer component specifically
+  ValidationResult _validateShortAnswer(DynamicFormModel component) {
+    debugPrint(
+      '🔍 [FormBuilderPreviewScreen] Validating short answer: ${component.id}',
+    );
+
+    try {
+      final config = component.config;
+      if (config == null) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Short answer "${component.id}" has no configuration',
+        );
+      }
+
+      // Check if short answer has label (required for all short answers)
+      if (config.label == null || config.label!.trim().isEmpty) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Short answer "${component.id}" must have a label',
+        );
+      }
+
+      // Check validation configuration if present
+      if (config.validate != null) {
+        try {
+          final validation = ShortAnswerValidationModel.fromJson(
+            config.validate!,
+          );
+
+          // Validate regex pattern if present
+          if (validation.validationType ==
+                  ShortAnswerValidationType.regularExpression &&
+              validation.validationValue != null &&
+              validation.validationValue!.isNotEmpty) {
+            try {
+              RegExp(validation.validationValue!);
+            } catch (e) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'Short answer "${component.id}" has invalid regex pattern',
+              );
+            }
+          }
+
+          // Validate number value if present
+          if (validation.validationType == ShortAnswerValidationType.number &&
+              validation.validationValue != null &&
+              validation.validationValue!.isNotEmpty) {
+            final numberValue = double.tryParse(validation.validationValue!);
+            if (numberValue == null) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'Short answer "${component.id}" has invalid number value',
+              );
+            }
+          }
+
+          // Validate length value if present
+          if (validation.validationType == ShortAnswerValidationType.length &&
+              validation.validationValue != null &&
+              validation.validationValue!.isNotEmpty) {
+            final lengthValue = int.tryParse(validation.validationValue!);
+            if (lengthValue == null || lengthValue < 0) {
+              return ValidationResult(
+                isValid: false,
+                errorMessage:
+                    'Short answer "${component.id}" has invalid length value',
+              );
+            }
+          }
+        } catch (e) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage:
+                'Short answer "${component.id}" has invalid validation configuration: $e',
+          );
+        }
+      }
+
+      debugPrint(
+        '✅ [FormBuilderPreviewScreen] Short answer "${component.id}" validation passed',
+      );
+      return ValidationResult(isValid: true);
+    } catch (e) {
+      debugPrint(
+        '❌ [FormBuilderPreviewScreen] Short answer validation error: $e',
+      );
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Short answer "${component.id}" validation error: ${e.toString()}',
       );
     }
   }

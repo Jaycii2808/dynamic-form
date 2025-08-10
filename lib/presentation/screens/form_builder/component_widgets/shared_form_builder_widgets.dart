@@ -1005,6 +1005,64 @@ class SharedFormBuilderWidgets {
     return options;
   }
 
+  // More options for Short Answer: Description (toggleable) + Validate response (toggleable)
+  static List<MoreOptionsDialogOption> getShortAnswerMoreOptions({
+    required VoidCallback onDescriptionTap,
+    required VoidCallback onValidationTap,
+    bool isValidationEnabled = false,
+    bool isDescriptionEnabled = false,
+    VoidCallback? onValidationToggle,
+    VoidCallback? onDescriptionToggle,
+  }) {
+    final List<MoreOptionsDialogOption> options = [];
+
+    // Description entry
+    if (onDescriptionToggle != null) {
+      options.add(
+        MoreOptionsDialogOption.toggleable(
+          label: 'Description',
+          isChecked: isDescriptionEnabled,
+          onToggle: onDescriptionToggle,
+          textColor: Colors.blue,
+          icon: Icons.description,
+        ),
+      );
+    } else {
+      options.add(
+        MoreOptionsDialogOption(
+          label: 'Description',
+          onPressed: onDescriptionTap,
+          textColor: Colors.blue,
+          icon: Icons.description,
+        ),
+      );
+    }
+
+    // Validate response entry (replace navigation)
+    if (onValidationToggle != null) {
+      options.add(
+        MoreOptionsDialogOption.toggleable(
+          label: 'Validate response',
+          isChecked: isValidationEnabled,
+          onToggle: onValidationToggle,
+          textColor: Colors.blue,
+          icon: Icons.verified,
+        ),
+      );
+    } else {
+      options.add(
+        MoreOptionsDialogOption(
+          label: 'Validate response',
+          onPressed: onValidationTap,
+          textColor: Colors.blue,
+          icon: Icons.verified,
+        ),
+      );
+    }
+
+    return options;
+  }
+
   static List<MoreOptionsDialogOption> getTextFieldMoreOptions({
     required VoidCallback onDescriptionTap,
     VoidCallback? onValidationTap,
@@ -1340,10 +1398,16 @@ class SharedFormBuilderWidgets {
                   children: [
                     GestureDetector(
                       onTap: onCancelEdit,
-                      child: const Icon(
-                        Icons.close,
-                        color: Color(0xFF9CA3AF),
-                        size: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Color(0xFF9CA3AF),
+                          size: 20,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1353,10 +1417,16 @@ class SharedFormBuilderWidgets {
                         onDescriptionChanged(descriptionController.text);
                         onCancelEdit?.call();
                       },
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.green,
-                        size: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
@@ -1411,7 +1481,10 @@ class SharedFormBuilderWidgets {
                   ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
                   : EdgeInsets.zero,
             ),
-            onChanged: isEditing ? onDescriptionChanged : null,
+            onSubmitted: isEditing ? onDescriptionChanged : null,
+            onEditingComplete: isEditing
+                ? () => onDescriptionChanged(descriptionController.text)
+                : null,
             maxLines: isEditing ? 4 : 1,
             readOnly: !isEditing,
           ),
