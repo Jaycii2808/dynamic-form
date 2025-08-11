@@ -151,9 +151,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     AddComponentEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '➕ [FormBuilderBloc] Adding component: ${event.component.type} to page: ${state.currentPageId}',
-    );
+    // Logging removed; use Bloc Observer
 
     // Add component to the current page
     final updatedPages = state.pages.map((page) {
@@ -172,9 +170,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       ),
     );
 
-    debugPrint(
-      '✅ [FormBuilderBloc] Component added to page ${state.currentPageId}. Total components: ${updatedPages.firstWhere((p) => p.pageId == state.currentPageId).components.length}',
-    );
+    // Logging removed; use Bloc Observer
   }
 
   void _onMoveComponent(
@@ -544,7 +540,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     CopyPageEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('📋 [FormBuilderBloc] Copying page: ${event.pageId}');
+    // Logging removed; use Bloc Observer
 
     final pageToCopy = state.pages.firstWhere(
       (page) => page.pageId == event.pageId,
@@ -569,12 +565,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       ..add(newPage);
 
     final availablePages = updatedPages.map((page) => page.title).toList();
-    debugPrint(
-      '🔄 [FormBuilderBloc] Available pages after copying page: $availablePages',
-    );
-    debugPrint(
-      '📋 [FormBuilderBloc] Copied ${copiedComponents.length} components to new page',
-    );
+    // Logging removed; use Bloc Observer
 
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
@@ -624,9 +615,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     InsertComponentEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '📎 [FormBuilderBloc] Inserting component at index: ${event.insertIndex}',
-    );
+    // Logging removed; use Bloc Observer
 
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
@@ -653,9 +642,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     StartHoverEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '🔄 [FormBuilderBloc] Starting hover for index: ${event.targetIndex}',
-    );
+    // Logging removed; use Bloc Observer
 
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(

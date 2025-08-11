@@ -120,7 +120,13 @@ enum ShortAnswerValidationType {
 enum NumberValidationAction {
   greaterThan,
   lessThan,
-  equalTo;
+  equalTo,
+  greaterThanOrEqualTo,
+  lessThanOrEqualTo,
+  notEqualTo,
+  between,
+  notBetween,
+  wholeNumber;
 
   String get displayName {
     switch (this) {
@@ -130,6 +136,18 @@ enum NumberValidationAction {
         return 'Less than';
       case NumberValidationAction.equalTo:
         return 'Equal to';
+      case NumberValidationAction.greaterThanOrEqualTo:
+        return 'Greater than or equal to';
+      case NumberValidationAction.lessThanOrEqualTo:
+        return 'Less than or equal to';
+      case NumberValidationAction.notEqualTo:
+        return 'Not equal to';
+      case NumberValidationAction.between:
+        return 'Between';
+      case NumberValidationAction.notBetween:
+        return 'Not between';
+      case NumberValidationAction.wholeNumber:
+        return 'Whole number';
     }
   }
 }

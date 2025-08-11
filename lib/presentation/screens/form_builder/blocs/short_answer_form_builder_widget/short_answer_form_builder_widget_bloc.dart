@@ -50,6 +50,7 @@ class ShortAnswerFormBuilderWidgetBloc
     on<UpdateRegexActionEvent>(_onUpdateRegexAction);
     on<UpdateValidationValueEvent>(_onUpdateValidationValue);
     on<UpdateValidationErrorMessageEvent>(_onUpdateValidationErrorMessage);
+    on<UpdateValidationSecondValueEvent>(_onUpdateValidationSecondValue);
   }
 
   Future<void> _onInitialize(
@@ -193,32 +194,16 @@ class ShortAnswerFormBuilderWidgetBloc
     ToggleDescriptionEnabledEvent event,
     Emitter<ShortAnswerFormBuilderWidgetState> emit,
   ) {
-    debugPrint('🔄 [ShortAnswerFormBuilderBloc] Toggling description enabled');
-
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
       final newEnabled = !currentState.isDescriptionEnabled;
-
-      debugPrint(
-        '🔍 [ShortAnswerFormBuilderBloc] Current state - isDescriptionEnabled: ${currentState.isDescriptionEnabled}, description: "${currentState.description}", isEditingDescription: ${currentState.isEditingDescription}',
-      );
-      debugPrint(
-        '🔍 [ShortAnswerFormBuilderBloc] New enabled state: $newEnabled',
-      );
-
       if (newEnabled) {
         // Enable description and start editing
         final newState = currentState.copyWith(
           isDescriptionEnabled: true,
           isEditingDescription: true,
         );
-        debugPrint(
-          '🔍 [ShortAnswerFormBuilderBloc] New state - isDescriptionEnabled: ${newState.isDescriptionEnabled}, description: "${newState.description}", isEditingDescription: ${newState.isEditingDescription}',
-        );
         emit(newState);
-        debugPrint(
-          '✅ [ShortAnswerFormBuilderBloc] Description enabled and editing started',
-        );
       } else {
         // Disable description, clear it, and stop editing
         emit(
@@ -227,9 +212,6 @@ class ShortAnswerFormBuilderWidgetBloc
             isEditingDescription: false,
             description: '',
           ),
-        );
-        debugPrint(
-          '✅ [ShortAnswerFormBuilderBloc] Description disabled and cleared',
         );
       }
     }
@@ -241,9 +223,52 @@ class ShortAnswerFormBuilderWidgetBloc
   ) {
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
-      final updatedValidation = currentState.validation.copyWith(
-        validationType: event.validationType,
-      );
+      final prev = currentState.validation;
+
+      ShortAnswerValidationModel updatedValidation;
+      final type = event.validationType;
+
+      if (type == null) {
+        // Clear entire validation when no type is selected
+        updatedValidation = const ShortAnswerValidationModel();
+      } else {
+        switch (type) {
+          case ShortAnswerValidationType.number:
+            // Reset to number context; clear other types and values
+            updatedValidation = ShortAnswerValidationModel(
+              validationType: ShortAnswerValidationType.number,
+              numberAction: null,
+              // Keep custom error if any
+              errorMessage: prev.errorMessage,
+            );
+            break;
+          case ShortAnswerValidationType.text:
+            // Reset to text context; clear number/length/regex and values
+            updatedValidation = ShortAnswerValidationModel(
+              validationType: ShortAnswerValidationType.text,
+              textAction: null,
+              errorMessage: prev.errorMessage,
+            );
+            break;
+          case ShortAnswerValidationType.length:
+            // Reset to length context
+            updatedValidation = ShortAnswerValidationModel(
+              validationType: ShortAnswerValidationType.length,
+              lengthType: null,
+              errorMessage: prev.errorMessage,
+            );
+            break;
+          case ShortAnswerValidationType.regularExpression:
+            // Reset to regex context
+            updatedValidation = ShortAnswerValidationModel(
+              validationType: ShortAnswerValidationType.regularExpression,
+              regexAction: null,
+              errorMessage: prev.errorMessage,
+            );
+            break;
+        }
+      }
+
       emit(currentState.copyWith(validation: updatedValidation));
     }
   }
@@ -254,9 +279,44 @@ class ShortAnswerFormBuilderWidgetBloc
   ) {
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
-      final updatedValidation = currentState.validation.copyWith(
-        numberAction: event.action,
-      );
+      final prev = currentState.validation;
+
+      ShortAnswerValidationModel updatedValidation;
+      final action = event.action;
+
+      if (action == null) {
+        // Clear number action and related values
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          errorMessage: prev.errorMessage,
+        );
+      } else if (action == NumberValidationAction.wholeNumber) {
+        // No target values needed
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          numberAction: action,
+          errorMessage: prev.errorMessage,
+        );
+      } else if (action == NumberValidationAction.between ||
+          action == NumberValidationAction.notBetween) {
+        // Range requires two values; preserve if any
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          numberAction: action,
+          validationValue: prev.validationValue,
+          validationSecondValue: prev.validationSecondValue,
+          errorMessage: prev.errorMessage,
+        );
+      } else {
+        // Single target value; clear second value
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          numberAction: action,
+          validationValue: prev.validationValue,
+          errorMessage: prev.errorMessage,
+        );
+      }
+
       emit(currentState.copyWith(validation: updatedValidation));
     }
   }
@@ -267,9 +327,35 @@ class ShortAnswerFormBuilderWidgetBloc
   ) {
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
-      final updatedValidation = currentState.validation.copyWith(
-        textAction: event.action,
-      );
+      final prev = currentState.validation;
+
+      ShortAnswerValidationModel updatedValidation;
+      final action = event.action;
+
+      if (action == null) {
+        // Clear text action and its value
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          errorMessage: prev.errorMessage,
+        );
+      } else if (action == TextValidationAction.emailAddress ||
+          action == TextValidationAction.url) {
+        // Pattern-based actions; value is not needed
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          textAction: action,
+          errorMessage: prev.errorMessage,
+        );
+      } else {
+        // contains / doesNotContain require a value
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          textAction: action,
+          validationValue: prev.validationValue,
+          errorMessage: prev.errorMessage,
+        );
+      }
+
       emit(currentState.copyWith(validation: updatedValidation));
     }
   }
@@ -280,9 +366,25 @@ class ShortAnswerFormBuilderWidgetBloc
   ) {
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
-      final updatedValidation = currentState.validation.copyWith(
-        lengthType: event.lengthType,
-      );
+      final prev = currentState.validation;
+
+      final type = event.lengthType;
+      ShortAnswerValidationModel updatedValidation;
+
+      if (type == null) {
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          errorMessage: prev.errorMessage,
+        );
+      } else {
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          lengthType: type,
+          validationValue: prev.validationValue,
+          errorMessage: prev.errorMessage,
+        );
+      }
+
       emit(currentState.copyWith(validation: updatedValidation));
     }
   }
@@ -293,9 +395,25 @@ class ShortAnswerFormBuilderWidgetBloc
   ) {
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
-      final updatedValidation = currentState.validation.copyWith(
-        regexAction: event.action,
-      );
+      final prev = currentState.validation;
+
+      final action = event.action;
+      ShortAnswerValidationModel updatedValidation;
+
+      if (action == null) {
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          errorMessage: prev.errorMessage,
+        );
+      } else {
+        updatedValidation = ShortAnswerValidationModel(
+          validationType: prev.validationType,
+          regexAction: action,
+          validationValue: prev.validationValue,
+          errorMessage: prev.errorMessage,
+        );
+      }
+
       emit(currentState.copyWith(validation: updatedValidation));
     }
   }
@@ -321,6 +439,19 @@ class ShortAnswerFormBuilderWidgetBloc
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
       final updatedValidation = currentState.validation.copyWith(
         errorMessage: event.errorMessage,
+      );
+      emit(currentState.copyWith(validation: updatedValidation));
+    }
+  }
+
+  void _onUpdateValidationSecondValue(
+    UpdateValidationSecondValueEvent event,
+    Emitter<ShortAnswerFormBuilderWidgetState> emit,
+  ) {
+    if (state is ShortAnswerFormBuilderWidgetSuccess) {
+      final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
+      final updatedValidation = currentState.validation.copyWith(
+        validationSecondValue: event.value,
       );
       emit(currentState.copyWith(validation: updatedValidation));
     }

@@ -228,10 +228,6 @@ void _handleSubmitForm(
     return;
   }
 
-  debugPrint(
-    '✅ [FormBuilderAppBar] Form validation passed, proceeding with preview',
-  );
-
   // Show loading dialog
   showDialog(
     context: context,
@@ -250,9 +246,6 @@ void _handleSubmitForm(
   // First, unfocus any active text fields to trigger their onTapOutside events
   final currentFocus = FocusScope.of(context).focusedChild;
   if (currentFocus != null) {
-    debugPrint(
-      '🔄 [FormBuilderAppBar] Unfocusing active text field: ${currentFocus.toString()}',
-    );
     currentFocus.unfocus();
   }
 
@@ -262,10 +255,6 @@ void _handleSubmitForm(
   // Dispatch events to force save all components
   formBuilderBloc.add(const ForceSaveAllComponentsEvent());
   formBuilderBloc.add(const ForceRebuildUIEvent());
-
-  debugPrint(
-    '🔄 [FormBuilderAppBar] Dispatched force save events, waiting for processing...',
-  );
 
   // Wait for onTapOutside events to process and state to update
   // Increased delay to account for debounced updates in components (300ms) + additional buffer
@@ -279,21 +268,14 @@ void _handleSubmitForm(
       // Get the LATEST state from the bloc after the delay
       final currentState = formBuilderBloc.state;
 
-      debugPrint('🔄 [FormBuilderAppBar] Retrieved latest state after delay');
-      debugPrint('  - Form Title: ${currentState.formTitle}');
-      debugPrint('  - Pages Count: ${currentState.pages.length}');
-
+      // Logging removed; use Bloc Observer
       // Log component details for debugging
       for (int i = 0; i < currentState.pages.length; i++) {
         final page = currentState.pages[i];
-        debugPrint(
-          '  - Page ${i + 1}: ${page.title} (${page.components.length} components)',
-        );
+        // Logging removed; use Bloc Observer
         for (int j = 0; j < page.components.length; j++) {
           final component = page.components[j];
-          debugPrint(
-            '    - Component ${j + 1}: ${component.config?.label} | Value: ${component.config?.value}',
-          );
+          // Logging removed; use Bloc Observer
         }
       }
 

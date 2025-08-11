@@ -46,11 +46,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-      '🚀 [DynamicTextField] initState called for component: ${widget.component.id}',
-    );
-    debugPrint('  - Label: ${widget.component.config?.label}');
-    debugPrint('  - Placeholder: ${widget.component.config?.placeholder}');
+    // Logging removed; use Bloc Observer
     context.read<DynamicTextFieldBloc>().add(const InitializeTextFieldEvent());
   }
 
@@ -64,16 +60,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
     super.didUpdateWidget(oldWidget);
     // Check if component has been updated from parent
     if (oldWidget.component != widget.component) {
-      debugPrint('🔄 [DynamicTextField] Component updated:');
-      debugPrint('  - Old Label: ${oldWidget.component.config?.label}');
-      debugPrint('  - New Label: ${widget.component.config?.label}');
-      debugPrint(
-        '  - Old Placeholder: ${oldWidget.component.config?.placeholder}',
-      );
-      debugPrint(
-        '  - New Placeholder: ${widget.component.config?.placeholder}',
-      );
-
+      // Logging removed; use Bloc Observer
       // Update the bloc with new component
       context.read<DynamicTextFieldBloc>().add(
         UpdateTextFieldFromExternalEvent(component: widget.component),
@@ -93,18 +80,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
 
           if (updatedComponent != null &&
               updatedComponent != widget.component) {
-            debugPrint(
-              '🔄 [DynamicTextField] FormBuilder state changed, updating component: ${updatedComponent.id}',
-            );
-            debugPrint('  - Old Label: ${widget.component.config?.label}');
-            debugPrint('  - New Label: ${updatedComponent.config?.label}');
-            debugPrint(
-              '  - Old Placeholder: ${widget.component.config?.placeholder}',
-            );
-            debugPrint(
-              '  - New Placeholder: ${updatedComponent.config?.placeholder}',
-            );
-
+            // Logging removed; use Bloc Observer
             // Update the bloc with new component
             context.read<DynamicTextFieldBloc>().add(
               UpdateTextFieldFromExternalEvent(component: updatedComponent),
@@ -130,9 +106,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
             DialogUtils.showErrorDialog(context, state.errorMessage!);
           } else if (state is DynamicTextFieldInitial ||
               state is DynamicTextFieldLoading) {
-            debugPrint(
-              'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config!.value}',
-            );
+            // Logging removed; use Bloc Observer
           } else {
             final simpleValue =
                 state.component?.config?.value?.toString() ?? '';

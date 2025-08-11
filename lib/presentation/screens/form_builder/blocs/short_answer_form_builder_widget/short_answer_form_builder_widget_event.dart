@@ -135,6 +135,16 @@ class UpdateValidationValueEvent extends ShortAnswerFormBuilderWidgetEvent {
   List<Object?> get props => [value];
 }
 
+class UpdateValidationSecondValueEvent
+    extends ShortAnswerFormBuilderWidgetEvent {
+  final String value;
+
+  const UpdateValidationSecondValueEvent(this.value);
+
+  @override
+  List<Object?> get props => [value];
+}
+
 class UpdateValidationErrorMessageEvent
     extends ShortAnswerFormBuilderWidgetEvent {
   final String errorMessage;

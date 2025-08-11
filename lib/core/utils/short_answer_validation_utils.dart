@@ -24,9 +24,6 @@ class ShortAnswerValidationUtils {
     final validation = component.validation;
     if (validation is ShortAnswerValidationModel) {
       final shortAnswerValidation = validation as ShortAnswerValidationModel;
-      debugPrint(
-        '🔍 [ShortAnswerValidationUtils] Validating shortAnswer (typed): ${component.id}, value: "$value"',
-      );
       return shortAnswerValidation.validateValue(value);
     }
 
@@ -34,15 +31,9 @@ class ShortAnswerValidationUtils {
     final rawValidate = component.config?.validate;
     if (rawValidate is Map<String, dynamic>) {
       final parsed = ShortAnswerValidationModel.fromJson(rawValidate);
-      debugPrint(
-        '🔍 [ShortAnswerValidationUtils] Validating shortAnswer (config.validate): ${component.id}, value: "$value"',
-      );
       return parsed.validateValue(value);
     }
 
-    debugPrint(
-      '⚠️ [ShortAnswerValidationUtils] No validation config found for shortAnswer component: ${component.id}',
-    );
     return null;
   }
 
@@ -78,12 +69,21 @@ class ShortAnswerValidationUtils {
       return 'text';
     }
 
+    // Prefer typed validation
     final validation = component.validation;
-    if (validation != null && validation is ShortAnswerValidationModel) {
-      final shortAnswerValidation = validation as ShortAnswerValidationModel;
-      if (shortAnswerValidation.validationType ==
-          ShortAnswerValidationType.number) {
+    if (validation is ShortAnswerValidationModel) {
+      final v = validation as ShortAnswerValidationModel;
+      if (v.validationType == ShortAnswerValidationType.number) {
         return 'number';
+      }
+    } else {
+      // Fallback to config.validate
+      final raw = component.config?.validate;
+      if (raw is Map<String, dynamic>) {
+        final parsed = ShortAnswerValidationModel.fromJson(raw);
+        if (parsed.validationType == ShortAnswerValidationType.number) {
+          return 'number';
+        }
       }
     }
 

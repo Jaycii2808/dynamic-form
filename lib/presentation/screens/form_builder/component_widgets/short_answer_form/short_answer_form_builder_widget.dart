@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_state.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_form_builder_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,6 +37,7 @@ class _ShortAnswerFormBuilderWidgetState
   late TextEditingController _questionController;
   late TextEditingController _descriptionController;
   late TextEditingController _validationValueController;
+  late TextEditingController _validationSecondValueController;
   late TextEditingController _errorMessageController;
 
   // Add debounce mechanism
@@ -54,6 +55,9 @@ class _ShortAnswerFormBuilderWidgetState
     );
     _validationValueController = TextEditingController(
       text: '', // Initialize with empty string to prevent null issues
+    );
+    _validationSecondValueController = TextEditingController(
+      text: '',
     );
     _errorMessageController = TextEditingController(
       text: '', // Initialize with empty string to prevent null issues
@@ -73,6 +77,7 @@ class _ShortAnswerFormBuilderWidgetState
     _questionController.dispose();
     _descriptionController.dispose();
     _validationValueController.dispose();
+    _validationSecondValueController.dispose();
     _errorMessageController.dispose();
     _updateTimer?.cancel(); // Cancel timer on dispose
     super.dispose();
@@ -107,6 +112,27 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   Widget _buildSuccessState(ShortAnswerFormBuilderWidgetSuccess state) {
+    // Sync main controllers to prevent stale/empty values overwriting state after rebuilds
+    if (_questionController.text != (state.question)) {
+      _questionController.text = state.question;
+    }
+    if (_descriptionController.text != (state.description)) {
+      _descriptionController.text = state.description;
+    }
+
+    // Keep controllers in sync with state to avoid stale values when switching
+    final v = state.validation;
+    if (_validationValueController.text != (v.validationValue ?? '')) {
+      _validationValueController.text = v.validationValue ?? '';
+    }
+    if (_validationSecondValueController.text !=
+        (v.validationSecondValue ?? '')) {
+      _validationSecondValueController.text = v.validationSecondValue ?? '';
+    }
+    if (_errorMessageController.text != (v.errorMessage ?? '')) {
+      _errorMessageController.text = v.errorMessage ?? '';
+    }
+
     return SharedFormBuilderWidgets.buildMainContainer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -296,19 +322,58 @@ class _ShortAnswerFormBuilderWidgetState
           context: context,
           onUpdateComponent: _updateComponent,
         ),
-        _buildCompactLabel('Number'),
-        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
-          context: context,
-          controller: _validationValueController,
-          hintText: 'Enter number',
-          keyboardType: TextInputType.number,
-          onUpdate: (value) {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(value),
-            );
-          },
-          onUpdateComponent: _updateComponent,
-        ),
+        if (state.validation.numberAction == NumberValidationAction.between ||
+            state.validation.numberAction == NumberValidationAction.notBetween)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 2,
+            children: [
+              _buildCompactLabel('From'),
+              SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+                context: context,
+                controller: _validationValueController,
+                hintText: 'Enter start number',
+                keyboardType: TextInputType.number,
+                onUpdate: (value) {
+                  context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+                    UpdateValidationValueEvent(value),
+                  );
+                },
+                onUpdateComponent: _updateComponent,
+              ),
+              _buildCompactLabel('To'),
+              SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+                context: context,
+                controller: _validationSecondValueController,
+                hintText: 'Enter end number',
+                keyboardType: TextInputType.number,
+                onUpdate: (value) {
+                  context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+                    UpdateValidationSecondValueEvent(value),
+                  );
+                },
+                onUpdateComponent: _updateComponent,
+              ),
+            ],
+          )
+        else if (state.validation.numberAction ==
+            NumberValidationAction.wholeNumber)
+          const SizedBox.shrink()
+        else ...[
+          _buildCompactLabel('Number'),
+          SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+            context: context,
+            controller: _validationValueController,
+            hintText: 'Enter number',
+            keyboardType: TextInputType.number,
+            onUpdate: (value) {
+              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+                UpdateValidationValueEvent(value),
+              );
+            },
+            onUpdateComponent: _updateComponent,
+          ),
+        ],
       ],
     );
   }
@@ -343,18 +408,23 @@ class _ShortAnswerFormBuilderWidgetState
           context: context,
           onUpdateComponent: _updateComponent,
         ),
-        _buildCompactLabel('Text'),
-        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
-          context: context,
-          controller: _validationValueController,
-          hintText: 'Enter text',
-          onUpdate: (value) {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(value),
-            );
-          },
-          onUpdateComponent: _updateComponent,
-        ),
+        if (state.validation.textAction == TextValidationAction.contains ||
+            state.validation.textAction ==
+                TextValidationAction.doesNotContain) ...[
+          _buildCompactLabel('Text'),
+          SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+            context: context,
+            controller: _validationValueController,
+            hintText: 'Enter text',
+            onUpdate: (value) {
+              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+                UpdateValidationValueEvent(value),
+              );
+            },
+            onUpdateComponent: _updateComponent,
+          ),
+        ] else
+          const SizedBox.shrink(),
       ],
     );
   }
@@ -421,14 +491,12 @@ class _ShortAnswerFormBuilderWidgetState
               value: null,
               child: Text('Select action'),
             ),
-            ...RegexValidationAction.values
-                .map(
-                  (action) => DropdownMenuItem<RegexValidationAction?>(
-                    value: action,
-                    child: Text(action.displayName),
-                  ),
-                )
-                ,
+            ...RegexValidationAction.values.map(
+              (action) => DropdownMenuItem<RegexValidationAction?>(
+                value: action,
+                child: Text(action.displayName),
+              ),
+            ),
           ],
           onUpdate: (newValue) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
@@ -520,6 +588,7 @@ class _ShortAnswerFormBuilderWidgetState
           validationToUse = validationToUse.copyWith(
             validationType: null,
             validationValue: null,
+            validationSecondValue: null,
             numberAction: null,
             textAction: null,
             lengthType: null,
@@ -544,14 +613,7 @@ class _ShortAnswerFormBuilderWidgetState
         // Only update if component actually changed
         if (newHash != _lastUpdateHash) {
           _lastUpdateHash = newHash;
-          debugPrint(
-            '🔄 [ShortAnswerFormBuilderWidget] Updating component with debounce',
-          );
           widget.onComponentUpdate(updatedComponent);
-        } else {
-          debugPrint(
-            '⏭️ [ShortAnswerFormBuilderWidget] Skipping update - no changes detected',
-          );
         }
       }
     });

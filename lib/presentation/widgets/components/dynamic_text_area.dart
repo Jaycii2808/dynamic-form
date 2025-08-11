@@ -43,12 +43,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-      '🚀 [DynamicTextArea] initState called for component: ${widget.component.id}',
-    );
-    debugPrint('  - Label: ${widget.component.config?.label}');
-    debugPrint('  - Placeholder: ${widget.component.config?.placeholder}');
-    debugPrint('  - Value: ${widget.component.config?.value}');
+    // Logging removed; use Bloc Observer
     context.read<DynamicTextAreaBloc>().add(const InitializeTextAreaEvent());
   }
 
@@ -64,20 +59,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
 
           if (updatedComponent != null &&
               updatedComponent != widget.component) {
-            debugPrint(
-              '🔄 [DynamicTextArea] FormBuilder state changed, updating component: ${updatedComponent.id}',
-            );
-            debugPrint('  - Old Label: ${widget.component.config?.label}');
-            debugPrint('  - New Label: ${updatedComponent.config?.label}');
-            debugPrint(
-              '  - Old Placeholder: ${widget.component.config?.placeholder}',
-            );
-            debugPrint(
-              '  - New Placeholder: ${updatedComponent.config?.placeholder}',
-            );
-            debugPrint('  - Old Value: ${widget.component.config?.value}');
-            debugPrint('  - New Value: ${updatedComponent.config?.value}');
-
+            // Logging removed; use Bloc Observer
             // Update the bloc with new component
             context.read<DynamicTextAreaBloc>().add(
               UpdateTextAreaFromExternalEvent(component: updatedComponent),
@@ -127,7 +109,7 @@ class _DynamicTextAreaState extends State<DynamicTextArea> {
                 state.formState == null ||
                 state.textController == null ||
                 state.focusNode == null) {
-              debugPrint('DynamicTextArea: Some required properties are null');
+              // Logging removed; use Bloc Observer
               return const SizedBox.shrink();
             }
 

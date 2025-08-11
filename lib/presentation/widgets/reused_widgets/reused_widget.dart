@@ -58,16 +58,7 @@ class ReusedWidget {
     bool isSharedForm = false, // Add parameter to indicate shared form mode
     String? currentPageId, // Add page ID for navigation tracking
   }) {
-    debugPrint(
-      '🔍 [ReusedWidget] Building component: ${component.id}, type: ${component.type}',
-    );
-    debugPrint('  - Key: ${key.toString()}');
-    debugPrint('  - Label: ${component.config?.label}');
-    debugPrint('  - Placeholder: ${component.config?.placeholder}');
-    debugPrint('  - Config editing enabled: ${onComponentUpdate != null}');
-    debugPrint('  - Is shared form: $isSharedForm');
-    debugPrint('  - Current page ID: $currentPageId');
-
+    // Logging removed; use Bloc Observer
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
         return BlocProvider(
@@ -161,15 +152,7 @@ class ReusedWidget {
         );
 
       case FormTypeEnum.dropdownFormType:
-        debugPrint(
-          '🔍 [ReusedWidget] Creating dropdown component: ${component.id}',
-        );
-        debugPrint(
-          '🔍 [ReusedWidget] Component config: ${component.config?.toJson()}',
-        );
-        debugPrint('🔍 [ReusedWidget] Is shared form: $isSharedForm');
-        debugPrint('🔍 [ReusedWidget] Current page ID: $currentPageId');
-
+        // Logging removed; use Bloc Observer
         return BlocProvider(
           create: (context) => DynamicDropdownBloc(
             initialComponent: component,
@@ -186,13 +169,7 @@ class ReusedWidget {
         );
 
       case FormTypeEnum.shortAnswerFormType:
-        debugPrint(
-          '🔍 [ReusedWidget] Creating short answer component: ${component.id}',
-        );
-        debugPrint(
-          '🔍 [ReusedWidget] Component config: ${component.config?.toJson()}',
-        );
-
+        // Logging removed; use Bloc Observer
         return BlocProvider(
           create: (context) => DynamicShortAnswerBloc(),
           child: DynamicShortAnswer(

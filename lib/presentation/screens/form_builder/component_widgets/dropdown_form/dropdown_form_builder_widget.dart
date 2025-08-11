@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_form_builder_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_option_editor_list.dart';
 import 'package:flutter/material.dart';

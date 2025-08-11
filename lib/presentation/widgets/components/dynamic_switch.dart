@@ -24,13 +24,7 @@ class DynamicSwitch extends StatefulWidget {
     this.onComplete,
     this.onComponentUpdate, // Add this parameter
     this.isSharedForm = false, // Default to false for backward compatibility
-  }) {
-    debugPrint(
-      '🏗️ [DynamicSwitch] Constructor called for component: ${component.id}',
-    );
-    debugPrint('  - Label: ${component.config?.label}');
-    debugPrint('  - Is shared form: $isSharedForm');
-  }
+  });
 
   @override
   State<DynamicSwitch> createState() => _DynamicSwitchState();
@@ -40,11 +34,6 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-      '🚀 [DynamicSwitch] initState called for component: ${widget.component.id}',
-    );
-    debugPrint('  - Label: ${widget.component.config?.label}');
-    debugPrint('  - Value: ${widget.component.config?.value}');
     context.read<DynamicSwitchBloc>().add(const InitializeSwitchEvent());
   }
 
@@ -60,14 +49,6 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
 
           if (updatedComponent != null &&
               updatedComponent != widget.component) {
-            debugPrint(
-              '🔄 [DynamicSwitch] FormBuilder state changed, updating component: ${updatedComponent.id}',
-            );
-            debugPrint('  - Old Label: ${widget.component.config?.label}');
-            debugPrint('  - New Label: ${updatedComponent.config?.label}');
-            debugPrint('  - Old Value: ${widget.component.config?.value}');
-            debugPrint('  - New Value: ${updatedComponent.config?.value}');
-
             // Update the bloc with new component
             context.read<DynamicSwitchBloc>().add(
               UpdateSwitchFromExternalEvent(component: updatedComponent),
@@ -85,9 +66,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
             DialogUtils.showErrorDialog(context, state.errorMessage!);
           } else if (state is DynamicSwitchLoading ||
               state is DynamicSwitchInitial) {
-            debugPrint(
-              'Listener: Handling ${state.runtimeType} state for id: ${state.component?.id}, value: ${state.component?.config?.value}',
-            );
+            // Logging removed; use Bloc Observer
           } else {
             // Pass simple value instead of valueMap
             final simpleValue = state.component?.config?.value ?? false;

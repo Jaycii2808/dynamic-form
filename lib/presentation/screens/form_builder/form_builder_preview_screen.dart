@@ -145,10 +145,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   // Save user form to Firebase
   void _saveUserForm() async {
     try {
-      debugPrint(
-        '🔄 [FormBuilderPreviewScreen] Saving user form: ${widget.formBuilderModel.name}',
-      );
-
       // Show loading dialog
       if (mounted) {
         showDialog(
@@ -167,10 +163,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         userId: 'user001', // Default user ID
       );
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] User form saved with ID: $formId',
-      );
-
       if (mounted) {
         // Close loading dialog
         Navigator.of(context).pop();
@@ -187,8 +179,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         );
       }
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] Error saving user form: $e');
-
       if (mounted) {
         // Close loading dialog
         Navigator.of(context).pop();
@@ -214,10 +204,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         _showValidationErrorDialog(validationResult.errorMessage!);
         return;
       }
-
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Form validation passed, proceeding with share',
-      );
 
       // Show email input dialog first
       final emailData = await showDialog<Map<String, String>>(
@@ -245,10 +231,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       final jsonOutput = widget.formBuilderModel.toExportMultiPageJson();
       final formName = widget.formBuilderModel.name;
 
-      debugPrint('Saving form to Firestore: $formName');
-      debugPrint('Recipient email: ${emailData['email']}');
-      debugPrint('Recipient name: ${emailData['name']}');
-
+      // Logging removed; use Bloc Observer
       // Save to Firestore and get form ID
       final firestoreService = FirestoreFormService();
       final formId = await firestoreService.saveSharedForm(
@@ -271,7 +254,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       if (mounted) {
         // Close loading dialog
         Navigator.of(context).pop();
-        debugPrint('Error saving form to Firestore: $e');
+        // Logging removed; use Bloc Observer
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving form: ${e.toString()}'),
@@ -285,9 +268,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate form before sharing
   ValidationResult _validateFormBeforeShare() {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Starting form validation for share',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final pages = widget.formBuilderModel.pages;
@@ -317,12 +298,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Form validation completed successfully',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] Validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage: 'Validation error: ${e.toString()}',
@@ -332,9 +311,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate individual component
   ValidationResult _validateComponent(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating component: ${component.id} - ${component.type}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -361,9 +338,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           component.type.toString() == 'FormTypeEnum.textAreaFormType' ||
           component.type.toString() == 'FormTypeEnum.dropdownFormType') {
         if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
-          debugPrint(
-            '⚠️ [FormBuilderPreviewScreen] Component "${component.id}" has no placeholder',
-          );
+          // Logging removed; use Bloc Observer
         }
       }
 
@@ -387,13 +362,11 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           return _validateSelectorButton(component);
         default:
           // For other components, just do basic validation
-          debugPrint(
-            '⚠️ [FormBuilderPreviewScreen] Unknown component type: ${component.type}, using basic validation',
-          );
+          // Logging removed; use Bloc Observer
           return _validateBasicComponent(component);
       }
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] Component validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -404,9 +377,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate dropdown component specifically
   ValidationResult _validateDropdown(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating dropdown: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -446,12 +417,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Dropdown "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] Dropdown validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -462,9 +431,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate short answer component specifically
   ValidationResult _validateShortAnswer(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating short answer: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -542,14 +509,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Short answer "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint(
-        '❌ [FormBuilderPreviewScreen] Short answer validation error: $e',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -560,9 +523,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate TextField component (existing logic)
   ValidationResult _validateTextField(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating TextField: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -586,9 +547,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
       // Check placeholder text
       if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
-        debugPrint(
-          '⚠️ [FormBuilderPreviewScreen] TextField "${component.id}" has no placeholder',
-        );
+        // Logging removed; use Bloc Observer
       }
 
       // Check validation rules if present
@@ -713,12 +672,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] TextField "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] TextField validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -729,9 +686,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate TextArea component
   ValidationResult _validateTextArea(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating TextArea: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -753,12 +708,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] TextArea "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] TextArea validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -769,9 +722,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate DateTimePicker component
   ValidationResult _validateDateTimePicker(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating DateTimePicker: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -793,14 +744,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] DateTimePicker "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint(
-        '❌ [FormBuilderPreviewScreen] DateTimePicker validation error: $e',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -811,9 +758,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate DateTimeRangePicker component
   ValidationResult _validateDateTimeRangePicker(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating DateTimeRangePicker: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -836,14 +781,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] DateTimeRangePicker "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint(
-        '❌ [FormBuilderPreviewScreen] DateTimeRangePicker validation error: $e',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -854,9 +795,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate Switch component
   ValidationResult _validateSwitch(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating Switch: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -877,12 +816,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Switch "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint('❌ [FormBuilderPreviewScreen] Switch validation error: $e');
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -893,9 +830,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate SelectorButton component
   ValidationResult _validateSelectorButton(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating SelectorButton: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -917,14 +852,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] SelectorButton "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint(
-        '❌ [FormBuilderPreviewScreen] SelectorButton validation error: $e',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -935,9 +866,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Validate basic component (fallback for other types)
   ValidationResult _validateBasicComponent(DynamicFormModel component) {
-    debugPrint(
-      '🔍 [FormBuilderPreviewScreen] Validating basic component: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     try {
       final config = component.config;
@@ -959,14 +888,10 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         }
       }
 
-      debugPrint(
-        '✅ [FormBuilderPreviewScreen] Basic component "${component.id}" validation passed',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(isValid: true);
     } catch (e) {
-      debugPrint(
-        '❌ [FormBuilderPreviewScreen] Basic component validation error: $e',
-      );
+      // Logging removed; use Bloc Observer
       return ValidationResult(
         isValid: false,
         errorMessage:
@@ -1189,8 +1114,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         throw 'Could not launch $link';
       }
     } catch (e) {
-      debugPrint('Error opening browser link: $e');
-      //if contet mounted
+      // Logging removed; use Bloc Observer
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

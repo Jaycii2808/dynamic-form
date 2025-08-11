@@ -55,10 +55,7 @@ Widget _buildAllPagesCanvas(
   FormBuilderBloc formBuilderBloc,
   BuildContext context,
 ) {
-  debugPrint(
-    '🔄 [FormBuilderCanvas] Building all pages canvas with ${state.pages.length} pages',
-  );
-  debugPrint('🔄 [FormBuilderCanvas] Current page ID: ${state.currentPageId}');
+  // Logging removed; use Bloc Observer
 
   final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
 
@@ -71,15 +68,11 @@ Widget _buildAllPagesCanvas(
       final page = state.pages[pageIndex];
       final isCurrentPage = page.pageId == state.currentPageId;
 
-      debugPrint(
-        '🔄 [FormBuilderCanvas] Building page $pageIndex: ${page.title} (isCurrentPage: $isCurrentPage)',
-      );
+      // Logging removed; use Bloc Observer
 
       // Get components for this specific page
       final pageComponents = page.components;
-      debugPrint(
-        '🔄 [FormBuilderCanvas] Page $pageIndex has ${pageComponents.length} components',
-      );
+      // Logging removed; use Bloc Observer
 
       return Column(
         children: [
@@ -99,9 +92,7 @@ Widget _buildAllPagesCanvas(
             final componentIndex = entry.key;
             final component = entry.value;
 
-            debugPrint(
-              '🔄 [FormBuilderCanvas] Building component $componentIndex: ${component.type}',
-            );
+            // Logging removed; use Bloc Observer
 
             return _buildComponentWithDropZone(
               component,
@@ -147,10 +138,10 @@ Widget _buildPageHeader(
     padding: const EdgeInsets.symmetric(
       horizontal: 12,
       vertical: 8,
-    ), 
+    ),
     decoration: BoxDecoration(
       color: isCurrentPage ? Colors.grey[800] : Colors.grey[900],
-      borderRadius: BorderRadius.circular(8), 
+      borderRadius: BorderRadius.circular(8),
       border: Border.all(
         color: isCurrentPage
             ? Colors.blue.withValues(alpha: 0.3)
@@ -166,22 +157,22 @@ Widget _buildPageHeader(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
             vertical: 2,
-          ), 
+          ),
           decoration: BoxDecoration(
             color: Colors.orange.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(6), 
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
           ),
           child: Text(
             'Page ${pageIndex + 1} of $totalPages',
             style: const TextStyle(
-              fontSize: 9, 
+              fontSize: 9,
               fontWeight: FontWeight.w500,
               color: Colors.orange,
             ),
           ),
         ),
-        
+
         // Editable Page title
         Expanded(
           child: GestureDetector(
@@ -193,14 +184,14 @@ Widget _buildPageHeader(
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8, 
-                vertical: 4, 
+                horizontal: 8,
+                vertical: 4,
               ),
               decoration: BoxDecoration(
                 color: isCurrentPage
                     ? Colors.green.withValues(alpha: 0.1)
                     : Colors.grey[800],
-                borderRadius: BorderRadius.circular(6), 
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isCurrentPage
                       ? Colors.green.withValues(alpha: 0.3)
@@ -215,14 +206,14 @@ Widget _buildPageHeader(
                       Icons.edit,
                       color: Colors.green,
                       size: 12,
-                    ), 
-                    const SizedBox(width: 4), 
+                    ),
+                    const SizedBox(width: 4),
                   ],
                   Expanded(
                     child: Text(
                       page.title,
                       style: TextStyle(
-                        fontSize: 14, 
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: isCurrentPage ? Colors.white : Colors.white70,
                       ),
@@ -240,12 +231,12 @@ Widget _buildPageHeader(
           onTap: () => _showCopyPageDialog(context, page, formBuilderBloc),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 6, 
-              vertical: 2, 
+              horizontal: 6,
+              vertical: 2,
             ),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6), 
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: Colors.blue.withValues(alpha: 0.3),
               ),
@@ -256,7 +247,7 @@ Widget _buildPageHeader(
                 Icon(
                   Icons.copy,
                   color: Colors.blue,
-                  size: 20, 
+                  size: 20,
                 ),
               ],
             ),
@@ -264,17 +255,16 @@ Widget _buildPageHeader(
         ),
 
         // Remove page button (only show for page 2 and above)
-        
         GestureDetector(
           onTap: () => _showRemovePageDialog(context, page, formBuilderBloc),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 6, 
-              vertical: 2, 
+              horizontal: 6,
+              vertical: 2,
             ),
             decoration: BoxDecoration(
               color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6), 
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: Colors.red.withValues(alpha: 0.3),
               ),
@@ -285,7 +275,7 @@ Widget _buildPageHeader(
                 Icon(
                   Icons.delete_outline,
                   color: Colors.red,
-                  size: 20, 
+                  size: 20,
                 ),
               ],
             ),
@@ -435,9 +425,7 @@ Widget _buildDropZone(
     },
     onWillAcceptWithDetails: (data) => true,
     onAcceptWithDetails: (details) {
-      debugPrint(
-        '🔄 [FormBuilderCanvas] Dropping component in empty drop zone',
-      );
+      // Logging removed; use Bloc Observer
       // If pageId is provided, switch to that page and add component
       if (pageId != null) {
         formBuilderBloc.add(SwitchPageEvent(pageId));
@@ -482,9 +470,7 @@ Widget _buildDropZoneBetweenComponents(
     },
     onWillAcceptWithDetails: (data) => true,
     onAcceptWithDetails: (details) {
-      debugPrint(
-        '🔄 [FormBuilderCanvas] Dropping component at index: $componentIndex',
-      );
+      // Logging removed; use Bloc Observer
       // If pageId is provided, switch to that page and insert component at specific index
       formBuilderBloc.add(SwitchPageEvent(pageId));
       formBuilderBloc.add(
@@ -595,12 +581,7 @@ Widget _buildComponentWidget(
     // Use the page index where this component is being built
     final currentPageIndex = pageIndex;
 
-    debugPrint(
-      '🔍 [FormBuilderCanvas] Building dropdown with available pages: $availablePages',
-    );
-    debugPrint(
-      '🔍 [FormBuilderCanvas] Component being built on page index: $currentPageIndex',
-    );
+    // Logging removed; use Bloc Observer
 
     return BlocProvider(
       create: (context) => DropdownFormBuilderWidgetBloc(),
@@ -614,12 +595,7 @@ Widget _buildComponentWidget(
         currentPageIndex:
             currentPageIndex, // Pass the page index where this component is being built
         onComponentUpdate: (updatedComponent) {
-          debugPrint(
-            '🔍 [FormBuilderCanvas] Dropdown onComponentUpdate called',
-          );
-          debugPrint(
-            '🔍 [FormBuilderCanvas] Updated component options: ${updatedComponent.config?.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
-          );
+          // Logging removed; use Bloc Observer
           // Update the component in the form builder
           formBuilderBloc.add(
             EditComponentConfigEvent(
@@ -660,9 +636,7 @@ Widget _buildComponentWidget(
 
   // Check if component is short answer type
   if (component.type == FormTypeEnum.shortAnswerFormType) {
-    debugPrint(
-      '🔍 [FormBuilderCanvas] Building short answer component: ${component.id}',
-    );
+    // Logging removed; use Bloc Observer
 
     return BlocProvider(
       create: (context) => ShortAnswerFormBuilderWidgetBloc(),
@@ -672,9 +646,7 @@ Widget _buildComponentWidget(
         ),
         component: component,
         onComponentUpdate: (updatedComponent) {
-          debugPrint(
-            '🔍 [FormBuilderCanvas] Short answer onComponentUpdate called',
-          );
+          // Logging removed; use Bloc Observer
           // Update the component in the form builder
           formBuilderBloc.add(
             EditComponentConfigEvent(
@@ -730,12 +702,7 @@ Widget _buildComponentWidget(
           UpdateComponentValueEvent(componentId: componentId, value: value),
         ),
         onComponentUpdate: (updatedComponent) {
-          debugPrint(
-            '🔍 [FormBuilderCanvas] onComponentUpdate called with description: ${updatedComponent.config?.description}',
-          );
-          debugPrint(
-            '🔍 [FormBuilderCanvas] Component config: ${updatedComponent.config}',
-          );
+          // Logging removed; use Bloc Observer
           // Update the component in the form builder
           formBuilderBloc.add(
             EditComponentConfigEvent(

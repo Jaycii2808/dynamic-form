@@ -9,6 +9,7 @@ class ShortAnswerValidationModel extends Equatable {
   final LengthValidationType? lengthType;
   final RegexValidationAction? regexAction;
   final String? validationValue;
+  final String? validationSecondValue;
   final String? errorMessage;
 
   const ShortAnswerValidationModel({
@@ -18,6 +19,7 @@ class ShortAnswerValidationModel extends Equatable {
     this.lengthType,
     this.regexAction,
     this.validationValue,
+    this.validationSecondValue,
     this.errorMessage,
   });
 
@@ -88,6 +90,7 @@ class ShortAnswerValidationModel extends Equatable {
       lengthType: parseLengthType(json['length_type'] as String?),
       regexAction: parseRegexAction(json['regex_action'] as String?),
       validationValue: json['validation_value'] as String?,
+      validationSecondValue: json['validation_value_2'] as String?,
       errorMessage: json['error_message'] as String?,
     );
   }
@@ -100,6 +103,8 @@ class ShortAnswerValidationModel extends Equatable {
       if (lengthType != null) 'length_type': lengthType!.name,
       if (regexAction != null) 'regex_action': regexAction!.name,
       if (validationValue != null) 'validation_value': validationValue,
+      if (validationSecondValue != null)
+        'validation_value_2': validationSecondValue,
       if (errorMessage != null) 'error_message': errorMessage,
     };
   }
@@ -112,6 +117,7 @@ class ShortAnswerValidationModel extends Equatable {
     lengthType,
     regexAction,
     validationValue,
+    validationSecondValue,
     errorMessage,
   ];
 
@@ -122,6 +128,7 @@ class ShortAnswerValidationModel extends Equatable {
     LengthValidationType? lengthType,
     RegexValidationAction? regexAction,
     String? validationValue,
+    String? validationSecondValue,
     String? errorMessage,
   }) {
     return ShortAnswerValidationModel(
@@ -131,6 +138,8 @@ class ShortAnswerValidationModel extends Equatable {
       lengthType: lengthType ?? this.lengthType,
       regexAction: regexAction ?? this.regexAction,
       validationValue: validationValue ?? this.validationValue,
+      validationSecondValue:
+          validationSecondValue ?? this.validationSecondValue,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -167,34 +176,88 @@ class ShortAnswerValidationModel extends Equatable {
       return errorMessage ?? 'Please enter a valid number';
     }
 
-    if (numberAction == null || validationValue == null) {
-      debugPrint('⚠️ Missing validation configuration');
+    if (numberAction == null) {
+      debugPrint('⚠️ Missing number action');
       return null;
     }
 
-    final targetValue = double.tryParse(validationValue!);
-    if (targetValue == null) {
-      debugPrint('❌ Invalid target value: $validationValue');
-      return errorMessage ?? 'Invalid validation configuration';
+    // Handle actions that don't require target values
+    if (numberAction == NumberValidationAction.wholeNumber) {
+      final isWhole = numberValue == numberValue.roundToDouble();
+      return isWhole ? null : (errorMessage ?? 'Please enter a whole number');
     }
 
-    debugPrint('🔍 Comparing $numberValue ${numberAction!.name} $targetValue');
+    // Handle single target value actions
+    bool requiresSingleTarget = [
+      NumberValidationAction.greaterThan,
+      NumberValidationAction.lessThan,
+      NumberValidationAction.equalTo,
+      NumberValidationAction.greaterThanOrEqualTo,
+      NumberValidationAction.lessThanOrEqualTo,
+      NumberValidationAction.notEqualTo,
+    ].contains(numberAction);
 
-    bool isValid = false;
-    switch (numberAction!) {
-      case NumberValidationAction.greaterThan:
-        isValid = numberValue > targetValue;
-        break;
-      case NumberValidationAction.lessThan:
-        isValid = numberValue < targetValue;
-        break;
-      case NumberValidationAction.equalTo:
-        isValid = numberValue == targetValue;
-        break;
+    if (requiresSingleTarget) {
+      if (validationValue == null) {
+        return null;
+      }
+      final targetValue = double.tryParse(validationValue!);
+      if (targetValue == null) {
+        return errorMessage ?? 'Invalid validation configuration';
+      }
+
+      bool isValid = false;
+      switch (numberAction!) {
+        case NumberValidationAction.greaterThan:
+          isValid = numberValue > targetValue;
+          break;
+        case NumberValidationAction.lessThan:
+          isValid = numberValue < targetValue;
+          break;
+        case NumberValidationAction.equalTo:
+          isValid = numberValue == targetValue;
+          break;
+        case NumberValidationAction.greaterThanOrEqualTo:
+          isValid = numberValue >= targetValue;
+          break;
+        case NumberValidationAction.lessThanOrEqualTo:
+          isValid = numberValue <= targetValue;
+          break;
+        case NumberValidationAction.notEqualTo:
+          isValid = numberValue != targetValue;
+          break;
+        case NumberValidationAction.between:
+        case NumberValidationAction.notBetween:
+        case NumberValidationAction.wholeNumber:
+          // handled elsewhere
+          break;
+      }
+      return isValid ? null : (errorMessage ?? 'Number validation failed');
     }
 
-    debugPrint('🔍 Number validation result: $isValid');
-    return isValid ? null : (errorMessage ?? 'Number validation failed');
+    // Handle range actions (between, notBetween)
+    if (numberAction == NumberValidationAction.between ||
+        numberAction == NumberValidationAction.notBetween) {
+      if (validationValue == null || validationSecondValue == null) {
+        return null;
+      }
+      final first = double.tryParse(validationValue!);
+      final second = double.tryParse(validationSecondValue!);
+      if (first == null || second == null) {
+        return errorMessage ?? 'Invalid range configuration';
+      }
+      final minValue = first < second ? first : second;
+      final maxValue = first < second ? second : first;
+
+      final isInside =
+          numberValue >= minValue && numberValue <= maxValue; // inclusive
+      final isValid = numberAction == NumberValidationAction.between
+          ? isInside
+          : !isInside;
+      return isValid ? null : (errorMessage ?? 'Number validation failed');
+    }
+
+    return null;
   }
 
   String? _validateText(String value) {
