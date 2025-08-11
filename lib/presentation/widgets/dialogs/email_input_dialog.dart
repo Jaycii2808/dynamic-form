@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class EmailInputDialog extends StatefulWidget {
   const EmailInputDialog({super.key});
@@ -16,10 +17,10 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
   void initState() {
     super.initState();
 
-
     _emailController.text = 'imprahimovic@gmail.com';
     _nameController.text = 'tEST B5 ';
   }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -81,7 +82,7 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          onPressed: _isLoading ? null : () => context.pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
@@ -105,7 +106,7 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
       });
 
       // Return the email and name data
-      Navigator.of(context).pop({
+      context.pop({
         'email': _emailController.text.trim(),
         'name': _nameController.text.trim(),
       });

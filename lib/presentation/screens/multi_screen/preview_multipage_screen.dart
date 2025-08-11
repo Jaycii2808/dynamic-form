@@ -9,8 +9,10 @@ import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dar
 import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PreviewPageScreen extends StatefulWidget {
+  static const String routeName = '/preview';
   final List<DynamicFormPageModel> pages;
   final ComponentValuesModel allComponentValues;
   final VoidCallback? onSubmit;
@@ -382,7 +384,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('OK'),
           ),
         ],
@@ -408,7 +410,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('OK'),
           ),
         ],
@@ -440,7 +442,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('OK'),
           ),
         ],
@@ -544,8 +546,6 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
       }
     }
   }
-
-
 }
 
 // List<DynamicFormModel> _buildPreviewComponents(

@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/core/enums/menu_action_enum.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class FormLibraryDialog extends StatefulWidget {
   final void Function(FormTemplateModel template)? onLoad;
@@ -181,7 +182,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                         trailing: PopupMenuButton<MenuAction>(
                           onSelected: (value) async {
                             if (value == MenuAction.load) {
-                              Navigator.of(context).pop();
+                              context.pop();
                               await Future.delayed(
                                 const Duration(milliseconds: 100),
                               );
@@ -198,13 +199,11 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                   ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
+                                      onPressed: () => context.pop(false),
                                       child: const Text('Cancel'),
                                     ),
                                     ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
+                                      onPressed: () => context.pop(true),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.red,
                                       ),
@@ -288,7 +287,7 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
               ),
             const SizedBox(height: 8),
             ElevatedButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               icon: const Icon(Icons.close),
               label: const Text('Close'),
               style: ElevatedButton.styleFrom(

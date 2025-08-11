@@ -3,6 +3,7 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 Widget formBuilderBottomNavigation(
   BuildContext context,
@@ -259,7 +260,7 @@ void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {
                     final newTitle = value.trim();
                     if (newTitle.isNotEmpty) {
                       formBuilderBloc.add(AddPageWithTitleEvent(newTitle));
-                      Navigator.of(context).pop();
+                      context.pop();
                     }
                   },
                 ),
@@ -309,7 +310,7 @@ void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () => context.pop(),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
@@ -339,7 +340,7 @@ void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {
                         final newTitle = controller.text.trim();
                         if (newTitle.isNotEmpty) {
                           formBuilderBloc.add(AddPageWithTitleEvent(newTitle));
-                          Navigator.of(context).pop();
+                          context.pop();
                         }
                       },
                       child: Container(

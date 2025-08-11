@@ -8,6 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/item_widgets/step_progress_widget.dart';
 
 class DynamicFormMultiScreen extends StatefulWidget {
+  static const String routeName = '/dynamic-form-multi';
+  static const String routePath = '/dynamic-form-multi/:configKey';
   final String configKey;
 
   const DynamicFormMultiScreen({super.key, required this.configKey});
@@ -98,7 +100,8 @@ class _DynamicFormMultiScreenState extends State<DynamicFormMultiScreen> {
                 Expanded(
                   child: PageView.builder(
                     controller: pageController,
-                    physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Disable swipe
                     itemCount: state.formModel!.pages.length,
                     itemBuilder: (context, index) {
                       final page = state.formModel!.pages[index];

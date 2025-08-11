@@ -11,8 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/core/enums/menu_action_enum.dart';
+import 'package:go_router/go_router.dart';
 
 class SavedFormsScreen extends StatefulWidget {
+  static const String routeName = '/saved-forms';
   const SavedFormsScreen({super.key});
 
   @override
@@ -62,11 +64,11 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
         content: Text('Are you sure you want to delete "${form.name}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => context.pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => context.pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
@@ -123,34 +125,28 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
     debugPrint('🔢 Pages loaded: ${dynamicPages.length}');
 
     // Step 3: Close current screen and navigate to preview
-    Navigator.pop(context); // Close saved forms screen
+    context.pop(); // Close saved forms screen
 
     // Step 4: Navigate to preview screen with converted data
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PreviewPageScreen(
-          pages: dynamicPages,
-          allComponentValues: _getComponentValuesForPreview(
-            customFormData.componentValues,
-          ),
-        ),
-      ),
+    context.push(
+      PreviewPageScreen.routeName,
+      extra: {
+        'pages': dynamicPages,
+        'values': _getComponentValuesForPreview(customFormData.componentValues),
+      },
     );
   }
 
   /// Load legacy single-page form (backward compatibility)
   void _loadLegacyForm(SavedFormModel savedForm) {
     // For legacy forms, we can use the formData directly
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PreviewPageScreen(
-          pages: [savedForm.formData!],
-          allComponentValues: ComponentValuesModel.empty(),
-        ),
-      ),
+    context.pop();
+    context.push(
+      PreviewPageScreen.routeName,
+      extra: {
+        'pages': [savedForm.formData!],
+        'values': ComponentValuesModel.empty(),
+      },
     );
   }
 
@@ -273,11 +269,11 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context, false),
+                          onPressed: () => context.pop(false),
                           child: const Text('Cancel'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true),
+                          onPressed: () => context.pop(true),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red,
                           ),

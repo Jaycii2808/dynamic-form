@@ -7,8 +7,10 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_w
     show formBuilderBottomNavigation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class FormBuilderScreen extends StatefulWidget {
+  static const String routeName = '/form-builder';
   final FormBuilderModel? existingForm;
   final bool isEditing;
 
@@ -119,7 +121,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
                 if (formName.isNotEmpty && pageName.isNotEmpty) {
                   formBuilderBloc.add(UpdateFormTitleEvent(formName));
                   formBuilderBloc.add(UpdateFirstPageTitleEvent(pageName));
-                  Navigator.of(context).pop();
+                  context.pop();
                 }
               },
               child: Text(widget.isEditing ? 'Update Form' : 'Create Form'),

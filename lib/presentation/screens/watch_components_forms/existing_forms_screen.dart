@@ -3,9 +3,10 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/dynamic_form_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ExistingFormsScreen extends StatefulWidget {
-  static const String routeName = '/existing-forms-screen';
+  static const String routeName = '/existing-forms';
   const ExistingFormsScreen({super.key});
 
   @override
@@ -47,7 +48,7 @@ class _ExistingFormsScreenState extends State<ExistingFormsScreen> {
     await RemoteConfigService().initialize();
     await Future.delayed(const Duration(milliseconds: 50));
     if (mounted) {
-      Navigator.of(context).pop();
+      context.pop();
       await _loadConfigKeys();
     }
   }
@@ -66,18 +67,15 @@ class _ExistingFormsScreenState extends State<ExistingFormsScreen> {
           RemoteConfigService().getAll()[configKey]?.asString() ?? '';
 
       // Close loading dialog
-      Navigator.of(context).pop();
+      context.pop();
 
       // Check if config string is valid and in JSON format
       if (configString.isNotEmpty && configString.trim().startsWith('{')) {
         try {
           // Navigate to multi-page form if config is valid JSON
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  DynamicFormMultiScreen(configKey: configKey),
-            ),
+          context.pushNamed(
+            DynamicFormMultiScreen.routeName,
+            pathParameters: {'configKey': configKey},
           );
         } catch (e) {
           // Show error dialog if JSON parsing fails
@@ -88,19 +86,17 @@ class _ExistingFormsScreenState extends State<ExistingFormsScreen> {
         }
       } else {
         // Navigate to single-page form if config is empty or not JSON
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DynamicFormScreen(
-              configKey: configKey,
-              title: configKey,
-            ),
-          ),
+        context.pushNamed(
+          DynamicFormScreen.routeName,
+          pathParameters: {'configKey': configKey},
+          extra: {
+            'title': configKey,
+          },
         );
       }
     } catch (e) {
       // Close loading dialog and show error if config fetch fails
-      Navigator.of(context).pop();
+      context.pop();
       DialogUtils.showErrorDialog(context, 'Failed to load form config: $e');
     }
   }
@@ -225,7 +221,7 @@ class _ExistingFormsScreenState extends State<ExistingFormsScreen> {
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => context.pop(),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,

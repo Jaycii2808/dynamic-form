@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynami
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class DynamicSwitch extends StatefulWidget {
   final DynamicFormModel component;
@@ -221,7 +222,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
+              onPressed: () => dialogContext.pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -239,7 +240,7 @@ class _DynamicSwitchState extends State<DynamicSwitch> {
                 // Use callback to update component
                 widget.onComponentUpdate?.call(updatedComponent);
 
-                Navigator.of(dialogContext).pop();
+                dialogContext.pop();
               },
               child: const Text('Save'),
             ),

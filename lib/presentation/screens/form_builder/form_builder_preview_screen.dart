@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
+import 'package:go_router/go_router.dart';
 // Added import for UserFormsService
 import 'package:dynamic_form_bi/data/models/validation/composite_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
@@ -25,6 +26,7 @@ class ValidationResult {
 }
 
 class FormBuilderPreviewScreen extends StatefulWidget {
+  static const String routeName = '/form-builder-preview';
   final FormBuilderModel formBuilderModel;
 
   const FormBuilderPreviewScreen({
@@ -165,7 +167,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
       if (mounted) {
         // Close loading dialog
-        Navigator.of(context).pop();
+        context.pop();
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -181,7 +183,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     } catch (e) {
       if (mounted) {
         // Close loading dialog
-        Navigator.of(context).pop();
+        context.pop();
 
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -245,7 +247,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       final shareableLink = firestoreService.generateFormShareLink(formId);
       if (mounted) {
         // Close loading dialog
-        Navigator.of(context).pop();
+        context.pop();
       }
 
       // Show success dialog with options
@@ -253,7 +255,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     } catch (e) {
       if (mounted) {
         // Close loading dialog
-        Navigator.of(context).pop();
+        context.pop();
         // Logging removed; use Bloc Observer
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -924,7 +926,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('OK'),
           ),
         ],
@@ -1062,7 +1064,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             // Add button to navigate directly to shared form
             GestureDetector(
               onTap: () {
-                Navigator.of(context).pop(); // Close dialog
+                context.pop(); // Close dialog
                 _navigateToSharedForm(formId);
               },
               child: Container(
@@ -1087,7 +1089,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('Close'),
             ),
           ],
@@ -1322,14 +1324,14 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
               final parameterName = parameterNameController.text.trim();
               if (parameterName.isNotEmpty) {
-                Navigator.of(context).pop();
+                context.pop();
                 _performFirebaseExport(parameterName, jsonString);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1419,7 +1421,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('Got it!'),
           ),
         ],
@@ -1429,10 +1431,9 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Navigate to the shared form screen
   void _navigateToSharedForm(String formId) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => SharedFormScreen(formId: formId),
-      ),
+    context.replaceNamed(
+      SharedFormScreen.routeName,
+      pathParameters: {'formId': formId},
     );
   }
 }

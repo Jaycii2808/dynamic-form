@@ -7,6 +7,7 @@ import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 // Validation result class
 class ValidationResult {
@@ -31,7 +32,7 @@ PreferredSizeWidget formBuilderAppBar(
     leading: Padding(
       padding: const EdgeInsets.all(8),
       child: GestureDetector(
-        onTap: () => Navigator.of(context).pop(),
+        onTap: () => context.pop(),
         child: Container(
           width: 36,
           height: 36,
@@ -197,7 +198,7 @@ void _showEditFormTitleDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -206,7 +207,7 @@ void _showEditFormTitleDialog(
               if (newTitle.isNotEmpty) {
                 formBuilderBloc.add(UpdateFormTitleEvent(newTitle));
               }
-              Navigator.of(context).pop();
+              context.pop();
             },
             child: const Text('Save'),
           ),
@@ -239,8 +240,8 @@ void _handleSubmitForm(
     },
   );
 
-  // Store context before async operation to avoid BuildContext async gap warning
-  final navigator = Navigator.of(context);
+  // Using GoRouter for navigation
+  final router = GoRouter.of(context);
 
   // Handle focus operations directly to avoid BuildContext async gap issues
   // First, unfocus any active text fields to trigger their onTapOutside events
@@ -262,7 +263,7 @@ void _handleSubmitForm(
 
   Future.delayed(const Duration(milliseconds: 1000), () {
     // Close loading dialog
-    navigator.pop();
+    router.pop();
 
     try {
       // Get the LATEST state from the bloc after the delay
@@ -297,14 +298,18 @@ void _handleSubmitForm(
       debugPrint(
         '  - Components Count: ${formBuilderModel.pages.fold(0, (sum, page) => sum + page.components.length)}',
       );
+      //unfocus
+      if (context.mounted) {
+        FocusScope.of(context).unfocus();
+      }
+
 
       // Navigate to preview screen
-      navigator.push(
-        MaterialPageRoute(
-          builder: (context) => FormBuilderPreviewScreen(
-            formBuilderModel: formBuilderModel,
-          ),
-        ),
+      router.pushNamed(
+        FormBuilderPreviewScreen.routeName,
+        extra: {
+          'formBuilderModel': formBuilderModel,
+        },
       );
     } catch (e) {
       debugPrint('❌ [FormBuilderAppBar] Error creating FormBuilderModel: $e');
@@ -943,7 +948,7 @@ void _showValidationErrorDialog(BuildContext context, String errorMessage) {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
           child: const Text('OK'),
         ),
       ],

@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DynamicFormScreen extends StatefulWidget {
+  static const String routeName = '/dynamic-form';
+  static const String routePath = '/dynamic-form/:configKey';
   final String configKey;
   final String? title;
   final Function(FormActionDataModel)? onAction;

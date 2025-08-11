@@ -9,6 +9,7 @@ import 'package:dynamic_form_bi/presentation/blocs/shared_form/shared_form_state
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class SharedFormScreen extends StatelessWidget {
   static const String routePath = '/forms/:formId';
@@ -483,7 +484,7 @@ class SharedFormScreen extends StatelessWidget {
         ),
         content: SizedBox(
           width: double.maxFinite,
-          height: 200, 
+          height: 200,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -497,13 +498,13 @@ class SharedFormScreen extends StatelessWidget {
               emailDetails.emailResponse!.type == 'network')
             GestureDetector(
               onTap: () {
-                Navigator.of(context).pop();
+                context.pop();
                 context.read<SharedFormBloc>().add(const SubmitFormEvent());
               },
               child: _buildButton('Retry Email', Colors.green),
             ),
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.pop(),
             child: _buildButton('Close', Colors.blue),
           ),
         ],
@@ -604,7 +605,7 @@ class SharedFormScreen extends StatelessWidget {
         ),
         actions: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.pop(),
             child: _buildButton('Close', Colors.blue),
           ),
         ],
@@ -674,7 +675,7 @@ class SharedFormScreen extends StatelessWidget {
         ),
         actions: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.pop(),
             child: _buildButton('OK', Colors.blue),
           ),
         ],

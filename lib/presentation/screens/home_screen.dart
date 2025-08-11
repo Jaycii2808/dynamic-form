@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home-screen';
@@ -156,15 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FormBuilderScreen(
-                    existingForm: null,
-                    isEditing: false,
-                  ),
-                ),
-              );
+              context.push(FormBuilderScreen.routeName);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -521,15 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: FloatingActionButton.extended(
         heroTag: 'create_form_button',
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const FormBuilderScreen(
-                existingForm: null,
-                isEditing: false,
-              ),
-            ),
-          );
+          context.push(FormBuilderScreen.routeName);
         },
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -549,12 +534,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ExistingFormsScreen(),
-            ),
-          );
+          context.push(ExistingFormsScreen.routeName);
         },
         icon: const Icon(Icons.list_alt),
         tooltip: 'Existing Forms',
@@ -566,10 +546,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SavedFormsScreen()),
-          );
+          context.push(SavedFormsScreen.routeName);
         },
         icon: const Icon(Icons.archive_outlined),
         tooltip: 'Saved Forms',
@@ -607,14 +584,9 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
         // Navigate to FormBuilderScreen with existing form data
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FormBuilderScreen(
-              existingForm: formBuilderModel,
-              isEditing: true,
-            ),
-          ),
+        context.push(
+          FormBuilderScreen.routeName,
+          extra: formBuilderModel,
         );
       } else {
         debugPrint('❌ [HomeScreen] Form data is null');
@@ -656,12 +628,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 _confirmDeleteForm(formId);
               },
               style: ElevatedButton.styleFrom(
@@ -784,12 +756,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('Close'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 _createFormFromTemplate(template);
               },
               style: ElevatedButton.styleFrom(
@@ -923,12 +895,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 _confirmCreateFormFromTemplate(template);
               },
               style: ElevatedButton.styleFrom(
@@ -984,7 +956,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Close loading dialog after a short delay
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          Navigator.of(context).pop(); // Close loading dialog
+          context.pop(); // Close loading dialog
 
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1000,7 +972,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('❌ [HomeScreen] Error creating form from template: $e');
 
       if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
+        context.pop(); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error creating form from template: ${e.toString()}'),

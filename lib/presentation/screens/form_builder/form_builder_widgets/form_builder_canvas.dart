@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 Widget formBuilderCanvas(
   FormBuilderState state,
@@ -754,7 +755,7 @@ void _showEditLabelDialog(
                 label: value,
               ),
             );
-            Navigator.of(dialogContext).pop();
+            dialogContext.pop();
           },
           onEditingComplete: () {
             formBuilderBloc.add(
@@ -763,12 +764,12 @@ void _showEditLabelDialog(
                 label: labelController.text,
               ),
             );
-            Navigator.of(dialogContext).pop();
+            dialogContext.pop();
           },
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () => dialogContext.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -779,7 +780,7 @@ void _showEditLabelDialog(
                   label: labelController.text,
                 ),
               );
-              Navigator.of(dialogContext).pop();
+              dialogContext.pop();
             },
             child: const Text('Save'),
           ),
@@ -814,7 +815,7 @@ void _showEditPageTitleDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () => dialogContext.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -828,7 +829,7 @@ void _showEditPageTitleDialog(
                   ),
                 );
               }
-              Navigator.of(dialogContext).pop();
+              dialogContext.pop();
             },
             child: const Text('Save'),
           ),
@@ -853,13 +854,13 @@ void _showRemovePageDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () => dialogContext.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               formBuilderBloc.add(RemovePageEvent(page.pageId));
-              Navigator.of(dialogContext).pop();
+              dialogContext.pop();
             },
             child: const Text('Remove'),
           ),
@@ -884,13 +885,13 @@ void _showCopyPageDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () => dialogContext.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               formBuilderBloc.add(CopyPageEvent(page.pageId));
-              Navigator.of(dialogContext).pop();
+              dialogContext.pop();
             },
             child: const Text('Copy'),
           ),

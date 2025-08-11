@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DialogUtils {
   static void showErrorDialog(BuildContext context, String message) {
@@ -10,7 +11,7 @@ class DialogUtils {
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('OK'),
             ),
           ],
@@ -105,12 +106,12 @@ class DialogUtils {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop({
+                context.pop({
                   'label': labelController.text,
                   'placeholder': placeholderController.text,
                   'description': descriptionController.text, // Add description

@@ -1,5 +1,6 @@
 import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_data_model.dart';
@@ -157,7 +158,7 @@ class _CustomDateRangePickerDialogState
       children: [
         _buildDialogButton(
           text: 'Cancel',
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           isPrimary: false,
           primaryColor: primaryColor,
           surfaceColor: surfaceColor,
@@ -170,7 +171,7 @@ class _CustomDateRangePickerDialogState
                   widget.onConfirm(
                     DateTimeRange(start: _startDate!, end: _endDate!),
                   );
-                  Navigator.pop(context);
+                  context.pop();
                 }
               : null,
           isPrimary: true,

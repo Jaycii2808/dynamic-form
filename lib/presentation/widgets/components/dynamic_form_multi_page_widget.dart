@@ -20,6 +20,7 @@ import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multip
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class DynamicFormMultiPageWidget extends StatelessWidget {
   final FormForMultiPageModel page;
@@ -163,7 +164,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
               // Navigate back
               if (context.mounted) {
-                Navigator.of(context).pop();
+                context.pop();
               }
               return;
             }
@@ -463,7 +464,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
 
                           // Navigate back
                           if (context.mounted) {
-                            Navigator.of(context).pop();
+                            context.pop();
                           }
                         }
                       },
@@ -771,7 +772,7 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.pop(),
                   child: const Text('OK'),
                 ),
               ],
@@ -888,13 +889,12 @@ class DynamicFormMultiPageWidget extends StatelessWidget {
         );
       }
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (ctx) => PreviewPageScreen(
-            pages: dynamicPages,
-            allComponentValues: state.componentValues,
-          ),
-        ),
+      context.push(
+        PreviewPageScreen.routeName,
+        extra: {
+          'pages': dynamicPages,
+          'values': state.componentValues,
+        },
       );
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // Enum for form types
 enum FormType {
@@ -564,7 +565,7 @@ class SharedFormBuilderWidgets {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text(
                 'Cancel',
                 style: TextStyle(
@@ -576,7 +577,7 @@ class SharedFormBuilderWidgets {
               onPressed: () {
                 final newDescription = descriptionController.text.trim();
                 onDescriptionChanged(newDescription);
-                Navigator.of(context).pop();
+                context.pop();
                 debugPrint('Description updated: $newDescription');
               },
               child: const Text(
@@ -632,7 +633,7 @@ class SharedFormBuilderWidgets {
                         setState(() {});
                       } else {
                         // For regular options, close dialog and execute action
-                        Navigator.of(context).pop();
+                        context.pop();
                         option.onPressed();
                       }
                     },
@@ -673,7 +674,7 @@ class SharedFormBuilderWidgets {
                 if (showCancelButton)
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.pop();
                     },
                     child: const Text(
                       'Cancel',
@@ -726,10 +727,10 @@ class SharedFormBuilderWidgets {
                       if (option.isToggleable) {
                         // For toggleable options, call toggle and close dialog
                         option.onToggle?.call();
-                        Navigator.of(context).pop();
+                        context.pop();
                       } else {
                         // For regular options, close dialog and execute action
-                        Navigator.of(context).pop();
+                        context.pop();
                         option.onPressed();
                       }
                     },
@@ -770,7 +771,7 @@ class SharedFormBuilderWidgets {
                 if (showCancelButton)
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.pop();
                     },
                     child: const Text(
                       'Cancel',
@@ -850,10 +851,10 @@ class SharedFormBuilderWidgets {
                             if (option.isToggleable) {
                               // For toggleable options, call toggle and close
                               option.onToggle?.call();
-                              Navigator.of(context).pop();
+                              context.pop();
                             } else {
                               // For regular options, close and execute action
-                              Navigator.of(context).pop();
+                              context.pop();
                               option.onPressed();
                             }
                           },
@@ -923,7 +924,7 @@ class SharedFormBuilderWidgets {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(8),
                           onTap: () {
-                            Navigator.of(context).pop();
+                            context.pop();
                           },
                           child: Container(
                             width: double.infinity,
@@ -1617,7 +1618,7 @@ class SharedFormBuilderWidgets {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
