@@ -154,3 +154,13 @@ class UpdateValidationErrorMessageEvent
   @override
   List<Object?> get props => [errorMessage];
 }
+
+/// Ask BLoC to compute updated component from current state and return via callback
+class CommitComponentUpdateEvent extends ShortAnswerFormBuilderWidgetEvent {
+  final void Function(DynamicFormModel updated) onComponentUpdate;
+
+  const CommitComponentUpdateEvent(this.onComponentUpdate);
+
+  @override
+  List<Object?> get props => [onComponentUpdate];
+}

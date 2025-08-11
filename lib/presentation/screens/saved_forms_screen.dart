@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/data/models/components/component_values_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_model.dart';
-import 'package:dynamic_form_bi/domain/services/saved_forms_service.dart';
+import 'package:dynamic_form_bi/core/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

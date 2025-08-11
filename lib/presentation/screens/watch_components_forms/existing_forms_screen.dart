@@ -1,6 +1,5 @@
 import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/dynamic_form_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -72,11 +71,11 @@ class _ExistingFormsScreenState extends State<ExistingFormsScreen> {
       // Check if config string is valid and in JSON format
       if (configString.isNotEmpty && configString.trim().startsWith('{')) {
         try {
-          // Navigate to multi-page form if config is valid JSON
-          context.pushNamed(
-            DynamicFormMultiScreen.routeName,
-            pathParameters: {'configKey': configKey},
-          );
+          // // Navigate to multi-page form if config is valid JSON
+          // context.pushNamed(
+          //   DynamicFormMultiScreen.routeName,
+          //   pathParameters: {'configKey': configKey},
+          // );
         } catch (e) {
           // Show error dialog if JSON parsing fails
           DialogUtils.showErrorDialog(

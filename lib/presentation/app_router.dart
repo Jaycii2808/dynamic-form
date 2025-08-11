@@ -4,7 +4,6 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_s
 import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/existing_forms_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/dynamic_form_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/dynamic_form_multi_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_preview_screen.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -80,16 +79,16 @@ class AppRouter {
         },
       ),
       // Dynamic multi-page form with configKey path param
-      GoRoute(
-        path: DynamicFormMultiScreen.routePath,
-        // name: DynamicFormMultiScreen.routeName,
-        pageBuilder: (context, state) {
-          final configKey = state.pathParameters['configKey']!;
-          return NoTransitionPage(
-            child: DynamicFormMultiScreen(configKey: configKey),
-          );
-        },
-      ),
+      // GoRoute(
+      //   path: DynamicFormMultiScreen.routePath,
+      //   // name: DynamicFormMultiScreen.routeName,
+      //   pageBuilder: (context, state) {
+      //     final configKey = state.pathParameters['configKey']!;
+      //     return NoTransitionPage(
+      //       child: DynamicFormMultiScreen(configKey: configKey),
+      //     );
+      //   },
+      // ),
       // Preview screen (pass pages and values via extra)
       GoRoute(
         path: PreviewPageScreen.routeName,

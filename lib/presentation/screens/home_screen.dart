@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.da
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_state.dart';
 import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

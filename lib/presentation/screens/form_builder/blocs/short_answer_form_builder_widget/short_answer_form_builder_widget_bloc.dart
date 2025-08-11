@@ -50,6 +50,7 @@ class ShortAnswerFormBuilderWidgetBloc
     on<UpdateValidationValueEvent>(_onUpdateValidationValue);
     on<UpdateValidationErrorMessageEvent>(_onUpdateValidationErrorMessage);
     on<UpdateValidationSecondValueEvent>(_onUpdateValidationSecondValue);
+    on<CommitComponentUpdateEvent>(_onCommitComponentUpdate);
   }
 
   Future<void> _onInitialize(
@@ -454,5 +455,39 @@ class ShortAnswerFormBuilderWidgetBloc
       );
       emit(currentState.copyWith(validation: updatedValidation));
     }
+  }
+
+  void _onCommitComponentUpdate(
+    CommitComponentUpdateEvent event,
+    Emitter<ShortAnswerFormBuilderWidgetState> emit,
+  ) {
+    if (state is! ShortAnswerFormBuilderWidgetSuccess) return;
+    final s = state as ShortAnswerFormBuilderWidgetSuccess;
+
+    // Build validation to use: when no type selected, clear rules
+    ShortAnswerValidationModel v = s.validation;
+    if (v.validationType == null) {
+      v = v.copyWith(
+        validationType: null,
+        validationValue: null,
+        validationSecondValue: null,
+        numberAction: null,
+        textAction: null,
+        lengthType: null,
+        regexAction: null,
+        errorMessage: null,
+      );
+    }
+
+    final updated = s.component.copyWith(
+      config: s.component.config?.copyWith(
+        label: s.question,
+        description: s.description,
+        isRequired: s.isRequired,
+        validate: v.toJson(),
+      ),
+    );
+
+    event.onComponentUpdate(updated);
   }
 }

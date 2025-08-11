@@ -8,8 +8,8 @@ import 'package:dynamic_form_bi/data/models/components/component_value_update_mo
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
-import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/form_template_service.dart';
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';

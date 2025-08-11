@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'dart:async'; // Added for Timer
+// import 'dart:async';
 
 class ShortAnswerFormBuilderWidget extends StatefulWidget {
   final DynamicFormModel component;
@@ -40,9 +40,7 @@ class _ShortAnswerFormBuilderWidgetState
   late TextEditingController _validationSecondValueController;
   late TextEditingController _errorMessageController;
 
-  // Add debounce mechanism
-  Timer? _updateTimer;
-  String _lastUpdateHash = '';
+  // Debounce removed; update instantly
 
   @override
   void initState() {
@@ -79,7 +77,6 @@ class _ShortAnswerFormBuilderWidgetState
     _validationValueController.dispose();
     _validationSecondValueController.dispose();
     _errorMessageController.dispose();
-    _updateTimer?.cancel(); // Cancel timer on dispose
     super.dispose();
   }
 
@@ -570,53 +567,9 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   void _updateComponent() {
-    // Cancel previous timer
-    _updateTimer?.cancel();
-
-    // Create a debounced update
-    _updateTimer = Timer(const Duration(milliseconds: 300), () {
-      final currentState = context
-          .read<ShortAnswerFormBuilderWidgetBloc>()
-          .state;
-      if (currentState is ShortAnswerFormBuilderWidgetSuccess) {
-        // Only apply validation if user has explicitly chosen a validation type
-        // If no validation type is selected, no validation rules should be applied
-        var validationToUse = currentState.validation;
-
-        // If no validation type is selected, don't apply any validation
-        if (validationToUse.validationType == null) {
-          validationToUse = validationToUse.copyWith(
-            validationType: null,
-            validationValue: null,
-            validationSecondValue: null,
-            numberAction: null,
-            textAction: null,
-            lengthType: null,
-            regexAction: null,
-            errorMessage: null,
-          );
-        }
-
-        final updatedComponent = widget.component.copyWith(
-          config: widget.component.config?.copyWith(
-            label: currentState.question,
-            description: currentState.description,
-            isRequired: currentState.isRequired,
-            validate: validationToUse.toJson(),
-          ),
-        );
-
-        // Create a hash to check if component actually changed
-        final newHash =
-            '${currentState.question}_${currentState.description}_${currentState.isRequired}_${validationToUse.toJson()}';
-
-        // Only update if component actually changed
-        if (newHash != _lastUpdateHash) {
-          _lastUpdateHash = newHash;
-          widget.onComponentUpdate(updatedComponent);
-        }
-      }
-    });
+    context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+      CommitComponentUpdateEvent(widget.onComponentUpdate),
+    );
   }
 
   void _showImageDialog() {

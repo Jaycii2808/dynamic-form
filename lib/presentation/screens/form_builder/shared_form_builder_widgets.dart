@@ -6,11 +6,8 @@ enum FormType {
   dropdown,
   textField,
   switchType,
-  datePicker,
-  textArea,
   button,
-  radio,
-  checkbox,
+
 }
 
 // More options dialog option model

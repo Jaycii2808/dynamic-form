@@ -1,4 +1,4 @@
-import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 class RemoteConfigFormBuilderEnum {
