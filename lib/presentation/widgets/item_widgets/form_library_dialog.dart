@@ -202,12 +202,27 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                       onPressed: () => context.pop(false),
                                       child: const Text('Cancel'),
                                     ),
-                                    ElevatedButton(
-                                      onPressed: () => context.pop(true),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
+                                    GestureDetector(
+                                      onTap: () => context.pop(true),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Delete',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
-                                      child: const Text('Delete'),
                                     ),
                                   ],
                                 ),
@@ -286,16 +301,30 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                 ),
               ),
             const SizedBox(height: 8),
-            ElevatedButton.icon(
-              onPressed: () => context.pop(),
-              icon: const Icon(Icons.close),
-              label: const Text('Close'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade800,
-                foregroundColor: Colors.white,
+            GestureDetector(
+              onTap: () => context.pop(),
+              child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 24,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade800,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.close, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Close',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

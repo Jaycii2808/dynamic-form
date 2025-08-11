@@ -114,8 +114,8 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ],
           ),
           actions: [
-            ElevatedButton(
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 final formName = formController.text.trim();
                 final pageName = pageController.text.trim();
                 if (formName.isNotEmpty && pageName.isNotEmpty) {
@@ -124,7 +124,23 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
                   context.pop();
                 }
               },
-              child: Text(widget.isEditing ? 'Update Form' : 'Create Form'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.isEditing ? 'Update Form' : 'Create Form',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
         );

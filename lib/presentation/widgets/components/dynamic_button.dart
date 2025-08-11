@@ -466,7 +466,7 @@ class _DynamicButtonState extends State<DynamicButton> {
 
   Widget _buildButtonWidget() {
     final backgroundColor = _style.backgroundColor ?? Colors.blue;
-    final textColor = _style.textColor ?? Colors.white;
+    //final textColor = _style.textColor ?? Colors.white;
     final borderColor = _style.borderColor ?? Colors.black;
     final borderWidth = _style.borderWidth ?? 1.0;
     final elevation = _style.elevation ?? 2.0;
@@ -474,24 +474,28 @@ class _DynamicButtonState extends State<DynamicButton> {
     return Container(
       key: Key(_currentComponent.id),
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      child: SizedBox(
-        width: _style.width,
-        height: _style.height ?? 48.0,
-        child: ElevatedButton(
-          onPressed: _onPressedHandler,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor,
-            foregroundColor: textColor,
-            disabledBackgroundColor: Colors.grey.shade300,
-            disabledForegroundColor: Colors.grey.shade600,
-            side: borderWidth > 0
-                ? BorderSide(color: borderColor, width: borderWidth)
+      child: GestureDetector(
+        onTap: _onPressedHandler,
+        child: Container(
+          width: _style.width,
+          height: _style.height ?? 48.0,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            border: borderWidth > 0
+                ? Border.all(color: borderColor, width: borderWidth)
                 : null,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            elevation: elevation,
-            shadowColor: _style.shadowColor ?? Colors.purpleAccent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: elevation > 0
+                ? [
+                    BoxShadow(
+                      color: _style.shadowColor ?? Colors.purpleAccent,
+                      blurRadius: elevation.toDouble(),
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
-          child: _buttonContent,
+          child: Center(child: _buttonContent),
         ),
       ),
     );

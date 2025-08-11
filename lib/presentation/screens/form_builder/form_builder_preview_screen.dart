@@ -1327,8 +1327,8 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
             onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          GestureDetector(
+            onTap: () {
               final parameterName = parameterNameController.text.trim();
               if (parameterName.isNotEmpty) {
                 context.pop();
@@ -1342,11 +1342,20 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Export',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            child: const Text('Export'),
           ),
         ],
       ),

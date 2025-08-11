@@ -76,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
@@ -155,15 +154,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               child: const Row(
-                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
                 children: [
                   Icon(
                     Icons.add_circle_outline,
                     color: Colors.white,
                     size: 20,
                   ),
-                  SizedBox(width: 8),
-                  Text(
+                   Text(
                     'Start Building',
                     style: TextStyle(
                       fontSize: 16,
@@ -213,9 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          spacing: 8,
           children: [
             const Icon(Icons.description, color: Colors.blue, size: 20),
-            const SizedBox(width: 8),
             const Text(
               'My Forms',
               style: TextStyle(
@@ -508,7 +506,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   String _formatDate(dynamic date) {
     try {
       if (date is DateTime) {
@@ -586,16 +583,28 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 context.pop();
                 _confirmDeleteForm(formId);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: const Text('Delete'),
             ),
           ],
         ),
@@ -714,16 +723,28 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => context.pop(),
               child: const Text('Close'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 context.pop();
                 _createFormFromTemplate(template);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Create Form',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: const Text('Create Form'),
             ),
           ],
         ),
@@ -762,17 +783,23 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 4),
-            ...pages.map<Widget>((page) {
-              final pageTitle = page['title'] ?? 'Untitled Page';
-              final components = page['components'] as List<dynamic>? ?? [];
-              return Padding(
-                padding: const EdgeInsets.only(left: 16, top: 2),
-                child: Text(
-                  '• $pageTitle (${components.length} components)',
-                  style: const TextStyle(fontSize: 12),
-                ),
-              );
-            }),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: pages.length,
+              itemBuilder: (context, index) {
+                final page = pages[index];
+                final pageTitle = page['title'] ?? 'Untitled Page';
+                final components = page['components'] as List<dynamic>? ?? [];
+                return Padding(
+                  padding: const EdgeInsets.only(left: 16, top: 2),
+                  child: Text(
+                    '• $pageTitle (${components.length} components)',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                );
+              },
+            ),
           ],
         ],
       );
@@ -853,16 +880,28 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 context.pop();
                 _confirmCreateFormFromTemplate(template);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Create Form',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: const Text('Create Form'),
             ),
           ],
         ),

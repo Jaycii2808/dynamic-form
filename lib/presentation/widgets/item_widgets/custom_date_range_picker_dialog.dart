@@ -219,16 +219,23 @@ class _CustomDateRangePickerDialogState
     required Color surfaceColor,
   }) {
     if (isPrimary) {
-      return ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
+      return GestureDetector(
+        onTap: onPressed,
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          disabledBackgroundColor: primaryColor.withValues(alpha: 0.3),
+          decoration: BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-        child: Text(text, style: const TextStyle(fontSize: 14)),
       );
     } else {
       return TextButton(
