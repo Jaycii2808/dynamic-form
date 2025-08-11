@@ -71,7 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               _buildHeroSection(),
-              if (_importedForm != null) _buildImportedFormSection(_importedForm!),
+              if (_importedForm != null)
+                _buildImportedFormSection(_importedForm!),
               _buildFormsSection(),
             ],
           ),
@@ -730,7 +731,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final pages = formData['pages'] as List<dynamic>? ?? [];
       final totalComponents = pages.fold<int>(
         0,
-        (sum, page) => sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
+        (sum, page) =>
+            sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
       );
 
       return Column(
@@ -1256,7 +1258,9 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => AlertDialog(
             title: const Text('Invalid JSON'),
             content: Text(
-              e is FormatException ? e.message : 'Unexpected error while importing JSON.',
+              e is FormatException
+                  ? e.message
+                  : 'Unexpected error while importing JSON.',
             ),
             actions: [
               TextButton(
