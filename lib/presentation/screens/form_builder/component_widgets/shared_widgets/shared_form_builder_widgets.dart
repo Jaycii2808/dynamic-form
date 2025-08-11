@@ -1532,6 +1532,117 @@ class SharedFormBuilderWidgets {
   }
 
   /*
+   * Reusable info dialog widget for form components
+   * 
+   * Usage example:
+   * 
+   * SharedFormBuilderWidgets.showInfoDialog(
+   *   context: context,
+   *   title: 'Component Name',
+   *   description: 'Description of what this component does.',
+   *   features: [
+   *     'Feature 1',
+   *     'Feature 2',
+   *     'Feature 3',
+   *   ],
+   *   icon: Icons.component_icon,
+   *   iconColor: Colors.blue,
+   *   buttonText: 'Got it!',
+   *   buttonColor: Colors.blue,
+   * );
+   * 
+   * This widget provides a consistent dark-themed dialog with:
+   * - Customizable title with icon
+   * - Description text
+   * - Bullet-pointed features list
+   * - Customizable button text and color
+   */
+  static void showInfoDialog({
+    required BuildContext context,
+    required String title,
+    required String description,
+    required List<String> features,
+    required IconData icon,
+    required Color iconColor,
+    String buttonText = 'Got it!',
+    Color buttonColor = Colors.green,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1F2937),
+          title: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                description,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Features:',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...features.map(
+                (feature) => Text(
+                  '• $feature',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: buttonColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  buttonText,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /*
    * USAGE EXAMPLES FOR DIFFERENT FORM TYPES:
    *
    * 1. For Dropdown:

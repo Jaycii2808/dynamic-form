@@ -1,6 +1,6 @@
-import 'package:dynamic_form_bi/core/utils/dialog_utils.dart';
-import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
@@ -232,28 +232,105 @@ void _handleSubmitForm(
     '✅ [FormBuilderAppBar] Form validation passed, proceeding with preview',
   );
 
-  if (state.pages.isEmpty ||
-      state.pages.every((page) => page.components.isEmpty)) {
-    DialogUtils.showErrorDialog(
-      context,
-      'Please add at least one component to the form',
+  // Show loading dialog
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    },
+  );
+
+  // Store context before async operation to avoid BuildContext async gap warning
+  final navigator = Navigator.of(context);
+
+  // Handle focus operations directly to avoid BuildContext async gap issues
+  // First, unfocus any active text fields to trigger their onTapOutside events
+  final currentFocus = FocusScope.of(context).focusedChild;
+  if (currentFocus != null) {
+    debugPrint(
+      '🔄 [FormBuilderAppBar] Unfocusing active text field: ${currentFocus.toString()}',
     );
-    return;
+    currentFocus.unfocus();
   }
-  final formBuilderModel = FormBuilderModel(
-    formId: 'form_${DateTime.now().millisecondsSinceEpoch}',
-    name: state.formTitle,
-    pages: state.pages,
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
+
+  // Also try to unfocus the entire form to catch any other focused elements
+  FocusScope.of(context).unfocus();
+
+  // Dispatch events to force save all components
+  formBuilderBloc.add(const ForceSaveAllComponentsEvent());
+  formBuilderBloc.add(const ForceRebuildUIEvent());
+
+  debugPrint(
+    '🔄 [FormBuilderAppBar] Dispatched force save events, waiting for processing...',
   );
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) =>
-          FormBuilderPreviewScreen(formBuilderModel: formBuilderModel),
-    ),
-  );
+
+  // Wait for onTapOutside events to process and state to update
+  // Increased delay to account for debounced updates in components (300ms) + additional buffer
+  // Also account for any additional processing time needed for force save events
+
+  Future.delayed(const Duration(milliseconds: 1000), () {
+    // Close loading dialog
+    navigator.pop();
+
+    try {
+      // Get the LATEST state from the bloc after the delay
+      final currentState = formBuilderBloc.state;
+
+      debugPrint('🔄 [FormBuilderAppBar] Retrieved latest state after delay');
+      debugPrint('  - Form Title: ${currentState.formTitle}');
+      debugPrint('  - Pages Count: ${currentState.pages.length}');
+
+      // Log component details for debugging
+      for (int i = 0; i < currentState.pages.length; i++) {
+        final page = currentState.pages[i];
+        debugPrint(
+          '  - Page ${i + 1}: ${page.title} (${page.components.length} components)',
+        );
+        for (int j = 0; j < page.components.length; j++) {
+          final component = page.components[j];
+          debugPrint(
+            '    - Component ${j + 1}: ${component.config?.label} | Value: ${component.config?.value}',
+          );
+        }
+      }
+
+      // Create FormBuilderModel with current state
+      final formBuilderModel = FormBuilderModel(
+        formId: 'form_${DateTime.now().millisecondsSinceEpoch}',
+        name: currentState.formTitle,
+        pages: currentState.pages,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      debugPrint(
+        '✅ [FormBuilderAppBar] FormBuilderModel created successfully',
+      );
+      debugPrint('  - Form ID: ${formBuilderModel.formId}');
+      debugPrint('  - Form Name: ${formBuilderModel.name}');
+      debugPrint('  - Pages Count: ${formBuilderModel.pages.length}');
+      debugPrint(
+        '  - Components Count: ${formBuilderModel.pages.fold(0, (sum, page) => sum + page.components.length)}',
+      );
+
+      // Navigate to preview screen
+      navigator.push(
+        MaterialPageRoute(
+          builder: (context) => FormBuilderPreviewScreen(
+            formBuilderModel: formBuilderModel,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('❌ [FormBuilderAppBar] Error creating FormBuilderModel: $e');
+      // Use a simpler error handling approach that doesn't require context
+      // Show a snackbar or use a different approach that doesn't require BuildContext
+      debugPrint('❌ [FormBuilderAppBar] Error details: $e');
+    }
+  });
 }
 
 // Validate form before preview and share
@@ -313,6 +390,15 @@ ValidationResult _validateComponent(DynamicFormModel component) {
       );
     }
 
+    // Check that ALL components have a label (question) - this is mandatory for sharing
+    if (config.label == null || config.label!.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Component "${component.id}" must have a question/label before sharing the form',
+      );
+    }
+
     // Check required fields for all components
     if (config.isRequired == true) {
       if (config.label == null || config.label!.trim().isEmpty) {
@@ -325,9 +411,9 @@ ValidationResult _validateComponent(DynamicFormModel component) {
     }
 
     // Check placeholder text for input components
-    if (component.type.toString() == 'FormTypeEnum.textFieldFormType' ||
-        component.type.toString() == 'FormTypeEnum.textAreaFormType' ||
-        component.type.toString() == 'FormTypeEnum.dropdownFormType') {
+    if (component.type == FormTypeEnum.textFieldFormType ||
+        component.type == FormTypeEnum.textAreaFormType ||
+        component.type == FormTypeEnum.dropdownFormType) {
       if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
         debugPrint(
           '⚠️ [FormBuilderAppBar] Component "${component.id}" has no placeholder',
@@ -336,21 +422,29 @@ ValidationResult _validateComponent(DynamicFormModel component) {
     }
 
     // Component-specific validation
-    switch (component.type.toString()) {
-      case 'FormTypeEnum.textFieldFormType':
+    switch (component.type) {
+      case FormTypeEnum.shortAnswerFormType:
+        return _validateShortAnswer(component);
+      case FormTypeEnum.textFieldFormType:
         return _validateTextField(component);
-      case 'FormTypeEnum.dropdownFormType':
+      case FormTypeEnum.dropdownFormType:
         return _validateDropdown(component);
-      case 'FormTypeEnum.textAreaFormType':
+      case FormTypeEnum.textAreaFormType:
         return _validateTextArea(component);
-      case 'FormTypeEnum.dateTimePickerFormType':
+      case FormTypeEnum.dateTimePickerFormType:
         return _validateDateTimePicker(component);
-      case 'FormTypeEnum.dateTimeRangePickerFormType':
+      case FormTypeEnum.dateTimeRangePickerFormType:
         return _validateDateTimeRangePicker(component);
-      case 'FormTypeEnum.switchFormType':
+      case FormTypeEnum.switchFormType:
         return _validateSwitch(component);
-      case 'FormTypeEnum.selectorButtonFormType':
+      case FormTypeEnum.selectorButtonFormType:
         return _validateSelectorButton(component);
+      case FormTypeEnum.textFieldTagsFormType:
+        return _validateTextFieldTags(component);
+      case FormTypeEnum.buttonFormType:
+        return _validateButton(component);
+      case FormTypeEnum.container:
+        return _validateContainer(component);
       default:
         // For other components, just do basic validation
         debugPrint(
@@ -615,6 +709,152 @@ ValidationResult _validateSwitch(DynamicFormModel component) {
       isValid: false,
       errorMessage:
           'Switch "${component.id}" validation error: ${e.toString()}',
+    );
+  }
+}
+
+// Validate ShortAnswer component
+ValidationResult _validateShortAnswer(DynamicFormModel component) {
+  debugPrint('🔍 [FormBuilderAppBar] Validating ShortAnswer: ${component.id}');
+
+  try {
+    final config = component.config;
+    if (config == null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'ShortAnswer "${component.id}" has no configuration',
+      );
+    }
+
+    // Check that ShortAnswer has a label (question) - this is mandatory for sharing
+    if (config.label == null || config.label!.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'ShortAnswer "${component.id}" must have a question/label before sharing the form',
+      );
+    }
+
+    debugPrint(
+      '✅ [FormBuilderAppBar] ShortAnswer "${component.id}" validation passed',
+    );
+    return ValidationResult(isValid: true);
+  } catch (e) {
+    debugPrint('❌ [FormBuilderAppBar] ShortAnswer validation error: $e');
+    return ValidationResult(
+      isValid: false,
+      errorMessage:
+          'ShortAnswer "${component.id}" validation error: ${e.toString()}',
+    );
+  }
+}
+
+// Validate TextFieldTags component
+ValidationResult _validateTextFieldTags(DynamicFormModel component) {
+  debugPrint(
+    '🔍 [FormBuilderAppBar] Validating TextFieldTags: ${component.id}',
+  );
+
+  try {
+    final config = component.config;
+    if (config == null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'TextFieldTags "${component.id}" has no configuration',
+      );
+    }
+
+    // Check that TextFieldTags has a label (question) - this is mandatory for sharing
+    if (config.label == null || config.label!.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'TextFieldTags "${component.id}" must have a question/label before sharing the form',
+      );
+    }
+
+    debugPrint(
+      '✅ [FormBuilderAppBar] TextFieldTags "${component.id}" validation passed',
+    );
+    return ValidationResult(isValid: true);
+  } catch (e) {
+    debugPrint('❌ [FormBuilderAppBar] TextFieldTags validation error: $e');
+    return ValidationResult(
+      isValid: false,
+      errorMessage:
+          'TextFieldTags "${component.id}" validation error: ${e.toString()}',
+    );
+  }
+}
+
+// Validate Button component
+ValidationResult _validateButton(DynamicFormModel component) {
+  debugPrint('🔍 [FormBuilderAppBar] Validating Button: ${component.id}');
+
+  try {
+    final config = component.config;
+    if (config == null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Button "${component.id}" has no configuration',
+      );
+    }
+
+    // Check that Button has a label (text) - this is mandatory for sharing
+    if (config.label == null || config.label!.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Button "${component.id}" must have text/label before sharing the form',
+      );
+    }
+
+    debugPrint(
+      '✅ [FormBuilderAppBar] Button "${component.id}" validation passed',
+    );
+    return ValidationResult(isValid: true);
+  } catch (e) {
+    debugPrint('❌ [FormBuilderAppBar] Button validation error: $e');
+    return ValidationResult(
+      isValid: false,
+      errorMessage:
+          'Button "${component.id}" validation error: ${e.toString()}',
+    );
+  }
+}
+
+// Validate Container component
+ValidationResult _validateContainer(DynamicFormModel component) {
+  debugPrint('🔍 [FormBuilderAppBar] Validating Container: ${component.id}');
+
+  try {
+    final config = component.config;
+    if (config == null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: 'Container "${component.id}" has no configuration',
+      );
+    }
+
+    // Container components don't necessarily need a label, but if they have one it should be valid
+    if (config.label != null && config.label!.trim().isEmpty) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage:
+            'Container "${component.id}" label cannot be empty if provided',
+      );
+    }
+
+    debugPrint(
+      '✅ [FormBuilderAppBar] Container "${component.id}" validation passed',
+    );
+    return ValidationResult(isValid: true);
+  } catch (e) {
+    debugPrint('❌ [FormBuilderAppBar] Container validation error: $e');
+    return ValidationResult(
+      isValid: false,
+      errorMessage:
+          'Container "${component.id}" validation error: ${e.toString()}',
     );
   }
 }

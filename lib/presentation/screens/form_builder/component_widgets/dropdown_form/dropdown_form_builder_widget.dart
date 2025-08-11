@@ -4,8 +4,9 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_form_builder_widgets.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_option_editor_list.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_option_editor_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -356,14 +357,15 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Question header widget using shared widgets
   Widget _buildQuestionHeader() {
     return SharedFormBuilderWidgets.buildDropdownQuestionHeader(
-      questionInput: SharedFormBuilderWidgets.buildQuestionInput(
+      questionInput: SharedOptimizedInputWidgets.buildOptimizedQuestionInput(
+        context: context,
         controller: _questionController,
-        onChanged: (value) {
+        onUpdate: (value) {
           context.read<DropdownFormBuilderWidgetBloc>().add(
             UpdateQuestionEvent(value),
           );
-          _updateComponent();
         },
+        onUpdateComponent: _updateComponent,
       ),
       onImageTap: () => _showImageFeatureDialog(context),
       onDropdownTap: () => _showDropdownInfoDialog(context),
@@ -438,185 +440,40 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // Dropdown info dialog
   void _showDropdownInfoDialog(BuildContext context) {
-    showDialog(
+    SharedFormBuilderWidgets.showInfoDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1F2937),
-          title: const Row(
-            children: [
-              Icon(Icons.arrow_drop_down, color: Colors.green, size: 24),
-              SizedBox(width: 8),
-              Text(
-                'Dropdown Component',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'This is a dropdown component that allows users to select from predefined options.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'Features:',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                '• Multiple choice options',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              Text(
-                '• Reorderable options',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              Text(
-                '• Navigation based on selection',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              Text(
-                '• Required field validation',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Got it!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+      title: 'Dropdown Component',
+      description:
+          'This is a dropdown component that allows users to select from predefined options.',
+      features: [
+        'Multiple choice options',
+        'Reorderable options',
+        'Navigation based on selection',
+        'Required field validation',
+      ],
+      icon: Icons.arrow_drop_down,
+      iconColor: Colors.green,
+      buttonText: 'Got it!',
+      buttonColor: Colors.green,
     );
   }
 
   // Image feature dialog
   void _showImageFeatureDialog(BuildContext context) {
-    showDialog(
+    SharedFormBuilderWidgets.showInfoDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1F2937),
-          title: const Row(
-            children: [
-              Icon(Icons.image, color: Colors.blue, size: 24),
-              SizedBox(width: 8),
-              Text(
-                'Coming Soon',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '🚀 This feature is under development',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'You will be able to:',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildFeatureItem('📷 Add images to dropdown options'),
-              _buildFeatureItem('🎨 Customize image sizes and positions'),
-              _buildFeatureItem('🔄 Drag and drop image upload'),
-              _buildFeatureItem('💾 Save and reuse image templates'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Got it!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Feature item widget
-  Widget _buildFeatureItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: 'Coming Soon',
+      description: '🚀 This feature is under development',
+      features: [
+        '📷 Add images to dropdown options',
+        '🎨 Customize image sizes and positions',
+        '🔄 Drag and drop image upload',
+        '💾 Save and reuse image templates',
+      ],
+      icon: Icons.image,
+      iconColor: Colors.blue,
+      buttonText: 'Got it!',
+      buttonColor: Colors.blue,
     );
   }
 

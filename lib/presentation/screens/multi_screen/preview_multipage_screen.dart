@@ -42,7 +42,6 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(context),
       body: _buildBody(context),
     );
   }
@@ -139,7 +138,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
             const Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: Text(
-                'Preview',
+                '--',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -546,21 +545,7 @@ class _PreviewPageScreenState extends State<PreviewPageScreen> {
     }
   }
 
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text('Preview All Pages'),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.save),
-          onPressed: () => _saveForm(context),
-        ),
-      ],
-    );
-  }
+
 }
 
 // List<DynamicFormModel> _buildPreviewComponents(

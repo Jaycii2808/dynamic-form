@@ -82,7 +82,7 @@ class ToggleValidationPanelEvent extends ShortAnswerFormBuilderWidgetEvent {
 }
 
 class UpdateValidationTypeEvent extends ShortAnswerFormBuilderWidgetEvent {
-  final ShortAnswerValidationType validationType;
+  final ShortAnswerValidationType? validationType;
 
   const UpdateValidationTypeEvent(this.validationType);
 
@@ -91,7 +91,7 @@ class UpdateValidationTypeEvent extends ShortAnswerFormBuilderWidgetEvent {
 }
 
 class UpdateNumberActionEvent extends ShortAnswerFormBuilderWidgetEvent {
-  final NumberValidationAction action;
+  final NumberValidationAction? action;
 
   const UpdateNumberActionEvent(this.action);
 
@@ -100,7 +100,7 @@ class UpdateNumberActionEvent extends ShortAnswerFormBuilderWidgetEvent {
 }
 
 class UpdateTextActionEvent extends ShortAnswerFormBuilderWidgetEvent {
-  final TextValidationAction action;
+  final TextValidationAction? action;
 
   const UpdateTextActionEvent(this.action);
 
@@ -109,7 +109,7 @@ class UpdateTextActionEvent extends ShortAnswerFormBuilderWidgetEvent {
 }
 
 class UpdateLengthTypeEvent extends ShortAnswerFormBuilderWidgetEvent {
-  final LengthValidationType lengthType;
+  final LengthValidationType? lengthType;
 
   const UpdateLengthTypeEvent(this.lengthType);
 
@@ -118,7 +118,7 @@ class UpdateLengthTypeEvent extends ShortAnswerFormBuilderWidgetEvent {
 }
 
 class UpdateRegexActionEvent extends ShortAnswerFormBuilderWidgetEvent {
-  final RegexValidationAction action;
+  final RegexValidationAction? action;
 
   const UpdateRegexActionEvent(this.action);
 

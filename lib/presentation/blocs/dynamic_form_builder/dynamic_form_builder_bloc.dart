@@ -67,6 +67,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<ForceRebuildUIEvent>(_onForceRebuildUI);
     // Load existing form event
     on<LoadExistingFormEvent>(_onLoadExistingForm);
+    // Force save all components event
+    on<ForceSaveAllComponentsEvent>(_onForceSaveAllComponents);
   }
 
   Future<void> _onLoadComponents(
@@ -950,5 +952,20 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         ),
       );
     }
+  }
+
+  /// Force save all components
+  void _onForceSaveAllComponents(
+    ForceSaveAllComponentsEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    debugPrint('💾 [FormBuilderBloc] Forcing save of all components');
+    // This event is typically handled by the UI layer to persist changes
+    // For now, we just force a rebuild to ensure all changes are reflected
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
   }
 }

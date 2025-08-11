@@ -1,10 +1,11 @@
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_state.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_form_builder_widgets.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'dart:async'; // Added for Timer
 
@@ -183,38 +184,15 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   Widget _buildOptimizedQuestionInput() {
-    return TextField(
+    return SharedOptimizedInputWidgets.buildOptimizedQuestionInput(
+      context: context,
       controller: _questionController,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-        height: 1.3,
-      ),
-      decoration: const InputDecoration(
-        hintText: 'Question',
-        hintStyle: TextStyle(
-          color: Color(0xFF9CA3AF),
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          height: 1.3,
-          fontStyle: FontStyle.italic,
-        ),
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.zero,
-      ),
-      onSubmitted: (value) {
+      onUpdate: (value) {
         context.read<ShortAnswerFormBuilderWidgetBloc>().add(
           UpdateQuestionEvent(value),
         );
-        _updateComponent();
       },
-      onEditingComplete: () {
-        context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-          UpdateQuestionEvent(_questionController.text),
-        );
-        _updateComponent();
-      },
+      onUpdateComponent: _updateComponent,
     );
   }
 
@@ -230,88 +208,6 @@ class _ShortAnswerFormBuilderWidgetState
     );
   }
 
-  Widget _buildCompactDropdown<T>({
-    required T value,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 4,
-        vertical: 1,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF374151),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFF4B5563)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          onChanged: onChanged,
-          dropdownColor: const Color(0xFF374151),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-          ),
-          items: items,
-          isExpanded: true,
-          iconSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactTextField({
-    required TextEditingController controller,
-    String? hintText,
-    TextInputType? keyboardType,
-    ValueChanged<String>? onSubmitted,
-    VoidCallback? onEditingComplete,
-    ValueChanged<String>? onChanged,
-  }) {
-    return TextField(
-      onTapOutside: (event) {
-        FocusScope.of(context).unfocus();
-        _updateComponent();
-      },
-      controller: controller,
-      keyboardType: keyboardType,
-      onSubmitted: onSubmitted,
-      onEditingComplete: onEditingComplete,
-      onChanged: onChanged,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 11,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: const TextStyle(
-          color: Color(0xFF9CA3AF),
-          fontSize: 10,
-        ),
-        filled: true,
-        fillColor: const Color(0xFF374151),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Color(0xFF4B5563)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Color(0xFF4B5563)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 4,
-          vertical: 3,
-        ),
-      ),
-    );
-  }
-
   Widget _buildValidationTypeSelector(
     ShortAnswerFormBuilderWidgetSuccess state,
   ) {
@@ -320,24 +216,31 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 2,
       children: [
         _buildCompactLabel('Validation type'),
-        _buildCompactDropdown<ShortAnswerValidationType>(
+        SharedOptimizedInputWidgets.buildOptimizedCompactDropdown<
+          ShortAnswerValidationType?
+        >(
           value: state.validation.validationType,
-          items: ShortAnswerValidationType.values
-              .map(
-                (type) => DropdownMenuItem<ShortAnswerValidationType>(
-                  value: type,
-                  child: Text(type.displayName),
-                ),
-              )
-              .toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-                UpdateValidationTypeEvent(newValue),
-              );
-              _updateComponent();
-            }
+          items: [
+            // Add "No validation" option
+            const DropdownMenuItem<ShortAnswerValidationType?>(
+              value: null,
+              child: Text('No validation'),
+            ),
+            // Add all validation types
+            ...ShortAnswerValidationType.values.map(
+              (type) => DropdownMenuItem<ShortAnswerValidationType?>(
+                value: type,
+                child: Text(type.displayName),
+              ),
+            ),
+          ],
+          onUpdate: (newValue) {
+            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+              UpdateValidationTypeEvent(newValue),
+            );
           },
+          context: context,
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -346,7 +249,12 @@ class _ShortAnswerFormBuilderWidgetState
   Widget _buildValidationConfiguration(
     ShortAnswerFormBuilderWidgetSuccess state,
   ) {
-    switch (state.validation.validationType) {
+    final validationType = state.validation.validationType;
+    if (validationType == null) {
+      return const SizedBox.shrink(); // No validation type selected
+    }
+
+    switch (validationType) {
       case ShortAnswerValidationType.number:
         return _buildNumberValidation(state);
       case ShortAnswerValidationType.text:
@@ -364,44 +272,42 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 3,
       children: [
         _buildCompactLabel('Action'),
-        _buildCompactDropdown<NumberValidationAction>(
-          value:
-              state.validation.numberAction ??
-              NumberValidationAction.greaterThan,
-          items: NumberValidationAction.values
-              .map(
-                (action) => DropdownMenuItem<NumberValidationAction>(
-                  value: action,
-                  child: Text(action.displayName),
-                ),
-              )
-              .toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-                UpdateNumberActionEvent(newValue),
-              );
-              _updateComponent();
-            }
+        SharedOptimizedInputWidgets.buildOptimizedCompactDropdown<
+          NumberValidationAction?
+        >(
+          value: state.validation.numberAction,
+          items: [
+            const DropdownMenuItem<NumberValidationAction?>(
+              value: null,
+              child: Text('Select action'),
+            ),
+            ...NumberValidationAction.values.map(
+              (action) => DropdownMenuItem<NumberValidationAction?>(
+                value: action,
+                child: Text(action.displayName),
+              ),
+            ),
+          ],
+          onUpdate: (newValue) {
+            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+              UpdateNumberActionEvent(newValue),
+            );
           },
+          context: context,
+          onUpdateComponent: _updateComponent,
         ),
         _buildCompactLabel('Number'),
-        _buildCompactTextField(
+        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+          context: context,
           controller: _validationValueController,
           hintText: 'Enter number',
           keyboardType: TextInputType.number,
-          onSubmitted: (value) {
+          onUpdate: (value) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               UpdateValidationValueEvent(value),
             );
-            _updateComponent();
           },
-          onEditingComplete: () {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(_validationValueController.text),
-            );
-            _updateComponent();
-          },
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -413,41 +319,41 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 3,
       children: [
         _buildCompactLabel('Action'),
-        _buildCompactDropdown<TextValidationAction>(
-          value: state.validation.textAction ?? TextValidationAction.contains,
-          items: TextValidationAction.values
-              .map(
-                (action) => DropdownMenuItem<TextValidationAction>(
-                  value: action,
-                  child: Text(action.displayName),
-                ),
-              )
-              .toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-                UpdateTextActionEvent(newValue),
-              );
-              _updateComponent();
-            }
+        SharedOptimizedInputWidgets.buildOptimizedCompactDropdown<
+          TextValidationAction?
+        >(
+          value: state.validation.textAction,
+          items: [
+            const DropdownMenuItem<TextValidationAction?>(
+              value: null,
+              child: Text('Select action'),
+            ),
+            ...TextValidationAction.values.map(
+              (action) => DropdownMenuItem<TextValidationAction?>(
+                value: action,
+                child: Text(action.displayName),
+              ),
+            ),
+          ],
+          onUpdate: (newValue) {
+            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+              UpdateTextActionEvent(newValue),
+            );
           },
+          context: context,
+          onUpdateComponent: _updateComponent,
         ),
         _buildCompactLabel('Text'),
-        _buildCompactTextField(
+        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+          context: context,
           controller: _validationValueController,
           hintText: 'Enter text',
-          onSubmitted: (value) {
+          onUpdate: (value) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               UpdateValidationValueEvent(value),
             );
-            _updateComponent();
           },
-          onEditingComplete: () {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(_validationValueController.text),
-            );
-            _updateComponent();
-          },
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -459,44 +365,42 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 3,
       children: [
         _buildCompactLabel('Length type'),
-        _buildCompactDropdown<LengthValidationType>(
-          value:
-              state.validation.lengthType ??
-              LengthValidationType.minimumCharacterCount,
-          items: LengthValidationType.values
-              .map(
-                (type) => DropdownMenuItem<LengthValidationType>(
-                  value: type,
-                  child: Text(type.displayName),
-                ),
-              )
-              .toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-                UpdateLengthTypeEvent(newValue),
-              );
-              _updateComponent();
-            }
+        SharedOptimizedInputWidgets.buildOptimizedCompactDropdown<
+          LengthValidationType?
+        >(
+          value: state.validation.lengthType,
+          items: [
+            const DropdownMenuItem<LengthValidationType?>(
+              value: null,
+              child: Text('Select length type'),
+            ),
+            ...LengthValidationType.values.map(
+              (type) => DropdownMenuItem<LengthValidationType?>(
+                value: type,
+                child: Text(type.displayName),
+              ),
+            ),
+          ],
+          onUpdate: (newValue) {
+            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+              UpdateLengthTypeEvent(newValue),
+            );
           },
+          context: context,
+          onUpdateComponent: _updateComponent,
         ),
         _buildCompactLabel('Character count'),
-        _buildCompactTextField(
+        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+          context: context,
           controller: _validationValueController,
           hintText: 'Enter number',
           keyboardType: TextInputType.number,
-          onSubmitted: (value) {
+          onUpdate: (value) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               UpdateValidationValueEvent(value),
             );
-            _updateComponent();
           },
-          onEditingComplete: () {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(_validationValueController.text),
-            );
-            _updateComponent();
-          },
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -508,41 +412,43 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 3,
       children: [
         _buildCompactLabel('Action'),
-        _buildCompactDropdown<RegexValidationAction>(
-          value: state.validation.regexAction ?? RegexValidationAction.matches,
-          items: RegexValidationAction.values
-              .map(
-                (action) => DropdownMenuItem<RegexValidationAction>(
-                  value: action,
-                  child: Text(action.displayName),
-                ),
-              )
-              .toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-                UpdateRegexActionEvent(newValue),
-              );
-              _updateComponent();
-            }
+        SharedOptimizedInputWidgets.buildOptimizedCompactDropdown<
+          RegexValidationAction?
+        >(
+          value: state.validation.regexAction,
+          items: [
+            const DropdownMenuItem<RegexValidationAction?>(
+              value: null,
+              child: Text('Select action'),
+            ),
+            ...RegexValidationAction.values
+                .map(
+                  (action) => DropdownMenuItem<RegexValidationAction?>(
+                    value: action,
+                    child: Text(action.displayName),
+                  ),
+                )
+                ,
+          ],
+          onUpdate: (newValue) {
+            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+              UpdateRegexActionEvent(newValue),
+            );
           },
+          context: context,
+          onUpdateComponent: _updateComponent,
         ),
         _buildCompactLabel('Regex pattern'),
-        _buildCompactTextField(
+        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+          context: context,
           controller: _validationValueController,
           hintText: 'Enter regex pattern',
-          onSubmitted: (value) {
+          onUpdate: (value) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               UpdateValidationValueEvent(value),
             );
-            _updateComponent();
           },
-          onEditingComplete: () {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationValueEvent(_validationValueController.text),
-            );
-            _updateComponent();
-          },
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -554,21 +460,16 @@ class _ShortAnswerFormBuilderWidgetState
       spacing: 3,
       children: [
         _buildCompactLabel('Custom error message'),
-        _buildCompactTextField(
+        SharedOptimizedInputWidgets.buildOptimizedCompactTextField(
+          context: context,
           controller: _errorMessageController,
           hintText: 'Enter custom error message',
-          onSubmitted: (value) {
+          onUpdate: (value) {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               UpdateValidationErrorMessageEvent(value),
             );
-            _updateComponent();
           },
-          onEditingComplete: () {
-            context.read<ShortAnswerFormBuilderWidgetBloc>().add(
-              UpdateValidationErrorMessageEvent(_errorMessageController.text),
-            );
-            _updateComponent();
-          },
+          onUpdateComponent: _updateComponent,
         ),
       ],
     );
@@ -610,18 +511,21 @@ class _ShortAnswerFormBuilderWidgetState
           .read<ShortAnswerFormBuilderWidgetBloc>()
           .state;
       if (currentState is ShortAnswerFormBuilderWidgetSuccess) {
-        // Normalize validation so export JSON always contains action/value
-        var normalizedValidation = currentState.validation;
-        if (normalizedValidation.validationType ==
-            ShortAnswerValidationType.number) {
-          final hasValue =
-              (normalizedValidation.validationValue != null &&
-              normalizedValidation.validationValue!.toString().isNotEmpty);
-          if (normalizedValidation.numberAction == null && hasValue) {
-            normalizedValidation = normalizedValidation.copyWith(
-              numberAction: NumberValidationAction.lessThan,
-            );
-          }
+        // Only apply validation if user has explicitly chosen a validation type
+        // If no validation type is selected, no validation rules should be applied
+        var validationToUse = currentState.validation;
+
+        // If no validation type is selected, don't apply any validation
+        if (validationToUse.validationType == null) {
+          validationToUse = validationToUse.copyWith(
+            validationType: null,
+            validationValue: null,
+            numberAction: null,
+            textAction: null,
+            lengthType: null,
+            regexAction: null,
+            errorMessage: null,
+          );
         }
 
         final updatedComponent = widget.component.copyWith(
@@ -629,13 +533,13 @@ class _ShortAnswerFormBuilderWidgetState
             label: currentState.question,
             description: currentState.description,
             isRequired: currentState.isRequired,
-            validate: normalizedValidation.toJson(),
+            validate: validationToUse.toJson(),
           ),
         );
 
         // Create a hash to check if component actually changed
         final newHash =
-            '${currentState.question}_${currentState.description}_${currentState.isRequired}_${normalizedValidation.toJson()}';
+            '${currentState.question}_${currentState.description}_${currentState.isRequired}_${validationToUse.toJson()}';
 
         // Only update if component actually changed
         if (newHash != _lastUpdateHash) {
@@ -661,20 +565,23 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   void _showShortAnswerInfo() {
-    showDialog(
+    SharedFormBuilderWidgets.showInfoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Short Answer Form'),
-        content: const Text(
+      title: 'Short Answer Component',
+      description:
           'Short Answer forms allow users to provide brief text responses with customizable validation rules.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+      features: [
+        'Text input with validation',
+        'Customizable validation rules',
+        'Number, text, length, and regex validation',
+        'Required field validation',
+        'Custom error messages',
+        'Description support',
+      ],
+      icon: Icons.short_text,
+      iconColor: Colors.orange,
+      buttonText: 'Got it!',
+      buttonColor: Colors.orange,
     );
   }
 

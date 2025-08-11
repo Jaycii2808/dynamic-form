@@ -301,3 +301,7 @@ class LoadExistingFormEvent extends FormBuilderEvent {
   @override
   List<Object?> get props => [form];
 }
+
+class ForceSaveAllComponentsEvent extends FormBuilderEvent {
+  const ForceSaveAllComponentsEvent();
+}

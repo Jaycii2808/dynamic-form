@@ -3,7 +3,7 @@ import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:flutter/foundation.dart';
 
 class ShortAnswerValidationModel extends Equatable {
-  final ShortAnswerValidationType validationType;
+  final ShortAnswerValidationType? validationType;
   final NumberValidationAction? numberAction;
   final TextValidationAction? textAction;
   final LengthValidationType? lengthType;
@@ -12,7 +12,7 @@ class ShortAnswerValidationModel extends Equatable {
   final String? errorMessage;
 
   const ShortAnswerValidationModel({
-    this.validationType = ShortAnswerValidationType.number,
+    this.validationType,
     this.numberAction,
     this.textAction,
     this.lengthType,
@@ -26,14 +26,14 @@ class ShortAnswerValidationModel extends Equatable {
       return const ShortAnswerValidationModel();
     }
 
-    ShortAnswerValidationType parseValidationType(String? type) {
-      if (type == null) return ShortAnswerValidationType.number;
+    ShortAnswerValidationType? parseValidationType(String? type) {
+      if (type == null) return null;
       try {
         return ShortAnswerValidationType.values.firstWhere(
           (e) => e.name == type,
         );
       } catch (e) {
-        return ShortAnswerValidationType.number;
+        return null;
       }
     }
 
@@ -94,7 +94,7 @@ class ShortAnswerValidationModel extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'validation_type': validationType.name,
+      if (validationType != null) 'validation_type': validationType!.name,
       if (numberAction != null) 'number_action': numberAction!.name,
       if (textAction != null) 'text_action': textAction!.name,
       if (lengthType != null) 'length_type': lengthType!.name,
@@ -143,7 +143,11 @@ class ShortAnswerValidationModel extends Equatable {
       return null; // Let required validation handle empty values
     }
 
-    switch (validationType) {
+    if (validationType == null) {
+      return null; // No validation type selected, so no validation
+    }
+
+    switch (validationType!) {
       case ShortAnswerValidationType.number:
         return _validateNumber(value);
       case ShortAnswerValidationType.text:

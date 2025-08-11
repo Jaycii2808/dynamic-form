@@ -128,11 +128,9 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             Row(
               children: [
                 Text(
-                  component.config!.label!,
+                  component.config!.label ?? "null",
                   style: TextStyle(
-                    color: widget.isSharedForm
-                        ? Colors.white
-                        : (styleModel.labelColor ?? Colors.white),
+                    color: Colors.white,
                     fontSize:
                         (styleModel.fontSize ?? 16) + 4, // Larger font size
                     fontWeight: FontWeight.w600, // Bolder font weight
