@@ -17,7 +17,7 @@ Widget formBuilderComponentsPanel(
       right: 16,
       top: 0,
       width: 250,
-      height: 600,
+      height: MediaQuery.of(context).size.height * 0.7,
       // Fixed height for floating window
       child: Container(
         decoration: BoxDecoration(

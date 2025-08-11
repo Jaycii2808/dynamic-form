@@ -44,7 +44,7 @@ Widget _buildTextFieldPreview(DynamicFormModel component) {
           Padding(
             padding: const EdgeInsets.only(left: 8, top: 2),
             child: Text(
-              component.config!.label!,
+            "Label",
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 8,
@@ -63,15 +63,18 @@ Widget _buildTextFieldPreview(DynamicFormModel component) {
                 const SizedBox(width: 4),
               ],
               Expanded(
-                child: Text(
-                  component.config?.placeholder ?? 'Text Field',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 9,
-                    fontStyle: FontStyle.italic,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    component.config?.placeholder ?? 'Text Field',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 9,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),

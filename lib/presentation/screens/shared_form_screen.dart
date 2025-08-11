@@ -483,7 +483,7 @@ class SharedFormScreen extends StatelessWidget {
         ),
         content: SizedBox(
           width: double.maxFinite,
-          height: 200, // Reduced height
+          height: 200, 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

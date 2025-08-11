@@ -168,7 +168,16 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       DropdownFormBuilderWidgetBloc,
       DropdownFormBuilderWidgetState
     >(
-      listener: _buildBlocListener,
+      listener: (context, state) {
+        _buildBlocListener(context, state);
+
+        // Clear description controller when description is cleared
+        if (state is DropdownFormBuilderWidgetSuccess &&
+            state.description.isEmpty &&
+            _descriptionController.text.isNotEmpty) {
+          _descriptionController.clear();
+        }
+      },
       builder: (context, state) {
         if (state is DropdownFormBuilderWidgetLoading) {
           return SharedFormBuilderWidgets.buildLoadingWidget();
@@ -209,14 +218,30 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
                     isEditing: state.isEditingDescription,
                     isEnabled: state.isDescriptionEnabled,
                     onEditTap: () {
+                      debugPrint(
+                        '🔍 [DropdownFormBuilderWidget] Edit tap - current state: isEditingDescription=${state.isEditingDescription}, isDescriptionEnabled=${state.isDescriptionEnabled}',
+                      );
                       context.read<DropdownFormBuilderWidgetBloc>().add(
                         const SetEditingDescriptionEvent(true),
                       );
                     },
                     onCancelEdit: () {
+                      debugPrint(
+                        '🔍 [DropdownFormBuilderWidget] Cancel edit tap',
+                      );
                       context.read<DropdownFormBuilderWidgetBloc>().add(
                         const CancelEditDescriptionEvent(),
                       );
+                    },
+                    onClearDescription: () {
+                      debugPrint(
+                        '🔍 [DropdownFormBuilderWidget] Clear description tap',
+                      );
+                      // Clear description and uncheck description state
+                      context.read<DropdownFormBuilderWidgetBloc>().add(
+                        const ClearDescriptionEvent(),
+                      );
+                      _updateComponent();
                     },
                   ),
                   _buildOptionsSection(state),
@@ -348,7 +373,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Options section widget
   Widget _buildOptionsSection(DropdownFormBuilderWidgetSuccess state) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8), 
       child: SharedOptionsEditorList(
         options: state.options,
         focusOptionId: state.focusOptionId,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
@@ -39,8 +40,9 @@ class ShortAnswerFormBuilderWidgetBloc
     on<UpdateRequiredEvent>(_onUpdateRequired);
     on<SetEditingDescriptionEvent>(_onSetEditingDescription);
     on<CancelEditDescriptionEvent>(_onCancelEditDescription);
-    on<ToggleValidationPanelEvent>(_onToggleValidationPanel);
     on<ToggleDescriptionEnabledEvent>(_onToggleDescriptionEnabled);
+    on<ClearDescriptionEvent>(_onClearDescription);
+    on<ToggleValidationPanelEvent>(_onToggleValidationPanel);
     on<UpdateValidationTypeEvent>(_onUpdateValidationType);
     on<UpdateNumberActionEvent>(_onUpdateNumberAction);
     on<UpdateTextActionEvent>(_onUpdateTextAction);
@@ -161,6 +163,22 @@ class ShortAnswerFormBuilderWidgetBloc
     }
   }
 
+  void _onClearDescription(
+    ClearDescriptionEvent event,
+    Emitter<ShortAnswerFormBuilderWidgetState> emit,
+  ) {
+    if (state is ShortAnswerFormBuilderWidgetSuccess) {
+      final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
+      emit(
+        currentState.copyWith(
+          description: '',
+          isDescriptionEnabled: false,
+          isEditingDescription: false,
+        ),
+      );
+    }
+  }
+
   void _onToggleValidationPanel(
     ToggleValidationPanelEvent event,
     Emitter<ShortAnswerFormBuilderWidgetState> emit,
@@ -175,23 +193,43 @@ class ShortAnswerFormBuilderWidgetBloc
     ToggleDescriptionEnabledEvent event,
     Emitter<ShortAnswerFormBuilderWidgetState> emit,
   ) {
+    debugPrint('🔄 [ShortAnswerFormBuilderBloc] Toggling description enabled');
+
     if (state is ShortAnswerFormBuilderWidgetSuccess) {
       final currentState = state as ShortAnswerFormBuilderWidgetSuccess;
       final newEnabled = !currentState.isDescriptionEnabled;
+
+      debugPrint(
+        '🔍 [ShortAnswerFormBuilderBloc] Current state - isDescriptionEnabled: ${currentState.isDescriptionEnabled}, description: "${currentState.description}", isEditingDescription: ${currentState.isEditingDescription}',
+      );
+      debugPrint(
+        '🔍 [ShortAnswerFormBuilderBloc] New enabled state: $newEnabled',
+      );
+
       if (newEnabled) {
-        emit(
-          currentState.copyWith(
-            isDescriptionEnabled: true,
-            isEditingDescription: true,
-          ),
+        // Enable description and start editing
+        final newState = currentState.copyWith(
+          isDescriptionEnabled: true,
+          isEditingDescription: true,
+        );
+        debugPrint(
+          '🔍 [ShortAnswerFormBuilderBloc] New state - isDescriptionEnabled: ${newState.isDescriptionEnabled}, description: "${newState.description}", isEditingDescription: ${newState.isEditingDescription}',
+        );
+        emit(newState);
+        debugPrint(
+          '✅ [ShortAnswerFormBuilderBloc] Description enabled and editing started',
         );
       } else {
+        // Disable description, clear it, and stop editing
         emit(
           currentState.copyWith(
             isDescriptionEnabled: false,
             isEditingDescription: false,
             description: '',
           ),
+        );
+        debugPrint(
+          '✅ [ShortAnswerFormBuilderBloc] Description disabled and cleared',
         );
       }
     }

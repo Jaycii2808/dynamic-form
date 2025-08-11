@@ -143,7 +143,9 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
   Widget _buildOptionItem(Option option, int index) {
     return Container(
       key: ValueKey(option.value),
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(
+        bottom: 6,
+      ), 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -201,14 +203,14 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
         controller: _getControllerForOption(option.value, option.label),
         focusNode: _getFocusNodeForOption(option.value),
         style: const TextStyle(
-          fontSize: 14,
+          fontSize: 13, 
           color: Colors.white,
         ),
         decoration: const InputDecoration(
           hintText: 'Option',
           hintStyle: TextStyle(
             color: Color(0xFF9CA3AF),
-            fontSize: 14,
+            fontSize: 13, 
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
@@ -240,8 +242,14 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
     return GestureDetector(
       onTap: () => widget.onNavigateTap?.call(index),
       child: Container(
-        margin: const EdgeInsets.only(top: 6, left: 46),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        margin: const EdgeInsets.only(
+          top: 4,
+          left: 46,
+        ), 
+        padding: const EdgeInsets.symmetric(
+          horizontal: 6,
+          vertical: 4,
+        ), 
         decoration: BoxDecoration(
           color: const Color(0xFF111827),
           borderRadius: BorderRadius.circular(8),

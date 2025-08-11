@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/domain/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/simple_bloc_observer.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
 import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,7 +22,7 @@ void main() async {
   if (kIsWeb) {
     usePathUrlStrategy();
   }
-
+  Bloc.observer = SimpleBlocObserver();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await RemoteConfigService().initialize();
   await dotenv.load(fileName: "lib/dotenv");

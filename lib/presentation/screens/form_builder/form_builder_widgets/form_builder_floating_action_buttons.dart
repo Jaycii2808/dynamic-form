@@ -11,7 +11,7 @@ Widget formBuilderBottomNavigation(
   return BlocBuilder<FormBuilderBloc, FormBuilderState>(
     builder: (context, state) {
       return Container(
-        height: 55,
+        height: MediaQuery.of(context).size.height * 0.1,
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           border: Border(

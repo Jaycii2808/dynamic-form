@@ -142,6 +142,10 @@ class ToggleDescriptionEnabledEvent extends DropdownFormBuilderWidgetEvent {
   const ToggleDescriptionEnabledEvent();
 }
 
+class ClearDescriptionEvent extends DropdownFormBuilderWidgetEvent {
+  const ClearDescriptionEvent();
+}
+
 class UpdateAvailablePagesEvent extends DropdownFormBuilderWidgetEvent {
   final List<String>? availablePages;
 

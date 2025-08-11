@@ -30,6 +30,7 @@ class DropdownFormBuilderWidgetBloc
     on<SetEditingDescriptionEvent>(_onSetEditingDescription);
     on<CancelEditDescriptionEvent>(_onCancelEditDescription);
     on<ToggleDescriptionEnabledEvent>(_onToggleDescriptionEnabled);
+    on<ClearDescriptionEvent>(_onClearDescription);
     on<UpdateAvailablePagesEvent>(_onUpdateAvailablePages);
     on<ClearFocusRequestEvent>(_onClearFocusRequest);
   }
@@ -627,14 +628,23 @@ class DropdownFormBuilderWidgetBloc
         final currentState = state as DropdownFormBuilderWidgetSuccess;
         final newEnabled = !currentState.isDescriptionEnabled;
 
+        debugPrint(
+          '🔍 [DropdownFormBuilderBloc] Current state - isDescriptionEnabled: ${currentState.isDescriptionEnabled}, description: "${currentState.description}", isEditingDescription: ${currentState.isEditingDescription}',
+        );
+        debugPrint(
+          '🔍 [DropdownFormBuilderBloc] New enabled state: $newEnabled',
+        );
+
         if (newEnabled) {
           // Enable description and start editing
-          emit(
-            currentState.copyWith(
-              isDescriptionEnabled: true,
-              isEditingDescription: true,
-            ),
+          final newState = currentState.copyWith(
+            isDescriptionEnabled: true,
+            isEditingDescription: true,
           );
+          debugPrint(
+            '🔍 [DropdownFormBuilderBloc] New state - isDescriptionEnabled: ${newState.isDescriptionEnabled}, description: "${newState.description}", isEditingDescription: ${newState.isEditingDescription}',
+          );
+          emit(newState);
           debugPrint(
             '✅ [DropdownFormBuilderBloc] Description enabled and editing started',
           );
@@ -660,6 +670,26 @@ class DropdownFormBuilderWidgetBloc
         DropdownFormBuilderWidgetError(
           errorMessage: 'Failed to toggle description enabled: ${e.toString()}',
         ),
+      );
+    }
+  }
+
+  Future<void> _onClearDescription(
+    ClearDescriptionEvent event,
+    Emitter<DropdownFormBuilderWidgetState> emit,
+  ) async {
+    debugPrint('🔄 [DropdownFormBuilderBloc] Clearing description');
+    if (state is DropdownFormBuilderWidgetSuccess) {
+      final currentState = state as DropdownFormBuilderWidgetSuccess;
+      emit(
+        currentState.copyWith(
+          description: '',
+          isDescriptionEnabled: false,
+          isEditingDescription: false,
+        ),
+      );
+      debugPrint(
+        '✅ [DropdownFormBuilderBloc] Description cleared and state unchecked',
       );
     }
   }

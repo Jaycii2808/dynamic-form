@@ -147,10 +147,10 @@ Widget _buildPageHeader(
     padding: const EdgeInsets.symmetric(
       horizontal: 12,
       vertical: 8,
-    ), // Reduced padding
+    ), 
     decoration: BoxDecoration(
       color: isCurrentPage ? Colors.grey[800] : Colors.grey[900],
-      borderRadius: BorderRadius.circular(8), // Reduced from 12
+      borderRadius: BorderRadius.circular(8), 
       border: Border.all(
         color: isCurrentPage
             ? Colors.blue.withValues(alpha: 0.3)
@@ -166,22 +166,22 @@ Widget _buildPageHeader(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
             vertical: 2,
-          ), // Reduced padding
+          ), 
           decoration: BoxDecoration(
             color: Colors.orange.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(6), // Reduced from 12
+            borderRadius: BorderRadius.circular(6), 
             border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
           ),
           child: Text(
             'Page ${pageIndex + 1} of $totalPages',
             style: const TextStyle(
-              fontSize: 9, // Reduced from 11
+              fontSize: 9, 
               fontWeight: FontWeight.w500,
               color: Colors.orange,
             ),
           ),
         ),
-        // Reduced from 12
+        
         // Editable Page title
         Expanded(
           child: GestureDetector(
@@ -193,14 +193,14 @@ Widget _buildPageHeader(
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8, // Reduced from 12
-                vertical: 4, // Reduced from 6
+                horizontal: 8, 
+                vertical: 4, 
               ),
               decoration: BoxDecoration(
                 color: isCurrentPage
                     ? Colors.green.withValues(alpha: 0.1)
                     : Colors.grey[800],
-                borderRadius: BorderRadius.circular(6), // Reduced from 8
+                borderRadius: BorderRadius.circular(6), 
                 border: Border.all(
                   color: isCurrentPage
                       ? Colors.green.withValues(alpha: 0.3)
@@ -215,14 +215,14 @@ Widget _buildPageHeader(
                       Icons.edit,
                       color: Colors.green,
                       size: 12,
-                    ), // Reduced from 14
-                    const SizedBox(width: 4), // Reduced from 6
+                    ), 
+                    const SizedBox(width: 4), 
                   ],
                   Expanded(
                     child: Text(
                       page.title,
                       style: TextStyle(
-                        fontSize: 14, // Reduced from 18
+                        fontSize: 14, 
                         fontWeight: FontWeight.bold,
                         color: isCurrentPage ? Colors.white : Colors.white70,
                       ),
@@ -240,12 +240,12 @@ Widget _buildPageHeader(
           onTap: () => _showCopyPageDialog(context, page, formBuilderBloc),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 6, // Reduced from 8
-              vertical: 2, // Reduced from 4
+              horizontal: 6, 
+              vertical: 2, 
             ),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6), // Reduced from 8
+              borderRadius: BorderRadius.circular(6), 
               border: Border.all(
                 color: Colors.blue.withValues(alpha: 0.3),
               ),
@@ -256,7 +256,7 @@ Widget _buildPageHeader(
                 Icon(
                   Icons.copy,
                   color: Colors.blue,
-                  size: 20, // Reduced from 16
+                  size: 20, 
                 ),
               ],
             ),
@@ -264,17 +264,17 @@ Widget _buildPageHeader(
         ),
 
         // Remove page button (only show for page 2 and above)
-        // Reduced from 12
+        
         GestureDetector(
           onTap: () => _showRemovePageDialog(context, page, formBuilderBloc),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 6, // Reduced from 8
-              vertical: 2, // Reduced from 4
+              horizontal: 6, 
+              vertical: 2, 
             ),
             decoration: BoxDecoration(
               color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6), // Reduced from 8
+              borderRadius: BorderRadius.circular(6), 
               border: Border.all(
                 color: Colors.red.withValues(alpha: 0.3),
               ),
@@ -285,7 +285,7 @@ Widget _buildPageHeader(
                 Icon(
                   Icons.delete_outline,
                   color: Colors.red,
-                  size: 20, // Reduced from 16
+                  size: 20, 
                 ),
               ],
             ),

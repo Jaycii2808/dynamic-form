@@ -3,7 +3,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:equatable/equatable.dart';
 
 // Events
-abstract class ShortAnswerFormBuilderWidgetEvent extends Equatable {
+sealed class ShortAnswerFormBuilderWidgetEvent extends Equatable {
   const ShortAnswerFormBuilderWidgetEvent();
 
   @override
@@ -66,6 +66,10 @@ class CancelEditDescriptionEvent extends ShortAnswerFormBuilderWidgetEvent {
 
 class ToggleDescriptionEnabledEvent extends ShortAnswerFormBuilderWidgetEvent {
   const ToggleDescriptionEnabledEvent();
+}
+
+class ClearDescriptionEvent extends ShortAnswerFormBuilderWidgetEvent {
+  const ClearDescriptionEvent();
 }
 
 class ToggleValidationPanelEvent extends ShortAnswerFormBuilderWidgetEvent {

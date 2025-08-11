@@ -56,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
           } else if (state is UserFormsSuccess) {
-            // Handle success states if needed
             debugPrint(
               '✅ [HomeScreen] UserFormsBloc state updated successfully',
             );
@@ -69,10 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 _buildHeroSection(),
-                _buildUserFormsSection(),
-                _buildFormTemplatesSection(),
-                _buildFeaturesSection(),
-                _buildHowToUseSection(),
+                _buildFormsSection(),
               ],
             ),
           ),
@@ -84,26 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Dynamic Form Builder',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 2),
-          Text(
-            'Create Amazing Forms',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-            ),
-          ),
-        ],
+      title: const Text(
+        'Dynamic Form Builder',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
@@ -118,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -136,10 +119,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: Colors.blue.withValues(alpha: 0.3),
                 width: 1,
@@ -147,30 +130,30 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Icon(
               Icons.dynamic_form,
-              size: 60,
+              size: 48,
               color: Colors.blue,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           const Text(
             'Create Dynamic Forms',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           const Text(
             'Build beautiful, responsive forms with our intuitive form builder',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.white70,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -184,10 +167,10 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.blue,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: Colors.blue.withValues(alpha: 0.3),
                   width: 1,
@@ -195,8 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.blue.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -206,13 +189,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     Icons.add_circle_outline,
                     color: Colors.white,
-                    size: 24,
+                    size: 20,
                   ),
-                  SizedBox(width: 12),
+                  SizedBox(width: 8),
                   Text(
                     'Start Building',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -226,111 +209,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUserFormsSection() {
+  Widget _buildFormsSection() {
     return BlocBuilder<UserFormsBloc, UserFormsState>(
       builder: (context, state) {
         if (state is UserFormsLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(),
+            ),
+          );
         } else if (state is UserFormsSuccess) {
-          return Container(
+          return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'My Forms (user001)',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (state.userForms.isEmpty)
-                  const Center(
-                    child: Text(
-                      'You have no forms yet. Start building one!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: state.userForms.length,
-                    itemBuilder: (context, index) {
-                      final form = state.userForms[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F2937),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.blue.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.description,
-                                color: Colors.blue,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    form['name'] ?? 'Untitled Form',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Created: ${_formatDate(form['createdAt'])}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _editUserForm(form),
-                              icon: const Icon(Icons.edit, color: Colors.white),
-                              tooltip: 'Edit Form',
-                            ),
-                            IconButton(
-                              onPressed: () => _deleteUserForm(form['formId']),
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              tooltip: 'Delete Form',
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                _buildUserFormsSubsection(state),
+                const SizedBox(height: 32),
+                _buildFormTemplatesSubsection(state),
               ],
             ),
           );
@@ -341,329 +237,281 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFormTemplatesSection() {
-    return BlocBuilder<UserFormsBloc, UserFormsState>(
-      builder: (context, state) {
-        if (state is UserFormsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is UserFormsSuccess) {
-          return Container(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Form Templates',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (state.formTemplates.isEmpty)
-                  const Center(
-                    child: Text(
-                      'No form templates available yet. Check back later!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: state.formTemplates.length,
-                    itemBuilder: (context, index) {
-                      final template = state.formTemplates[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F2937),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.green.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.description,
-                                color: Colors.green,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    template['name'] ?? 'Untitled Template',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    template['description'] ?? 'Form template',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _previewTemplate(template),
-                              icon: const Icon(
-                                Icons.visibility,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Preview Template',
-                            ),
-                            IconButton(
-                              onPressed: () =>
-                                  _createFormFromTemplate(template),
-                              icon: const Icon(Icons.add, color: Colors.green),
-                              tooltip: 'Create Form from Template',
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-              ],
+  Widget _buildUserFormsSubsection(UserFormsSuccess state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.description, color: Colors.blue, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              'My Forms',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      },
-    );
-  }
-
-  Widget _buildFeaturesSection() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Key Features',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            const Spacer(),
+            Text(
+              '(${state.userForms.length})',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          _buildFeatureItem(
-            icon: Icons.drag_indicator,
-            title: 'Drag & Drop Interface',
-            description:
-                'Intuitive form building with drag and drop components',
-          ),
-          _buildFeatureItem(
-            icon: Icons.phone_android,
-            title: 'Responsive Design',
-            description: 'Forms that work perfectly on all devices',
-          ),
-          _buildFeatureItem(
-            icon: Icons.save,
-            title: 'Save & Share',
-            description: 'Save your forms and share them with others',
-          ),
-          _buildFeatureItem(
-            icon: Icons.cloud_sync,
-            title: 'Cloud Sync',
-            description: 'Access your forms from anywhere with cloud storage',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.3),
-          width: 1,
+          ],
         ),
-      ),
-      child: Row(
-        children: [
+        const SizedBox(height: 16),
+        if (state.userForms.isEmpty)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFF1F2937),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Colors.blue.withValues(alpha: 0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
-            child: Icon(
-              icon,
-              color: Colors.blue,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHowToUseSection() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'How to Use',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildStepItem(
-            number: '1',
-            title: 'Create New Form',
-            description: 'Tap the "Start Building" button to create a new form',
-          ),
-          _buildStepItem(
-            number: '2',
-            title: 'Add Components',
-            description:
-                'Drag and drop form components like text fields, checkboxes, etc.',
-          ),
-          _buildStepItem(
-            number: '3',
-            title: 'Configure Settings',
-            description: 'Set validation rules, styling, and form behavior',
-          ),
-          _buildStepItem(
-            number: '4',
-            title: 'Save & Test',
-            description:
-                'Save your form and test it to ensure everything works',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepItem({
-    required String number,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.blue.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Center(
+            child: const Center(
               child: Text(
-                number,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                'You have no forms yet. Start building one!',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
                 ),
               ),
             ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.userForms.length,
+            itemBuilder: (context, index) {
+              final form = state.userForms[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Colors.blue.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.description,
+                        color: Colors.blue,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            form['name'] ?? 'Untitled Form',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Created: ${_formatDate(form['createdAt'])}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _editUserForm(form),
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      tooltip: 'Edit Form',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    IconButton(
+                      onPressed: () => _deleteUserForm(form['formId']),
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      tooltip: 'Delete Form',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
+      ],
+    );
+  }
+
+  Widget _buildFormTemplatesSubsection(UserFormsSuccess state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.description, color: Colors.green, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              'Form Templates',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
+            const Spacer(),
+            Text(
+              '(${state.formTemplates.length})',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (state.formTemplates.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F2937),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.grey.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: const Center(
+              child: Text(
+                'No form templates available yet. Check back later!',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.formTemplates.length,
+            itemBuilder: (context, index) {
+              final template = state.formTemplates[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.description,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            template['name'] ?? 'Untitled Template',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            template['description'] ?? 'Form template',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _previewTemplate(template),
+                      icon: const Icon(
+                        Icons.visibility,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      tooltip: 'Preview Template',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    IconButton(
+                      onPressed: () => _createFormFromTemplate(template),
+                      icon: const Icon(
+                        Icons.add,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                      tooltip: 'Create Form from Template',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        ],
-      ),
+      ],
     );
   }
 
