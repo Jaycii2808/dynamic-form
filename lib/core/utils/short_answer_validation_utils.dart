@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/short_answer_validation_model.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// Utility class for shortAnswer validation that can be reused across the application
 class ShortAnswerValidationUtils {
@@ -64,9 +64,9 @@ class ShortAnswerValidationUtils {
   }
 
   /// Get keyboard type for shortAnswer component based on validation type
-  static String getKeyboardTypeForShortAnswer(DynamicFormModel component) {
+  static TextInputType getKeyboardTypeForShortAnswer(DynamicFormModel component) {
     if (component.type != FormTypeEnum.shortAnswerFormType) {
-      return 'text';
+      return TextInputType.text;
     }
 
     // Prefer typed validation
@@ -74,7 +74,7 @@ class ShortAnswerValidationUtils {
     if (validation is ShortAnswerValidationModel) {
       final v = validation as ShortAnswerValidationModel;
       if (v.validationType == ShortAnswerValidationType.number) {
-        return 'number';
+        return TextInputType.number;
       }
     } else {
       // Fallback to config.validate
@@ -82,11 +82,11 @@ class ShortAnswerValidationUtils {
       if (raw is Map<String, dynamic>) {
         final parsed = ShortAnswerValidationModel.fromJson(raw);
         if (parsed.validationType == ShortAnswerValidationType.number) {
-          return 'number';
+          return TextInputType.number;
         }
       }
     }
 
-    return 'text';
+    return TextInputType.text;
   }
 }

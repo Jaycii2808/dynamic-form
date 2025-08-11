@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:dynamic_form_bi/core/utils/validation_utils.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/components/field_update_data_model.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_state.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
@@ -59,10 +59,18 @@ class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
     if (state is! DynamicSwitchSuccess) return;
     final successState = state as DynamicSwitchSuccess;
 
-    // Use centralized method to create update data
-    final updateData = ValidationUtils.createFieldUpdateData(
+    // Derive state: error if previously errorText exists and value is false; success if true; else base
+    final prevError = successState.component?.config?.errorText;
+    final derivedState =
+        prevError != null && prevError.isNotEmpty && !event.value
+        ? StatesEnum.error
+        : (event.value ? StatesEnum.success : StatesEnum.base);
+
+    final updateData = FieldUpdateDataModel.create(
       value: event.value,
-      selected: event.value, // for boolean-like components
+      currentState: derivedState,
+      errorText: prevError,
+      selected: event.value,
     );
 
     // Update only value and selected in existing config

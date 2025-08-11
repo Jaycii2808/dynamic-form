@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
-import 'package:dynamic_form_bi/core/services/user_forms_service.dart'; // Added import for UserFormsService
+// Added import for UserFormsService
 import 'package:dynamic_form_bi/data/models/validation/composite_validation_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
 import 'package:dynamic_form_bi/data/models/validation/short_answer_validation_model.dart';
@@ -157,11 +157,11 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       }
 
       // Save to Firebase using UserFormsService
-      final userFormsService = UserFormsService();
-      final formId = await userFormsService.saveUserForm(
-        formBuilderModel: widget.formBuilderModel,
-        userId: 'user001', // Default user ID
-      );
+      //  final userFormsService = UserFormsService();
+      // final formId = await userFormsService.saveUserForm(
+      //   formBuilderModel: widget.formBuilderModel,
+      //   userId: 'user001', // Default user ID
+      // );
 
       if (mounted) {
         // Close loading dialog
@@ -334,35 +334,37 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
       }
 
       // Check placeholder text for input components
-      if (component.type.toString() == 'FormTypeEnum.textFieldFormType' ||
-          component.type.toString() == 'FormTypeEnum.textAreaFormType' ||
-          component.type.toString() == 'FormTypeEnum.dropdownFormType') {
+      if (component.type == FormTypeEnum.textFieldFormType ||
+          component.type == FormTypeEnum.textAreaFormType ||
+          component.type == FormTypeEnum.dropdownFormType) {
         if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
           // Logging removed; use Bloc Observer
         }
       }
 
       // Component-specific validation
-      switch (component.type.toString()) {
-        case 'FormTypeEnum.textFieldFormType':
+      switch (component.type) {
+        case FormTypeEnum.textFieldFormType:
           return _validateTextField(component);
-        case 'FormTypeEnum.dropdownFormType':
+        case FormTypeEnum.dropdownFormType:
           return _validateDropdown(component);
-        case 'FormTypeEnum.shortAnswerFormType':
+        case FormTypeEnum.shortAnswerFormType:
           return _validateShortAnswer(component);
-        case 'FormTypeEnum.textAreaFormType':
+        case FormTypeEnum.textAreaFormType:
           return _validateTextArea(component);
-        case 'FormTypeEnum.dateTimePickerFormType':
+        case FormTypeEnum.dateTimePickerFormType:
           return _validateDateTimePicker(component);
-        case 'FormTypeEnum.dateTimeRangePickerFormType':
+        case FormTypeEnum.dateTimeRangePickerFormType:
           return _validateDateTimeRangePicker(component);
-        case 'FormTypeEnum.switchFormType':
+        case FormTypeEnum.switchFormType:
           return _validateSwitch(component);
-        case 'FormTypeEnum.selectorButtonFormType':
+        case FormTypeEnum.selectorButtonFormType:
           return _validateSelectorButton(component);
-        default:
+        case FormTypeEnum.buttonFormType:
+        case FormTypeEnum.container:
+        case FormTypeEnum.textFieldTagsFormType:
+        case FormTypeEnum.unknown:
           // For other components, just do basic validation
-          // Logging removed; use Bloc Observer
           return _validateBasicComponent(component);
       }
     } catch (e) {

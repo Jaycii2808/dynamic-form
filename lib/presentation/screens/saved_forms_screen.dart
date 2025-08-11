@@ -10,6 +10,7 @@ import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multip
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:dynamic_form_bi/core/enums/menu_action_enum.dart';
 
 class SavedFormsScreen extends StatefulWidget {
   const SavedFormsScreen({super.key});
@@ -244,11 +245,11 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
             tooltip: 'Refresh',
           ),
           if (_savedForms.isNotEmpty)
-            PopupMenuButton(
+            PopupMenuButton<MenuAction>(
               icon: const Icon(Icons.more_vert),
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'clear_all',
+                const PopupMenuItem<MenuAction>(
+                  value: MenuAction.clearAll,
                   child: Row(
                     children: [
                       Icon(Icons.clear_all, color: Colors.red),
@@ -259,7 +260,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                 ),
               ],
               onSelected: (value) async {
-                if (value == 'clear_all') {
+                if (value == MenuAction.clearAll) {
                   // Capture ScaffoldMessenger before any async operations
                   final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -368,8 +369,8 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
       child: InkWell(
         onTap: () => _loadSavedForm(form),
         borderRadius: BorderRadius.circular(12),
-        hoverColor: Colors.yellow.withValues(alpha:0.1),
-        highlightColor: Colors.red.withValues(alpha:0.1),
+        hoverColor: Colors.yellow.withValues(alpha: 0.1),
+        highlightColor: Colors.red.withValues(alpha: 0.1),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -455,11 +456,11 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                       }
                     },
                   ),
-                  PopupMenuButton(
+                  PopupMenuButton<MenuAction>(
                     icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'load',
+                      const PopupMenuItem<MenuAction>(
+                        value: MenuAction.load,
                         child: Row(
                           children: [
                             Icon(Icons.open_in_new, color: Colors.blue),
@@ -468,8 +469,8 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
-                        value: 'delete',
+                      const PopupMenuItem<MenuAction>(
+                        value: MenuAction.delete,
                         child: Row(
                           children: [
                             Icon(Icons.delete, color: Colors.red),
@@ -480,9 +481,9 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                       ),
                     ],
                     onSelected: (value) {
-                      if (value == 'load') {
+                      if (value == MenuAction.load) {
                         _loadSavedForm(form);
-                      } else if (value == 'delete') {
+                      } else if (value == MenuAction.delete) {
                         _deleteSavedForm(form);
                       }
                     },

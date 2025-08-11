@@ -18,7 +18,7 @@ class DynamicSwitch extends StatefulWidget {
   onComponentUpdate; // Add callback for component updates
   final bool isSharedForm; // Add parameter to indicate shared form mode
 
-  DynamicSwitch({
+  const DynamicSwitch({
     super.key,
     required this.component,
     this.onComplete,

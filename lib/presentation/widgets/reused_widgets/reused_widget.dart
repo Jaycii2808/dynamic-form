@@ -3,23 +3,11 @@ import 'package:dynamic_form_bi/data/models/components/form_action_data_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/states/states_model.dart';
 import 'package:dynamic_form_bi/data/models/states/style_states_model.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_date_time_picker/dynamic_date_time_picker_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_date_time_range_picker/dynamic_date_time_range_picker_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_dropdown/dynamic_dropdown_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_selector_button/dynamic_selector_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_text_area/dynamic_text_area_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_text_field/dynamic_text_field_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_text_field_tags/dynamic_text_field_tags_bloc.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_picker.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_date_time_range_picker.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_dropdown.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_selector_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_switch.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_area.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field.dart';
-import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_text_field_tags.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_dropdown.dart';
+import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_button.dart';
 import 'package:dynamic_form_bi/presentation/widgets/components/dynamic_short_answer.dart';
 import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_short_answer/dynamic_short_answer_bloc.dart';
 import 'package:flutter/material.dart';
@@ -61,30 +49,10 @@ class ReusedWidget {
     // Logging removed; use Bloc Observer
     switch (component.type) {
       case FormTypeEnum.textFieldFormType:
-        return BlocProvider(
-          create: (context) =>
-              DynamicTextFieldBloc(initialComponent: component),
-          child: DynamicTextField(
-            key: key ?? Key(component.id), // Use provided key or default
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-            onComponentUpdate:
-                onComponentUpdate, // Pass the callback (can be null)
-            isSharedForm: isSharedForm, // Pass the shared form flag
-          ),
-        );
+        return _buildPlaceholderComponent(component, 'Text Field Component');
 
       case FormTypeEnum.textAreaFormType:
-        return BlocProvider(
-          create: (context) => DynamicTextAreaBloc(initialComponent: component),
-          child: DynamicTextArea(
-            key: key ?? Key(component.id),
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-            onComponentUpdate: onComponentUpdate,
-            isSharedForm: isSharedForm, // Pass the shared form flag
-          ),
-        );
+        return _buildPlaceholderComponent(component, 'Text Area Component');
 
       case FormTypeEnum.switchFormType:
         return BlocProvider(
@@ -99,38 +67,21 @@ class ReusedWidget {
         );
 
       case FormTypeEnum.selectorButtonFormType:
-        return BlocProvider(
-          create: (context) =>
-              DynamicSelectorButtonBloc(initialComponent: component),
-          child: DynamicSelectorButton(
-            key: key ?? Key(component.id),
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-            onComponentUpdate: onComponentUpdate,
-            isSharedForm: isSharedForm, // Pass the shared form flag
-          ),
+        return _buildPlaceholderComponent(
+          component,
+          'Selector Button Component',
         );
 
       case FormTypeEnum.dateTimePickerFormType:
-        return BlocProvider(
-          create: (context) =>
-              DynamicDateTimePickerBloc(initialComponent: component),
-          child: DynamicDateTimePicker(
-            key: key ?? Key(component.id),
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-          ),
+        return _buildPlaceholderComponent(
+          component,
+          'Date Time Picker Component',
         );
 
       case FormTypeEnum.dateTimeRangePickerFormType:
-        return BlocProvider(
-          create: (context) =>
-              DynamicDateTimeRangePickerBloc(initialComponent: component),
-          child: DynamicDateTimeRangePicker(
-            key: key ?? Key(component.id),
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-          ),
+        return _buildPlaceholderComponent(
+          component,
+          'Date Time Range Picker Component',
         );
 
       case FormTypeEnum.buttonFormType:
@@ -141,14 +92,9 @@ class ReusedWidget {
         );
 
       case FormTypeEnum.textFieldTagsFormType:
-        return BlocProvider(
-          create: (context) =>
-              DynamicTextFieldTagsBloc(initialComponent: component),
-          child: DynamicTextFieldTags(
-            key: key ?? Key(component.id),
-            component: component,
-            onComplete: (value) => onComponentValueChange(component.id, value),
-          ),
+        return _buildPlaceholderComponent(
+          component,
+          'Text Field Tags Component',
         );
 
       case FormTypeEnum.dropdownFormType:

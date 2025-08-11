@@ -190,13 +190,8 @@ class _DynamicShortAnswerState extends State<DynamicShortAnswer> {
   }
 
   TextInputType _getKeyboardType() {
-    final keyboardType =
-        ShortAnswerValidationUtils.getKeyboardTypeForShortAnswer(
-          widget.component,
-        );
-    if (keyboardType == 'number') {
-      return TextInputType.number;
-    }
-    return TextInputType.text;
+    return ShortAnswerValidationUtils.getKeyboardTypeForShortAnswer(
+      widget.component,
+    );
   }
 }

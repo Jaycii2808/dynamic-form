@@ -274,7 +274,7 @@ void _handleSubmitForm(
         final page = currentState.pages[i];
         // Logging removed; use Bloc Observer
         for (int j = 0; j < page.components.length; j++) {
-          final component = page.components[j];
+          //final component = page.components[j];
           // Logging removed; use Bloc Observer
         }
       }

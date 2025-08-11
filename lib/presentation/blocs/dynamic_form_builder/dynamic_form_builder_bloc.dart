@@ -564,7 +564,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     final updatedPages = List<FormBuilderPageModel>.from(state.pages)
       ..add(newPage);
 
-    final availablePages = updatedPages.map((page) => page.title).toList();
+    //final availablePages = updatedPages.map((page) => page.title).toList();
     // Logging removed; use Bloc Observer
 
     emit(

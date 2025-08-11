@@ -1,4 +1,5 @@
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/core/enums/menu_action_enum.dart';
 import 'package:dynamic_form_bi/domain/services/form_template_service.dart';
 import 'package:flutter/material.dart';
 
@@ -177,17 +178,17 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                             ),
                           ],
                         ),
-                        trailing: PopupMenuButton<String>(
+                        trailing: PopupMenuButton<MenuAction>(
                           onSelected: (value) async {
-                            if (value == 'load') {
+                            if (value == MenuAction.load) {
                               Navigator.of(context).pop();
                               await Future.delayed(
                                 const Duration(milliseconds: 100),
                               );
                               widget.onLoad?.call(template);
-                            } else if (value == 'preview') {
+                            } else if (value == MenuAction.preview) {
                               widget.onPreview?.call(template);
-                            } else if (value == 'delete') {
+                            } else if (value == MenuAction.delete) {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
@@ -245,8 +246,8 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'load',
+                            const PopupMenuItem<MenuAction>(
+                              value: MenuAction.load,
                               child: Row(
                                 children: [
                                   Icon(Icons.play_arrow),
@@ -255,8 +256,8 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                 ],
                               ),
                             ),
-                            const PopupMenuItem(
-                              value: 'preview',
+                            const PopupMenuItem<MenuAction>(
+                              value: MenuAction.preview,
                               child: Row(
                                 children: [
                                   Icon(Icons.preview),
@@ -265,8 +266,8 @@ class _FormLibraryDialogState extends State<FormLibraryDialog> {
                                 ],
                               ),
                             ),
-                            const PopupMenuItem(
-                              value: 'delete',
+                            const PopupMenuItem<MenuAction>(
+                              value: MenuAction.delete,
                               child: Row(
                                 children: [
                                   Icon(Icons.delete, color: Colors.red),
