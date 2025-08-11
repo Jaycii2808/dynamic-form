@@ -16,6 +16,9 @@ import 'package:dynamic_form_bi/data/models/validation/composite_validation_mode
 import 'package:dynamic_form_bi/data/models/validation/required_validation.dart';
 import 'package:dynamic_form_bi/data/models/validation/short_answer_validation_model.dart';
 import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
+import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Validation result class
 class ValidationResult {
@@ -28,10 +31,12 @@ class ValidationResult {
 class FormBuilderPreviewScreen extends StatefulWidget {
   static const String routeName = '/form-builder-preview';
   final FormBuilderModel formBuilderModel;
+  final bool isEditing;
 
   const FormBuilderPreviewScreen({
     super.key,
     required this.formBuilderModel,
+    this.isEditing = false,
   });
 
   @override
@@ -158,12 +163,37 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         );
       }
 
-      // Save to Firebase using UserFormsService
-      //  final userFormsService = UserFormsService();
-      // final formId = await userFormsService.saveUserForm(
-      //   formBuilderModel: widget.formBuilderModel,
-      //   userId: 'user001', // Default user ID
-      // );
+      // Decide Update vs Save
+      final userFormsBloc = context.read<UserFormsBloc>();
+      final formId = widget.formBuilderModel.formId;
+      final isEditing = widget.isEditing;
+
+      if (isEditing) {
+        // Try to update existing by formId; if fails, fallback to save
+        try {
+          userFormsBloc.add(
+            UpdateUserFormEvent(
+              formId: formId,
+              formBuilderModel: widget.formBuilderModel,
+              userId: 'user001',
+            ),
+          );
+        } catch (_) {
+          userFormsBloc.add(
+            SaveUserFormEvent(
+              formBuilderModel: widget.formBuilderModel,
+              userId: 'user001',
+            ),
+          );
+        }
+      } else {
+        userFormsBloc.add(
+          SaveUserFormEvent(
+            formBuilderModel: widget.formBuilderModel,
+            userId: 'user001',
+          ),
+        );
+      }
 
       if (mounted) {
         // Close loading dialog
@@ -171,12 +201,14 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Form saved successfully! You can find it in My Forms.',
+              isEditing
+                  ? 'Form updated successfully!'
+                  : 'Form saved successfully! You can find it in My Forms.',
             ),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }

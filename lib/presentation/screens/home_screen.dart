@@ -9,6 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home-screen';
@@ -19,59 +23,61 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late UserFormsBloc _userFormsBloc;
+  FormBuilderModel? _importedForm; // Hold the last imported form in memory
 
   @override
   void initState() {
     super.initState();
-    _userFormsBloc = UserFormsBloc(
-      userFormsService: UserFormsService(),
-      remoteConfigService: RemoteConfigService(),
-    );
+    // Defer initial loads to after first frame to ensure context is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bloc = context.read<UserFormsBloc>();
+      bloc.add(const LoadUserFormsEvent(userId: 'user001'));
+      bloc.add(const LoadFormTemplatesEvent());
+    });
+  }
 
-    // Load user forms and templates
-    _userFormsBloc.add(const LoadUserFormsEvent(userId: 'user001'));
-    _userFormsBloc.add(const LoadFormTemplatesEvent());
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The bloc is now provided by the context, so no need to re-initialize here
   }
 
   @override
   void dispose() {
-    _userFormsBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _userFormsBloc,
-      child: BlocListener<UserFormsBloc, UserFormsState>(
-        listener: (context, state) {
-          if (state is UserFormsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          } else if (state is UserFormsSuccess) {
-            debugPrint(
-              '✅ [HomeScreen] UserFormsBloc state updated successfully',
-            );
-          }
-        },
-        child: Scaffold(
-          backgroundColor: const Color(0xFF000000),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeroSection(),
-                _buildFormsSection(),
-              ],
+    return BlocListener<UserFormsBloc, UserFormsState>(
+      listener: (context, state) {
+        if (state is UserFormsError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
+          );
+        } else if (state is UserFormsSuccess) {
+          debugPrint(
+            '✅ [HomeScreen] UserFormsBloc state updated successfully',
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF000000),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildHeroSection(),
+              if (_importedForm != null)
+                _buildImportedFormSection(_importedForm!),
+              _buildFormsSection(),
+            ],
           ),
-          floatingActionButton: _buildMainActionButton(),
         ),
+        floatingActionButton: _buildMainActionButton(),
       ),
     );
   }
@@ -132,47 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          GestureDetector(
-            onTap: () {
-              context.push(FormBuilderScreen.routeName);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.blue.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: const Row(
-                spacing: 8,
-                children: [
-                  Icon(
-                    Icons.add_circle_outline,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                   Text(
-                    'Start Building',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildHeroButtonsRow(),
         ],
       ),
     );
@@ -617,7 +583,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('🔄 [HomeScreen] Confirming delete for form: $formId');
 
       // Dispatch delete event to Bloc
-      _userFormsBloc.add(
+      context.read<UserFormsBloc>().add(
         DeleteUserFormEvent(
           formId: formId,
           userId: 'user001',
@@ -939,7 +905,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // Dispatch create form from template event to Bloc
-      _userFormsBloc.add(
+      context.read<UserFormsBloc>().add(
         CreateUserFormFromTemplateEvent(
           templateData: template['formData'] ?? {},
           templateName: template['name'] ?? 'Untitled Template',
@@ -975,5 +941,396 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  Widget _buildImportedFormSection(FormBuilderModel imported) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F2937),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Colors.blue.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: Colors.blue.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.file_download_done,
+                color: Colors.blue,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    imported.name.isNotEmpty ? imported.name : 'Imported Form',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pages: ${imported.pages.length}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                // Navigate to builder with imported form for editing
+                context.push(
+                  FormBuilderScreen.routeName,
+                  extra: imported,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  spacing: 6,
+                  children: [
+                    Icon(Icons.edit, color: Colors.white, size: 16),
+                    Text(
+                      'Open in Builder',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImportJsonDialog() {
+    final TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Import JSON'),
+          content: SizedBox(
+            width: 600,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Paste the Multi-Page JSON exported from Form Builder.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: 0.4),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SizedBox(
+                      height: 200,
+                      child: TextField(
+                        controller: controller,
+                        maxLines: null,
+                        expands: true,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText:
+                              '{\n  "formId": "...",\n  "name": "...",\n  "pages": [ ... ]\n}',
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            GestureDetector(
+              onTap: () async {
+                try {
+                  final data = await Clipboard.getData('text/plain');
+                  if (data?.text != null && data!.text!.trim().isNotEmpty) {
+                    controller.text = data.text!.trim();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Clipboard is empty'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('❌ [HomeScreen] Clipboard error: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Clipboard error: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade800,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 6,
+                  children: [
+                    Icon(Icons.paste, size: 16, color: Colors.white),
+                    Text(
+                      'Paste from Clipboard',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Cancel'),
+            ),
+            GestureDetector(
+              onTap: () {
+                _handleImportJson(controller.text);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Import',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleImportJson(String rawJson) {
+    try {
+      final trimmed = rawJson.trim();
+      if (trimmed.isEmpty) {
+        throw const FormatException('JSON is empty');
+      }
+
+      final dynamic decoded = jsonDecode(trimmed);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Invalid JSON format: root must be an object',
+        );
+      }
+
+      // Basic schema checks for Multi-Page JSON
+      if (!decoded.containsKey('name') || !decoded.containsKey('pages')) {
+        throw const FormatException(
+          'Invalid schema: missing required keys (name/pages)',
+        );
+      }
+
+      // Parse to FormBuilderModel
+      final parsedModel = FormBuilderModel.fromJson(decoded);
+
+      // First, drop pages that are Submit pages
+      final pagesExcludingSubmit = parsedModel.pages
+          .where((p) => !p.title.toLowerCase().contains('submit'))
+          .toList();
+
+      // Remove navigation buttons (next/previous/submit) from remaining pages
+      List<FormBuilderPageModel> sanitizedPages = pagesExcludingSubmit.map((
+        page,
+      ) {
+        final filteredComponents = page.components.where((component) {
+          if (component.type != FormTypeEnum.buttonFormType) return true;
+          final action = component.config?.action;
+          if (action == null) return true;
+          return action != ButtonAction.nextPage.value &&
+              action != ButtonAction.previousPage.value &&
+              action != ButtonAction.submitForm.value;
+        }).toList();
+        return page.copyWith(components: filteredComponents);
+      }).toList();
+
+      // Ensure at least one page exists
+      if (sanitizedPages.isEmpty) {
+        sanitizedPages = const [
+          FormBuilderPageModel(
+            pageId: 'page_1',
+            title: 'Form Page',
+            order: 1,
+            showPreviousButton: false,
+            showNextButton: false,
+            showSubmitButton: true,
+            components: [],
+          ),
+        ];
+      }
+
+      final model = parsedModel.copyWith(pages: sanitizedPages);
+
+      setState(() {
+        _importedForm = model;
+      });
+
+      if (mounted) {
+        context.pop(); // close dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Form imported successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ [HomeScreen] Import JSON error: $e');
+      debugPrint('Stack: $stackTrace');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Import failed: ${e is FormatException ? e.message : e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Invalid JSON'),
+            content: Text(
+              e is FormatException
+                  ? e.message
+                  : 'Unexpected error while importing JSON.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => context.pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  /// Build a responsive, single-row set of hero buttons with horizontal scroll
+  Widget _buildHeroButtonsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildHeroButton(
+          icon: Icons.add_circle_outline,
+          label: 'Start Building',
+          color: Colors.blue,
+          onTap: () => context.push(FormBuilderScreen.routeName),
+        ),
+        _buildHeroButton(
+          icon: Icons.content_paste,
+          label: 'Import JSON',
+          color: Colors.orange,
+          onTap: _showImportJsonDialog,
+        ),
+      ],
+    );
+  }
+
+  /// Reusable hero button with consistent styling
+  Widget _buildHeroButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final borderColor = color.withValues(alpha: 0.3);
+    final shadowColor = color.withValues(alpha: 0.3);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          spacing: 8,
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -45,15 +45,6 @@ class AppRouter {
           );
         },
       ),
-      // // Saved forms (no params)
-      // GoRoute(
-      //   path: SavedFormsScreen.routeName,
-      //   //name: SavedFormsScreen.routeName,
-      //   pageBuilder: (context, state) => const NoTransitionPage(
-      //     child: SavedFormsScreen(),
-      //   ),
-      // ),
-
       GoRoute(
         path: PreviewPageScreen.routeName,
         // name: PreviewPageScreen.routeName,
@@ -76,8 +67,12 @@ class AppRouter {
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final model = extra?['formBuilderModel'] as FormBuilderModel;
+          final isEditing = extra?['isEditing'] as bool? ?? false;
           return NoTransitionPage(
-            child: FormBuilderPreviewScreen(formBuilderModel: model),
+            child: FormBuilderPreviewScreen(
+              formBuilderModel: model,
+              isEditing: isEditing,
+            ),
           );
         },
       ),

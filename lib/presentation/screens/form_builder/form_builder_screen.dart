@@ -152,7 +152,12 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: formBuilderAppBar(context, formBuilderBloc),
+      appBar: formBuilderAppBar(
+        context,
+        formBuilderBloc,
+        existingForm: widget.existingForm,
+        isEditing: widget.isEditing,
+      ),
       backgroundColor: const Color(0xFF000000),
       body: Column(
         children: [

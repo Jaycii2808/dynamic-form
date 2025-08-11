@@ -19,8 +19,10 @@ class ValidationResult {
 
 PreferredSizeWidget formBuilderAppBar(
   BuildContext context,
-  FormBuilderBloc formBuilderBloc,
-) {
+  FormBuilderBloc formBuilderBloc, {
+  FormBuilderModel? existingForm,
+  bool isEditing = false,
+}) {
   return AppBar(
     title: BlocBuilder<FormBuilderBloc, FormBuilderState>(
       builder: (context, state) => _buildTitle(context, state, formBuilderBloc),
@@ -51,8 +53,13 @@ PreferredSizeWidget formBuilderAppBar(
 
     actions: [
       BlocBuilder<FormBuilderBloc, FormBuilderState>(
-        builder: (context, state) =>
-            _buildActionButtons(context, state, formBuilderBloc),
+        builder: (context, state) => _buildActionButtons(
+          context,
+          state,
+          formBuilderBloc,
+          existingForm: existingForm,
+          isEditing: isEditing,
+        ),
       ),
     ],
   );
@@ -150,10 +157,18 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
 Widget _buildActionButtons(
   BuildContext context,
   FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
+  FormBuilderBloc formBuilderBloc, {
+  FormBuilderModel? existingForm,
+  bool isEditing = false,
+}) {
   return IconButton(
-    onPressed: () => _handleSubmitForm(context, state, formBuilderBloc),
+    onPressed: () => _handleSubmitForm(
+      context,
+      state,
+      formBuilderBloc,
+      existingForm: existingForm,
+      isEditing: isEditing,
+    ),
     icon: const Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -220,8 +235,10 @@ void _showEditFormTitleDialog(
 void _handleSubmitForm(
   BuildContext context,
   FormBuilderState state,
-  FormBuilderBloc formBuilderBloc,
-) {
+  FormBuilderBloc formBuilderBloc, {
+  FormBuilderModel? existingForm,
+  bool isEditing = false,
+}) {
   // Validate form before allowing preview and share
   final validationResult = _validateFormBeforePreview(state);
   if (!validationResult.isValid) {
@@ -281,12 +298,17 @@ void _handleSubmitForm(
       }
 
       // Create FormBuilderModel with current state
+      final now = DateTime.now();
       final formBuilderModel = FormBuilderModel(
-        formId: 'form_${DateTime.now().millisecondsSinceEpoch}',
+        formId: isEditing && existingForm != null
+            ? existingForm.formId
+            : 'form_${now.millisecondsSinceEpoch}',
         name: currentState.formTitle,
         pages: currentState.pages,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: isEditing && existingForm != null
+            ? existingForm.createdAt
+            : now,
+        updatedAt: now,
       );
 
       debugPrint(
@@ -303,12 +325,12 @@ void _handleSubmitForm(
         FocusScope.of(context).unfocus();
       }
 
-
       // Navigate to preview screen
       router.pushNamed(
         FormBuilderPreviewScreen.routeName,
         extra: {
           'formBuilderModel': formBuilderModel,
+          'isEditing': isEditing,
         },
       );
     } catch (e) {

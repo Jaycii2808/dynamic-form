@@ -109,7 +109,6 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-            ),
           ),
         ),
       ],
