@@ -1,21 +1,21 @@
-import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
+import 'dart:convert';
+
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
-import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home-screen';
+
   const HomeScreen({super.key});
 
   @override
@@ -71,8 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               _buildHeroSection(),
-              if (_importedForm != null)
-                _buildImportedFormSection(_importedForm!),
+              if (_importedForm != null) _buildImportedFormSection(_importedForm!),
               _buildFormsSection(),
             ],
           ),
@@ -731,8 +730,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final pages = formData['pages'] as List<dynamic>? ?? [];
       final totalComponents = pages.fold<int>(
         0,
-        (sum, page) =>
-            sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
+        (sum, page) => sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
       );
 
       return Column(
@@ -1085,11 +1083,14 @@ class _HomeScreenState extends State<HomeScreen> {
             GestureDetector(
               onTap: () async {
                 try {
+                  final messenger = ScaffoldMessenger.of(context);
+                  //final nav = Navigator.of(context);
                   final data = await Clipboard.getData('text/plain');
+                  if (!mounted) return;
                   if (data?.text != null && data!.text!.trim().isNotEmpty) {
                     controller.text = data.text!.trim();
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(
                         content: Text('Clipboard is empty'),
                         backgroundColor: Colors.orange,
@@ -1098,12 +1099,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 } catch (e) {
                   debugPrint('❌ [HomeScreen] Clipboard error: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Clipboard error: ${e.toString()}'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Clipboard error: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               },
               child: Container(
@@ -1253,9 +1256,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => AlertDialog(
             title: const Text('Invalid JSON'),
             content: Text(
-              e is FormatException
-                  ? e.message
-                  : 'Unexpected error while importing JSON.',
+              e is FormatException ? e.message : 'Unexpected error while importing JSON.',
             ),
             actions: [
               TextButton(

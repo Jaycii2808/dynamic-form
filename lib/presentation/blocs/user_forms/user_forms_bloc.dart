@@ -30,23 +30,16 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint('🔄 [UserFormsBloc] Loading user forms');
-
       final userForms = await _userFormsService.getUserForms(
         userId: event.userId,
       );
-
-      debugPrint('✅ [UserFormsBloc] Loaded ${userForms.length} user forms');
 
       emit(
         UserFormsSuccess.fromState(state: state).copyWith(
           userForms: userForms,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('❌ [UserFormsBloc] Error loading user forms: $e');
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,
@@ -62,16 +55,10 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint(
-        '🔄 [UserFormsBloc] Saving user form: ${event.formBuilderModel.name}',
-      );
-
-      final formId = await _userFormsService.saveUserForm(
-        formBuilderModel: event.formBuilderModel,
-        userId: event.userId,
-      );
-
-      debugPrint('✅ [UserFormsBloc] User form saved with ID: $formId');
+      // final formId = await _userFormsService.saveUserForm(
+      //   formBuilderModel: event.formBuilderModel,
+      //   userId: event.userId,
+      // );
 
       // Reload user forms after saving
       final userForms = await _userFormsService.getUserForms(
@@ -83,10 +70,7 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
           userForms: userForms,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('❌ [UserFormsBloc] Error saving user form: $e');
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,
@@ -102,15 +86,11 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint('🔄 [UserFormsBloc] Updating user form: ${event.formId}');
-
       await _userFormsService.updateUserForm(
         formId: event.formId,
         formBuilderModel: event.formBuilderModel,
         userId: event.userId,
       );
-
-      debugPrint('✅ [UserFormsBloc] User form updated: ${event.formId}');
 
       // Reload user forms after updating
       final userForms = await _userFormsService.getUserForms(
@@ -122,10 +102,7 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
           userForms: userForms,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('❌ [UserFormsBloc] Error updating user form: $e');
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,
@@ -141,14 +118,10 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint('🔄 [UserFormsBloc] Deleting user form: ${event.formId}');
-
       await _userFormsService.deleteUserForm(
         formId: event.formId,
         userId: event.userId,
       );
-
-      debugPrint('✅ [UserFormsBloc] User form deleted: ${event.formId}');
 
       // Reload user forms after deleting
       final userForms = await _userFormsService.getUserForms(
@@ -160,10 +133,7 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
           userForms: userForms,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('❌ [UserFormsBloc] Error deleting user form: $e');
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,
@@ -179,19 +149,11 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint(
-        '🔄 [UserFormsBloc] Creating user form from template: ${event.templateName}',
-      );
-
-      final formId = await _userFormsService.createUserFormFromTemplate(
-        templateData: event.templateData,
-        templateName: event.templateName,
-        userId: event.userId,
-      );
-
-      debugPrint(
-        '✅ [UserFormsBloc] User form created from template with ID: $formId',
-      );
+      // final formId = await _userFormsService.createUserFormFromTemplate(
+      //   templateData: event.templateData,
+      //   templateName: event.templateName,
+      //   userId: event.userId,
+      // );
 
       // Reload user forms after creating
       final userForms = await _userFormsService.getUserForms(
@@ -203,12 +165,7 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
           userForms: userForms,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint(
-        '❌ [UserFormsBloc] Error creating user form from template: $e',
-      );
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,
@@ -224,26 +181,15 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      debugPrint(
-        '🔄 [UserFormsBloc] Loading form templates from Remote Config',
-      );
-
       // Load form templates from Remote Config
       final formTemplates = await _loadFormTemplatesFromRemoteConfig();
-
-      debugPrint(
-        '✅ [UserFormsBloc] Loaded ${formTemplates.length} form templates',
-      );
 
       emit(
         UserFormsSuccess.fromState(state: state).copyWith(
           formTemplates: formTemplates,
         ),
       );
-    } catch (e, stackTrace) {
-      debugPrint('❌ [UserFormsBloc] Error loading form templates: $e');
-      debugPrint('❌ [UserFormsBloc] Stack trace: $stackTrace');
-
+    } catch (e) {
       emit(
         UserFormsError.fromState(
           state: state,

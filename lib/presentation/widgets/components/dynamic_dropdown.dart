@@ -457,25 +457,25 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
       );
     }
 
-    switch (action) {
-      case DropdownActionOptionsEnum.next:
-        // Continue to next section - will be handled when next button is pressed
-        debugPrint(
-          '➡️ [DynamicDropdown] Continue action stored for next button',
-        );
-        break;
-      case DropdownActionOptionsEnum.goto:
-        // Go to specific section - will be handled when next button is pressed
-        if (targetSection != null) {
-          debugPrint(
-            '🎯 [DynamicDropdown] Goto action stored for next button: $targetSection',
-          );
-        }
-        break;
-      case DropdownActionOptionsEnum.submit:
-        // Submit form - will be handled when next button is pressed
-        debugPrint('📤 [DynamicDropdown] Submit action stored for next button');
-        break;
-    }
+    // switch (action) {
+    //   case DropdownActionOptionsEnum.next:
+    //     // Continue to next section - will be handled when next button is pressed
+    //     debugPrint(
+    //       '➡️ [DynamicDropdown] Continue action stored for next button',
+    //     );
+    //     break;
+    //   case DropdownActionOptionsEnum.goto:
+    //     // Go to specific section - will be handled when next button is pressed
+    //     if (targetSection != null) {
+    //       debugPrint(
+    //         '🎯 [DynamicDropdown] Goto action stored for next button: $targetSection',
+    //       );
+    //     }
+    //     break;
+    //   case DropdownActionOptionsEnum.submit:
+    //     // Submit form - will be handled when next button is pressed
+    //     debugPrint('📤 [DynamicDropdown] Submit action stored for next button');
+    //     break;
+    // }
   }
 }

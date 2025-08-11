@@ -1,20 +1,19 @@
-import 'package:dynamic_form_bi/presentation/app_router.dart';
-import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
-import 'package:dynamic_form_bi/core/services/form_template_service.dart';
 import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
+import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
-import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
+import 'package:dynamic_form_bi/presentation/app_router.dart';
+import 'package:dynamic_form_bi/presentation/blocs/dynamic_button/dynamic_button_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/simple_bloc_observer.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
-import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:nested/nested.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,12 +58,7 @@ class MyApp extends StatelessWidget {
 
   List<SingleChildWidget> _buildBlocProviders() {
     return [
-      BlocProvider(
-        create: (context) => DynamicFormBloc(
-          remoteConfigService: RemoteConfigService(),
-          formTemplateService: FormTemplateService(),
-        ),
-      ),
+      BlocProvider(create: (_) => DynamicButtonBloc()),
       BlocProvider(
         create: (context) => FormBuilderBloc(
           remoteConfigService: RemoteConfigService(),

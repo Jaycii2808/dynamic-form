@@ -1,15 +1,13 @@
 import 'dart:convert';
 
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form_multi/dynamic_form_multi_model.dart';
 import 'package:dynamic_form_bi/data/models/validation/validation_errors_model.dart';
-import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/core/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_state.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dynamic_form_bi/core/utils/form_submission_converter.dart';
 
 class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
   final RemoteConfigService _remoteConfigService;
@@ -110,12 +108,8 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
           final value = component.config.value;
           if (value != null) {
             initialValues[component.id] = value;
-            debugPrint(
-              '📝 [MultiPageForm] Initialized ${component.id} = $value',
-            );
           } else {
             initialValues[component.id] = null;
-            debugPrint('📝 [MultiPageForm] Initialized ${component.id} = null');
           }
         }
       }
@@ -146,17 +140,10 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
     if (state is! MultiPageFormSuccess) return;
     final currentState = state as MultiPageFormSuccess;
     try {
-      final oldValue = currentState.componentValues.getValue(event.componentId);
+     // final oldValue = currentState.componentValues.getValue(event.componentId);
       final newComponentValues = currentState.componentValues.setValue(
         event.componentId,
         event.value.value,
-      );
-
-      debugPrint(
-        '📝 [MultiPageForm] Updated ${event.componentId}: $oldValue -> ${event.value.value}',
-      );
-      debugPrint(
-        '📝 [MultiPageForm] All component values: ${newComponentValues.values}',
       );
 
       // Clear validation error for this component when value is updated
@@ -196,25 +183,14 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       // Validate current page before navigating to next page
       if (event.isNext) {
         final isValid = _validateCurrentPage(emit);
-        if (!isValid) {
-          debugPrint('[Bloc] Navigation blocked: validation failed');
-          return;
-        }
+        if (!isValid) return;
       }
 
       int nextPageIndex =
           currentState.currentPageIndex + (event.isNext ? 1 : -1);
 
-      debugPrint(
-        '[Bloc] Attempting to navigate from page  [33m${currentState.currentPageIndex} [0m to  [33m$nextPageIndex [0m',
-      );
-      debugPrint(
-        '[Bloc] Total pages:  [33m${currentState.formModel!.pages.length} [0m',
-      );
-
       if (nextPageIndex >= 0 &&
           nextPageIndex < currentState.formModel!.pages.length) {
-        debugPrint('[Bloc] Navigating to page  [33m$nextPageIndex [0m');
         // Clear validation errors when navigating to a new page
         final clearedValidationErrors = currentState.validationErrors.clear();
         emit(
@@ -223,9 +199,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
             validationErrors: clearedValidationErrors,
           ),
         );
-      } else {
-        debugPrint('[Bloc] Navigation blocked: out of range');
-      }
+      } else {}
     } catch (e) {
       emit(
         MultiPageFormError(
@@ -246,9 +220,6 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
       final currentState = state as MultiPageFormSuccess;
       if (event.targetIndex >= 0 &&
           event.targetIndex < (currentState.formModel?.pages.length ?? 0)) {
-        debugPrint(
-          '[Bloc] Navigating to page index:  [33m${event.targetIndex} [0m',
-        );
         emit(
           MultiPageFormSuccess(
             formModel: currentState.formModel,
@@ -257,7 +228,6 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
           ),
         );
       } else {
-        debugPrint('[Bloc] Invalid page index: ${event.targetIndex}');
         emit(
           MultiPageFormError(
             errorMessage: 'Invalid page index',
@@ -267,9 +237,7 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
           ),
         );
       }
-    } else {
-      debugPrint('[Bloc] Cannot navigate: Not in Success state');
-    }
+    } else {}
   }
 
   Future<void> _onSubmitMultiPageForm(
@@ -285,18 +253,11 @@ class MultiPageFormBloc extends Bloc<MultiPageFormEvent, MultiPageFormState> {
         throw Exception("Form is not initialized for submission.");
       }
 
-      // Create readable submission model for debugging and email
-      final submissionModel = FormSubmissionConverter.convertToSubmissionModel(
-        componentValues: currentState.componentValues,
-        formModel: currentState.formModel!,
-      );
-
-      // Debug print readable format instead of complex debug logs
-      debugPrint('🔄 [Bloc Submit] Creating readable submission data...');
-      FormSubmissionConverter.debugPrintSubmission(submissionModel);
-
-      debugPrint('📧 [Bloc Submit] Email ready format:');
-      debugPrint(submissionModel.toEmailFormat());
+      // // Create readable submission model for debugging and email
+      // final submissionModel = FormSubmissionConverter.convertToSubmissionModel(
+      //   componentValues: currentState.componentValues,
+      //   formModel: currentState.formModel!,
+      // );
 
       await Future.delayed(const Duration(seconds: 1));
 

@@ -89,9 +89,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
           availableComponents: components,
         ),
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       String errorMessage = 'Failed to load components: $e';
-      debugPrint('Stack trace: $stackTrace');
       emit(
         FormBuilderError(
           errorMessage: errorMessage,
@@ -127,9 +126,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
           availableButtonComponents: buttonComponents,
         ),
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       String errorMessage = 'Failed to load button components: $e';
-      debugPrint('Stack trace: $stackTrace');
       emit(
         FormBuilderError(
           errorMessage: errorMessage,
@@ -177,10 +175,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     MoveComponentEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '🔄 [FormBuilderBloc] Moving component from index ${event.oldIndex} to ${event.newIndex} on page: ${state.currentPageId}',
-    );
-
     // Move component within the current page
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
@@ -202,20 +196,12 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         pages: updatedPages,
       ),
     );
-
-    debugPrint(
-      '✅ [FormBuilderBloc] Component moved on page ${state.currentPageId}',
-    );
   }
 
   void _onRemoveComponent(
     RemoveComponentEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '➖ [FormBuilderBloc] Removing component at index: ${event.index} from page: ${state.currentPageId}',
-    );
-
     // Remove component from the current page
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
@@ -233,17 +219,12 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         pages: updatedPages,
       ),
     );
-
-    debugPrint(
-      '✅ [FormBuilderBloc] Component removed from page ${state.currentPageId}. Remaining components: ${updatedPages.firstWhere((p) => p.pageId == state.currentPageId).components.length}',
-    );
   }
 
   void _onStartDrag(
     StartDragEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('Started dragging component: ${event.component.type}');
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         isDragging: true,
@@ -256,7 +237,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     EndDragEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('Ended dragging component: ${event.component.type}');
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         isDragging: false,
@@ -273,7 +253,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         showComponentsPanel: !state.showComponentsPanel,
       ),
     );
-    debugPrint('Components panel toggled: ${!state.showComponentsPanel}');
   }
 
   void _onToggleButtonComponentsPanel(
@@ -284,9 +263,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       FormBuilderSuccess.fromState(state: state).copyWith(
         showButtonComponentsPanel: !state.showButtonComponentsPanel,
       ),
-    );
-    debugPrint(
-      'Button components panel toggled: ${!state.showButtonComponentsPanel}',
     );
   }
 
@@ -307,27 +283,18 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         pages: updatedPages,
       ),
     );
-    debugPrint('Canvas cleared for page ${state.currentPageId}');
   }
 
   void _onUpdateComponentValue(
     UpdateComponentValueEvent event,
     Emitter<FormBuilderState> emit,
-  ) {
-    debugPrint(
-      'Component ${event.componentId} value changed to: ${event.value}',
-    );
-  }
+  ) {}
 
   /// Handle component actions (move up, move down, delete)
   void _onHandleComponentAction(
     HandleComponentActionEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '🔧 [FormBuilderBloc] Handling component action: ${event.action} at index: ${event.index}',
-    );
-
     switch (event.action) {
       case ComponentActionEnum.moveUp:
         if (event.index > 0) {
@@ -365,7 +332,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     UpdateFormTitleEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('📝 [FormBuilderBloc] Updating form title to: ${event.title}');
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         formTitle: event.title,
@@ -378,10 +344,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     UpdatePageTitleEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '📝 [FormBuilderBloc] Updating page title for pageId: ${event.pageId} to: ${event.title}',
-    );
-
     final updatedPages = state.pages.map((page) {
       if (page.pageId == event.pageId) {
         return page.copyWith(title: event.title);
@@ -389,10 +351,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       return page;
     }).toList();
 
-    final availablePages = updatedPages.map((page) => page.title).toList();
-    debugPrint(
-      '🔄 [FormBuilderBloc] Available pages after updating page title: $availablePages',
-    );
+   // final availablePages = updatedPages.map((page) => page.title).toList();
 
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
@@ -408,7 +367,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     SwitchPageEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('🔄 [FormBuilderBloc] Switching to page: ${event.pageId}');
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
         currentPageId: event.pageId,
@@ -711,27 +669,10 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     EditComponentConfigEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '⚙️ [FormBuilderBloc] Editing component config: ${event.componentId}',
-    );
-    debugPrint(
-      '⚙️ [FormBuilderBloc] Description: ${event.description}',
-    );
-    debugPrint(
-      '⚙️ [FormBuilderBloc] Options: ${event.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
-    );
-
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
         final updatedComponents = page.components.map((component) {
           if (component.id == event.componentId) {
-            debugPrint(
-              '⚙️ [FormBuilderBloc] Component before update - description: ${component.config?.description}',
-            );
-            debugPrint(
-              '⚙️ [FormBuilderBloc] Component before update - options: ${component.config?.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
-            );
-
             final updatedConfig =
                 component.config?.copyWith(
                   label: event.label,
@@ -753,13 +694,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
                   options: event.options, // Add options support
                   validate: event.validate,
                 );
-
-            debugPrint(
-              '⚙️ [FormBuilderBloc] Component after update - description: ${updatedConfig.description}',
-            );
-            debugPrint(
-              '⚙️ [FormBuilderBloc] Component after update - options: ${updatedConfig.options?.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
-            );
 
             return component.copyWith(
               config: updatedConfig,
@@ -869,8 +803,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     ForceRebuildUIEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('🔄 [FormBuilderBloc] Forcing UI rebuild');
-
     // Force rebuild by emitting a new state with a timestamp
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
@@ -885,17 +817,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     LoadExistingFormEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint(
-      '💾 [FormBuilderBloc] Loading existing form: ${event.form.name}',
-    );
     try {
       // Load the existing form data directly
       final existingForm = event.form;
-
-      debugPrint(
-        '💾 [FormBuilderBloc] Form has ${existingForm.pages.length} pages',
-      );
-      debugPrint('💾 [FormBuilderBloc] Form title: ${existingForm.name}');
 
       // Clear any existing state and load fresh form data
       emit(
@@ -918,12 +842,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
           rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
         ),
       );
-
-      debugPrint('✅ [FormBuilderBloc] Existing form loaded successfully');
-    } catch (e, stackTrace) {
+    } catch (e) {
       String errorMessage = 'Failed to load existing form: $e';
-      debugPrint('❌ [FormBuilderBloc] Error loading existing form: $e');
-      debugPrint('❌ [FormBuilderBloc] Stack trace: $stackTrace');
       emit(
         FormBuilderError(
           errorMessage: errorMessage,
@@ -946,7 +866,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     ForceSaveAllComponentsEvent event,
     Emitter<FormBuilderState> emit,
   ) {
-    debugPrint('💾 [FormBuilderBloc] Forcing save of all components');
     // This event is typically handled by the UI layer to persist changes
     // For now, we just force a rebuild to ensure all changes are reflected
     emit(
