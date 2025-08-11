@@ -50,7 +50,7 @@ class MoreOptionsDialogOption {
   }
 }
 
-class SharedFormBuilderWidgets {
+class SharedWidgetBuilderWidgets {
   // Question header widget - reusable across different form types
   static Widget buildTitleHeader({
     required Widget imageIcon,

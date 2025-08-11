@@ -1,13 +1,10 @@
-import 'package:dynamic_form_bi/presentation/screens/home_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/existing_forms_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/dynamic_form_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_preview_screen.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_preview_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/home_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/preview_page_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouter {
@@ -48,48 +45,15 @@ class AppRouter {
           );
         },
       ),
-      // Saved forms (no params)
-      GoRoute(
-        path: SavedFormsScreen.routeName,
-        //name: SavedFormsScreen.routeName,
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: SavedFormsScreen(),
-        ),
-      ),
-      // Existing forms (no params)
-      GoRoute(
-        path: ExistingFormsScreen.routeName,
-        //name: ExistingFormsScreen.routeName,
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: ExistingFormsScreen(),
-        ),
-      ),
-      // Dynamic single-page form with configKey path param
-      GoRoute(
-        path: DynamicFormScreen.routePath,
-        //name: DynamicFormScreen.routeName,
-        pageBuilder: (context, state) {
-          final configKey = state.pathParameters['configKey']!;
-          final title = (state.extra is Map<String, dynamic>)
-              ? (state.extra as Map<String, dynamic>)['title'] as String?
-              : null;
-          return NoTransitionPage(
-            child: DynamicFormScreen(configKey: configKey, title: title),
-          );
-        },
-      ),
-      // Dynamic multi-page form with configKey path param
+      // // Saved forms (no params)
       // GoRoute(
-      //   path: DynamicFormMultiScreen.routePath,
-      //   // name: DynamicFormMultiScreen.routeName,
-      //   pageBuilder: (context, state) {
-      //     final configKey = state.pathParameters['configKey']!;
-      //     return NoTransitionPage(
-      //       child: DynamicFormMultiScreen(configKey: configKey),
-      //     );
-      //   },
+      //   path: SavedFormsScreen.routeName,
+      //   //name: SavedFormsScreen.routeName,
+      //   pageBuilder: (context, state) => const NoTransitionPage(
+      //     child: SavedFormsScreen(),
+      //   ),
       // ),
-      // Preview screen (pass pages and values via extra)
+
       GoRoute(
         path: PreviewPageScreen.routeName,
         // name: PreviewPageScreen.routeName,

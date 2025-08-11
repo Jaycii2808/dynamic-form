@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/core/services/firestore_form_service.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/preview_page_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dialogs/email_input_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

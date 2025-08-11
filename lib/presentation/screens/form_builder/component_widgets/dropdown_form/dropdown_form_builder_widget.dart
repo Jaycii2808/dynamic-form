@@ -4,7 +4,7 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/dropdown_form_builder_widget/dropdown_form_builder_widget_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_widget_builder_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_option_editor_list.dart';
 import 'package:flutter/material.dart';
@@ -181,11 +181,11 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       },
       builder: (context, state) {
         if (state is DropdownFormBuilderWidgetLoading) {
-          return SharedFormBuilderWidgets.buildLoadingWidget();
+          return SharedWidgetBuilderWidgets.buildLoadingWidget();
         }
 
         if (state is DropdownFormBuilderWidgetError) {
-          return SharedFormBuilderWidgets.buildErrorWidget(
+          return SharedWidgetBuilderWidgets.buildErrorWidget(
             errorMessage: state.errorMessage ?? 'Unknown error',
           );
         }
@@ -196,12 +196,12 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
               // Dismiss keyboard when tapping outside input fields
               FocusScope.of(context).unfocus();
             },
-            child: SharedFormBuilderWidgets.buildMainContainer(
+            child: SharedWidgetBuilderWidgets.buildMainContainer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildQuestionHeader(),
-                  SharedFormBuilderWidgets.buildDescriptionSection(
+                  SharedWidgetBuilderWidgets.buildDescriptionSection(
                     descriptionController: _descriptionController,
                     currentDescription: state.description,
                     onDescriptionChanged: (value) {
@@ -356,7 +356,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // Question header widget using shared widgets
   Widget _buildQuestionHeader() {
-    return SharedFormBuilderWidgets.buildDropdownQuestionHeader(
+    return SharedWidgetBuilderWidgets.buildDropdownQuestionHeader(
       questionInput: SharedOptimizedInputWidgets.buildOptimizedQuestionInput(
         context: context,
         controller: _questionController,
@@ -418,7 +418,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // Bottom controls widget
   Widget _buildBottomControls(DropdownFormBuilderWidgetSuccess state) {
-    return SharedFormBuilderWidgets.buildCommonBottomControls(
+    return SharedWidgetBuilderWidgets.buildCommonBottomControls(
       onDuplicate: widget.onDuplicate,
       onDelete: widget.onDelete,
       isRequired: state.isRequired,
@@ -440,7 +440,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // Dropdown info dialog
   void _showDropdownInfoDialog(BuildContext context) {
-    SharedFormBuilderWidgets.showInfoDialog(
+    SharedWidgetBuilderWidgets.showInfoDialog(
       context: context,
       title: 'Dropdown Component',
       description:
@@ -460,7 +460,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // Image feature dialog
   void _showImageFeatureDialog(BuildContext context) {
-    SharedFormBuilderWidgets.showInfoDialog(
+    SharedWidgetBuilderWidgets.showInfoDialog(
       context: context,
       title: 'Coming Soon',
       description: '🚀 This feature is under development',
@@ -685,7 +685,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
   // More options dialog
   void _showMoreOptionsDialog(BuildContext context) {
-    SharedFormBuilderWidgets.showMoreOptionsBottomSheet(
+    SharedWidgetBuilderWidgets.showMoreOptionsBottomSheet(
       context: context,
       getOptions: () {
         final currentState = context
@@ -695,7 +695,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
           return [];
         }
 
-        return SharedFormBuilderWidgets.getDropdownMoreOptions(
+        return SharedWidgetBuilderWidgets.getDropdownMoreOptions(
           onDescriptionTap: () {
             // Start inline description editing instead of showing dialog
             context.read<DropdownFormBuilderWidgetBloc>().add(

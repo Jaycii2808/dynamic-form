@@ -1,7 +1,7 @@
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_bloc.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_event.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/blocs/short_answer_form_builder_widget/short_answer_form_builder_widget_state.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_form_builder_widgets.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/shared_widget_builder_widgets.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -130,14 +130,14 @@ class _ShortAnswerFormBuilderWidgetState
       _errorMessageController.text = v.errorMessage ?? '';
     }
 
-    return SharedFormBuilderWidgets.buildMainContainer(
+    return SharedWidgetBuilderWidgets.buildMainContainer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 4,
         children: [
           _buildQuestionHeader(),
-          SharedFormBuilderWidgets.buildDescriptionSection(
+          SharedWidgetBuilderWidgets.buildDescriptionSection(
             descriptionController: _descriptionController,
             currentDescription: state.description,
             onDescriptionChanged: (value) {
@@ -195,7 +195,7 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   Widget _buildQuestionHeader() {
-    return SharedFormBuilderWidgets.buildFormTypeQuestionHeader(
+    return SharedWidgetBuilderWidgets.buildFormTypeQuestionHeader(
       questionInput: _buildOptimizedQuestionInput(),
       formTypeIcon: Icons.short_text,
       formTypeLabel: 'Short Answer',
@@ -541,7 +541,7 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   Widget _buildBottomControls(ShortAnswerFormBuilderWidgetSuccess state) {
-    return SharedFormBuilderWidgets.buildCommonBottomControls(
+    return SharedWidgetBuilderWidgets.buildCommonBottomControls(
       onDuplicate: widget.onDuplicate,
       onDelete: widget.onDelete,
       isRequired: state.isRequired,
@@ -580,7 +580,7 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   void _showShortAnswerInfo() {
-    SharedFormBuilderWidgets.showInfoDialog(
+    SharedWidgetBuilderWidgets.showInfoDialog(
       context: context,
       title: 'Short Answer Component',
       description:
@@ -604,14 +604,14 @@ class _ShortAnswerFormBuilderWidgetState
     final currentState = context.read<ShortAnswerFormBuilderWidgetBloc>().state;
     if (currentState is! ShortAnswerFormBuilderWidgetSuccess) return;
 
-    SharedFormBuilderWidgets.showMoreOptionsBottomSheet(
+    SharedWidgetBuilderWidgets.showMoreOptionsBottomSheet(
       context: context,
       getOptions: () {
         final state =
             context.read<ShortAnswerFormBuilderWidgetBloc>().state
                 as ShortAnswerFormBuilderWidgetSuccess;
 
-        return SharedFormBuilderWidgets.getShortAnswerMoreOptions(
+        return SharedWidgetBuilderWidgets.getShortAnswerMoreOptions(
           onDescriptionTap: () {
             context.read<ShortAnswerFormBuilderWidgetBloc>().add(
               const SetEditingDescriptionEvent(true),

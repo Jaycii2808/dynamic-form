@@ -1,16 +1,14 @@
-import 'package:dynamic_form_bi/presentation/screens/watch_components_forms/existing_forms_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
-import 'package:dynamic_form_bi/presentation/screens/saved_forms_screen.dart';
+import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_state.dart';
-import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
-import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
-import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home-screen';
@@ -64,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Scaffold(
           backgroundColor: const Color(0xFF000000),
-          appBar: _buildAppBar(),
           body: SingleChildScrollView(
             child: Column(
               children: [
@@ -79,25 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: const Text(
-        'Dynamic Form Builder',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      backgroundColor: const Color(0xFF000000),
-      foregroundColor: Colors.white,
-      elevation: 0,
-      actions: [
-        _buildExistingFormsButton(),
-        _buildSavedFormsButton(),
-      ],
-    );
-  }
 
   Widget _buildHeroSection() {
     return Container(
@@ -530,29 +508,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildExistingFormsButton() {
-    return Builder(
-      builder: (context) => IconButton(
-        onPressed: () {
-          context.push(ExistingFormsScreen.routeName);
-        },
-        icon: const Icon(Icons.list_alt),
-        tooltip: 'Existing Forms',
-      ),
-    );
-  }
-
-  Widget _buildSavedFormsButton() {
-    return Builder(
-      builder: (context) => IconButton(
-        onPressed: () {
-          context.push(SavedFormsScreen.routeName);
-        },
-        icon: const Icon(Icons.archive_outlined),
-        tooltip: 'Saved Forms',
-      ),
-    );
-  }
 
   String _formatDate(dynamic date) {
     try {

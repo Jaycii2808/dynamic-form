@@ -16,7 +16,7 @@ import 'package:dynamic_form_bi/core/services/saved_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/multi_page_form/multi_page_form_state.dart';
-import 'package:dynamic_form_bi/presentation/screens/multi_screen/preview_multipage_screen.dart';
+import 'package:dynamic_form_bi/presentation/screens/preview_page_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,12 +1,8 @@
 ﻿import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
-import 'package:dynamic_form_bi/data/models/components/component_value_update_model.dart';
 import 'package:dynamic_form_bi/data/models/components/form_action_data_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
-import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_bloc.dart';
-import 'package:dynamic_form_bi/presentation/blocs/dynamic_form/dynamic_form_event.dart';
 import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 IconData? mapIconNameToIconData(String name) {
   return IconTypeEnum.fromString(name).toIconData();
@@ -62,14 +58,14 @@ class _DynamicFormRendererState extends State<DynamicFormRenderer> {
         widget.onFieldChanged!(component.id, value);
       } else {
         // Create ComponentValueUpdateModel from simple value
-        final updateModel = ComponentValueUpdateModel.create(
-          componentId: component.id,
-          value: value,
-        );
+        // final updateModel = ComponentValueUpdateModel.create(
+        //   componentId: component.id,
+        //   value: value,
+        // );
 
-        context.read<DynamicFormBloc>().add(
-          UpdateFormFieldEvent(componentId: component.id, value: updateModel),
-        );
+        // context.read<DynamicFormBloc>().add(
+        //   UpdateFormFieldEvent(componentId: component.id, value: updateModel),
+        // );
       }
     } else {
       debugPrint("Error: No value received");
