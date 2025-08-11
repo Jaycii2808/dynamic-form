@@ -373,7 +373,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   // Options section widget
   Widget _buildOptionsSection(DropdownFormBuilderWidgetSuccess state) {
     return Container(
-      padding: const EdgeInsets.all(8), 
+      padding: const EdgeInsets.all(8),
       child: SharedOptionsEditorList(
         options: state.options,
         focusOptionId: state.focusOptionId,

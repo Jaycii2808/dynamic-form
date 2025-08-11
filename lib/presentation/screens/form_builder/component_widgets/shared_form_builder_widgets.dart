@@ -63,9 +63,7 @@ class SharedFormBuilderWidgets {
     Color? borderColor,
   }) {
     return Container(
-      padding:
-          padding ??
-          const EdgeInsets.all(12), 
+      padding: padding ?? const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -89,7 +87,7 @@ class SharedFormBuilderWidgets {
                         formTypeLabel,
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
-                          fontSize: 12, 
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -292,7 +290,7 @@ class SharedFormBuilderWidgets {
       style:
           textStyle ??
           const TextStyle(
-            fontSize: 18, 
+            fontSize: 18,
             fontWeight: FontWeight.w600, // Bolder font weight
             color: Colors.white,
             height: 1.3, // Better line height
@@ -303,7 +301,7 @@ class SharedFormBuilderWidgets {
             hintStyle ??
             const TextStyle(
               color: Color(0xFF9CA3AF),
-              fontSize: 18, 
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               height: 1.3,
               fontStyle: FontStyle.italic,
@@ -358,7 +356,7 @@ class SharedFormBuilderWidgets {
           const EdgeInsets.symmetric(
             vertical: 6,
             horizontal: 12,
-          ), 
+          ),
       decoration: BoxDecoration(
         color: backgroundColor ?? const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(borderRadius ?? 8),
@@ -390,7 +388,7 @@ class SharedFormBuilderWidgets {
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
         vertical: 6,
-      ), 
+      ),
       decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(
@@ -428,7 +426,7 @@ class SharedFormBuilderWidgets {
                 'Required',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 11, 
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1372,7 +1370,7 @@ class SharedFormBuilderWidgets {
     debugPrint('🔍 [buildDescriptionSection] Showing description section');
 
     return Container(
-      padding: const EdgeInsets.all(12), 
+      padding: const EdgeInsets.all(12),
       decoration: showBorder
           ? const BoxDecoration(
               border: Border(
@@ -1394,7 +1392,7 @@ class SharedFormBuilderWidgets {
                 'Description',
                 style: TextStyle(
                   color: Color(0xFF9CA3AF),
-                  fontSize: 13, 
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1479,7 +1477,7 @@ class SharedFormBuilderWidgets {
             controller: descriptionController,
             enabled: isEditing,
             style: TextStyle(
-              fontSize: 14, 
+              fontSize: 14,
               color: isEditing ? Colors.white : const Color(0xFF9CA3AF),
               height: 1.4,
             ),
@@ -1491,7 +1489,7 @@ class SharedFormBuilderWidgets {
                 color: isEditing
                     ? const Color(0xFF6B7280)
                     : const Color(0xFF9CA3AF),
-                fontSize: 14, 
+                fontSize: 14,
                 fontStyle: FontStyle.italic,
                 height: 1.4,
               ),

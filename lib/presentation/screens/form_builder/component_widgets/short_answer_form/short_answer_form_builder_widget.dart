@@ -147,18 +147,18 @@ class _ShortAnswerFormBuilderWidgetState
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 3, 
+                spacing: 3,
                 children: [
                   _buildValidationTypeSelector(state),
                   const Divider(
                     height: 6,
                     color: Color(0xFF4B5563),
-                  ), 
+                  ),
                   _buildValidationConfiguration(state),
                   const Divider(
                     height: 6,
                     color: Color(0xFF4B5563),
-                  ), 
+                  ),
                   _buildErrorMessageInput(state),
                 ],
               ),
@@ -186,7 +186,7 @@ class _ShortAnswerFormBuilderWidgetState
     return TextField(
       controller: _questionController,
       style: const TextStyle(
-        fontSize: 18, 
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Colors.white,
         height: 1.3,
@@ -195,7 +195,7 @@ class _ShortAnswerFormBuilderWidgetState
         hintText: 'Question',
         hintStyle: TextStyle(
           color: Color(0xFF9CA3AF),
-          fontSize: 18, 
+          fontSize: 18,
           fontWeight: FontWeight.w600,
           height: 1.3,
           fontStyle: FontStyle.italic,
@@ -224,7 +224,7 @@ class _ShortAnswerFormBuilderWidgetState
       text,
       style: const TextStyle(
         color: Color(0xFF9CA3AF),
-        fontSize: 10, 
+        fontSize: 10,
         fontWeight: FontWeight.w500,
       ),
     );
@@ -239,7 +239,7 @@ class _ShortAnswerFormBuilderWidgetState
       padding: const EdgeInsets.symmetric(
         horizontal: 4,
         vertical: 1,
-      ), 
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF374151),
         borderRadius: BorderRadius.circular(4),
@@ -253,10 +253,10 @@ class _ShortAnswerFormBuilderWidgetState
           style: const TextStyle(
             color: Colors.white,
             fontSize: 11,
-          ), 
+          ),
           items: items,
           isExpanded: true,
-          iconSize: 12, 
+          iconSize: 12,
         ),
       ),
     );
@@ -283,13 +283,13 @@ class _ShortAnswerFormBuilderWidgetState
       style: const TextStyle(
         color: Colors.white,
         fontSize: 11,
-      ), 
+      ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: const TextStyle(
           color: Color(0xFF9CA3AF),
           fontSize: 10,
-        ), 
+        ),
         filled: true,
         fillColor: const Color(0xFF374151),
         border: OutlineInputBorder(
@@ -305,8 +305,8 @@ class _ShortAnswerFormBuilderWidgetState
           borderSide: const BorderSide(color: Colors.blue),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 4, 
-          vertical: 3, 
+          horizontal: 4,
+          vertical: 3,
         ),
       ),
     );
@@ -317,7 +317,7 @@ class _ShortAnswerFormBuilderWidgetState
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 2, 
+      spacing: 2,
       children: [
         _buildCompactLabel('Validation type'),
         _buildCompactDropdown<ShortAnswerValidationType>(
@@ -361,7 +361,7 @@ class _ShortAnswerFormBuilderWidgetState
   Widget _buildNumberValidation(ShortAnswerFormBuilderWidgetSuccess state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 3, 
+      spacing: 3,
       children: [
         _buildCompactLabel('Action'),
         _buildCompactDropdown<NumberValidationAction>(
@@ -410,7 +410,7 @@ class _ShortAnswerFormBuilderWidgetState
   Widget _buildTextValidation(ShortAnswerFormBuilderWidgetSuccess state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 3, 
+      spacing: 3,
       children: [
         _buildCompactLabel('Action'),
         _buildCompactDropdown<TextValidationAction>(
@@ -456,7 +456,7 @@ class _ShortAnswerFormBuilderWidgetState
   Widget _buildLengthValidation(ShortAnswerFormBuilderWidgetSuccess state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 3, 
+      spacing: 3,
       children: [
         _buildCompactLabel('Length type'),
         _buildCompactDropdown<LengthValidationType>(
@@ -505,7 +505,7 @@ class _ShortAnswerFormBuilderWidgetState
   Widget _buildRegexValidation(ShortAnswerFormBuilderWidgetSuccess state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 3, 
+      spacing: 3,
       children: [
         _buildCompactLabel('Action'),
         _buildCompactDropdown<RegexValidationAction>(
