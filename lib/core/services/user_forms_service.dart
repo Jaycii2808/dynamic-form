@@ -283,7 +283,7 @@ class UserFormsService {
                     id:
                         componentData['id'] ??
                         'component_${DateTime.now().millisecondsSinceEpoch}',
-                    type: FormTypeEnum.textFieldFormType,
+                    type: FormTypeEnum.shortAnswerFormType,
                     order: componentData['order'] ?? 1,
                     config: ConfigModel(
                       label: componentData['config']?['label'] ?? 'Component',

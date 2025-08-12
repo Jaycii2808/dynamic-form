@@ -4,13 +4,7 @@ import 'package:go_router/go_router.dart';
 // Enum for form types
 enum FormType {
   dropdown,
-  textField,
-  switchType,
-  datePicker,
-  textArea,
   button,
-  radio,
-  checkbox,
 }
 
 // More options dialog option model

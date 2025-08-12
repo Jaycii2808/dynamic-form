@@ -130,13 +130,6 @@ Widget _buildNavigationButton({
   );
 }
 
-// Keep the old function for backward compatibility
-Widget formBuilderFloatingActionButtons(
-  BuildContext context,
-  FormBuilderBloc formBuilderBloc,
-) {
-  return formBuilderBottomNavigation(context, formBuilderBloc);
-}
 
 void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {
   final controller = TextEditingController();

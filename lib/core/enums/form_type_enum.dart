@@ -1,13 +1,5 @@
 enum FormTypeEnum {
-  textFieldFormType,
-  textAreaFormType,
-  dateTimePickerFormType,
-  dateTimeRangePickerFormType,
-  selectorButtonFormType,
-  switchFormType,
-  textFieldTagsFormType,
   buttonFormType,
-  container,
   dropdownFormType,
   shortAnswerFormType,
   //checkboxFormType,
@@ -70,25 +62,11 @@ enum EmailFieldTypeEnum {
   /// Convert from FormTypeEnum
   static EmailFieldTypeEnum fromFormType(FormTypeEnum formType) {
     switch (formType) {
-      case FormTypeEnum.textFieldFormType:
-        return EmailFieldTypeEnum.text;
-      case FormTypeEnum.textAreaFormType:
-        return EmailFieldTypeEnum.textarea;
-      case FormTypeEnum.dateTimePickerFormType:
-        return EmailFieldTypeEnum.date;
-      case FormTypeEnum.dateTimeRangePickerFormType:
-        return EmailFieldTypeEnum.dateRange;
-      case FormTypeEnum.selectorButtonFormType:
-      case FormTypeEnum.switchFormType:
-        return EmailFieldTypeEnum.boolean;
-      case FormTypeEnum.textFieldTagsFormType:
-        return EmailFieldTypeEnum.tags;
       case FormTypeEnum.dropdownFormType:
         return EmailFieldTypeEnum.dropdown;
       case FormTypeEnum.shortAnswerFormType:
         return EmailFieldTypeEnum.text;
       case FormTypeEnum.buttonFormType:
-      case FormTypeEnum.container:
       case FormTypeEnum.unknown:
         return EmailFieldTypeEnum.unknown;
     }

@@ -4,24 +4,10 @@ import 'package:flutter/material.dart';
 
 Widget buildComponentPreview(DynamicFormModel component) {
   switch (component.type) {
-    case FormTypeEnum.textFieldFormType:
-      return _buildTextFieldPreview(component);
-    case FormTypeEnum.textAreaFormType:
-      return _buildTextAreaPreview(component);
-    case FormTypeEnum.switchFormType:
-      return _buildSwitchPreview(component);
-    case FormTypeEnum.selectorButtonFormType:
-      return _buildSelectorButtonPreview(component);
-    case FormTypeEnum.dateTimePickerFormType:
-      return _buildDateTimePickerPreview(component);
-    case FormTypeEnum.dateTimeRangePickerFormType:
-      return _buildDateTimeRangePickerPreview(component);
     case FormTypeEnum.dropdownFormType:
       return _buildDropdownPreview(component);
     case FormTypeEnum.shortAnswerFormType:
-      return _buildTextFieldPreview(
-        component,
-      ); // Use same preview as text field
+      return _buildShortAnswerPreview(component);
     case FormTypeEnum.buttonFormType:
       return _buildButtonPreview(component);
     default:
@@ -29,7 +15,7 @@ Widget buildComponentPreview(DynamicFormModel component) {
   }
 }
 
-Widget _buildTextFieldPreview(DynamicFormModel component) {
+Widget _buildShortAnswerPreview(DynamicFormModel component) {
   return Container(
     height: 40,
     decoration: BoxDecoration(
@@ -44,7 +30,7 @@ Widget _buildTextFieldPreview(DynamicFormModel component) {
           Padding(
             padding: const EdgeInsets.only(left: 8, top: 2),
             child: Text(
-            "Label",
+              "Label",
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 8,
@@ -66,7 +52,7 @@ Widget _buildTextFieldPreview(DynamicFormModel component) {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    component.config?.placeholder ?? 'Text Field',
+                    component.config?.placeholder ?? 'Short Answer',
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 9,
@@ -78,234 +64,6 @@ Widget _buildTextFieldPreview(DynamicFormModel component) {
                 ),
               ),
               const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildTextAreaPreview(DynamicFormModel component) {
-  return Container(
-    height: 100,
-    decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: Colors.grey[600]!),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (component.config?.label != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2),
-            child: Text(
-              component.config!.label!,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 8,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              component.config?.placeholder ?? 'Text Area',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 9,
-                fontStyle: FontStyle.italic,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildSwitchPreview(DynamicFormModel component) {
-  return Container(
-    height: 40,
-    decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: Colors.grey[600]!),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              const Icon(Icons.toggle_on, color: Colors.blue, size: 12),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  component.config!.label!,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 8,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildSelectorButtonPreview(DynamicFormModel component) {
-  return Container(
-    height: 40,
-    decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: Colors.grey[600]!),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.radio_button_checked,
-                color: Colors.blue,
-                size: 12,
-              ),
-              const SizedBox(width: 8),
-              if (component.config?.label != null)
-                Expanded(
-                  child: Text(
-                    component.config!.label!,
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 8,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildDateTimePickerPreview(DynamicFormModel component) {
-  return Container(
-    height: 40,
-    decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: Colors.grey[600]!),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (component.config?.label != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2),
-            child: Text(
-              component.config!.label!,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 8,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        Expanded(
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              const Icon(Icons.calendar_today, color: Colors.blue, size: 12),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  component.config?.placeholder ?? 'Select Date',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 9,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildDateTimeRangePickerPreview(DynamicFormModel component) {
-  return Container(
-    height: 40,
-    decoration: BoxDecoration(
-      color: Colors.grey[800],
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(color: Colors.grey[600]!),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (component.config?.label != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2),
-            child: Text(
-              component.config!.label!,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 8,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        Expanded(
-          child: Row(
-            spacing: 8,
-            children: [
-              const Icon(Icons.date_range, color: Colors.blue, size: 12),
-              Expanded(
-                child: Text(
-                  component.config?.placeholder ?? 'Select Date Range',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 9,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
             ],
           ),
         ),

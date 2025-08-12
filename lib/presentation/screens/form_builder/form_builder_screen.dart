@@ -176,10 +176,8 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ),
           ],
         ),
-        floatingActionButton: formBuilderFloatingActionButtons(
-          context,
-          formBuilderBloc,
-        ),
+        bottomNavigationBar: formBuilderBottomNavigation( context,
+          formBuilderBloc,),
       ),
     );
   }

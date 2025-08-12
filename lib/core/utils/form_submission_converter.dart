@@ -145,16 +145,8 @@ class FormSubmissionConverter {
   static bool _isInputComponent(FormTypeEnum type) {
     switch (type) {
       case FormTypeEnum.buttonFormType:
-      case FormTypeEnum.container:
       case FormTypeEnum.unknown:
         return false;
-      case FormTypeEnum.textFieldFormType:
-      case FormTypeEnum.textAreaFormType:
-      case FormTypeEnum.dateTimePickerFormType:
-      case FormTypeEnum.dateTimeRangePickerFormType:
-      case FormTypeEnum.selectorButtonFormType:
-      case FormTypeEnum.switchFormType:
-      case FormTypeEnum.textFieldTagsFormType:
       case FormTypeEnum.dropdownFormType:
       case FormTypeEnum.shortAnswerFormType:
         return true;
@@ -164,22 +156,11 @@ class FormSubmissionConverter {
   /// Get default value for component type when no value is provided
   static dynamic _getDefaultValueForType(FormTypeEnum type) {
     switch (type) {
-      case FormTypeEnum.textFieldFormType:
-      case FormTypeEnum.textAreaFormType:
       case FormTypeEnum.shortAnswerFormType:
         return '(No value entered)';
-      case FormTypeEnum.dateTimePickerFormType:
-      case FormTypeEnum.dateTimeRangePickerFormType:
-        return '(No date selected)';
-      case FormTypeEnum.selectorButtonFormType:
-      case FormTypeEnum.switchFormType:
-        return false;
-      case FormTypeEnum.textFieldTagsFormType:
-        return <String>[];
       case FormTypeEnum.dropdownFormType:
         return '(No option selected)';
       case FormTypeEnum.buttonFormType:
-      case FormTypeEnum.container:
       case FormTypeEnum.unknown:
         return '(No value)';
     }
