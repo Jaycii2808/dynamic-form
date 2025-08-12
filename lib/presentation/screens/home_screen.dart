@@ -72,7 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHeroSection(),
                 BlocBuilder<UserFormsBloc, UserFormsState>(
                   builder: (context, state) {
-                    final imported = state is UserFormsSuccess ? state.importedForm : null;
+                    final imported = state is UserFormsSuccess
+                        ? state.importedForm
+                        : null;
                     if (imported == null) return const SizedBox.shrink();
                     return _buildImportedFormSection(imported);
                   },
@@ -431,7 +433,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       onPressed: () => showDialog(
                         context: context,
-                        builder: (context) => _buildTemplatePreviewDialog(template),
+                        builder: (context) =>
+                            _buildTemplatePreviewDialog(template),
                       ),
                       icon: const Icon(
                         Icons.visibility,
@@ -671,7 +674,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final pages = formData['pages'] as List<dynamic>? ?? [];
       final totalComponents = pages.fold<int>(
         0,
-        (sum, page) => sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
+        (sum, page) =>
+            sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
       );
 
       return Column(
@@ -940,7 +944,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     expands: true,
                     autofocus: true,
                     decoration: const InputDecoration(
-                      hintText: '{\n  "formId": "...",\n  "name": "...",\n  "pages": [ ... ]\n}',
+                      hintText:
+                          '{\n  "formId": "...",\n  "name": "...",\n  "pages": [ ... ]\n}',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(12),
                     ),

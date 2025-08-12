@@ -54,6 +54,56 @@ class SharedOptimizedInputWidgets {
     );
   }
 
+  /// Builds an optimized option input TextField with consistent focus handling for dropdown options
+  static Widget buildOptimizedOptionInput({
+    required BuildContext context,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required Function(String) onUpdate,
+    String? hintText,
+    TextStyle? textStyle,
+    TextStyle? hintStyle,
+    VoidCallback? onUpdateComponent,
+  }) {
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      style:
+          textStyle ??
+          const TextStyle(
+            fontSize: 13,
+            color: Colors.white,
+          ),
+      decoration: InputDecoration(
+        hintText: hintText ?? 'Option',
+        hintStyle:
+            hintStyle ??
+            const TextStyle(
+              color: Color(0xFF9CA3AF),
+              fontSize: 13,
+            ),
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+      ),
+      onTapOutside: (event) {
+        FocusScope.of(context).unfocus();
+        onUpdate(controller.text);
+        onUpdateComponent?.call();
+      },
+      onSubmitted: (value) {
+        FocusScope.of(context).unfocus();
+        onUpdate(value);
+        onUpdateComponent?.call();
+      },
+      onEditingComplete: () {
+        FocusScope.of(context).unfocus();
+        onUpdate(controller.text);
+        onUpdateComponent?.call();
+      },
+      onChanged: (value) => onUpdate(value),
+    );
+  }
+
   /// Builds an optimized dropdown with consistent focus handling
   static Widget buildOptimizedDropdown<T>({
     required T value,

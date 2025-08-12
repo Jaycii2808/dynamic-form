@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
+import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/shared_widgets/shared_optimized_input_widgets.dart';
 
 class SharedOptionsEditorList extends StatefulWidget {
   final List<Option> options;
@@ -14,6 +15,7 @@ class SharedOptionsEditorList extends StatefulWidget {
   final void Function(int index)? onNavigateTap;
   final VoidCallback onAddOption;
   final String Function(Option option)? getNavigationLabel;
+  final VoidCallback? onUpdateComponent; // Add onUpdateComponent callback
 
   const SharedOptionsEditorList({
     super.key,
@@ -27,6 +29,7 @@ class SharedOptionsEditorList extends StatefulWidget {
     this.focusOptionId,
     this.onFocusHandled,
     this.getNavigationLabel,
+    this.onUpdateComponent, // Add to constructor
   });
 
   @override
@@ -199,23 +202,12 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
 
   Widget _buildOptionInput(Option option, int index) {
     return Expanded(
-      child: TextField(
+      child: SharedOptimizedInputWidgets.buildOptimizedOptionInput(
+        context: context,
         controller: _getControllerForOption(option.value, option.label),
         focusNode: _getFocusNodeForOption(option.value),
-        style: const TextStyle(
-          fontSize: 13,
-          color: Colors.white,
-        ),
-        decoration: const InputDecoration(
-          hintText: 'Option',
-          hintStyle: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 13,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) => widget.onLabelChanged(index, value),
+        onUpdate: (value) => widget.onLabelChanged(index, value),
+        onUpdateComponent: widget.onUpdateComponent,
       ),
     );
   }

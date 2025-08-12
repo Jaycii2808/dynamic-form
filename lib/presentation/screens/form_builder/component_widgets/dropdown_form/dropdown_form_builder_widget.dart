@@ -410,6 +410,7 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
           );
           _updateComponent();
         },
+        onUpdateComponent: _updateComponent, // Add onUpdateComponent callback
         getNavigationLabel: (option) =>
             _getNavigationActionText(option, state.availablePages),
       ),
