@@ -147,7 +147,7 @@ class _DynamicButtonState extends State<DynamicButton> {
 
     return Text(
       btnState.buttonText,
-      style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+      style: TextStyle(color: Colors.black,fontSize: fontSize, fontWeight: fontWeight),
     );
   }
 
@@ -175,7 +175,7 @@ class _DynamicButtonState extends State<DynamicButton> {
             boxShadow: elevation > 0
                 ? [
                     BoxShadow(
-                      color: btnState.style.shadowColor ?? Colors.purpleAccent,
+                      color: btnState.style.shadowColor ?? Colors.blue,
                       blurRadius: elevation.toDouble(),
                       offset: const Offset(0, 2),
                     ),

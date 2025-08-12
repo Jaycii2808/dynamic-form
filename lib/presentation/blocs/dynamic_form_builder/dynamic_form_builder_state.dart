@@ -19,6 +19,8 @@ abstract class FormBuilderState extends Equatable {
   final int? hoverTargetIndex;
   // Force rebuild timestamp
   final int? rebuildTimestamp;
+  // Highlight target component id for validation error navigation
+  final String? highlightedComponentId;
 
   const FormBuilderState({
     this.components = const [],
@@ -35,6 +37,7 @@ abstract class FormBuilderState extends Equatable {
     this.hoveredComponent,
     this.hoverTargetIndex,
     this.rebuildTimestamp,
+    this.highlightedComponentId,
   });
 
   // Get current page components
@@ -85,6 +88,7 @@ abstract class FormBuilderState extends Equatable {
     hoveredComponent,
     hoverTargetIndex,
     rebuildTimestamp,
+    highlightedComponentId,
   ];
 }
 
@@ -104,6 +108,7 @@ class FormBuilderInitial extends FormBuilderState {
     super.hoveredComponent,
     super.hoverTargetIndex,
     super.rebuildTimestamp,
+    super.highlightedComponentId,
   });
 }
 
@@ -123,6 +128,7 @@ class FormBuilderLoading extends FormBuilderState {
     super.hoveredComponent,
     super.hoverTargetIndex,
     super.rebuildTimestamp,
+    super.highlightedComponentId,
   });
 
   FormBuilderLoading.fromState({required FormBuilderState state})
@@ -141,6 +147,7 @@ class FormBuilderLoading extends FormBuilderState {
         hoveredComponent: state.hoveredComponent,
         hoverTargetIndex: state.hoverTargetIndex,
         rebuildTimestamp: state.rebuildTimestamp,
+        highlightedComponentId: state.highlightedComponentId,
       );
 }
 
@@ -160,6 +167,7 @@ class FormBuilderSuccess extends FormBuilderState {
     super.hoveredComponent,
     super.hoverTargetIndex,
     super.rebuildTimestamp,
+    super.highlightedComponentId,
   });
 
   FormBuilderSuccess.fromState({required FormBuilderState state})
@@ -178,6 +186,7 @@ class FormBuilderSuccess extends FormBuilderState {
         hoveredComponent: state.hoveredComponent,
         hoverTargetIndex: state.hoverTargetIndex,
         rebuildTimestamp: state.rebuildTimestamp,
+        highlightedComponentId: state.highlightedComponentId,
       );
 
   FormBuilderSuccess copyWith({
@@ -195,6 +204,7 @@ class FormBuilderSuccess extends FormBuilderState {
     DynamicFormModel? hoveredComponent,
     int? hoverTargetIndex,
     int? rebuildTimestamp,
+    String? highlightedComponentId,
   }) {
     return FormBuilderSuccess(
       components: components ?? this.components,
@@ -213,6 +223,8 @@ class FormBuilderSuccess extends FormBuilderState {
       hoveredComponent: hoveredComponent ?? this.hoveredComponent,
       hoverTargetIndex: hoverTargetIndex ?? this.hoverTargetIndex,
       rebuildTimestamp: rebuildTimestamp ?? this.rebuildTimestamp,
+      highlightedComponentId:
+          highlightedComponentId ?? this.highlightedComponentId,
     );
   }
 }
@@ -236,6 +248,7 @@ class FormBuilderError extends FormBuilderState {
     super.hoverTargetIndex,
     super.rebuildTimestamp,
     required this.errorMessage,
+    super.highlightedComponentId,
   });
 
   @override
@@ -255,5 +268,6 @@ class FormBuilderError extends FormBuilderState {
     hoveredComponent,
     hoverTargetIndex,
     rebuildTimestamp,
+    highlightedComponentId,
   ];
 }

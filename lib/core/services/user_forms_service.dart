@@ -126,10 +126,25 @@ class UserFormsService {
           .collection(_userFormsCollection)
           .where('userId', isEqualTo: userId ?? _defaultUserId)
           .where('formId', isEqualTo: formId)
+          .where('isActive', isEqualTo: true)
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        throw Exception('User form not found: $formId');
+        // If not found, create (upsert behavior)
+        await _firestore.collection(_userFormsCollection).add({
+          'userId': userId ?? _defaultUserId,
+          'formId': formId,
+          'name': formBuilderModel.name,
+          'description': 'User created form',
+          'formData': formBuilderModel.toJson(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'isActive': true,
+        });
+        debugPrint(
+          '✅ [UserFormsService] User form not found. Created new form: $formId',
+        );
+        return;
       }
 
       final docRef = querySnapshot.docs.first.reference;
@@ -159,6 +174,7 @@ class UserFormsService {
           .collection(_userFormsCollection)
           .where('userId', isEqualTo: userId ?? _defaultUserId)
           .where('formId', isEqualTo: formId)
+          .where('isActive', isEqualTo: true)
           .get();
 
       if (querySnapshot.docs.isEmpty) {

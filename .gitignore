@@ -35,3 +35,4 @@ doc/api/
 /lib/dotenv
 /lib/config_json_files/
 .cursorignore
+/.firebase/

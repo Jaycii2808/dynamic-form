@@ -1,4 +1,3 @@
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/presentation/screens/form_builder/component_widgets/dropdown_form/dropdown_action_enum.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
@@ -132,7 +131,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize:
-                        (styleModel.fontSize ?? 16) + 4, // Larger font size
+                        (styleModel.fontSize ?? 16) , // Larger font size
                     fontWeight: FontWeight.w600, // Bolder font weight
                     height: 1.3, // Better line height
                   ),
@@ -222,7 +221,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
                 // Set transparent background to avoid conflicts with container
                 filled: widget.isSharedForm,
                 fillColor: widget.isSharedForm ? Colors.transparent : null,
-                prefixIcon: _buildPrefixIcon(component, currentState),
                 prefixIconConstraints: const BoxConstraints(
                   minWidth: 40,
                   minHeight: 0,
@@ -366,28 +364,6 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
         stateStyle?.borderWidth ?? styleModel.borderWidth ?? 1.0;
 
     return Border.all(color: color, width: width);
-  }
-
-  Widget? _buildPrefixIcon(
-    DynamicFormModel component,
-    StatesEnum currentState,
-  ) {
-    final stateStyle = ReusedWidget.getStateStyle(
-      component.states,
-      currentState,
-    );
-    final iconName = component.config?.icon?.toString();
-
-    if (iconName != null && iconName.isNotEmpty && stateStyle != null) {
-      final iconColor = stateStyle.iconColor;
-      final iconSize = stateStyle.iconSize;
-      final iconData = IconTypeEnum.fromString(iconName).toIconData();
-
-      if (iconData != null) {
-        return Icon(iconData, color: iconColor, size: iconSize);
-      }
-    }
-    return null;
   }
 
   String? _getHelperText(

@@ -13,8 +13,13 @@ import 'package:go_router/go_router.dart';
 class ValidationResult {
   final bool isValid;
   final String? errorMessage;
+  final String? componentId; // Offending component id for UI highlight
 
-  ValidationResult({required this.isValid, this.errorMessage});
+  ValidationResult({
+    required this.isValid,
+    this.errorMessage,
+    this.componentId,
+  });
 }
 
 PreferredSizeWidget formBuilderAppBar(
@@ -239,13 +244,6 @@ void _handleSubmitForm(
   FormBuilderModel? existingForm,
   bool isEditing = false,
 }) {
-  // Validate form before allowing preview and share
-  final validationResult = _validateFormBeforePreview(state);
-  if (!validationResult.isValid) {
-    _showValidationErrorDialog(context, validationResult.errorMessage!);
-    return;
-  }
-
   // Show loading dialog
   showDialog(
     context: context,
@@ -275,9 +273,6 @@ void _handleSubmitForm(
   formBuilderBloc.add(const ForceRebuildUIEvent());
 
   // Wait for onTapOutside events to process and state to update
-  // Increased delay to account for debounced updates in components (300ms) + additional buffer
-  // Also account for any additional processing time needed for force save events
-
   Future.delayed(const Duration(milliseconds: 1000), () {
     // Close loading dialog
     router.pop();
@@ -286,15 +281,20 @@ void _handleSubmitForm(
       // Get the LATEST state from the bloc after the delay
       final currentState = formBuilderBloc.state;
 
-      // Logging removed; use Bloc Observer
-      // Log component details for debugging
-      for (int i = 0; i < currentState.pages.length; i++) {
-        final page = currentState.pages[i];
-        // Logging removed; use Bloc Observer
-        for (int j = 0; j < page.components.length; j++) {
-          //final component = page.components[j];
-          // Logging removed; use Bloc Observer
+      // Validate form after forcing save and rebuild
+      final validationResult = _validateFormBeforePreview(currentState);
+      if (!validationResult.isValid) {
+        // Highlight offending component if available
+        if (validationResult.componentId != null) {
+          formBuilderBloc.add(
+            HighlightComponentEvent(validationResult.componentId!),
+          );
         }
+        if ( context.mounted){
+          _showValidationErrorDialog(context, validationResult.errorMessage!);
+        }
+
+        return;
       }
 
       // Create FormBuilderModel with current state
@@ -335,8 +335,6 @@ void _handleSubmitForm(
       );
     } catch (e) {
       debugPrint('❌ [FormBuilderAppBar] Error creating FormBuilderModel: $e');
-      // Use a simpler error handling approach that doesn't require context
-      // Show a snackbar or use a different approach that doesn't require BuildContext
       debugPrint('❌ [FormBuilderAppBar] Error details: $e');
     }
   });
@@ -396,6 +394,7 @@ ValidationResult _validateComponent(DynamicFormModel component) {
       return ValidationResult(
         isValid: false,
         errorMessage: 'Component "${component.id}" has no configuration',
+        componentId: component.id,
       );
     }
 
@@ -405,6 +404,7 @@ ValidationResult _validateComponent(DynamicFormModel component) {
         isValid: false,
         errorMessage:
             'Component "${component.id}" must have a question/label before sharing the form',
+        componentId: component.id,
       );
     }
 
@@ -415,17 +415,7 @@ ValidationResult _validateComponent(DynamicFormModel component) {
           isValid: false,
           errorMessage:
               'Required component "${component.id}" must have a label',
-        );
-      }
-    }
-
-    // Check placeholder text for input components
-    if (component.type == FormTypeEnum.textFieldFormType ||
-        component.type == FormTypeEnum.textAreaFormType ||
-        component.type == FormTypeEnum.dropdownFormType) {
-      if (config.placeholder == null || config.placeholder!.trim().isEmpty) {
-        debugPrint(
-          '⚠️ [FormBuilderAppBar] Component "${component.id}" has no placeholder',
+          componentId: component.id,
         );
       }
     }
@@ -455,7 +445,6 @@ ValidationResult _validateComponent(DynamicFormModel component) {
       case FormTypeEnum.container:
         return _validateContainer(component);
       default:
-        // For other components, just do basic validation
         debugPrint(
           '⚠️ [FormBuilderAppBar] Unknown component type: ${component.type}, using basic validation',
         );
@@ -467,6 +456,7 @@ ValidationResult _validateComponent(DynamicFormModel component) {
       isValid: false,
       errorMessage:
           'Component "${component.id}" validation error: ${e.toString()}',
+      componentId: component.id,
     );
   }
 }
@@ -732,6 +722,7 @@ ValidationResult _validateShortAnswer(DynamicFormModel component) {
       return ValidationResult(
         isValid: false,
         errorMessage: 'ShortAnswer "${component.id}" has no configuration',
+        componentId: component.id,
       );
     }
 
@@ -741,6 +732,7 @@ ValidationResult _validateShortAnswer(DynamicFormModel component) {
         isValid: false,
         errorMessage:
             'ShortAnswer "${component.id}" must have a question/label before sharing the form',
+        componentId: component.id,
       );
     }
 
@@ -754,6 +746,7 @@ ValidationResult _validateShortAnswer(DynamicFormModel component) {
       isValid: false,
       errorMessage:
           'ShortAnswer "${component.id}" validation error: ${e.toString()}',
+      componentId: component.id,
     );
   }
 }

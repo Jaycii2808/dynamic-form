@@ -91,7 +91,7 @@ class _DynamicShortAnswerState extends State<DynamicShortAnswer> {
                 style: TextStyle(
                   color: style.textColor ?? Colors.white,
                   fontSize: style.fontSize ?? 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               if (isRequired) ...[

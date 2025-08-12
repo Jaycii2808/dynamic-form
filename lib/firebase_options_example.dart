@@ -1,1 +1,1 @@
-// run firebase to auto create options
+// run firebase to auto create options or ask administrator

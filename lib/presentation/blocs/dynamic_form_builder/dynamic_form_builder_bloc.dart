@@ -5,6 +5,7 @@ import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,7 +53,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<CopyPageEvent>(_onCopyPage);
     on<SubmitFormEvent>(_onSubmitForm);
     on<AddPageWithTitleEvent>(_onAddPageWithTitle);
-    on<UpdateFirstPageTitleEvent>(_onUpdateFirstPageTitle);
     // New event handlers for insert logic
     on<InsertComponentEvent>(_onInsertComponent);
     on<StartHoverEvent>(_onStartHover);
@@ -69,6 +69,8 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<LoadExistingFormEvent>(_onLoadExistingForm);
     // Force save all components event
     on<ForceSaveAllComponentsEvent>(_onForceSaveAllComponents);
+    // Highlight a specific component
+    on<HighlightComponentEvent>(_onHighlightComponent);
   }
 
   Future<void> _onLoadComponents(
@@ -151,11 +153,21 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
   ) {
     // Logging removed; use Bloc Observer
 
+    // Always assign a fresh unique id when adding from palette to avoid duplicates
+    final String uniqueId =
+        '${event.component.id}_${DateTime.now().millisecondsSinceEpoch}';
+    final DynamicFormModel componentWithUniqueId = event.component.copyWith(
+      id: uniqueId,
+    );
+    final DynamicFormModel componentWithDefaults = _applyDefaultLabelIfNeeded(
+      componentWithUniqueId,
+    );
+
     // Add component to the current page
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
         final updatedComponents = List<DynamicFormModel>.from(page.components)
-          ..add(event.component);
+          ..add(componentWithDefaults);
         return page.copyWith(components: updatedComponents);
       }
       return page;
@@ -351,7 +363,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       return page;
     }).toList();
 
-   // final availablePages = updatedPages.map((page) => page.title).toList();
+    // final availablePages = updatedPages.map((page) => page.title).toList();
 
     emit(
       FormBuilderSuccess.fromState(state: state).copyWith(
@@ -575,10 +587,20 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
   ) {
     // Logging removed; use Bloc Observer
 
+    // Always assign a fresh unique id when inserting from palette to avoid duplicates
+    final String uniqueId =
+        '${event.component.id}_${DateTime.now().millisecondsSinceEpoch}';
+    final DynamicFormModel componentWithUniqueId = event.component.copyWith(
+      id: uniqueId,
+    );
+    final DynamicFormModel componentWithDefaults = _applyDefaultLabelIfNeeded(
+      componentWithUniqueId,
+    );
+
     final updatedPages = state.pages.map((page) {
       if (page.pageId == state.currentPageId) {
         final updatedComponents = List<DynamicFormModel>.from(page.components);
-        updatedComponents.insert(event.insertIndex, event.component);
+        updatedComponents.insert(event.insertIndex, componentWithDefaults);
         return page.copyWith(components: updatedComponents);
       }
       return page;
@@ -873,5 +895,34 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
         rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
       ),
     );
+  }
+
+  void _onHighlightComponent(
+    HighlightComponentEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        highlightedComponentId: event.componentId,
+        rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
+
+  // Apply default label for specific component types when missing
+  DynamicFormModel _applyDefaultLabelIfNeeded(DynamicFormModel component) {
+    if (component.type == FormTypeEnum.dropdownFormType) {
+      final String? currentLabel = component.config?.label;
+      final bool isEmpty = currentLabel == null || currentLabel.trim().isEmpty;
+      if (isEmpty) {
+        final updatedConfig =
+            component.config?.copyWith(
+              label: '',
+            ) ??
+            const ConfigModel(label: '');
+        return component.copyWith(config: updatedConfig);
+      }
+    }
+    return component;
   }
 }

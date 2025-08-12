@@ -55,10 +55,11 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      // final formId = await _userFormsService.saveUserForm(
-      //   formBuilderModel: event.formBuilderModel,
-      //   userId: event.userId,
-      // );
+      // Persist the form first
+      await _userFormsService.saveUserForm(
+        formBuilderModel: event.formBuilderModel,
+        userId: event.userId,
+      );
 
       // Reload user forms after saving
       final userForms = await _userFormsService.getUserForms(

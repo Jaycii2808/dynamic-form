@@ -340,17 +340,25 @@ Widget _buildComponentWithDropZone(
               color: const Color(0xFF000000),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDragOver || isHovering
-                    ? Colors.blue
-                    : Colors.grey[200]!,
-                width: isDragOver || isHovering ? 2 : 1,
+                color: (state.highlightedComponentId == component.id)
+                    ? Colors.red
+                    : (isDragOver || isHovering
+                          ? Colors.blue
+                          : Colors.grey[200]!),
+                width: (state.highlightedComponentId == component.id)
+                    ? 3
+                    : (isDragOver || isHovering ? 2 : 1),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDragOver || isHovering
-                      ? Colors.blue.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: 0.05),
-                  blurRadius: isDragOver || isHovering ? 8 : 4,
+                  color: (state.highlightedComponentId == component.id)
+                      ? Colors.red.withValues(alpha: 0.2)
+                      : (isDragOver || isHovering
+                            ? Colors.blue.withValues(alpha: 0.2)
+                            : Colors.black.withValues(alpha: 0.05)),
+                  blurRadius: (state.highlightedComponentId == component.id)
+                      ? 10
+                      : (isDragOver || isHovering ? 8 : 4),
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -358,16 +366,25 @@ Widget _buildComponentWithDropZone(
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: isHovering
+                gradient: (state.highlightedComponentId == component.id)
                     ? LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.blue.withValues(alpha: 0.05),
-                          Colors.blue.withValues(alpha: 0.02),
+                          Colors.red.withValues(alpha: 0.06),
+                          Colors.red.withValues(alpha: 0.03),
                         ],
                       )
-                    : null,
+                    : (isHovering
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.blue.withValues(alpha: 0.05),
+                                Colors.blue.withValues(alpha: 0.02),
+                              ],
+                            )
+                          : null),
               ),
               child: Row(
                 children: [
@@ -381,6 +398,7 @@ Widget _buildComponentWithDropZone(
                         context,
                         state,
                         pageIndex, // Pass the page index
+                        componentIndex, // Pass the component index for unique keys
                       ),
                     ),
                   ),
@@ -572,7 +590,8 @@ Widget _buildComponentWidget(
   FormBuilderBloc formBuilderBloc,
   BuildContext context,
   FormBuilderState state,
-  int pageIndex, // Add pageIndex parameter
+  int pageIndex, // Page index
+  int componentIndex, // Component index within the page
 ) {
   // Check if component is dropdown type
   if (component.type == FormTypeEnum.dropdownFormType) {
@@ -588,7 +607,7 @@ Widget _buildComponentWidget(
       create: (context) => DropdownFormBuilderWidgetBloc(),
       child: DropdownFormBuilderWidget(
         key: ValueKey(
-          '${component.id}_${state.currentPageId}_$currentPageIndex',
+          '${component.id}_${state.currentPageId}_${currentPageIndex}_$componentIndex',
         ), // Unique key per component per page
         component: component,
         availablePages: availablePages, // Pass current available pages
@@ -643,7 +662,7 @@ Widget _buildComponentWidget(
       create: (context) => ShortAnswerFormBuilderWidgetBloc(),
       child: ShortAnswerFormBuilderWidget(
         key: ValueKey(
-          '${component.id}_${state.currentPageId}_$pageIndex',
+          '${component.id}_${state.currentPageId}_${pageIndex}_$componentIndex',
         ),
         component: component,
         onComponentUpdate: (updatedComponent) {
@@ -696,7 +715,7 @@ Widget _buildComponentWidget(
       ),
       child: ReusedWidget.buildFormComponent(
         key: ValueKey(
-          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_$state.rebuildTimestamp',
+          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_${state.rebuildTimestamp}_${pageIndex}_$componentIndex',
         ), // Force rebuild when config changes or rebuildTimestamp changes
         component: component,
         onComponentValueChange: (componentId, value) => formBuilderBloc.add(

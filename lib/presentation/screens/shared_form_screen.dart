@@ -381,14 +381,14 @@ class SharedFormScreen extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.arrow_back,
-                            color: Colors.white,
+                            color: Colors.black,
                             size: 20,
                           ),
                           SizedBox(width: 8),
                           Text(
                             'Back',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),

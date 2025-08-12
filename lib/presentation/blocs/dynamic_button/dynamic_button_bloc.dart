@@ -1,6 +1,5 @@
 
 import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
-import 'package:dynamic_form_bi/core/enums/icon_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/data/models/style/style_model.dart';
@@ -165,10 +164,10 @@ class DynamicButtonBloc extends Bloc<DynamicButtonEvent, DynamicButtonState> {
 
     // Icon
     IconData? iconData;
-    final iconName = config.icon?.toString() ?? style.icon;
-    if (iconName != null && iconName.isNotEmpty) {
-      iconData = IconTypeEnum.fromString(iconName).toIconData();
-    }
+    //final iconName = config.icon?.toString() ?? style.icon;
+    // if (iconName != null && iconName.isNotEmpty) {
+    //   iconData = IconTypeEnum.fromString(iconName).toIconData();
+    // }
 
     return _Computed(
       config: config,

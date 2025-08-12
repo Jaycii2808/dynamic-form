@@ -5,7 +5,7 @@ import 'package:dynamic_form_bi/data/models/components/component_values_model.da
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_page_screen.dart';
-import 'package:dynamic_form_bi/presentation/widgets/dialogs/email_input_dialog.dart';
+import 'package:dynamic_form_bi/presentation/widgets/item_widgets/email_input_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -78,7 +78,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         controller: _tabController,
         tabs: const [
           Tab(text: 'Form Preview', icon: Icon(Icons.visibility)),
-          Tab(text: 'Multi-Page JSON', icon: Icon(Icons.pages)),
+          Tab(text: 'JSON', icon: Icon(Icons.pages)),
         ],
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey,
@@ -232,13 +232,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   // Open actual dynamic form multiscreen with current data
   void _openActualDynamicForm() async {
     try {
-      // Validate form before sharing
-      final validationResult = _validateFormBeforeShare();
-      if (!validationResult.isValid) {
-        _showValidationErrorDialog(validationResult.errorMessage!);
-        return;
-      }
-
       // Show email input dialog first
       final emailData = await showDialog<Map<String, String>>(
         context: context,
@@ -936,35 +929,6 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     }
   }
 
-  // Show validation error dialog
-  void _showValidationErrorDialog(String errorMessage) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2D2D2D),
-        title: const Row(
-          children: [
-            Icon(Icons.error, color: Colors.red),
-            SizedBox(width: 8),
-            Text(
-              'Form Validation Error',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ],
-        ),
-        content: Text(
-          errorMessage,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showShareSuccessDialog(
     String shareableLink,

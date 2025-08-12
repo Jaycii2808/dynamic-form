@@ -305,3 +305,12 @@ class LoadExistingFormEvent extends FormBuilderEvent {
 class ForceSaveAllComponentsEvent extends FormBuilderEvent {
   const ForceSaveAllComponentsEvent();
 }
+
+/// Ask UI to highlight and scroll to a specific component by id
+class HighlightComponentEvent extends FormBuilderEvent {
+  final String componentId;
+  const HighlightComponentEvent(this.componentId);
+
+  @override
+  List<Object?> get props => [componentId];
+}

@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:dynamic_form_bi/core/enums/date_picker_enum.dart';
 import 'package:dynamic_form_bi/data/models/components/component_values_model.dart';
 import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
 import 'package:dynamic_form_bi/data/models/saved_form/saved_form_data_model.dart';
@@ -354,9 +352,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
   }
 
   Widget _buildFormCard(SavedFormModel form) {
-    final dateFormat = DateFormat(
-      DateFormatCustomPattern.mmmDdYyyyHhMm.pattern,
-    );
+    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

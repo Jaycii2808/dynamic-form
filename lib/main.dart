@@ -1,6 +1,5 @@
 import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
-import 'package:dynamic_form_bi/data/repositories/form_repositories.dart';
 import 'package:dynamic_form_bi/firebase_options.dart';
 import 'package:dynamic_form_bi/presentation/app_router.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_button/dynamic_button_bloc.dart';
@@ -25,7 +24,6 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await RemoteConfigService().initialize();
   await dotenv.load(fileName: "lib/dotenv");
-  await FormMemoryRepository.loadTemplatesFromStorage();
   runApp(const MyApp());
 }
 
