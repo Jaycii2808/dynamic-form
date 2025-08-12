@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class FormBuilderScreen extends StatefulWidget {
-  static const String routeName = '/form-builder';
+  static const String routePath = '/form-builder';
   final FormBuilderModel? existingForm;
   final bool isEditing;
   final String? editingFormId;
@@ -167,6 +167,7 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
           formBuilderBloc,
           existingForm: widget.existingForm,
           isEditing: widget.isEditing,
+          editingFormId: widget.editingFormId,
         ),
         backgroundColor: const Color(0xFF000000),
         body: Column(
@@ -176,8 +177,10 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: formBuilderBottomNavigation( context,
-          formBuilderBloc,),
+        bottomNavigationBar: formBuilderBottomNavigation(
+          context,
+          formBuilderBloc,
+        ),
       ),
     );
   }

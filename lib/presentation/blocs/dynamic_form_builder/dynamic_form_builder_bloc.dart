@@ -978,7 +978,7 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       if (page.pageId == sourcePageId) {
         final comps = List<DynamicFormModel>.from(page.components);
         if (sourceIndex >= 0 && sourceIndex < comps.length) {
-          final removed = comps.removeAt(sourceIndex);
+          // final removed = comps.removeAt(sourceIndex);
           // When moving within same page and dropping after original pos, adjust index
           if (sourcePageId == targetPageId && insertIndex > sourceIndex) {
             insertIndex = insertIndex - 1;
@@ -992,10 +992,10 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
 
     // Extract the removed component from original state (safe by id)
     final DynamicFormModel? movingComponent = (() {
-      final srcPage = state.pages.firstWhere(
-        (p) => p.pageId == sourcePageId,
-        orElse: () => current.pages.first,
-      );
+      // final srcPage = state.pages.firstWhere(
+      //   (p) => p.pageId == sourcePageId,
+      //   orElse: () => current.pages.first,
+      // );
       // When we removed above we cannot access removed; instead, pull from draggingComponent
       return current.draggingComponent;
     })();

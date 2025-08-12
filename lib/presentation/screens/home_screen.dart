@@ -43,13 +43,17 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
+        // Prevent background navigation when HomeScreen is not the top route
+        final bool isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
+        if (!isCurrentRoute) return;
+
         // Navigate for imported form or open form
         if (state.openFormId != null && state.openFormId!.isNotEmpty) {
-          context.push('${FormBuilderScreen.routeName}/${state.openFormId}');
+          context.push('${FormBuilderScreen.routePath}/${state.openFormId}');
           context.read<UserFormsBloc>().add(const ClearOpenFormEvent());
         } else if (state.openFormModel != null) {
           context.push(
-            FormBuilderScreen.routeName,
+            FormBuilderScreen.routePath,
             extra: state.openFormModel,
           );
           context.read<UserFormsBloc>().add(const ClearOpenFormEvent());
@@ -471,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: FloatingActionButton.extended(
         heroTag: 'create_form_button',
         onPressed: () {
-          context.push(FormBuilderScreen.routeName);
+          context.push(FormBuilderScreen.routePath);
         },
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -881,7 +885,7 @@ class _HomeScreenState extends State<HomeScreen> {
             GestureDetector(
               onTap: () {
                 context.push(
-                  FormBuilderScreen.routeName,
+                  FormBuilderScreen.routePath,
                   extra: imported,
                 );
               },
@@ -1050,7 +1054,7 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icons.add_circle_outline,
           label: 'Start Building',
           color: Colors.blue,
-          onTap: () => context.push(FormBuilderScreen.routeName),
+          onTap: () => context.push(FormBuilderScreen.routePath),
         ),
         _buildHeroButton(
           icon: Icons.content_paste,

@@ -24,22 +24,26 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await RemoteConfigService().initialize();
   await dotenv.load(fileName: "lib/dotenv");
-  runApp(const MyApp());
+  runApp(const MyProviders());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyProviders extends StatelessWidget {
+  const MyProviders({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: _buildBlocProviders(),
-      child: MaterialApp.router(
-        title: 'Dynamic Form Builder V3',
-        debugShowCheckedModeBanner: false,
-        theme: _buildThemeData(),
-        routerConfig: AppRouter.router,
-      ),
+      child: _buildMaterialApp(),
+    );
+  }
+
+  MaterialApp _buildMaterialApp() {
+    return MaterialApp.router(
+      title: 'Dynamic Form Builder V3',
+      debugShowCheckedModeBanner: false,
+      theme: _buildThemeData(),
+      routerConfig: AppRouter.router,
     );
   }
 

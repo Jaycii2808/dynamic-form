@@ -6,6 +6,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
+import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_state.dart';
 import 'package:dynamic_form_bi/presentation/screens/preview_page_screen.dart';
 import 'package:dynamic_form_bi/presentation/screens/shared_form_screen.dart';
 import 'package:dynamic_form_bi/presentation/widgets/item_widgets/email_input_dialog.dart';
@@ -27,11 +28,13 @@ class FormBuilderPreviewScreen extends StatefulWidget {
   static const String routeName = '/form-builder-preview';
   final FormBuilderModel formBuilderModel;
   final bool isEditing;
+  final String? editingFormId;
 
   const FormBuilderPreviewScreen({
     super.key,
     required this.formBuilderModel,
     this.isEditing = false,
+    this.editingFormId,
   });
 
   @override
@@ -43,6 +46,8 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ComponentValuesModel componentValues = ComponentValuesModel.empty();
+  bool _saveOrUpdateInProgress =
+      false; // Track save/update flow to scope UI feedback
 
   @override
   void initState() {
@@ -60,7 +65,59 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: BlocListener<UserFormsBloc, UserFormsState>(
+        listener: (context, state) {
+          if (!_saveOrUpdateInProgress) return;
+
+          if (state is UserFormsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            if (mounted) {
+              setState(() {
+                _saveOrUpdateInProgress = false;
+              });
+            }
+          } else if (state is UserFormsSuccess) {
+            final bool isEditing = widget.isEditing;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isEditing
+                      ? 'Form updated successfully!'
+                      : 'Form saved successfully! You can find it in My Forms.',
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            if (mounted) {
+              setState(() {
+                _saveOrUpdateInProgress = false;
+              });
+            }
+          }
+        },
+        child: Stack(
+          children: [
+            _buildBody(),
+            BlocBuilder<UserFormsBloc, UserFormsState>(
+              buildWhen: (prev, curr) =>
+                  _saveOrUpdateInProgress && prev.isLoading != curr.isLoading,
+              builder: (context, state) {
+                if (state.isLoading && _saveOrUpdateInProgress) {
+                  return _buildFullScreenLoadingOverlay();
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -120,7 +177,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: FloatingActionButton.extended(
-                  heroTag: 'save_form_button',
+                  heroTag: 'save_form_button_${widget.formBuilderModel.formId}',
                   onPressed: () => _saveUserForm(),
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
@@ -130,7 +187,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
               ),
               // Share Form button
               FloatingActionButton.extended(
-                heroTag: 'share_form_button',
+                heroTag: 'share_form_button_${widget.formBuilderModel.formId}',
                 onPressed: () => _openActualDynamicForm(),
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
@@ -146,81 +203,37 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
   // Save user form to Firebase
   void _saveUserForm() async {
-    try {
-      // Show loading dialog
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
+    // Guard: mark flow in-progress and dispatch event; UI feedback handled by BlocListener
+    if (mounted) {
+      setState(() {
+        _saveOrUpdateInProgress = true;
+      });
+    }
+
+    final userFormsBloc = context.read<UserFormsBloc>();
+    final bool isEditing = widget.isEditing;
+    final String resolvedId =
+        (widget.editingFormId != null && widget.editingFormId!.isNotEmpty)
+        ? widget.editingFormId!
+        : widget.formBuilderModel.formId;
+
+    if (isEditing) {
+      userFormsBloc.add(
+        UpdateUserFormEvent(
+          formId: resolvedId,
+          formBuilderModel: widget.formBuilderModel.copyWith(
+            formId: resolvedId,
           ),
-        );
-      }
-
-      // Decide Update vs Save
-      final userFormsBloc = context.read<UserFormsBloc>();
-      final formId = widget.formBuilderModel.formId;
-      final isEditing = widget.isEditing;
-
-      if (isEditing) {
-        // Try to update existing by formId; if fails, fallback to save
-        try {
-          userFormsBloc.add(
-            UpdateUserFormEvent(
-              formId: formId,
-              formBuilderModel: widget.formBuilderModel,
-              userId: 'user001',
-            ),
-          );
-        } catch (_) {
-          userFormsBloc.add(
-            SaveUserFormEvent(
-              formBuilderModel: widget.formBuilderModel,
-              userId: 'user001',
-            ),
-          );
-        }
-      } else {
-        userFormsBloc.add(
-          SaveUserFormEvent(
-            formBuilderModel: widget.formBuilderModel,
-            userId: 'user001',
-          ),
-        );
-      }
-
-      if (mounted) {
-        // Close loading dialog
-        context.pop();
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isEditing
-                  ? 'Form updated successfully!'
-                  : 'Form saved successfully! You can find it in My Forms.',
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        // Close loading dialog
-        context.pop();
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving form: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+          userId: 'user001',
+        ),
+      );
+    } else {
+      userFormsBloc.add(
+        SaveUserFormEvent(
+          formBuilderModel: widget.formBuilderModel,
+          userId: 'user001',
+        ),
+      );
     }
   }
 
@@ -238,13 +251,18 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
         // User cancelled the dialog
         return;
       }
+      // Use dedicated dialog context to safely close later
+      BuildContext? loadingDialogContext;
       if (mounted) {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
+          builder: (dialogContext) {
+            loadingDialogContext = dialogContext;
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
         );
       }
       // Show loading dialog
@@ -265,17 +283,18 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
 
       // Generate shareable link
       final shareableLink = firestoreService.generateFormShareLink(formId);
-      if (mounted) {
-        // Close loading dialog
-        context.pop();
+      // Close only the loading dialog if still mounted
+      if (loadingDialogContext != null && loadingDialogContext!.mounted) {
+        loadingDialogContext!.pop();
+        loadingDialogContext = null;
       }
 
       // Show success dialog with options
       _showShareSuccessDialog(shareableLink, formId, jsonOutput);
     } catch (e) {
+      // Best-effort: try to close any loading dialog by traversing navigator
+      // Prefer local dialog context pattern elsewhere to avoid this fallback
       if (mounted) {
-        // Close loading dialog
-        context.pop();
         // Logging removed; use Bloc Observer
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -797,6 +816,18 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
     context.replaceNamed(
       SharedFormScreen.routeName,
       pathParameters: {'formId': formId},
+    );
+  }
+
+  // Helper: full-screen loading overlay
+  Widget _buildFullScreenLoadingOverlay() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black.withValues(alpha: 0.3),
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

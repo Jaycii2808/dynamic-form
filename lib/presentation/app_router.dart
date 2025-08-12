@@ -17,7 +17,6 @@ class AppRouter {
       // Home route
       GoRoute(
         path: HomeScreen.routeName,
-        //  name: HomeScreen.routeName,
         pageBuilder: (context, state) =>
             const NoTransitionPage(child: HomeScreen()),
       ),
@@ -32,23 +31,21 @@ class AppRouter {
       ),
       // Form builder create (no params); supports optional extra to prefill
       GoRoute(
-        path: FormBuilderScreen.routeName,
-        // name: FormBuilderScreen.routeName,
+        path: '${FormBuilderScreen.routePath}/:formId',
         pageBuilder: (context, state) {
           final extra = state.extra;
           final existing = extra is FormBuilderModel ? extra : null;
           return NoTransitionPage(
             child: FormBuilderScreen(
               existingForm: existing,
-              isEditing: existing != null,
+              isEditing: false,
             ),
           );
         },
       ),
       // Form builder edit by formId (use path parameter)
       GoRoute(
-        path: '${FormBuilderScreen.routeName}/:formId',
-        // name: '${FormBuilderScreen.routeName}-edit',
+        path: FormBuilderScreen.routePath,
         pageBuilder: (context, state) {
           final String formId = state.pathParameters['formId']!;
           return NoTransitionPage(
@@ -61,7 +58,6 @@ class AppRouter {
       ),
       GoRoute(
         path: PreviewPageScreen.routeName,
-        // name: PreviewPageScreen.routeName,
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final pages = extra?['pages'] as List<DynamicFormPageModel>;
@@ -82,10 +78,12 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>?;
           final model = extra?['formBuilderModel'] as FormBuilderModel;
           final isEditing = extra?['isEditing'] as bool? ?? false;
+          final editingFormId = extra?['editingFormId'] as String?;
           return NoTransitionPage(
             child: FormBuilderPreviewScreen(
               formBuilderModel: model,
               isEditing: isEditing,
+              editingFormId: editingFormId,
             ),
           );
         },
@@ -95,3 +93,5 @@ class AppRouter {
     errorBuilder: (context, state) => const HomeScreen(),
   );
 }
+
+//404 page and click to go home

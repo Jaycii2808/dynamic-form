@@ -27,6 +27,7 @@ PreferredSizeWidget formBuilderAppBar(
   FormBuilderBloc formBuilderBloc, {
   FormBuilderModel? existingForm,
   bool isEditing = false,
+  String? editingFormId,
 }) {
   return AppBar(
     title: BlocBuilder<FormBuilderBloc, FormBuilderState>(
@@ -64,6 +65,7 @@ PreferredSizeWidget formBuilderAppBar(
           formBuilderBloc,
           existingForm: existingForm,
           isEditing: isEditing,
+          editingFormId: editingFormId,
         ),
       ),
     ],
@@ -165,6 +167,7 @@ Widget _buildActionButtons(
   FormBuilderBloc formBuilderBloc, {
   FormBuilderModel? existingForm,
   bool isEditing = false,
+  String? editingFormId,
 }) {
   return IconButton(
     onPressed: () => _handleSubmitForm(
@@ -173,6 +176,7 @@ Widget _buildActionButtons(
       formBuilderBloc,
       existingForm: existingForm,
       isEditing: isEditing,
+      editingFormId: editingFormId,
     ),
     icon: const Row(
       mainAxisSize: MainAxisSize.min,
@@ -243,15 +247,16 @@ void _handleSubmitForm(
   FormBuilderBloc formBuilderBloc, {
   FormBuilderModel? existingForm,
   bool isEditing = false,
+  String? editingFormId,
 }) {
-  // Show loading dialog
+  // Show loading dialog and keep its local context to close safely later
+  BuildContext? loadingDialogContext;
   showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext context) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+    builder: (BuildContext dialogContext) {
+      loadingDialogContext = dialogContext;
+      return const Center(child: CircularProgressIndicator());
     },
   );
 
@@ -274,8 +279,11 @@ void _handleSubmitForm(
 
   // Wait for onTapOutside events to process and state to update
   Future.delayed(const Duration(milliseconds: 1000), () {
-    // Close loading dialog
-    router.pop();
+    // Close only the loading dialog using its own context
+    if (loadingDialogContext != null && loadingDialogContext!.mounted) {
+      loadingDialogContext!.pop();
+      loadingDialogContext = null;
+    }
 
     try {
       // Get the LATEST state from the bloc after the delay
@@ -299,15 +307,30 @@ void _handleSubmitForm(
 
       // Create FormBuilderModel with current state
       final now = DateTime.now();
+      final resolvedFormId = () {
+        if (isEditing) {
+          if (existingForm != null && existingForm.formId.isNotEmpty) {
+            return existingForm.formId;
+          }
+          if (editingFormId != null && editingFormId.isNotEmpty) {
+            return editingFormId;
+          }
+        }
+        return 'form_${now.millisecondsSinceEpoch}';
+      }();
+
+      final resolvedCreatedAt = () {
+        if (isEditing && existingForm != null) {
+          return existingForm.createdAt;
+        }
+        return now;
+      }();
+
       final formBuilderModel = FormBuilderModel(
-        formId: isEditing && existingForm != null
-            ? existingForm.formId
-            : 'form_${now.millisecondsSinceEpoch}',
+        formId: resolvedFormId,
         name: currentState.formTitle,
         pages: currentState.pages,
-        createdAt: isEditing && existingForm != null
-            ? existingForm.createdAt
-            : now,
+        createdAt: resolvedCreatedAt,
         updatedAt: now,
       );
 
@@ -331,6 +354,7 @@ void _handleSubmitForm(
         extra: {
           'formBuilderModel': formBuilderModel,
           'isEditing': isEditing,
+          'editingFormId': resolvedFormId,
         },
       );
     } catch (e) {
