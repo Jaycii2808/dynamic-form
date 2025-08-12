@@ -327,3 +327,38 @@ class HighlightComponentEvent extends FormBuilderEvent {
   @override
   List<Object?> get props => [componentId];
 }
+
+/// Begin dragging an existing component that is already on the canvas
+class StartCanvasComponentDragEvent extends FormBuilderEvent {
+  final String pageId;
+  final int index;
+  final DynamicFormModel component;
+
+  const StartCanvasComponentDragEvent({
+    required this.pageId,
+    required this.index,
+    required this.component,
+  });
+
+  @override
+  List<Object?> get props => [pageId, index, component];
+}
+
+/// End dragging an existing canvas component (cleanup state)
+class EndCanvasComponentDragEvent extends FormBuilderEvent {
+  const EndCanvasComponentDragEvent();
+}
+
+/// Drop existing canvas component to a target (could be same page or another page)
+class DropCanvasComponentEvent extends FormBuilderEvent {
+  final String targetPageId;
+  final int insertIndex;
+
+  const DropCanvasComponentEvent({
+    required this.targetPageId,
+    required this.insertIndex,
+  });
+
+  @override
+  List<Object?> get props => [targetPageId, insertIndex];
+}

@@ -70,6 +70,9 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<LoadExistingFormByIdEvent>(_onLoadExistingFormById);
     on<ForceSaveAllComponentsEvent>(_onForceSaveAllComponents);
     on<HighlightComponentEvent>(_onHighlightComponent);
+    on<StartCanvasComponentDragEvent>(_onStartCanvasComponentDrag);
+    on<EndCanvasComponentDragEvent>(_onEndCanvasComponentDrag);
+    on<DropCanvasComponentEvent>(_onDropCanvasComponent);
   }
 
   Future<void> _onLoadComponents(
@@ -920,6 +923,110 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       FormBuilderSuccess.fromState(state: state).copyWith(
         highlightedComponentId: event.componentId,
         rebuildTimestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
+
+  /// Start dragging an existing component on the canvas
+  void _onStartCanvasComponentDrag(
+    StartCanvasComponentDragEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        draggingFromPageId: event.pageId,
+        draggingFromIndex: event.index,
+        draggingComponent: event.component,
+        isDragging: true,
+      ),
+    );
+  }
+
+  /// End dragging existing component (cleanup if no drop)
+  void _onEndCanvasComponentDrag(
+    EndCanvasComponentDragEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        draggingFromPageId: null,
+        draggingFromIndex: null,
+        draggingComponent: null,
+        isDragging: false,
+      ),
+    );
+  }
+
+  /// Drop existing component to target page/index
+  void _onDropCanvasComponent(
+    DropCanvasComponentEvent event,
+    Emitter<FormBuilderState> emit,
+  ) {
+    final current = state;
+    if (current.draggingFromPageId == null ||
+        current.draggingFromIndex == null) {
+      return;
+    }
+
+    final String sourcePageId = current.draggingFromPageId!;
+    final int sourceIndex = current.draggingFromIndex!;
+    final String targetPageId = event.targetPageId;
+    int insertIndex = event.insertIndex;
+
+    // Build pages copy with removal then insertion
+    final updatedPages = current.pages.map((page) {
+      if (page.pageId == sourcePageId) {
+        final comps = List<DynamicFormModel>.from(page.components);
+        if (sourceIndex >= 0 && sourceIndex < comps.length) {
+          final removed = comps.removeAt(sourceIndex);
+          // When moving within same page and dropping after original pos, adjust index
+          if (sourcePageId == targetPageId && insertIndex > sourceIndex) {
+            insertIndex = insertIndex - 1;
+          }
+          // Store back removed in bloc local var to use on target page insertion
+          return page.copyWith(components: comps);
+        }
+      }
+      return page;
+    }).toList();
+
+    // Extract the removed component from original state (safe by id)
+    final DynamicFormModel? movingComponent = (() {
+      final srcPage = state.pages.firstWhere(
+        (p) => p.pageId == sourcePageId,
+        orElse: () => current.pages.first,
+      );
+      // When we removed above we cannot access removed; instead, pull from draggingComponent
+      return current.draggingComponent;
+    })();
+
+    if (movingComponent == null) {
+      return;
+    }
+
+    // Insert into target page
+    final finalPages = updatedPages.map((page) {
+      if (page.pageId == targetPageId) {
+        final comps = List<DynamicFormModel>.from(page.components);
+        final safeIndex = insertIndex.clamp(0, comps.length);
+        comps.insert(safeIndex, movingComponent);
+        return page.copyWith(components: comps);
+      }
+      return page;
+    }).toList();
+
+    emit(
+      FormBuilderSuccess.fromState(state: state).copyWith(
+        pages: finalPages,
+        currentPageId: targetPageId,
+        draggingFromPageId: null,
+        draggingFromIndex: null,
+        draggingComponent: null,
+        isDragging: false,
+        insertIndicatorIndex: null,
+        isHovering: false,
+        hoveredComponent: null,
+        hoverTargetIndex: null,
       ),
     );
   }

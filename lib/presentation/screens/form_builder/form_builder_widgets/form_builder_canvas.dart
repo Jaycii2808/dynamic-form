@@ -298,6 +298,7 @@ Widget _buildComponentWithDropZone(
 ) {
   return DragTarget<DynamicFormModel>(
     onWillAcceptWithDetails: (details) {
+      // Start hover indicator regardless of source
       formBuilderBloc.add(
         StartHoverEvent(
           targetIndex: componentIndex,
@@ -307,14 +308,32 @@ Widget _buildComponentWithDropZone(
       return true;
     },
     onAcceptWithDetails: (details) {
-      // Switch to target page and insert component
-      formBuilderBloc.add(SwitchPageEvent(pageId));
-      formBuilderBloc.add(
-        InsertComponentEvent(
-          component: details.data,
-          insertIndex: componentIndex,
-        ),
-      );
+      // If dragging from canvas, move instead of cloning
+      final currentState = formBuilderBloc.state;
+      final draggingFromPageId = currentState is FormBuilderSuccess
+          ? currentState.draggingFromPageId
+          : null;
+      final draggingFromIndex = currentState is FormBuilderSuccess
+          ? currentState.draggingFromIndex
+          : null;
+
+      if (draggingFromPageId != null && draggingFromIndex != null) {
+        formBuilderBloc.add(
+          DropCanvasComponentEvent(
+            targetPageId: pageId,
+            insertIndex: componentIndex,
+          ),
+        );
+      } else {
+        // Insert a new copy from palette
+        formBuilderBloc.add(SwitchPageEvent(pageId));
+        formBuilderBloc.add(
+          InsertComponentEvent(
+            component: details.data,
+            insertIndex: componentIndex,
+          ),
+        );
+      }
     },
     onLeave: (data) {
       formBuilderBloc.add(const EndHoverEvent());
@@ -333,81 +352,114 @@ Widget _buildComponentWithDropZone(
             _buildInsertIndicator(),
 
           // Component
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF000000),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: (state.highlightedComponentId == component.id)
-                    ? Colors.red
-                    : (isDragOver || isHovering
-                          ? Colors.blue
-                          : Colors.grey[200]!),
-                width: (state.highlightedComponentId == component.id)
-                    ? 3
-                    : (isDragOver || isHovering ? 2 : 1),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (state.highlightedComponentId == component.id)
-                      ? Colors.red.withValues(alpha: 0.2)
-                      : (isDragOver || isHovering
-                            ? Colors.blue.withValues(alpha: 0.2)
-                            : Colors.black.withValues(alpha: 0.05)),
-                  blurRadius: (state.highlightedComponentId == component.id)
-                      ? 10
-                      : (isDragOver || isHovering ? 8 : 4),
-                  offset: const Offset(0, 2),
+          LongPressDraggable<DynamicFormModel>(
+            data: component,
+            onDragStarted: () {
+              formBuilderBloc.add(
+                StartCanvasComponentDragEvent(
+                  pageId: pageId,
+                  index: componentIndex,
+                  component: component,
                 ),
-              ],
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: (state.highlightedComponentId == component.id)
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.red.withValues(alpha: 0.06),
-                          Colors.red.withValues(alpha: 0.03),
-                        ],
-                      )
-                    : (isHovering
-                          ? LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.blue.withValues(alpha: 0.05),
-                                Colors.blue.withValues(alpha: 0.02),
-                              ],
-                            )
-                          : null),
+              );
+            },
+            onDragEnd: (_) {
+              formBuilderBloc.add(const EndCanvasComponentDragEvent());
+            },
+            feedback: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 64,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF000000),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue, width: 2),
+                ),
+                child: Opacity(
+                  opacity: 0.9,
+                  child: _buildComponentWidget(
+                    component,
+                    formBuilderBloc,
+                    context,
+                    state,
+                    pageIndex,
+                    componentIndex,
+                  ),
+                ),
               ),
-              child: Row(
-                children: [
-                  // Component content
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.all(12),
-                      child: _buildComponentWidget(
-                        component,
-                        formBuilderBloc,
-                        context,
-                        state,
-                        pageIndex, // Pass the page index
-                        componentIndex, // Pass the component index for unique keys
+            ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF000000),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: (state.highlightedComponentId == component.id)
+                      ? Colors.red
+                      : (isDragOver || isHovering
+                            ? Colors.blue
+                            : Colors.grey[200]!),
+                  width: (state.highlightedComponentId == component.id)
+                      ? 3
+                      : (isDragOver || isHovering ? 2 : 1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (state.highlightedComponentId == component.id)
+                        ? Colors.red.withValues(alpha: 0.2)
+                        : (isDragOver || isHovering
+                              ? Colors.blue.withValues(alpha: 0.2)
+                              : Colors.black.withValues(alpha: 0.05)),
+                    blurRadius: (state.highlightedComponentId == component.id)
+                        ? 10
+                        : (isDragOver || isHovering ? 8 : 4),
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: (state.highlightedComponentId == component.id)
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.red.withValues(alpha: 0.06),
+                            Colors.red.withValues(alpha: 0.03),
+                          ],
+                        )
+                      : (isHovering
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.blue.withValues(alpha: 0.05),
+                                  Colors.blue.withValues(alpha: 0.02),
+                                ],
+                              )
+                            : null),
+                ),
+                child: Row(
+                  children: [
+                    // Component content
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.all(12),
+                        child: _buildComponentWidget(
+                          component,
+                          formBuilderBloc,
+                          context,
+                          state,
+                          pageIndex, // Pass the page index
+                          componentIndex, // Pass the component index for unique keys
+                        ),
                       ),
                     ),
-                  ),
-                  // _buildComponentActions(
-                  //   componentIndex,
-                  //   formBuilderBloc,
-                  //   context,
-                  // ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -446,10 +498,27 @@ Widget _buildDropZone(
     onAcceptWithDetails: (details) {
       // Logging removed; use Bloc Observer
       // If pageId is provided, switch to that page and add component
-      if (pageId != null) {
-        formBuilderBloc.add(SwitchPageEvent(pageId));
-        formBuilderBloc.add(AddComponentEvent(details.data));
+      final currentState = formBuilderBloc.state;
+      final draggingFromPageId = currentState is FormBuilderSuccess
+          ? currentState.draggingFromPageId
+          : null;
+      final draggingFromIndex = currentState is FormBuilderSuccess
+          ? currentState.draggingFromIndex
+          : null;
+
+      if (draggingFromPageId != null &&
+          draggingFromIndex != null &&
+          pageId != null) {
+        formBuilderBloc.add(
+          DropCanvasComponentEvent(
+            targetPageId: pageId,
+            insertIndex: 0,
+          ),
+        );
       } else {
+        if (pageId != null) {
+          formBuilderBloc.add(SwitchPageEvent(pageId));
+        }
         formBuilderBloc.add(AddComponentEvent(details.data));
       }
     },
@@ -491,13 +560,30 @@ Widget _buildDropZoneBetweenComponents(
     onAcceptWithDetails: (details) {
       // Logging removed; use Bloc Observer
       // If pageId is provided, switch to that page and insert component at specific index
-      formBuilderBloc.add(SwitchPageEvent(pageId));
-      formBuilderBloc.add(
-        InsertComponentEvent(
-          component: details.data,
-          insertIndex: componentIndex,
-        ),
-      );
+      final currentState = formBuilderBloc.state;
+      final draggingFromPageId = currentState is FormBuilderSuccess
+          ? currentState.draggingFromPageId
+          : null;
+      final draggingFromIndex = currentState is FormBuilderSuccess
+          ? currentState.draggingFromIndex
+          : null;
+
+      if (draggingFromPageId != null && draggingFromIndex != null) {
+        formBuilderBloc.add(
+          DropCanvasComponentEvent(
+            targetPageId: pageId,
+            insertIndex: componentIndex,
+          ),
+        );
+      } else {
+        formBuilderBloc.add(SwitchPageEvent(pageId));
+        formBuilderBloc.add(
+          InsertComponentEvent(
+            component: details.data,
+            insertIndex: componentIndex,
+          ),
+        );
+      }
     },
   );
 }
