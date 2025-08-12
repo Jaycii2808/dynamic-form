@@ -30,7 +30,7 @@ class AppRouter {
           return NoTransitionPage(child: SharedFormScreen(formId: formId));
         },
       ),
-      // Form builder (no params)
+      // Form builder create (no params); supports optional extra to prefill
       GoRoute(
         path: FormBuilderScreen.routeName,
         // name: FormBuilderScreen.routeName,
@@ -41,6 +41,20 @@ class AppRouter {
             child: FormBuilderScreen(
               existingForm: existing,
               isEditing: existing != null,
+            ),
+          );
+        },
+      ),
+      // Form builder edit by formId (use path parameter)
+      GoRoute(
+        path: '${FormBuilderScreen.routeName}/:formId',
+        // name: '${FormBuilderScreen.routeName}-edit',
+        pageBuilder: (context, state) {
+          final String formId = state.pathParameters['formId']!;
+          return NoTransitionPage(
+            child: FormBuilderScreen(
+              isEditing: true,
+              editingFormId: formId,
             ),
           );
         },

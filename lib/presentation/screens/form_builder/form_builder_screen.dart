@@ -8,16 +8,19 @@ import 'package:dynamic_form_bi/presentation/screens/form_builder/form_builder_w
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
 
 class FormBuilderScreen extends StatefulWidget {
   static const String routeName = '/form-builder';
   final FormBuilderModel? existingForm;
   final bool isEditing;
+  final String? editingFormId;
 
   const FormBuilderScreen({
     super.key,
     this.existingForm,
     this.isEditing = false,
+    this.editingFormId,
   });
 
   @override
@@ -36,34 +39,67 @@ class _FormBuilderScreenState extends State<FormBuilderScreen> {
     formBuilderBloc.add(const LoadComponentsEvent());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.isEditing && widget.existingForm != null) {
-        // Wait a bit for components to load, then load existing form
-        Future.delayed(const Duration(milliseconds: 100), () {
-          _loadExistingForm();
-        });
+      if (widget.isEditing) {
+        if (widget.existingForm != null) {
+          // Wait a bit for components to load, then load existing form
+          Future.delayed(const Duration(milliseconds: 100), () {
+            _loadExistingForm(widget.existingForm!);
+          });
+        } else if (widget.editingFormId != null &&
+            widget.editingFormId!.isNotEmpty) {
+          // Load existing form by ID from backend and feed into bloc
+          _loadExistingFormById(widget.editingFormId!);
+        } else {
+          _showFirstPageNameDialog();
+        }
       } else {
         //_showFirstPageNameDialog();
       }
     });
   }
 
-  void _loadExistingForm() {
+  void _loadExistingForm(FormBuilderModel model) {
     try {
-      debugPrint(
-        '🔄 [FormBuilderScreen] Loading existing form: ${widget.existingForm!.name}',
-      );
-      debugPrint(
-        '🔄 [FormBuilderScreen] Form has ${widget.existingForm!.pages.length} pages',
-      );
+      debugPrint('🔄 [FormBuilderScreen] Loading existing form: ${model.name}');
+      debugPrint('🔄 [FormBuilderScreen] Form has ${model.pages.length} pages');
 
       // Load existing form data into the bloc
-      formBuilderBloc.add(LoadExistingFormEvent(widget.existingForm!));
+      formBuilderBloc.add(LoadExistingFormEvent(model));
 
       debugPrint('✅ [FormBuilderScreen] Existing form loaded successfully');
     } catch (e) {
       debugPrint('❌ [FormBuilderScreen] Error loading existing form: $e');
       // Fallback to new form dialog
       _showFirstPageNameDialog();
+    }
+  }
+
+  Future<void> _loadExistingFormById(String formId) async {
+    try {
+      debugPrint('🔄 [FormBuilderScreen] Fetching form by ID: $formId');
+      final service = UserFormsService();
+      final data = await service.getUserFormById(formId: formId);
+      if (data == null || data['formData'] == null) {
+        throw Exception('Form not found');
+      }
+      final formBuilderModel = FormBuilderModel.fromJson(
+        Map<String, dynamic>.from(data['formData'] as Map),
+      );
+      if (!mounted) return;
+      // Slight delay to ensure components are ready
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _loadExistingForm(formBuilderModel);
+      });
+    } catch (e) {
+      debugPrint('❌ [FormBuilderScreen] Error loading form by ID: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load form: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

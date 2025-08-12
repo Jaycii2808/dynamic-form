@@ -58,7 +58,9 @@ class MyApp extends StatelessWidget {
 
   List<SingleChildWidget> _buildBlocProviders() {
     return [
-      BlocProvider(create: (_) => DynamicButtonBloc()),
+      BlocProvider(
+        create: (_) => DynamicButtonBloc(),
+      ),
       BlocProvider(
         create: (context) => FormBuilderBloc(
           remoteConfigService: RemoteConfigService(),

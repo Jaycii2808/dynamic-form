@@ -33,3 +33,5 @@ doc/api/
 /web/
 /.cursor/
 /lib/dotenv
+/lib/config_json_files/
+.cursorignore

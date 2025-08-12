@@ -489,6 +489,13 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       debugPrint('🔄 [HomeScreen] Edit user form: ${form['name']}');
 
+      // If we have a formId, prefer path navigation to edit route
+      final String? formId = form['formId'] as String?;
+      if (formId != null && formId.isNotEmpty) {
+        context.push('${FormBuilderScreen.routeName}/$formId');
+        return;
+      }
+
       // Convert form data back to FormBuilderModel
       if (form['formData'] != null) {
         final formData = form['formData'] as Map<String, dynamic>;
@@ -501,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
           '🔄 [HomeScreen] Form has ${formBuilderModel.pages.length} pages',
         );
 
-        // Navigate to FormBuilderScreen with existing form data
+        // Fallback: Navigate to FormBuilderScreen with existing form data
         context.push(
           FormBuilderScreen.routeName,
           extra: formBuilderModel,
