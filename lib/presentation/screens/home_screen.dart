@@ -1,7 +1,3 @@
-import 'dart:convert';
-
-import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
-import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_bloc.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
@@ -23,12 +19,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  FormBuilderModel? _importedForm; // Hold the last imported form in memory
-
   @override
   void initState() {
     super.initState();
-    // Defer initial loads to after first frame to ensure context is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<UserFormsBloc>();
       bloc.add(const LoadUserFormsEvent(userId: 'user001'));
@@ -37,19 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // The bloc is now provided by the context, so no need to re-initialize here
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocListener<UserFormsBloc, UserFormsState>(
+    return BlocConsumer<UserFormsBloc, UserFormsState>(
       listener: (context, state) {
         if (state is UserFormsError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -59,26 +41,49 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: const Duration(seconds: 3),
             ),
           );
-        } else if (state is UserFormsSuccess) {
-          debugPrint(
-            '✅ [HomeScreen] UserFormsBloc state updated successfully',
+        }
+
+        // Navigate for imported form or open form
+        if (state.openFormId != null && state.openFormId!.isNotEmpty) {
+          context.push('${FormBuilderScreen.routeName}/${state.openFormId}');
+          context.read<UserFormsBloc>().add(const ClearOpenFormEvent());
+        } else if (state.openFormModel != null) {
+          context.push(
+            FormBuilderScreen.routeName,
+            extra: state.openFormModel,
+          );
+          context.read<UserFormsBloc>().add(const ClearOpenFormEvent());
+        } else if (state.importedForm != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Form imported successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF000000),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeroSection(),
-              if (_importedForm != null)
-                _buildImportedFormSection(_importedForm!),
-              _buildFormsSection(),
-            ],
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF000000),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeroSection(),
+                BlocBuilder<UserFormsBloc, UserFormsState>(
+                  builder: (context, state) {
+                    final imported = state is UserFormsSuccess ? state.importedForm : null;
+                    if (imported == null) return const SizedBox.shrink();
+                    return _buildImportedFormSection(imported);
+                  },
+                ),
+                _buildFormsSection(),
+              ],
+            ),
           ),
-        ),
-        floatingActionButton: _buildMainActionButton(),
-      ),
+          floatingActionButton: _buildMainActionButton(),
+        );
+      },
     );
   }
 
@@ -166,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         } else {
-          return const SizedBox.shrink();
+          return const Text("Error somewhere in _buildFormsSection");
         }
       },
     );
@@ -281,7 +286,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _editUserForm(form),
+                      onPressed: () {
+                        context.read<UserFormsBloc>().add(
+                          OpenFormForEditEvent(form: form),
+                        );
+                      },
                       icon: const Icon(
                         Icons.edit,
                         color: Colors.white,
@@ -420,7 +429,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _previewTemplate(template),
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (context) => _buildTemplatePreviewDialog(template),
+                      ),
                       icon: const Icon(
                         Icons.visibility,
                         color: Colors.white,
@@ -485,252 +497,173 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _editUserForm(Map<String, dynamic> form) {
-    try {
-      debugPrint('🔄 [HomeScreen] Edit user form: ${form['name']}');
-
-      // If we have a formId, prefer path navigation to edit route
-      final String? formId = form['formId'] as String?;
-      if (formId != null && formId.isNotEmpty) {
-        context.push('${FormBuilderScreen.routeName}/$formId');
-        return;
-      }
-
-      // Convert form data back to FormBuilderModel
-      if (form['formData'] != null) {
-        final formData = form['formData'] as Map<String, dynamic>;
-        final formBuilderModel = FormBuilderModel.fromJson(formData);
-
-        debugPrint(
-          '🔄 [HomeScreen] FormBuilderModel created: ${formBuilderModel.name}',
-        );
-        debugPrint(
-          '🔄 [HomeScreen] Form has ${formBuilderModel.pages.length} pages',
-        );
-
-        // Fallback: Navigate to FormBuilderScreen with existing form data
-        context.push(
-          FormBuilderScreen.routeName,
-          extra: formBuilderModel,
-        );
-      } else {
-        debugPrint('❌ [HomeScreen] Form data is null');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error: Form data not found'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error editing user form: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error editing form: ${e.toString()}'),
-          backgroundColor: Colors.red,
+  Widget _buildDeleteFormDialog(String formId) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.warning, color: Colors.orange),
+          SizedBox(width: 8),
+          Text('Delete Form'),
+        ],
+      ),
+      content: const Text(
+        'Are you sure you want to delete this form? This action cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('Cancel'),
         ),
-      );
-    }
+        GestureDetector(
+          onTap: () {
+            context.pop();
+            context.read<UserFormsBloc>().add(
+              DeleteUserFormEvent(
+                formId: formId,
+                userId: 'user001',
+              ),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Deleting form...'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void _deleteUserForm(String? formId) {
     if (formId != null) {
-      debugPrint('🔄 [HomeScreen] Delete user form: $formId');
-
-      // Show confirmation dialog
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.orange),
-              SizedBox(width: 8),
-              Text('Delete Form'),
-            ],
-          ),
-          content: const Text(
-            'Are you sure you want to delete this form? This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Cancel'),
-            ),
-            GestureDetector(
-              onTap: () {
-                context.pop();
-                _confirmDeleteForm(formId);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        builder: (context) => _buildDeleteFormDialog(formId),
       );
     }
   }
 
-  void _confirmDeleteForm(String formId) {
-    try {
-      debugPrint('🔄 [HomeScreen] Confirming delete for form: $formId');
-
-      // Dispatch delete event to Bloc
-      context.read<UserFormsBloc>().add(
-        DeleteUserFormEvent(
-          formId: formId,
-          userId: 'user001',
-        ),
-      );
-
-      // Show loading message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Deleting form...'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error deleting form: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting form: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  void _previewTemplate(Map<String, dynamic> template) {
-    try {
-      debugPrint('🔄 [HomeScreen] Preview template: ${template['name']}');
-
-      // Show template preview dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.visibility, color: Colors.blue),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  template['name'] ?? 'Untitled Template',
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Description:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                template['description'] ?? 'No description available',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Category:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  template['category'] ?? 'General',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (template['formData'] != null) ...[
-                const Text(
-                  'Form Structure:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildFormStructurePreview(template['formData']),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Close'),
+  Widget _buildTemplatePreviewDialog(Map<String, dynamic> template) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          const Icon(Icons.visibility, color: Colors.blue),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              template['name'] ?? 'Untitled Template',
+              overflow: TextOverflow.ellipsis,
             ),
-            GestureDetector(
-              onTap: () {
-                context.pop();
-                _createFormFromTemplate(template);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Create Form',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Description:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            template['description'] ?? 'No description available',
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Category:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              template['category'] ?? 'General',
+              style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          if (template['formData'] != null) ...[
+            const Text(
+              'Form Structure:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildFormStructurePreview(template['formData']),
           ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('Close'),
         ),
-      );
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error previewing template: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error previewing template: ${e.toString()}'),
-          backgroundColor: Colors.red,
+        GestureDetector(
+          onTap: () {
+            context.pop();
+            showDialog(
+              context: context,
+              builder: (context) => _createFormFromTemplate(template),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Create Form',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
-      );
-    }
+      ],
+    );
   }
 
   Widget _buildFormStructurePreview(Map<String, dynamic> formData) {
@@ -738,8 +671,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final pages = formData['pages'] as List<dynamic>? ?? [];
       final totalComponents = pages.fold<int>(
         0,
-        (sum, page) =>
-            sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
+        (sum, page) => sum + ((page['components'] as List<dynamic>?)?.length ?? 0),
       );
 
       return Column(
@@ -782,172 +714,109 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _createFormFromTemplate(Map<String, dynamic> template) {
-    try {
-      debugPrint(
-        '🔄 [HomeScreen] Create form from template: ${template['name']}',
-      );
-
-      // Show confirmation dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.add_circle, color: Colors.green),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Create Form from Template',
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+  Widget _createFormFromTemplate(Map<String, dynamic> template) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.add_circle, color: Colors.green),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Create Form from Template',
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Template: ${template['name']}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Template: ${template['name']}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            template['description'] ?? 'No description available',
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.green.withValues(alpha: 0.3),
               ),
-              const SizedBox(height: 8),
-              Text(
-                template['description'] ?? 'No description available',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.info, color: Colors.green, size: 16),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'This will create a copy of the template as your own form that you can edit.',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 12,
-                        ),
-                      ),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info, color: Colors.green, size: 16),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'This will create a copy of the template as your own form that you can edit.',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Cancel'),
-            ),
-            GestureDetector(
-              onTap: () {
-                context.pop();
-                _confirmCreateFormFromTemplate(template);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Create Form',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('Cancel'),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.pop();
+            context.read<UserFormsBloc>().add(
+              CreateUserFormFromTemplateEvent(
+                templateData: template['formData'] ?? {},
+                templateName: template['name'] ?? 'Untitled Template',
+                userId: 'user001',
+              ),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Creating form from template: ${template['name']}',
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Create Form',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-      );
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error creating form from template: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error creating form from template: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  void _confirmCreateFormFromTemplate(Map<String, dynamic> template) {
-    try {
-      debugPrint(
-        '🔄 [HomeScreen] Confirming create form from template: ${template['name']}',
-      );
-
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text('Creating form from template...'),
-            ],
           ),
         ),
-      );
-
-      // Dispatch create form from template event to Bloc
-      context.read<UserFormsBloc>().add(
-        CreateUserFormFromTemplateEvent(
-          templateData: template['formData'] ?? {},
-          templateName: template['name'] ?? 'Untitled Template',
-          userId: 'user001',
-        ),
-      );
-
-      // Close loading dialog after a short delay
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          context.pop(); // Close loading dialog
-
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Form created from template: ${template['name']}'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      });
-    } catch (e) {
-      debugPrint('❌ [HomeScreen] Error creating form from template: $e');
-
-      if (mounted) {
-        context.pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating form from template: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+      ],
+    );
   }
 
   Widget _buildImportedFormSection(FormBuilderModel imported) {
@@ -1007,7 +876,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             GestureDetector(
               onTap: () {
-                // Navigate to builder with imported form for editing
                 context.push(
                   FormBuilderScreen.routeName,
                   extra: imported,
@@ -1040,248 +908,135 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showImportJsonDialog() {
+  Widget _buildImportJsonDialog() {
     final TextEditingController controller = TextEditingController();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Import JSON'),
-          content: SizedBox(
-            width: 600,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Paste the Multi-Page JSON exported from Form Builder.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey.withValues(alpha: 0.4),
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SizedBox(
-                      height: 200,
-                      child: TextField(
-                        controller: controller,
-                        maxLines: null,
-                        expands: true,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          hintText:
-                              '{\n  "formId": "...",\n  "name": "...",\n  "pages": [ ... ]\n}',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.all(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+    return AlertDialog(
+      title: const Text('Import JSON'),
+      content: SizedBox(
+        width: 600,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Paste the Multi-Page JSON exported from Form Builder.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
-            ),
-          ),
-          actions: [
-            GestureDetector(
-              onTap: () async {
-                try {
-                  final messenger = ScaffoldMessenger.of(context);
-                  //final nav = Navigator.of(context);
-                  final data = await Clipboard.getData('text/plain');
-                  if (!mounted) return;
-                  if (data?.text != null && data!.text!.trim().isNotEmpty) {
-                    controller.text = data.text!.trim();
-                  } else {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Clipboard is empty'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  debugPrint('❌ [HomeScreen] Clipboard error: $e');
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Clipboard error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+              const SizedBox(height: 12),
+              Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade800,
-                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.4),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 6,
-                  children: [
-                    Icon(Icons.paste, size: 16, color: Colors.white),
-                    Text(
-                      'Paste from Clipboard',
-                      style: TextStyle(color: Colors.white),
+                child: SizedBox(
+                  height: 200,
+                  child: TextField(
+                    controller: controller,
+                    maxLines: null,
+                    expands: true,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: '{\n  "formId": "...",\n  "name": "...",\n  "pages": [ ... ]\n}',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(12),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Cancel'),
-            ),
-            GestureDetector(
-              onTap: () {
-                _handleImportJson(controller.text);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Import',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _handleImportJson(String rawJson) {
-    try {
-      final trimmed = rawJson.trim();
-      if (trimmed.isEmpty) {
-        throw const FormatException('JSON is empty');
-      }
-
-      final dynamic decoded = jsonDecode(trimmed);
-      if (decoded is! Map<String, dynamic>) {
-        throw const FormatException(
-          'Invalid JSON format: root must be an object',
-        );
-      }
-
-      // Basic schema checks for Multi-Page JSON
-      if (!decoded.containsKey('name') || !decoded.containsKey('pages')) {
-        throw const FormatException(
-          'Invalid schema: missing required keys (name/pages)',
-        );
-      }
-
-      // Parse to FormBuilderModel
-      final parsedModel = FormBuilderModel.fromJson(decoded);
-
-      // First, drop pages that are Submit pages
-      final pagesExcludingSubmit = parsedModel.pages
-          .where((p) => !p.title.toLowerCase().contains('submit'))
-          .toList();
-
-      // Remove navigation buttons (next/previous/submit) from remaining pages
-      List<FormBuilderPageModel> sanitizedPages = pagesExcludingSubmit.map((
-        page,
-      ) {
-        final filteredComponents = page.components.where((component) {
-          if (component.type != FormTypeEnum.buttonFormType) return true;
-          final action = component.config?.action;
-          if (action == null) return true;
-          return action != ButtonAction.nextPage.value &&
-              action != ButtonAction.previousPage.value &&
-              action != ButtonAction.submitForm.value;
-        }).toList();
-        return page.copyWith(components: filteredComponents);
-      }).toList();
-
-      // Ensure at least one page exists
-      if (sanitizedPages.isEmpty) {
-        sanitizedPages = const [
-          FormBuilderPageModel(
-            pageId: 'page_1',
-            title: 'Form Page',
-            order: 1,
-            showPreviousButton: false,
-            showNextButton: false,
-            showSubmitButton: true,
-            components: [],
-          ),
-        ];
-      }
-
-      final model = parsedModel.copyWith(pages: sanitizedPages);
-
-      setState(() {
-        _importedForm = model;
-      });
-
-      if (mounted) {
-        context.pop(); // close dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Form imported successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      debugPrint('❌ [HomeScreen] Import JSON error: $e');
-      debugPrint('Stack: $stackTrace');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Import failed: ${e is FormatException ? e.message : e.toString()}',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Invalid JSON'),
-            content: Text(
-              e is FormatException
-                  ? e.message
-                  : 'Unexpected error while importing JSON.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child: const Text('Close'),
               ),
             ],
           ),
-        );
-      }
-    }
+        ),
+      ),
+      actions: [
+        GestureDetector(
+          onTap: () async {
+            final messenger = ScaffoldMessenger.of(context);
+            final data = await Clipboard.getData('text/plain');
+            if (data?.text != null && data!.text!.trim().isNotEmpty) {
+              controller.text = data.text!.trim();
+            } else {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Clipboard is empty'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 6,
+              children: [
+                Icon(Icons.paste, size: 16, color: Colors.white),
+                Text(
+                  'Paste from Clipboard',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('Cancel'),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.read<UserFormsBloc>().add(
+              ImportFormFromJsonEvent(rawJson: controller.text),
+            );
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Importing JSON...'),
+                backgroundColor: Colors.blue,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.orange,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'Import',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  /// Build a responsive, single-row set of hero buttons with horizontal scroll
+  void _showImportJsonDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _buildImportJsonDialog(),
+    );
+  }
+
   Widget _buildHeroButtonsRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1302,7 +1057,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Reusable hero button with consistent styling
   Widget _buildHeroButton({
     required IconData icon,
     required String label,

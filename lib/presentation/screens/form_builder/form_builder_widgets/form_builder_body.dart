@@ -34,9 +34,6 @@ Widget _buildMainContent(
       formBuilderCanvas(state, formBuilderBloc),
       if (state.showComponentsPanel)
         formBuilderComponentsPanel(state, formBuilderBloc),
-      //Hide it , dont open
-      // if (state.showButtonComponentsPanel)
-      //   formBuilderButtonComponentsPanel(state, formBuilderBloc),
     ],
   );
 }

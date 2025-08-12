@@ -76,3 +76,31 @@ class CreateUserFormFromTemplateEvent extends UserFormsEvent {
 class LoadFormTemplatesEvent extends UserFormsEvent {
   const LoadFormTemplatesEvent();
 }
+
+// New: import JSON into a working FormBuilderModel in state
+class ImportFormFromJsonEvent extends UserFormsEvent {
+  final String rawJson;
+  const ImportFormFromJsonEvent({required this.rawJson});
+
+  @override
+  List<Object?> get props => [rawJson];
+}
+
+// New: clear imported form from state
+class ClearImportedFormEvent extends UserFormsEvent {
+  const ClearImportedFormEvent();
+}
+
+// New: request open a form for editing
+class OpenFormForEditEvent extends UserFormsEvent {
+  final Map<String, dynamic> form;
+  const OpenFormForEditEvent({required this.form});
+
+  @override
+  List<Object?> get props => [form];
+}
+
+// New: clear open form navigation payload
+class ClearOpenFormEvent extends UserFormsEvent {
+  const ClearOpenFormEvent();
+}

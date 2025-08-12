@@ -2,6 +2,7 @@ import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart
 import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
 import 'package:dynamic_form_bi/data/models/config/config_model.dart';
 import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
+import 'package:dynamic_form_bi/core/services/user_forms_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/dynamic_form_builder/dynamic_form_builder_state.dart';
 import 'package:dynamic_form_bi/core/enums/component_action_enum.dart';
@@ -12,10 +13,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
   final RemoteConfigService _remoteConfigService;
+  final UserFormsService _userFormsService;
 
   FormBuilderBloc({
     required RemoteConfigService remoteConfigService,
+    required UserFormsService userFormsService,
   }) : _remoteConfigService = remoteConfigService,
+       _userFormsService = userFormsService,
        super(
          const FormBuilderInitial(
            pages: [
@@ -53,23 +57,18 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     on<CopyPageEvent>(_onCopyPage);
     on<SubmitFormEvent>(_onSubmitForm);
     on<AddPageWithTitleEvent>(_onAddPageWithTitle);
-    // New event handlers for insert logic
     on<InsertComponentEvent>(_onInsertComponent);
     on<StartHoverEvent>(_onStartHover);
     on<EndHoverEvent>(_onEndHover);
     on<ShowInsertIndicatorEvent>(_onShowInsertIndicator);
     on<HideInsertIndicatorEvent>(_onHideInsertIndicator);
-    // New event handlers for editing component config
     on<EditComponentConfigEvent>(_onEditComponentConfig);
     on<EditComponentLabelEvent>(_onEditComponentLabel);
     on<EditComponentPlaceholderEvent>(_onEditComponentPlaceholder);
-    // Force rebuild UI event
     on<ForceRebuildUIEvent>(_onForceRebuildUI);
-    // Load existing form event
     on<LoadExistingFormEvent>(_onLoadExistingForm);
-    // Force save all components event
+    on<LoadExistingFormByIdEvent>(_onLoadExistingFormById);
     on<ForceSaveAllComponentsEvent>(_onForceSaveAllComponents);
-    // Highlight a specific component
     on<HighlightComponentEvent>(_onHighlightComponent);
   }
 
@@ -557,29 +556,6 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
     // This method can be used for any additional logic before navigation
   }
 
-  /// Update the title of the first page
-  void _onUpdateFirstPageTitle(
-    UpdateFirstPageTitleEvent event,
-    Emitter<FormBuilderState> emit,
-  ) {
-    debugPrint(
-      '📝 [FormBuilderBloc] Updating first page title to: ${event.title}',
-    );
-
-    final updatedPages = state.pages.map((page) {
-      if (page.pageId == 'page_1') {
-        return page.copyWith(title: event.title);
-      }
-      return page;
-    }).toList();
-
-    emit(
-      FormBuilderSuccess.fromState(state: state).copyWith(
-        pages: updatedPages,
-      ),
-    );
-  }
-
   /// Insert component at specific index
   void _onInsertComponent(
     InsertComponentEvent event,
@@ -869,6 +845,45 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       emit(
         FormBuilderError(
           errorMessage: errorMessage,
+          components: state.components,
+          pages: state.pages,
+          currentPageId: state.currentPageId,
+          availableComponents: state.availableComponents,
+          availableButtonComponents: state.availableButtonComponents,
+          isDragging: state.isDragging,
+          showComponentsPanel: state.showComponentsPanel,
+          showButtonComponentsPanel: state.showButtonComponentsPanel,
+          formTitle: state.formTitle,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLoadExistingFormById(
+    LoadExistingFormByIdEvent event,
+    Emitter<FormBuilderState> emit,
+  ) async {
+    emit(FormBuilderLoading.fromState(state: state));
+    try {
+      final data = await _userFormsService.getUserFormById(
+        formId: event.formId,
+        userId: event.userId,
+      );
+
+      if (data == null || data['formData'] == null) {
+        throw Exception('Form not found');
+      }
+
+      final formBuilderModel = FormBuilderModel.fromJson(
+        Map<String, dynamic>.from(data['formData'] as Map),
+      );
+
+      // Load the form using existing LoadExistingFormEvent logic
+      add(LoadExistingFormEvent(formBuilderModel));
+    } catch (e) {
+      emit(
+        FormBuilderError(
+          errorMessage: 'Failed to load form by ID: $e',
           components: state.components,
           pages: state.pages,
           currentPageId: state.currentPageId,

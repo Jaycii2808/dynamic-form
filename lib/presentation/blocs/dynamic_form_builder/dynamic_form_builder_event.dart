@@ -302,6 +302,19 @@ class LoadExistingFormEvent extends FormBuilderEvent {
   List<Object?> get props => [form];
 }
 
+class LoadExistingFormByIdEvent extends FormBuilderEvent {
+  final String formId;
+  final String? userId;
+
+  const LoadExistingFormByIdEvent({
+    required this.formId,
+    this.userId,
+  });
+
+  @override
+  List<Object?> get props => [formId, userId];
+}
+
 class ForceSaveAllComponentsEvent extends FormBuilderEvent {
   const ForceSaveAllComponentsEvent();
 }

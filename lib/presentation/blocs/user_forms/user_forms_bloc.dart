@@ -5,6 +5,9 @@ import 'package:dynamic_form_bi/core/services/remote_config_service.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_event.dart';
 import 'package:dynamic_form_bi/presentation/blocs/user_forms/user_forms_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dynamic_form_bi/data/models/form_builder/form_builder_model.dart';
+import 'package:dynamic_form_bi/core/enums/form_type_enum.dart';
+import 'package:dynamic_form_bi/core/enums/button_action_enum.dart';
 
 class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   final UserFormsService _userFormsService;
@@ -22,6 +25,10 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
     on<DeleteUserFormEvent>(_onDeleteUserForm);
     on<CreateUserFormFromTemplateEvent>(_onCreateUserFormFromTemplate);
     on<LoadFormTemplatesEvent>(_onLoadFormTemplates);
+    on<ImportFormFromJsonEvent>(_onImportFormFromJson);
+    on<ClearImportedFormEvent>(_onClearImportedForm);
+    on<OpenFormForEditEvent>(_onOpenFormForEdit);
+    on<ClearOpenFormEvent>(_onClearOpenForm);
   }
 
   Future<void> _onLoadUserForms(
@@ -55,13 +62,11 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      // Persist the form first
       await _userFormsService.saveUserForm(
         formBuilderModel: event.formBuilderModel,
         userId: event.userId,
       );
 
-      // Reload user forms after saving
       final userForms = await _userFormsService.getUserForms(
         userId: event.userId,
       );
@@ -93,7 +98,6 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
         userId: event.userId,
       );
 
-      // Reload user forms after updating
       final userForms = await _userFormsService.getUserForms(
         userId: event.userId,
       );
@@ -124,7 +128,6 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
         userId: event.userId,
       );
 
-      // Reload user forms after deleting
       final userForms = await _userFormsService.getUserForms(
         userId: event.userId,
       );
@@ -150,13 +153,12 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      // final formId = await _userFormsService.createUserFormFromTemplate(
-      //   templateData: event.templateData,
-      //   templateName: event.templateName,
-      //   userId: event.userId,
-      // );
+      await _userFormsService.createUserFormFromTemplate(
+        templateData: event.templateData,
+        templateName: event.templateName,
+        userId: event.userId,
+      );
 
-      // Reload user forms after creating
       final userForms = await _userFormsService.getUserForms(
         userId: event.userId,
       );
@@ -182,7 +184,6 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
   ) async {
     emit(UserFormsLoading.fromState(state: state));
     try {
-      // Load form templates from Remote Config
       final formTemplates = await _loadFormTemplatesFromRemoteConfig();
 
       emit(
@@ -200,10 +201,138 @@ class UserFormsBloc extends Bloc<UserFormsEvent, UserFormsState> {
     }
   }
 
+  Future<void> _onImportFormFromJson(
+    ImportFormFromJsonEvent event,
+    Emitter<UserFormsState> emit,
+  ) async {
+    emit(UserFormsLoading.fromState(state: state));
+    try {
+      final trimmed = event.rawJson.trim();
+      if (trimmed.isEmpty) {
+        throw const FormatException('JSON is empty');
+      }
+
+      final dynamic decoded = jsonDecode(trimmed);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Invalid JSON format: root must be an object',
+        );
+      }
+
+      final parsedModel = FormBuilderModel.fromJson(decoded);
+
+      final pagesExcludingSubmit = parsedModel.pages
+          .where((p) => !p.title.toLowerCase().contains('submit'))
+          .toList();
+
+      List<FormBuilderPageModel> sanitizedPages = pagesExcludingSubmit.map((
+        page,
+      ) {
+        final filteredComponents = page.components.where((component) {
+          if (component.type != FormTypeEnum.buttonFormType) return true;
+          final action = component.config?.action;
+          if (action == null) return true;
+          return action != ButtonAction.nextPage.value &&
+              action != ButtonAction.previousPage.value &&
+              action != ButtonAction.submitForm.value;
+        }).toList();
+        return page.copyWith(components: filteredComponents);
+      }).toList();
+
+      if (sanitizedPages.isEmpty) {
+        sanitizedPages = const [
+          FormBuilderPageModel(
+            pageId: 'page_1',
+            title: 'Form Page',
+            order: 1,
+            showPreviousButton: false,
+            showNextButton: false,
+            showSubmitButton: true,
+            components: [],
+          ),
+        ];
+      }
+
+      final model = parsedModel.copyWith(pages: sanitizedPages);
+
+      emit(
+        UserFormsSuccess.fromState(state: state).copyWith(importedForm: model),
+      );
+    } catch (e) {
+      emit(
+        UserFormsError.fromState(
+          state: state,
+          errorMessage: 'Failed to import JSON: $e',
+        ),
+      );
+    }
+  }
+
+  void _onClearImportedForm(
+    ClearImportedFormEvent event,
+    Emitter<UserFormsState> emit,
+  ) {
+    emit(UserFormsSuccess.fromState(state: state).copyWith(importedForm: null));
+  }
+
+  void _onOpenFormForEdit(
+    OpenFormForEditEvent event,
+    Emitter<UserFormsState> emit,
+  ) {
+    try {
+      final form = event.form;
+      final String? formId = form['formId'] as String?;
+
+      if (formId != null && formId.isNotEmpty) {
+        emit(
+          UserFormsSuccess.fromState(
+            state: state,
+          ).copyWith(openFormId: formId, openFormModel: null),
+        );
+        return;
+      }
+
+      if (form['formData'] != null) {
+        final formData = form['formData'] as Map<String, dynamic>;
+        final formBuilderModel = FormBuilderModel.fromJson(formData);
+        emit(
+          UserFormsSuccess.fromState(
+            state: state,
+          ).copyWith(openFormId: null, openFormModel: formBuilderModel),
+        );
+        return;
+      }
+
+      emit(
+        UserFormsError.fromState(
+          state: state,
+          errorMessage: 'Error: Form data not found',
+        ),
+      );
+    } catch (e) {
+      emit(
+        UserFormsError.fromState(
+          state: state,
+          errorMessage: 'Failed to prepare form for editing: $e',
+        ),
+      );
+    }
+  }
+
+  void _onClearOpenForm(
+    ClearOpenFormEvent event,
+    Emitter<UserFormsState> emit,
+  ) {
+    emit(
+      UserFormsSuccess.fromState(
+        state: state,
+      ).copyWith(openFormId: null, openFormModel: null),
+    );
+  }
+
   Future<List<Map<String, dynamic>>>
   _loadFormTemplatesFromRemoteConfig() async {
     try {
-      // Get form templates from Remote Config
       final templatesJson = _remoteConfigService.getString('form_templates');
 
       if (templatesJson.isEmpty) {

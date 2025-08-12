@@ -62,6 +62,7 @@ class MyApp extends StatelessWidget {
       BlocProvider(
         create: (context) => FormBuilderBloc(
           remoteConfigService: RemoteConfigService(),
+          userFormsService: UserFormsService(),
         ),
       ),
       BlocProvider(
