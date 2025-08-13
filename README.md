@@ -1,34 +1,55 @@
-# Dynamic Form Builder BI
+This Flutter application creates dynamic forms with easy customization and sharing capabilities.
+## Completed Features
 
-Ứng dụng Flutter tạo form động với khả năng tùy chỉnh và chia sẻ form dễ dàng.
+1. Home Management
+✅ Create new forms from scratch
+✅ Import JSON from clipboard or file
+✅ User's form list
+✅ Available form templates
+✅ Delete forms with confirmation
+2. Form Builder
+✅ Add/remove/rearrange components
+✅ Comprehensive validation
+✅ Preview of the form
+✅ Configure properties of each component
+3. Supported Component Types with drag and drop
+✅ Short Answer - Input short text
+✅ Dropdown - Select from a list
+4. Export/Import System
+✅ Export complete JSON
+✅ Import JSON with validation
+✅ Share form via link to the screen (web version)
+✅ Public access for forms
+5. Form Submission
+✅ Beautiful form filling interface
+✅ Validation upon submission
+✅ Send results via email from API
+✅ Store responses in Firestore
 
-## 🚀 Tính năng đã hoàn thành
+## Required Files
 
-### **1. Quản lý trang chủ**
-- ✅ **Tạo form mới** từ đầu
-- ✅ **Import JSON** từ clipboard hoặc file
-- ✅ **Danh sách form** của người dùng
-- ✅ **Template form** có sẵn
-- ✅ **Xóa form** với xác nhận
+Ask admin to provide these files, then paste them into the correct locations:
 
-### **2. Form Builder**
-- ✅ **Thêm/xóa/sắp xếp** components
-- ✅ **Validation** toàn diện
-- ✅ **Preview** 
-- ✅ **Cấu hình** thuộc tính từng component
+project_root/
+│
+├── android/
+│   └── app/
+│       └── google-services.json       <-- Provided by admin
+│
+├── lib/
+│   ├── dotenv                         <-- Provided by admin
+│   ├── firebase_options.dart           <-- Provided by admin
+│
+├── firebase.json                       <-- Provided by admin
 
-### **3. Loại components hỗ trợ**
-- ✅ **Short Answer** - Nhập text ngắn
-- ✅ **Dropdown** - Chọn từ danh sách
+---
 
-### **4. Export/Import System**
-- ✅ **Export JSON** hoàn chỉnh
-- ✅ **Import JSON** với validation
-- ✅ **Share form** qua link tới screen ( web versionversion)
-- ✅ **Public access** cho form
+## Build for Web
 
-### **5. Form Submission**
-- ✅ **Giao diện** điền form sạch đẹp
-- ✅ **Validation** khi submit
-- ✅ **Gửi qua email** kết quả từ api 
-- ✅ **Lưu trữ** responses trong firestore
+flutter build web --release
+
+---
+
+## Deploy to Firebase Hosting
+
+firebase deploy --only hosting:dynamicformbiwo
