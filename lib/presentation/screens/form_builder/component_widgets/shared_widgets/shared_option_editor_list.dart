@@ -166,7 +166,7 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
         _buildDragHandle(),
         _buildOptionNumber(index),
         _buildOptionInput(option, index),
-        _buildRemoveButton(index),
+        _buildRemoveButton(index)
       ],
     );
   }
@@ -194,7 +194,7 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
         style: const TextStyle(
           color: Color(0xFF9CA3AF),
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -264,7 +264,7 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 6),
@@ -293,7 +293,7 @@ class _SharedOptionsEditorListState extends State<SharedOptionsEditorList> {
               style: TextStyle(
                 color: Colors.blue,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

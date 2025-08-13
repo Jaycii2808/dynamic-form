@@ -67,8 +67,10 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
   void didUpdateWidget(DropdownFormBuilderWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Update available pages when widget is updated
-    if (oldWidget.availablePages != widget.availablePages) {
+    // Only update available pages when widget is updated AND pages actually changed
+    if (oldWidget.availablePages != widget.availablePages &&
+        widget.availablePages != null &&
+        !_areListsEqual(oldWidget.availablePages, widget.availablePages)) {
       debugPrint(
         '🔄 [DropdownFormBuilderWidget] Available pages updated: ${widget.availablePages}',
       );
@@ -76,6 +78,41 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
         UpdateAvailablePagesEvent(availablePages: widget.availablePages),
       );
     }
+
+    // Re-initialize only if the component actually changed
+    if (oldWidget.component.id != widget.component.id ||
+        _hasComponentChanged(oldWidget.component, widget.component)) {
+      context.read<DropdownFormBuilderWidgetBloc>().add(
+        InitializeDropdownFormBuilderEvent(
+          component: widget.component,
+          availablePages: widget.availablePages,
+        ),
+      );
+    }
+  }
+
+  // Helper method to compare lists
+  bool _areListsEqual(List<String>? list1, List<String>? list2) {
+    if (list1 == null && list2 == null) return true;
+    if (list1 == null || list2 == null) return false;
+    if (list1.length != list2.length) return false;
+
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) return false;
+    }
+    return true;
+  }
+
+  // Helper method to check if component changed
+  bool _hasComponentChanged(
+    DynamicFormModel oldComponent,
+    DynamicFormModel newComponent,
+  ) {
+    return oldComponent.id != newComponent.id ||
+        oldComponent.config?.label != newComponent.config?.label ||
+        oldComponent.config?.placeholder != newComponent.config?.placeholder ||
+        oldComponent.config?.description != newComponent.config?.description ||
+        oldComponent.config?.isRequired != newComponent.config?.isRequired;
   }
 
   @override
@@ -111,11 +148,29 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
       debugPrint(
         '🔍 [DropdownFormBuilderWidget] Component options: ${currentState.options.map((o) => '${o.label}(${o.action}->${o.targetSection})').toList()}',
       );
-    }
 
-    context.read<DropdownFormBuilderWidgetBloc>().add(
-      const UpdateComponentEvent(),
-    );
+      // Update component in BLoC first
+      context.read<DropdownFormBuilderWidgetBloc>().add(
+        const UpdateComponentEvent(),
+      );
+
+      // Then call onComponentUpdate with the updated component after a short delay
+      // to ensure BLoC has processed the UpdateComponentEvent
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted && widget.onComponentUpdate != null) {
+          final updatedState = context
+              .read<DropdownFormBuilderWidgetBloc>()
+              .state;
+          if (updatedState is DropdownFormBuilderWidgetSuccess &&
+              updatedState.component != null) {
+            debugPrint(
+              '🔍 [DropdownFormBuilderWidget] Calling onComponentUpdate with description: ${updatedState.component?.config?.description}',
+            );
+            widget.onComponentUpdate?.call(updatedState.component!);
+          }
+        }
+      });
+    }
   }
 
   // Return and cache FocusNode for a given option id
@@ -283,74 +338,27 @@ class _DropdownFormBuilderWidgetState extends State<DropdownFormBuilderWidget> {
 
       // Focus when bloc requests a specific option id
       if (state.focusOptionId != null) {
-        final optionId = state.focusOptionId!;
-        final target = state.options.firstWhere(
-          (o) => o.value == optionId,
-          orElse: () => state.options.isNotEmpty
-              ? state.options.last
-              : const Option(value: '', label: ''),
-        );
-        if (target.value.isNotEmpty) {
-          final focusNode = _getFocusNodeForOption(target.value);
-          final controller = _getControllerForOption(
-            target.value,
-            target.label,
+        final focusNode = _optionFocusNodes[state.focusOptionId];
+        if (focusNode != null && focusNode.canRequestFocus) {
+          debugPrint(
+            '🎯 [DropdownFormBuilderWidget] Focusing option: ${state.focusOptionId}',
           );
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            debugPrint(
-              '🎯 [DropdownFormBuilderWidget] Request focus on option ${target.value}',
-            );
-            FocusScope.of(context).requestFocus(focusNode);
-            controller.selection = TextSelection(
-              baseOffset: 0,
-              extentOffset: controller.text.length,
-            );
-            // Tell bloc we've handled the focus request
-            context.read<DropdownFormBuilderWidgetBloc>().add(
-              const ClearFocusRequestEvent(),
-            );
+            focusNode.requestFocus();
           });
-        } else {
-          // Clear if no valid target
+        }
+
+        // Clear focus request after handling
+        WidgetsBinding.instance.addPostFrameCallback((_) {
           context.read<DropdownFormBuilderWidgetBloc>().add(
             const ClearFocusRequestEvent(),
           );
-        }
+        });
       }
 
-      // Call onComponentUpdate if component changed and has description
-      if (widget.onComponentUpdate != null && state.component != null) {
-        debugPrint(
-          '🔍 [DropdownFormBuilderWidget] Calling onComponentUpdate with description: ${state.component?.config?.description}',
-        );
-        debugPrint(
-          '🔍 [DropdownFormBuilderWidget] State description: ${state.description}',
-        );
-        debugPrint(
-          '🔍 [DropdownFormBuilderWidget] Component config description: ${state.component?.config?.description}',
-        );
-
-        // Ensure component has the latest description from state
-        final component = state.component;
-        final updatedComponent = component?.copyWith(
-          config: component.config?.copyWith(
-            description: state.description,
-          ),
-        );
-
-        debugPrint(
-          '🔍 [DropdownFormBuilderWidget] Updated component description: ${updatedComponent?.config?.description}',
-        );
-
-        // Safely invoke callback
-        if (updatedComponent != null) {
-          debugPrint(
-            '🔍 [DropdownFormBuilderWidget] onComponentUpdate invoked safely',
-          );
-          widget.onComponentUpdate?.call(updatedComponent);
-        }
-      }
+      // Only call onComponentUpdate when explicitly triggered by UpdateComponentEvent
+      // Remove the automatic call that was causing the loop
+      // The onComponentUpdate will now only be called from _updateComponent method
     }
   }
 

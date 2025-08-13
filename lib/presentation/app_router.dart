@@ -29,9 +29,9 @@ class AppRouter {
           return NoTransitionPage(child: SharedFormScreen(formId: formId));
         },
       ),
-      // Form builder create (no params); supports optional extra to prefill
+      // Form builder create (no formId parameter) - this should come first
       GoRoute(
-        path: '${FormBuilderScreen.routePath}/:formId',
+        path: FormBuilderScreen.routePath,
         pageBuilder: (context, state) {
           final extra = state.extra;
           final existing = extra is FormBuilderModel ? extra : null;
@@ -43,13 +43,16 @@ class AppRouter {
           );
         },
       ),
-      // Form builder edit by formId (use path parameter)
+      // Form builder edit by formId (with formId parameter)
       GoRoute(
-        path: FormBuilderScreen.routePath,
+        path: '${FormBuilderScreen.routePath}/:formId',
         pageBuilder: (context, state) {
           final String formId = state.pathParameters['formId']!;
+          final extra = state.extra;
+          final existing = extra is FormBuilderModel ? extra : null;
           return NoTransitionPage(
             child: FormBuilderScreen(
+              existingForm: existing,
               isEditing: true,
               editingFormId: formId,
             ),

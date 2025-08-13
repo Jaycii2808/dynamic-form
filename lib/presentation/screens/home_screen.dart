@@ -620,7 +620,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                 color: Colors.blue,
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -693,7 +693,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (pages.isNotEmpty) ...[
             const Text(
               'Pages:',
-              style: TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             ListView.builder(
@@ -1048,19 +1048,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHeroButtonsRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildHeroButton(
-          icon: Icons.add_circle_outline,
-          label: 'Start Building',
-          color: Colors.blue,
-          onTap: () => context.push(FormBuilderScreen.routePath),
+        Expanded(
+          child: _buildHeroButton(
+            icon: Icons.add_circle_outline,
+            label: 'Start Building',
+            color: Colors.blue,
+            onTap: () => context.push(FormBuilderScreen.routePath),
+          ),
         ),
-        _buildHeroButton(
-          icon: Icons.content_paste,
-          label: 'Import JSON',
-          color: Colors.orange,
-          onTap: _showImportJsonDialog,
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildHeroButton(
+            icon: Icons.content_paste,
+            label: 'Import JSON',
+            color: Colors.orange,
+            onTap: _showImportJsonDialog,
+          ),
         ),
       ],
     );
@@ -1078,7 +1082,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(8),
@@ -1092,15 +1098,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: Row(
-          spacing: 8,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 20),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            Icon(icon, color: Colors.white, size: 16),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],

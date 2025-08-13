@@ -18,7 +18,7 @@ class _EmailInputDialogState extends State<EmailInputDialog> {
     super.initState();
 
     _emailController.text = 'imprahimovic@gmail.com';
-    _nameController.text = 'tEST B5 ';
+    _nameController.text = 'Lou Hoang ';
   }
 
   @override

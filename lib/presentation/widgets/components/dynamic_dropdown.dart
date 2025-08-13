@@ -319,7 +319,7 @@ class _DynamicDropdownState extends State<DynamicDropdown> {
             style: const TextStyle(
               color: Colors.red,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),

@@ -86,7 +86,7 @@ class SharedWidgetBuilderWidgets {
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -425,7 +425,7 @@ class SharedWidgetBuilderWidgets {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 4),
@@ -821,7 +821,7 @@ class SharedWidgetBuilderWidgets {
                       style: TextStyle(
                         color: Color(0xFF9CA3AF),
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -1389,7 +1389,7 @@ class SharedWidgetBuilderWidgets {
                 style: TextStyle(
                   color: Color(0xFF9CA3AF),
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Row(
@@ -1600,7 +1600,7 @@ class SharedWidgetBuilderWidgets {
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
@@ -1628,7 +1628,7 @@ class SharedWidgetBuilderWidgets {
                   buttonText,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

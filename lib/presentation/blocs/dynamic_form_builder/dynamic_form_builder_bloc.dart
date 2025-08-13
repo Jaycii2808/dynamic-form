@@ -978,12 +978,12 @@ class FormBuilderBloc extends Bloc<FormBuilderEvent, FormBuilderState> {
       if (page.pageId == sourcePageId) {
         final comps = List<DynamicFormModel>.from(page.components);
         if (sourceIndex >= 0 && sourceIndex < comps.length) {
-          // final removed = comps.removeAt(sourceIndex);
+          comps.removeAt(sourceIndex);
           // When moving within same page and dropping after original pos, adjust index
           if (sourcePageId == targetPageId && insertIndex > sourceIndex) {
             insertIndex = insertIndex - 1;
           }
-          // Store back removed in bloc local var to use on target page insertion
+
           return page.copyWith(components: comps);
         }
       }

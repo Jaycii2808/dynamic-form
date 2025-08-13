@@ -531,7 +531,7 @@ class _SavedFormsScreenState extends State<SavedFormsScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.green.shade700,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

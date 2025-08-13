@@ -34,7 +34,7 @@ Widget _buildShortAnswerPreview(DynamicFormModel component) {
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 8,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -63,7 +63,6 @@ Widget _buildShortAnswerPreview(DynamicFormModel component) {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
             ],
           ),
         ),
@@ -127,7 +126,7 @@ Widget _buildButtonPreview(DynamicFormModel component) {
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 8,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

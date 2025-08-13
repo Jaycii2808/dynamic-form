@@ -71,6 +71,34 @@ class _ShortAnswerFormBuilderWidgetState
   }
 
   @override
+  void didUpdateWidget(ShortAnswerFormBuilderWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Only re-initialize if the component actually changed
+    if (oldWidget.component.id != widget.component.id ||
+        _hasComponentChanged(oldWidget.component, widget.component)) {
+      context.read<ShortAnswerFormBuilderWidgetBloc>().add(
+        InitializeShortAnswerFormBuilderEvent(
+          component: widget.component,
+          availablePages: widget.availablePages,
+        ),
+      );
+    }
+  }
+
+  // Helper method to check if component changed
+  bool _hasComponentChanged(
+    DynamicFormModel oldComponent,
+    DynamicFormModel newComponent,
+  ) {
+    return oldComponent.id != newComponent.id ||
+        oldComponent.config?.label != newComponent.config?.label ||
+        oldComponent.config?.placeholder != newComponent.config?.placeholder ||
+        oldComponent.config?.description != newComponent.config?.description ||
+        oldComponent.config?.isRequired != newComponent.config?.isRequired;
+  }
+
+  @override
   void dispose() {
     _questionController.dispose();
     _descriptionController.dispose();
@@ -226,7 +254,7 @@ class _ShortAnswerFormBuilderWidgetState
       style: const TextStyle(
         color: Color(0xFF9CA3AF),
         fontSize: 10,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

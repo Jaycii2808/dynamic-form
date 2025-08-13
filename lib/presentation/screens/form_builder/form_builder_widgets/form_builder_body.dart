@@ -14,7 +14,7 @@ Widget formBuilderBody(BuildContext context, FormBuilderBloc formBuilderBloc) {
       }
     },
     builder: (context, state) {
-      if (state is FormBuilderLoading) {
+      if (state is FormBuilderLoading || state is FormBuilderInitial) {
         return const Center(child: CircularProgressIndicator());
       }
       if (state is FormBuilderSuccess) {

@@ -702,24 +702,33 @@ class DropdownFormBuilderWidgetBloc
       '🔄 [DropdownFormBuilderBloc] Updating available pages: ${event.availablePages}',
     );
 
-    try {
+    // Only emit if pages actually changed
+    if (state.availablePages != event.availablePages &&
+        !_areListsEqual(state.availablePages, event.availablePages)) {
       if (state is DropdownFormBuilderWidgetSuccess) {
         final currentState = state as DropdownFormBuilderWidgetSuccess;
-        emit(currentState.copyWith(availablePages: event.availablePages));
-        debugPrint(
-          '✅ [DropdownFormBuilderBloc] Available pages updated successfully',
+        emit(
+          currentState.copyWith(
+            availablePages: event.availablePages,
+          ),
         );
       }
-    } catch (e) {
       debugPrint(
-        '❌ [DropdownFormBuilderBloc] Error updating available pages: $e',
-      );
-      emit(
-        DropdownFormBuilderWidgetError(
-          errorMessage: 'Failed to update available pages: ${e.toString()}',
-        ),
+        '✅ [DropdownFormBuilderBloc] Available pages updated successfully',
       );
     }
+  }
+
+  // Helper method to compare lists
+  bool _areListsEqual(List<String>? list1, List<String>? list2) {
+    if (list1 == null && list2 == null) return true;
+    if (list1 == null || list2 == null) return false;
+    if (list1.length != list2.length) return false;
+
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) return false;
+    }
+    return true;
   }
 
   Future<void> _onClearFocusRequest(

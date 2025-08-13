@@ -215,6 +215,7 @@ class SharedFormScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _buildPageHeader(
             currentPage.title,
@@ -310,7 +311,7 @@ class SharedFormScreen extends StatelessWidget {
               style: TextStyle(
                 color: Colors.green,
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
         ],
@@ -319,131 +320,129 @@ class SharedFormScreen extends StatelessWidget {
   }
 
   Widget _buildSubmitPage(BuildContext context, SharedFormState state) {
-    return Expanded(
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 64,
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.green,
+              size: 64,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Do you want to submit?',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'Do you want to submit?',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'The form will be sent to admin',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'The form will be sent to admin',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Back button
-                  GestureDetector(
-                    onTap: () => context.read<SharedFormBloc>().add(
-                      const PreviousPageEvent(),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Back button
+                GestureDetector(
+                  onTap: () => context.read<SharedFormBloc>().add(
+                    const PreviousPageEvent(),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.grey.withValues(alpha: 0.5),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey.withValues(alpha: 0.5),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.arrow_back,
+                          color: Colors.black,
+                          size: 20,
                         ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.arrow_back,
+                        SizedBox(width: 8),
+                        Text(
+                          'Back',
+                          style: TextStyle(
                             color: Colors.black,
-                            size: 20,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Back',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // Submit button
-                  GestureDetector(
-                    onTap: () => context.read<SharedFormBloc>().add(
-                      const SubmitFormEvent(),
+                ),
+                const SizedBox(width: 16),
+                // Submit button
+                GestureDetector(
+                  onTap: () => context.read<SharedFormBloc>().add(
+                    const SubmitFormEvent(),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.send,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.send,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Send',
+                          style: TextStyle(
                             color: Colors.white,
-                            size: 20,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Submit',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -562,29 +561,29 @@ class SharedFormScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
-          if (emailDetails.emailSent) ...[
-            const Text(
-              '✅ Form data has been sent to the form owner.',
-              style: TextStyle(color: Colors.green, fontSize: 14),
-            ),
-          ] else if (emailDetails.emailError != null) ...[
-            Text(
-              '❌ ${emailDetails.emailError}',
-              style: const TextStyle(color: Colors.red, fontSize: 14),
-            ),
-            if (emailDetails.emailResponse?.type == 'network') ...[
-              const SizedBox(height: 8),
-              const Text(
-                '💡 Check your internet connection and try again.',
-                style: TextStyle(color: Colors.orange, fontSize: 12),
-              ),
-            ],
-          ] else ...[
-            const Text(
-              '⚠️ No recipient email configured for this form',
-              style: TextStyle(color: Colors.orange, fontSize: 14),
-            ),
-          ],
+          // if (emailDetails.emailSent) ...[
+          //   const Text(
+          //     '✅ Form data has been sent to the form owner.',
+          //     style: TextStyle(color: Colors.green, fontSize: 14),
+          //   ),
+          // ] else if (emailDetails.emailError != null) ...[
+          //   Text(
+          //     '❌ ${emailDetails.emailError}',
+          //     style: const TextStyle(color: Colors.red, fontSize: 14),
+          //   ),
+          //   if (emailDetails.emailResponse?.type == 'network') ...[
+          //     const SizedBox(height: 8),
+          //     const Text(
+          //       '💡 Check your internet connection and try again.',
+          //       style: TextStyle(color: Colors.orange, fontSize: 12),
+          //     ),
+          //   ],
+          // ] else ...[
+          //   const Text(
+          //     '⚠️ No recipient email configured for this form',
+          //     style: TextStyle(color: Colors.orange, fontSize: 14),
+          //   ),
+          // ],
         ],
       ),
     );

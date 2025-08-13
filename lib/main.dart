@@ -44,6 +44,22 @@ class MyProviders extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildThemeData(),
       routerConfig: AppRouter.router,
+      // Clamp text scale factor to prevent UI overflow while keeping accessibility
+      builder: (context, child) {
+        return _buildScaleFactory(context, child);
+      },
+    );
+  }
+
+  Widget _buildScaleFactory(BuildContext context, Widget? child) {
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: MediaQuery.of(context).textScaler.clamp(
+          minScaleFactor: 0.8,
+          maxScaleFactor: 1.5, // Allow up to 150% scaling
+        ),
+      ),
+      child: child!,
     );
   }
 

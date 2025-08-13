@@ -340,7 +340,7 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 12),
@@ -392,10 +392,11 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
           ),
 
           actions: [
-            Row(
+            Column(
               spacing: 15,
               //space betwween
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 GestureDetector(
                   onTap: () => _copyLinkToClipboard(shareableLink),
@@ -431,35 +432,35 @@ class _FormBuilderPreviewScreenState extends State<FormBuilderPreviewScreen>
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () {
+                    context.pop(); // Close dialog
+                    _navigateToSharedForm(formId);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Open Form in App',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
             // Add button to navigate directly to shared form
-            GestureDetector(
-              onTap: () {
-                context.pop(); // Close dialog
-                _navigateToSharedForm(formId);
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Open Form in App',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => context.pop(),

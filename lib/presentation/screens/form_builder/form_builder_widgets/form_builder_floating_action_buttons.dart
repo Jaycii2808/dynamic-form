@@ -115,7 +115,7 @@ Widget _buildNavigationButton({
             label,
             style: TextStyle(
               fontSize: 9,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: isActive
                   ? activeColor
                   : Colors.grey.withValues(alpha: 0.7),
@@ -365,7 +365,7 @@ void _showAddPageDialog(BuildContext context, FormBuilderBloc formBuilderBloc) {
                               ),
                               SizedBox(width: 8),
                               Text(
-                                'Create Page',
+                                'Create',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,

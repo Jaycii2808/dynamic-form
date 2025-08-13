@@ -168,7 +168,7 @@ Widget _buildPageHeader(
             'Page ${pageIndex + 1} of $totalPages',
             style: const TextStyle(
               fontSize: 9,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: Colors.orange,
             ),
           ),
@@ -369,23 +369,46 @@ Widget _buildComponentWithDropZone(
             feedback: Material(
               color: Colors.transparent,
               child: Container(
-                width: MediaQuery.of(context).size.width - 64,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF000000),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue, width: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                child: Opacity(
-                  opacity: 0.9,
-                  child: _buildComponentWidget(
-                    component,
-                    formBuilderBloc,
-                    context,
-                    state,
-                    pageIndex,
-                    componentIndex,
-                  ),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    Icon(
+                      _getComponentIcon(component.type),
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    Flexible(
+                      child: Text(
+                        component.config?.label?.isNotEmpty == true
+                            ? component.config!.label!
+                            : component.labelFormBuilder ??
+                                  _getComponentTypeName(component.type),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -611,7 +634,7 @@ Widget _buildDropZoneContent(
             style: TextStyle(
               fontSize: 14,
               color: isDragOver ? Colors.blue : Colors.grey[500],
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -689,33 +712,38 @@ Widget _buildComponentWidget(
 
     // Logging removed; use Bloc Observer
 
+    // Use stable key that doesn't change on every rebuild
+    final stableKey = ValueKey('dropdown_${component.id}_$pageIndex');
+
     return BlocProvider(
+      key: stableKey, // Add stable key to BlocProvider
       create: (context) => DropdownFormBuilderWidgetBloc(),
       child: DropdownFormBuilderWidget(
-        key: ValueKey(
-          '${component.id}_${state.currentPageId}_${currentPageIndex}_$componentIndex',
-        ), // Unique key per component per page
+        key: stableKey, // Use same stable key
         component: component,
         availablePages: availablePages, // Pass current available pages
         currentPageId: state.currentPageId, // Pass current page ID
         currentPageIndex:
             currentPageIndex, // Pass the page index where this component is being built
         onComponentUpdate: (updatedComponent) {
-          // Logging removed; use Bloc Observer
-          // Update the component in the form builder
-          formBuilderBloc.add(
-            EditComponentConfigEvent(
-              componentId: updatedComponent.id,
-              label: updatedComponent.config?.label,
-              placeholder: updatedComponent.config?.placeholder,
-              description:
-                  updatedComponent.config?.description, // Add description
-              value: updatedComponent.config?.value,
-              errorText: updatedComponent.config?.errorText,
-              isRequired: updatedComponent.config?.isRequired,
-              options: updatedComponent.config?.options, // Add options
-            ),
-          );
+          // Prevent update loop by checking if component actually changed
+          if (_hasComponentConfigChanged(component, updatedComponent)) {
+            // Logging removed; use Bloc Observer
+            // Update the component in the form builder
+            formBuilderBloc.add(
+              EditComponentConfigEvent(
+                componentId: updatedComponent.id,
+                label: updatedComponent.config?.label,
+                placeholder: updatedComponent.config?.placeholder,
+                description:
+                    updatedComponent.config?.description, // Add description
+                value: updatedComponent.config?.value,
+                errorText: updatedComponent.config?.errorText,
+                isRequired: updatedComponent.config?.isRequired,
+                options: updatedComponent.config?.options, // Add options
+              ),
+            );
+          }
         },
         onDuplicate: () {
           // Handle duplicate for dropdown
@@ -725,16 +753,7 @@ Widget _buildComponentWidget(
           formBuilderBloc.add(AddComponentEvent(duplicatedComponent));
         },
         onDelete: () {
-          // Handle delete for dropdown - find component in current page
-          final currentPage = state.pages.firstWhere(
-            (page) => page.pageId == state.currentPageId,
-          );
-          final index = currentPage.components.indexWhere(
-            (c) => c.id == component.id,
-          );
-          if (index != -1) {
-            formBuilderBloc.add(RemoveComponentEvent(index));
-          }
+          formBuilderBloc.add(RemoveComponentEvent(componentIndex));
         },
       ),
     );
@@ -742,31 +761,35 @@ Widget _buildComponentWidget(
 
   // Check if component is short answer type
   if (component.type == FormTypeEnum.shortAnswerFormType) {
-    // Logging removed; use Bloc Observer
+    // Use stable key that doesn't change on every rebuild
+    final stableKey = ValueKey('short_answer_${component.id}_$pageIndex');
 
     return BlocProvider(
+      key: stableKey, // Add stable key to BlocProvider
       create: (context) => ShortAnswerFormBuilderWidgetBloc(),
       child: ShortAnswerFormBuilderWidget(
-        key: ValueKey(
-          '${component.id}_${state.currentPageId}_${pageIndex}_$componentIndex',
-        ),
+        key: stableKey, // Use same stable key
         component: component,
+        availablePages: state.pages.map((page) => page.title).toList(),
+        currentPageIndex: pageIndex,
         onComponentUpdate: (updatedComponent) {
-          // Logging removed; use Bloc Observer
-          // Update the component in the form builder
-          formBuilderBloc.add(
-            EditComponentConfigEvent(
-              componentId: updatedComponent.id,
-              label: updatedComponent.config?.label,
-              placeholder: updatedComponent.config?.placeholder,
-              description: updatedComponent.config?.description,
-              value: updatedComponent.config?.value,
-              errorText: updatedComponent.config?.errorText,
-              isRequired: updatedComponent.config?.isRequired,
-              validation: updatedComponent.validation,
-              validate: updatedComponent.config?.validate,
-            ),
-          );
+          // Prevent update loop by checking if component actually changed
+          if (_hasComponentConfigChanged(component, updatedComponent)) {
+            // Logging removed; use Bloc Observer
+            // Update the component in the form builder
+            formBuilderBloc.add(
+              EditComponentConfigEvent(
+                componentId: updatedComponent.id,
+                label: updatedComponent.config?.label,
+                placeholder: updatedComponent.config?.placeholder,
+                description:
+                    updatedComponent.config?.description, // Add description
+                value: updatedComponent.config?.value,
+                errorText: updatedComponent.config?.errorText,
+                isRequired: updatedComponent.config?.isRequired,
+              ),
+            );
+          }
         },
         onDuplicate: () {
           // Handle duplicate for short answer
@@ -776,16 +799,7 @@ Widget _buildComponentWidget(
           formBuilderBloc.add(AddComponentEvent(duplicatedComponent));
         },
         onDelete: () {
-          // Handle delete for short answer - find component in current page
-          final currentPage = state.pages.firstWhere(
-            (page) => page.pageId == state.currentPageId,
-          );
-          final index = currentPage.components.indexWhere(
-            (c) => c.id == component.id,
-          );
-          if (index != -1) {
-            formBuilderBloc.add(RemoveComponentEvent(index));
-          }
+          formBuilderBloc.add(RemoveComponentEvent(componentIndex));
         },
       ),
     );
@@ -800,35 +814,78 @@ Widget _buildComponentWidget(
         borderRadius: BorderRadius.circular(8),
       ),
       child: ReusedWidget.buildFormComponent(
-        key: ValueKey(
-          '${component.id}_${component.config?.label}_${component.config?.placeholder}_${component.config?.value?.toString()}_${state.rebuildTimestamp}_${pageIndex}_$componentIndex',
-        ), // Force rebuild when config changes or rebuildTimestamp changes
+        key: ValueKey('component_${component.id}_$pageIndex'), // Stable key
         component: component,
         onComponentValueChange: (componentId, value) => formBuilderBloc.add(
           UpdateComponentValueEvent(componentId: componentId, value: value),
         ),
         onComponentUpdate: (updatedComponent) {
-          // Logging removed; use Bloc Observer
-          // Update the component in the form builder
-          formBuilderBloc.add(
-            EditComponentConfigEvent(
-              componentId: updatedComponent.id,
-              label: updatedComponent.config?.label,
-              placeholder: updatedComponent.config?.placeholder,
-              description:
-                  updatedComponent.config?.description, // Add description
-              value: updatedComponent.config?.value,
-              // Keep original type
-              errorText: updatedComponent.config?.errorText,
-              isRequired: updatedComponent.config?.isRequired,
-            ),
-          );
+          // Prevent update loop by checking if component actually changed
+          if (_hasComponentConfigChanged(component, updatedComponent)) {
+            // Logging removed; use Bloc Observer
+            // Update the component in the form builder
+            formBuilderBloc.add(
+              EditComponentConfigEvent(
+                componentId: updatedComponent.id,
+                label: updatedComponent.config?.label,
+                placeholder: updatedComponent.config?.placeholder,
+                description:
+                    updatedComponent.config?.description, // Add description
+                value: updatedComponent.config?.value,
+                // Keep original type
+                errorText: updatedComponent.config?.errorText,
+                isRequired: updatedComponent.config?.isRequired,
+              ),
+            );
+          }
         },
         isSharedForm: false,
         currentPageId: state.currentPageId,
       ),
     ),
   );
+}
+
+// Add helper function to check if component config actually changed
+bool _hasComponentConfigChanged(
+  DynamicFormModel oldComponent,
+  DynamicFormModel newComponent,
+) {
+  final oldConfig = oldComponent.config;
+  final newConfig = newComponent.config;
+
+  if (oldConfig == null && newConfig == null) return false;
+  if (oldConfig == null || newConfig == null) return true;
+
+  return oldConfig.label != newConfig.label ||
+      oldConfig.placeholder != newConfig.placeholder ||
+      oldConfig.description != newConfig.description ||
+      oldConfig.value != newConfig.value ||
+      oldConfig.errorText != newConfig.errorText ||
+      oldConfig.isRequired != newConfig.isRequired ||
+      _hasOptionsChanged(oldConfig.options, newConfig.options);
+}
+
+// Helper function to check if options changed
+bool _hasOptionsChanged(List<dynamic>? oldOptions, List<dynamic>? newOptions) {
+  if (oldOptions == null && newOptions == null) return false;
+  if (oldOptions == null || newOptions == null) return true;
+  if (oldOptions.length != newOptions.length) return true;
+
+  for (int i = 0; i < oldOptions.length; i++) {
+    final oldOption = oldOptions[i];
+    final newOption = newOptions[i];
+
+    if (oldOption is Map && newOption is Map) {
+      if (oldOption['label'] != newOption['label'] ||
+          oldOption['value'] != newOption['value'] ||
+          oldOption['action'] != newOption['action']) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 void _showEditLabelDialog(
@@ -1004,4 +1061,32 @@ void _showCopyPageDialog(
       );
     },
   );
+}
+
+/// Helper function to get display name for component type
+String _getComponentTypeName(FormTypeEnum type) {
+  switch (type) {
+    case FormTypeEnum.buttonFormType:
+      return 'Button';
+    case FormTypeEnum.dropdownFormType:
+      return 'Dropdown';
+    case FormTypeEnum.shortAnswerFormType:
+      return 'Short Answer';
+    case FormTypeEnum.unknown:
+      return 'Component';
+  }
+}
+
+/// Helper function to get icon for component type
+IconData _getComponentIcon(FormTypeEnum type) {
+  switch (type) {
+    case FormTypeEnum.buttonFormType:
+      return Icons.smart_button;
+    case FormTypeEnum.dropdownFormType:
+      return Icons.arrow_drop_down_circle;
+    case FormTypeEnum.shortAnswerFormType:
+      return Icons.short_text;
+    case FormTypeEnum.unknown:
+      return Icons.widgets;
+  }
 }

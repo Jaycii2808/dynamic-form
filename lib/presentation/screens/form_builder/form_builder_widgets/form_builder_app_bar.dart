@@ -155,7 +155,7 @@ Widget _buildPageIndicator(int currentPageIndex, int totalPages) {
       style: const TextStyle(
         fontSize: 12,
         color: Colors.white,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       ),
     ),
   );
