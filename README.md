@@ -4,35 +4,24 @@ This Flutter application creates dynamic forms with easy customization and shari
 <img width="1495" height="669" alt="image" src="https://github.com/user-attachments/assets/011e89ca-7072-40a4-b7cf-9b3ac2447442" />
 
 ### Completed Features
-
-**Home Management**
-✅ Create new forms from scratch
-✅ Import JSON from clipboard or file
-✅ User's form list
-✅ Available form templates
-✅ Delete forms with confirmation
-
-**Form Builder**
-✅ Add, remove, and rearrange components
-✅ Comprehensive validation
-✅ Preview of the form
-✅ Configure properties of each component
-
-**Supported Component Types with Drag & Drop**
-✅ Short Answer – Input short text
-✅ Dropdown – Select from a list
-
-**Export/Import System**
-✅ Export complete JSON
-✅ Import JSON with validation
-✅ Share form via link (web version)
-✅ Public access for forms
-
-**Form Submission**
-✅ Beautiful form filling interface
-✅ Validation upon submission
-✅ Send results via email from API
-✅ Store responses in Firestore
+* Create new forms from scratch
+* Import JSON from clipboard or file
+* User's form list
+* Available form templates
+* Delete forms with confirmation
+* Add, remove, and rearrange components in form builder
+* Preview form
+* Configure properties of each component
+* Basic validation for inputs
+* Support Short Answer (text input) and Dropdown components with drag & drop
+* Export complete JSON
+* Import JSON with validation
+* Share forms via link (web version)
+* Public access for forms
+* Form submission interface
+* Validation upon submission
+* Store responses in Firestore
+* Send results via email from API
 
 ---
 
