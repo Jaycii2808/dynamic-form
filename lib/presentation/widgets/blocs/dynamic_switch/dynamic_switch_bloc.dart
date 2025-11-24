@@ -1,0 +1,131 @@
+import 'dart:async';
+
+import 'package:dynamic_form_bi/data/models/dynamic_form/dynamic_form_model.dart';
+import 'package:dynamic_form_bi/data/models/input_types/input_validation_model.dart';
+import 'package:dynamic_form_bi/data/models/components/field_update_data_model.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_event.dart';
+import 'package:dynamic_form_bi/presentation/widgets/blocs/dynamic_switch/dynamic_switch_state.dart';
+import 'package:dynamic_form_bi/presentation/widgets/reused_widgets/reused_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class DynamicSwitchBloc extends Bloc<DynamicSwitchEvent, DynamicSwitchState> {
+  final DynamicFormModel initialComponent;
+
+  DynamicSwitchBloc({required this.initialComponent})
+    : super(DynamicSwitchInitial(component: DynamicFormModel.empty())) {
+    on<InitializeSwitchEvent>(_onInitialize);
+    on<SwitchToggledEvent>(_onToggled);
+    on<UpdateSwitchFromExternalEvent>(_onUpdateFromExternal);
+
+    add(const InitializeSwitchEvent());
+  }
+
+  Future<void> _onInitialize(
+    InitializeSwitchEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) async {
+    emit(DynamicSwitchLoading.fromState(state: state));
+    try {
+      if (initialComponent.id.isEmpty) {
+        throw Exception("Invalid initial component: ID is empty.");
+      }
+      emit(
+        DynamicSwitchSuccess(
+          component: initialComponent,
+          inputConfig: InputValidationModel.fromJson(
+            initialComponent.config?.toJson() ?? {},
+          ),
+          styleModel: initialComponent.style,
+          formState: initialComponent.config?.currentState ?? StatesEnum.base,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to initialize Switch: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicSwitchError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onToggled(
+    SwitchToggledEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) async {
+    if (state is! DynamicSwitchSuccess) return;
+    final successState = state as DynamicSwitchSuccess;
+
+    // Derive state: error if previously errorText exists and value is false; success if true; else base
+    final prevError = successState.component?.config?.errorText;
+    final derivedState =
+        prevError != null && prevError.isNotEmpty && !event.value
+        ? StatesEnum.error
+        : (event.value ? StatesEnum.success : StatesEnum.base);
+
+    final updateData = FieldUpdateDataModel.create(
+      value: event.value,
+      currentState: derivedState,
+      errorText: prevError,
+      selected: event.value,
+    );
+
+    // Update only value and selected in existing config
+    final existingConfig = successState.component!.config!;
+    final updatedConfig = existingConfig.copyWith(
+      value: event.value,
+      selected: event.value,
+      currentState: updateData.currentState,
+      errorText: updateData.errorText,
+    );
+
+    final updatedComponent = successState.component!.copyWith(
+      config: updatedConfig,
+    );
+
+    emit(
+      DynamicSwitchSuccess(
+        component: updatedComponent,
+        inputConfig: InputValidationModel.fromJson(
+          updatedComponent.config?.toJson() ?? {},
+        ),
+        styleModel: updatedComponent.style,
+        formState: updateData.currentState,
+      ),
+    );
+  }
+
+  void _onUpdateFromExternal(
+    UpdateSwitchFromExternalEvent event,
+    Emitter<DynamicSwitchState> emit,
+  ) {
+    debugPrint(
+      '🔄 [DynamicSwitchBloc] Updating component from external: ${event.component.id}',
+    );
+
+    try {
+      emit(
+        DynamicSwitchSuccess(
+          component: event.component,
+          inputConfig: InputValidationModel.fromJson(
+            event.component.config?.toJson() ?? {},
+          ),
+          styleModel: event.component.style,
+          formState: event.component.config?.currentState ?? StatesEnum.base,
+        ),
+      );
+    } catch (e, stackTrace) {
+      final errorMessage = 'Failed to update Switch from external: $e';
+      debugPrint('❌ Error: $errorMessage, StackTrace: $stackTrace');
+      emit(
+        DynamicSwitchError(
+          errorMessage: errorMessage,
+          component: state.component,
+        ),
+      );
+    }
+  }
+}

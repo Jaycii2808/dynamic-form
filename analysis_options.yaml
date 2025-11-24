@@ -5,5 +5,9 @@ linter:
     always_use_package_imports: true
     prefer_const_constructors: true
     #prefer_single_quotes: true
+    require_trailing_commas: true
+    prefer_const_literals_to_create_immutables: true
+
 
 formatter:
+    trailing_commas: preserve
